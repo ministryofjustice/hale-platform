@@ -18,6 +18,16 @@ You can choose to launch the site in Docker or Kubernetes.
 ## Kubernetes
 
 ### Launch instructions
+Create a `.env` file in the root of this repository and populate it with some dummy secrets
+```
+ MYSQL_DATABASE=wordpress
+ MYSQL_USER=wp
+ MYSQL_PASSWORD=secret
+ MYSQL_ROOT_PASSWORD=secret
+ WORDPRESS_DB_HOST=wordpress-c:3306
+ WORDPRESS_DB_USER=wp
+ WORDPRESS_DB_PASSWORD=secret
+```
 
 1. Run `make build` to build all the Docker images you'll need locally for k8s to use.
 2. Setup the config map by running `kubectl create configmap wpconfig --from-env-file=.env`
