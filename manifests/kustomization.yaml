@@ -1,0 +1,10 @@
+---
+resources:
+  - svc-mysql.yaml
+  - svc-wordpress.yaml
+  - svc-nginx.yaml
+  - pvc-mysql.yaml
+  - pvc-wordpress.yaml
+  - deploy-mysql.yaml
+  - deploy-wordpress.yaml
+  - deploy-nginx.yaml

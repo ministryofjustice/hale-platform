@@ -1,0 +1,67 @@
+{
+    "name": "wp/multisite",
+    "type": "project",
+    "license": "MIT",
+    "description": "A WordPress stack",
+    "homepage": "https://roots.io/bedrock/",
+    "authors": [
+      {
+        "name": "Scott Walkinshaw",
+        "email": "scott.walkinshaw@gmail.com",
+        "homepage": "https://github.com/swalkinshaw"
+      },
+      {
+        "name": "Ben Word",
+        "email": "ben@benword.com",
+        "homepage": "https://github.com/retlehs"
+      }
+    ],
+    "keywords": [
+      "wordpress", "stack", "composer", "wp"
+    ],
+    "support": {
+      "issues": "https://github.com/roots/bedrock/issues",
+      "forum": "https://discourse.roots.io/category/bedrock"
+    },
+    "config": {
+      "preferred-install": "dist"
+    },
+    "repositories": [
+      {
+        "type": "composer",
+        "url": "https://wpackagist.org"
+      },
+      {
+        "type":"vcs", 
+        "no-api": true, 
+        "url":"https://github.com/ministryofjustice/hale.git"
+      }
+    ],
+    "require": {
+      "php": ">=7.1",
+      "composer/installers": "^v1.7.0",
+      "vlucas/phpdotenv": "^3.0.0",
+      "oscarotero/env": "^1.1.0",
+      "wpackagist-plugin/query-monitor": "^3.3.7",
+      "ministryofjustice/wp-hale": "*"
+    },
+    "require-dev": {
+      "squizlabs/php_codesniffer": "^3.0.2",
+      "roave/security-advisories": "dev-master"
+    },
+    "extra": {
+      "installer-paths": {
+        "wordpress/wp-content/mu-plugins/{$name}/": ["type:wordpress-muplugin"],
+        "wordpress/wp-content/plugins/{$name}/": ["type:wordpress-plugin"],
+        "wordpress/wp-content/themes/{$name}/": ["type:wordpress-theme"]
+      },
+      "wordpress-install-dir": "/var/www/html"
+    },
+    "scripts": {
+      "post-root-package-install": [],
+      "test": [
+        "phpcs"
+      ]
+    }
+  }
+  

@@ -1,0 +1,36 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress-mysql
+  labels:
+    app: wordpress-mysql
+spec:
+  selector:
+    matchLabels:
+      app: wordpress-mysql
+      tier: frontend-c
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: wordpress-mysql
+        tier: frontend-c
+    spec:
+      containers:
+      - name: mysql  
+        image: mariadb:10.7.1-focal
+        envFrom:
+          - configMapRef:
+              name: wpconfig
+        ports:
+          - containerPort: 3306
+            name: mysql
+        volumeMounts:
+          - name: mysql-persistent-storage
+            mountPath: /var/li/mysql
+      volumes:
+        - name: mysql-persistent-storage
+          persistentVolumeClaim:
+            claimName: pvc-mysql 

@@ -1,0 +1,64 @@
+version: '3.9'
+
+networks:
+  wordpress:
+
+volumes:
+  database:
+    driver: local
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx.dockerfile
+    container_name: nginx
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./wordpress:/var/www/html:delegated
+    depends_on:
+      - wordpress
+      - db
+    networks:
+      - wordpress
+
+  db:
+    image: mariadb:10.7.1-focal 
+    container_name: db
+    restart: always
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wp
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: secret
+      SERVICE_TAGS: dev
+      SERVICE_NAME: db
+    volumes:
+      - database:/var/lib/mysql
+    networks:
+      - wordpress
+
+  wordpress:
+    build:
+      context: .
+      dockerfile: wp.dockerfile
+    container_name: wordpress 
+    volumes:
+      - ./wordpress:/var/www/html:delegated
+    networks:
+      - wordpress
+
+  wp:
+    build:
+      context: .
+      dockerfile: wp.dockerfile
+    container_name: wp
+    entrypoint: ['wp', '--allow-root']
+    volumes:
+      - ./wordpress:/var/www/html:delegated
+    networks:
+      - wordpress

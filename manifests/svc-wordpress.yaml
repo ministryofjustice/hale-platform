@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress-c
+  labels:
+    app: wordpress-c
+spec:
+  ports:
+    - name: "9000"
+      port: 9000
+  selector:
+    app: wordpress-c
+    tier: frontend-c
+
