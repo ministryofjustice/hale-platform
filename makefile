@@ -1,6 +1,6 @@
 # Docker
 
-# Build and run site using Docker. Will run in background using -d flag.
+# Build and run site using Docker.. Will run in background using -d flag.
 launch:
 	docker-compose up -d --build
 
