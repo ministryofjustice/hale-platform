@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: multisite-k8s_nginx 
+        image: hale-platform_nginx 
         imagePullPolicy: IfNotPresent
         volumeMounts:
             - name: wordpress-persistent-storage

@@ -19,7 +19,7 @@ spec:
         tier: frontend-c
     spec:
       containers:
-        - image: multisite-k8s_wordpress 
+        - image: hale-platform_wordpress 
           imagePullPolicy: IfNotPresent 
           name: wordpress
           ports:
