@@ -1,4 +1,5 @@
 mysql
+.env
 .DS_Store
 .idea
 .sql

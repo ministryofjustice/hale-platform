@@ -1,37 +1,37 @@
 ---
-apiVersion: apps/v1    # for versions before 1.9.0 use apps/v1beta2
+apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: wordpress-c
+  name: wordpress
   labels:
-    app: wordpress-c
+    app: wordpress
 spec:
   selector:
     matchLabels:
-      app: wordpress-c
+      app: wordpress
       tier: frontend-c
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: wordpress-c
+        app: wordpress
         tier: frontend-c
     spec:
       containers:
-        - image: multisite-k8s_wordpress
+        - image: multisite-k8s_wordpress 
           imagePullPolicy: IfNotPresent 
-          name: wordpress-c
+          name: wordpress
           ports:
             - containerPort: 80
-              name: wordpress-c
+              name: wordpress
           volumeMounts:
-            - name: wordpress-c-persistent-storage
+            - name: wordpress-persistent-storage
               mountPath: /var/www/html
           envFrom:
             - configMapRef:
                 name: wpconfig
       volumes:
-        - name: wordpress-c-persistent-storage
+        - name: wordpress-persistent-storage
           persistentVolumeClaim:
             claimName: pvc-wordpress
