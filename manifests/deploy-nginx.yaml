@@ -17,15 +17,15 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: multisite-k8s_nginx
+        image: multisite-k8s_nginx 
         imagePullPolicy: IfNotPresent
         volumeMounts:
-            - name: wordpress-c-persistent-storage
+            - name: wordpress-persistent-storage
               mountPath: /var/www/html
         ports:
           - containerPort: 80
           - containerPort: 443
       volumes:
-        - name: wordpress-c-persistent-storage
+        - name: wordpress-persistent-storage
           persistentVolumeClaim:
             claimName: pvc-wordpress
