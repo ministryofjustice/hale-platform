@@ -8,7 +8,7 @@ RUN composer install -vvv
 FROM wordpress:5.8.2-php7.4-fpm-alpine
 
 # Adjust php.ini configuration settings
-COPY custom.ini $PHP_INI_DIR/conf.d/
+# COPY custom.ini $PHP_INI_DIR/conf.d/
 
 # Support for wp-cli
 RUN addgroup -g 1000 wp && adduser -G wp -g wp -s /bin/sh -D wp

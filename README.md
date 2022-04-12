@@ -24,7 +24,7 @@ Create a `.env` file in the root of this repository and populate it with some du
  MYSQL_USER=wp
  MYSQL_PASSWORD=secret
  MYSQL_ROOT_PASSWORD=secret
- WORDPRESS_DB_HOST=wordpress:3306
+ WORDPRESS_DB_HOST=mariadb:3306
  WORDPRESS_DB_USER=wp
  WORDPRESS_DB_PASSWORD=secret
 ```

@@ -2,20 +2,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: wordpress-mysql
+  name: mariadb
   labels:
-    app: wordpress-mysql
+    app: mariadb
 spec:
   selector:
     matchLabels:
-      app: wordpress-mysql
+      app: mariadb
       tier: frontend-c
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: wordpress-mysql
+        app: mariadb
         tier: frontend-c
     spec:
       containers:

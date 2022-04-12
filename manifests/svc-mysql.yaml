@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: wordpress-mysql
+  name: mariadb
   labels:
-    app: wordpress-mysql
+    app: mariadb
 spec:
   ports:
   - port: 3306
   selector:
-    app: wordpress-mysql
+    app: mariadb
     tier: frontend-c
 
