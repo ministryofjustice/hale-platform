@@ -1,4 +1,4 @@
-# Docker
+## Docker
 
 # Build and run site using Docker. Will run in background using -d flag.
 launch:
@@ -20,6 +20,11 @@ build:
 exec:
 	docker exec -it wordpress bash
 
+## AWS
+
+# List all the images in ECR for our hale-platform-dev-ecr namespace
+ecr-images:
+	aws ecr list-images --repository-name jotw-content-devs/hale-platform-dev-ecr
 
 # Run wp cli on the container, for example:
 # docker-compose run --rm wp user list
