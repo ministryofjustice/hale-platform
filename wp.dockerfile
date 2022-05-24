@@ -11,7 +11,7 @@ FROM wordpress:5.9.3-php7.4-fpm-alpine
 # COPY custom.ini $PHP_INI_DIR/conf.d/
 
 # Support for wp-cli
-RUN addgroup -g 1000 wp && adduser -G wp -g wp -s /bin/sh -D wp
+RUN addgroup -g 1001 wp && adduser -G wp -g wp -s /bin/sh -D wp
 RUN chown wp:wp /var/www/html
 
 # Persistent dependencies
@@ -27,4 +27,4 @@ COPY --from=composer /tmp/wordpress/wp-content/themes /usr/src/wordpress/wp-cont
 RUN cp -r /usr/src/wordpress/wp-content/plugins/* /var/www/html/wp-content/plugins
 RUN cp -r /usr/src/wordpress/wp-content/themes/* /var/www/html/wp-content/themes
 
-USER 1000
+USER 1001

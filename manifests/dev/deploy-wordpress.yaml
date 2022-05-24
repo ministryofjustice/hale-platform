@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - image: 754256621582.dkr.ecr.eu-west-2.amazonaws.com/jotw-content-devs/hale-platform-dev-ecr:hale-platform-wordpress
-          imagePullPolicy: IfNotPresent 
+          imagePullPolicy: IfNotPresent
           name: wordpress
           ports:
             - containerPort: 80

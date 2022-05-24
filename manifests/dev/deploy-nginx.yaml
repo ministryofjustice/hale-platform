@@ -8,7 +8,7 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: nginx 
+      app: nginx
   template:
     metadata:
       labels:
@@ -16,15 +16,15 @@ spec:
         tier: frontend
     spec:
       containers:
-      - name: nginx
-        image: 754256621582.dkr.ecr.eu-west-2.amazonaws.com/jotw-content-devs/hale-platform-dev-ecr:hale-platform-nginx 
-        imagePullPolicy: IfNotPresent
-        volumeMounts:
+        - name: nginx
+          image: 754256621582.dkr.ecr.eu-west-2.amazonaws.com/jotw-content-devs/hale-platform-dev-ecr:hale-platform-nginx
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
             - name: wordpress-persistent-storage
               mountPath: /var/www/html
-        ports:
-          - containerPort: 80
-          - containerPort: 443
+          ports:
+            - containerPort: 80
+            - containerPort: 443
       volumes:
         - name: wordpress-persistent-storage
           persistentVolumeClaim:

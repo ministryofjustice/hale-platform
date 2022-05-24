@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx 
+  template:
+    metadata:
+      labels:
+        app: nginx
+        tier: frontend
+    spec:
+      containers:
+      - name: nginx
+        image: hale-platform_nginx 
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+            - name: wordpress-persistent-storage
+              mountPath: /var/www/html
+        ports:
+          - containerPort: 80
+          - containerPort: 443
+      volumes:
+        - name: wordpress-persistent-storage
+          persistentVolumeClaim:
+            claimName: pvc-wordpress
