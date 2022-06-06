@@ -10,6 +10,9 @@ FROM wordpress:5.9.3-php7.4-fpm-alpine
 # Adjust php.ini configuration settings
 # COPY custom.ini $PHP_INI_DIR/conf.d/
 
+# Adjust PHP-FPM configuration settings
+ADD ./php/www.conf /usr/local/etc/php-fpm.d/www.conf 
+
 # Support for wp-cli
 RUN addgroup -g 1001 wp && adduser -G wp -g wp -s /bin/sh -D wp
 RUN chown wp:wp /var/www/html
