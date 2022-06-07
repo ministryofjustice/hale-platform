@@ -19,7 +19,7 @@ spec:
         tier: frontend-c
     spec:
       containers:
-        - image: 754256621582.dkr.ecr.eu-west-2.amazonaws.com/jotw-content-devs/hale-platform-dev-ecr:hale-platform-wordpress
+        - image: 754256621582.dkr.ecr.eu-west-2.amazonaws.com/jotw-content-devs/hale-platform-dev-ecr:hale-platform_wordpress
           imagePullPolicy: IfNotPresent
           name: wordpress
           ports:

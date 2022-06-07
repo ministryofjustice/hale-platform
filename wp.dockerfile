@@ -30,4 +30,7 @@ COPY --from=composer /tmp/wordpress/wp-content/themes /usr/src/wordpress/wp-cont
 RUN cp -r /usr/src/wordpress/wp-content/plugins/* /var/www/html/wp-content/plugins
 RUN cp -r /usr/src/wordpress/wp-content/themes/* /var/www/html/wp-content/themes
 
-USER 1001
+RUN adduser --disabled-password hale -u 1002 && \
+    chown -R hale:hale /var/www/html
+
+USER 1002

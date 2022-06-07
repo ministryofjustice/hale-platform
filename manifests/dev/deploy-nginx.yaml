@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: 754256621582.dkr.ecr.eu-west-2.amazonaws.com/jotw-content-devs/hale-platform-dev-ecr:hale-platform-nginx
+          image: 754256621582.dkr.ecr.eu-west-2.amazonaws.com/jotw-content-devs/hale-platform-dev-ecr:hale-platform_nginx
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - name: wordpress-persistent-storage
