@@ -5,7 +5,7 @@ WORKDIR /tmp
 RUN composer install -vvv
 
 # PHP system env and WordPress setup
-FROM wordpress:5.9.3-php7.4-fpm-alpine
+FROM wordpress:6.0.0-php7.4-fpm-alpine
 
 # Adjust php.ini configuration settings
 # COPY custom.ini $PHP_INI_DIR/conf.d/
