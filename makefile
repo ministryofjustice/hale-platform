@@ -1,9 +1,5 @@
 ## Docker
 
-# Build and run site using Docker. Will run in background using -d flag.
-launch:
-	docker-compose up -d --build
-
 # Run site using Docker.
 run:
 	docker-compose up
@@ -13,11 +9,16 @@ down:
 	docker-compose down
 
 # Build all images on local machine
+# and remove any previous WP installations.
+# Without this docker build doesn't 
+# overwrite already exiting folder and therefore
+# doesn't update when bumping WP version for example.
 build:
-	docker-compose build --no-cache
+	chmod +x bin/build-clean.sh && \
+	./bin/build-clean.sh
 
 # Shell into the wordpress container
-exec:
+shell:
 	docker exec -it wordpress bash
 
 ## AWS
@@ -26,8 +27,12 @@ exec:
 ecr-images:
 	aws ecr list-images --repository-name jotw-content-devs/hale-platform-dev-ecr
 
-# Run wp cli on the container, for example:
-# docker-compose run --rm wp user list
+# Run wp cli on the container
+# Very handy little tool. TODO// make this
+# more dynamic so you just have to add your
+# wp cli commands
+wpcli:
+	docker-compose run --rm wp user list
 
 # Kubernetes
 

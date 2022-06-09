@@ -11,16 +11,16 @@ FROM wordpress:6.0.0-php7.4-fpm-alpine
 # COPY custom.ini $PHP_INI_DIR/conf.d/
 
 # Adjust PHP-FPM configuration settings
-ADD ./php/www.conf /usr/local/etc/php-fpm.d/www.conf 
+COPY ./php/www.conf /usr/local/etc/php-fpm.d/www.conf 
 
-# Support for wp-cli
+# Set permissions for wp-cli
 RUN addgroup -g 1001 wp && adduser -G wp -g wp -s /bin/sh -D wp
 RUN chown wp:wp /var/www/html
 
-# Persistent dependencies
 # wp-cli
 RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
 RUN chmod +x wp-cli.phar && mv wp-cli.phar /usr/local/bin/wp
+
 # neovim
 RUN apk add neovim
 
