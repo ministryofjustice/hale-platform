@@ -6,27 +6,36 @@ This launches a working Wordpress site that pulls in the Hale theme (does not co
 You can choose to launch the site in Docker or Kubernetes.
 
 ## Required
-* Docker running (and kubernetes turned on if you are launching the site in k8s)
-* Uses localhost port 80 on your local machine. So if you have Dory (or anything else running on that) you'll need to turn that off.
+
+-   Docker running (and kubernetes turned on if you are launching the site in k8s)
+-   Uses localhost port 80 on your local machine. So if you have Dory (or anything else running on that) you'll need to turn that off.
 
 ## Nice to have
-* [Kubens and Kubectx - to switch between namespace & clusters](https://github.com/ahmetb/kubectx)
-* [Stern - logging and debugging](https://github.com/wercker/stern)
-* [JQ - processing JSON](https://stedolan.github.io/jq)
-* Modify your shell to alias `kubectl` to just `k` for less typing
+
+-   [Kubens and Kubectx - to switch between namespace & clusters](https://github.com/ahmetb/kubectx)
+-   [Stern - logging and debugging](https://github.com/wercker/stern)
+-   [JQ - processing JSON](https://stedolan.github.io/jq)
+-   Modify your shell to alias `kubectl` to just `k` for less typing
 
 ## Kubernetes
 
 ### Launch instructions
+
 Create a `.env` file in the root of this repository and populate it with some dummy secrets
+
 ```
- MYSQL_DATABASE=wordpress
- MYSQL_USER=wp
- MYSQL_PASSWORD=secret
- MYSQL_ROOT_PASSWORD=secret
- WORDPRESS_DB_HOST=mariadb:3306
- WORDPRESS_DB_USER=wp
- WORDPRESS_DB_PASSWORD=secret
+SERVICE_TAGS=dev
+SERVICE_NAME=mariadb
+MYSQL_DATABASE=wordpress
+MYSQL_USER=wp
+MYSQL_PASSWORD=secret
+MYSQL_ROOT_PASSWORD=secret
+WORDPRESS_DB_HOST=mariadb:3306
+WORDPRESS_DB_USER=wp
+WORDPRESS_DB_PASSWORD=secret
+WORDPRESS_ADMIN_USER="admin"
+WORDPRESS_ADMIN_PASSWORD="secret"
+WORDPRESS_ADMIN_EMAIL="admin@email.com"
 ```
 
 1. Run `make build` to build all the Docker images you'll need locally for k8s to use.
@@ -52,7 +61,7 @@ In terminal run `make launch`. For other commands see `makefile`.
 
 ### To Do
 
-- namespaces not working right
-- set Hale and plugins to default when sites loads.
-- setup sync so that changes made to files reflect in the k8s cluster and local hosted site.
-- Convert this standard WP install to a multisite using the WP Docker image variables
+-   namespaces not working right
+-   set Hale and plugins to default when sites loads.
+-   setup sync so that changes made to files reflect in the k8s cluster and local hosted site.
+-   Convert this standard WP install to a multisite using the WP Docker image variables
