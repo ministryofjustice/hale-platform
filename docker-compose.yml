@@ -29,13 +29,8 @@ services:
     container_name: mariadb
     ports:
       - 3306:3306
-    environment:
-      MYSQL_DATABASE: wordpress
-      MYSQL_USER: wp
-      MYSQL_PASSWORD: secret
-      MYSQL_ROOT_PASSWORD: secret
-      SERVICE_TAGS: dev
-      SERVICE_NAME: mariadb
+    env_file:
+      - .env
     volumes:
       - database:/var/lib/mysql
     networks:
@@ -50,6 +45,8 @@ services:
       - ./wordpress:/var/www/html:delegated
     networks:
       - wordpress
+    env_file:
+      - .env
 
   wp:
     build:

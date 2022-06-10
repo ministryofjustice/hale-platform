@@ -1,1 +1,4 @@
 /wordpress
+.git
+.DS_Store
+.env
