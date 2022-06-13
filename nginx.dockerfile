@@ -1,6 +1,4 @@
-FROM nginx:stable-alpine
+FROM nginxinc/nginx-unprivileged:1.22-alpine
 
-ADD ./nginx/default.conf /etc/nginx/conf.d/default.conf
-ADD ./nginx/certs /etc/nginx/certs/self-signed
-
-RUN mkdir -p /var/www/html
+COPY ./nginx/nginx.conf /etc/nginx/
+#COPY ./nginx/certs /etc/nginx/certs/self-signed

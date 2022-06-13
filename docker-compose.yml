@@ -14,7 +14,7 @@ services:
       dockerfile: nginx.dockerfile
     container_name: nginx
     ports:
-      - 80:80
+      - 8888:8081
       - 443:443
     volumes:
       - ./wordpress:/var/www/html:delegated
