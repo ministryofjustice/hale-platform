@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# Check if files exist in /wordpress directory, if so remove
-# so that Docker has a fresh WP directory to install into.
+# If /wordpress directory exists and rebuild = yes, remove directory
+# so that Docker has a fresh WP directory to install into, resolving
+# issues with Docker not overwriting older files.
 
 while true; do
     read -p "Rebuilding will delete all local WP files? Continue? [y/n] " yn

@@ -22,7 +22,10 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
 RUN chmod +x wp-cli.phar && mv wp-cli.phar /usr/local/bin/wp
 
 # neovim
-RUN apk add neovim
+RUN apk update && \
+    apk add neovim && \
+    apk add less && \
+    apk add neovim --no-cache
 
 # Install WP application and repos
 COPY --from=composer /tmp/wordpress/wp-content/plugins /usr/src/wordpress/wp-content/plugins
