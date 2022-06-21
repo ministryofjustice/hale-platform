@@ -20,10 +20,10 @@ spec:
     spec:
       containers:
         - image: hale-platform_wordpress
-          imagePullPolicy: IfNotPresent 
+          imagePullPolicy: IfNotPresent
           name: wordpress
           ports:
-            - containerPort: 80
+            - containerPort: 8080
               name: wordpress
           volumeMounts:
             - name: wordpress-persistent-storage
