@@ -25,6 +25,12 @@ shell:
 none:
 	docker rmi $(docker images -f "dangling=true" -q)
 
+tagpush:
+	docker tag hale-platform_wordpress 754256621582.dkr.ecr.eu-west-2.amazonaws.com/jotw-content-devs/hale-platform-dev-ecr:hale-platform_wordpress && \
+	docker tag hale-platform_nginx 754256621582.dkr.ecr.eu-west-2.amazonaws.com/jotw-content-devs/hale-platform-dev-ecr:hale-platform_nginx && \
+	docker push 754256621582.dkr.ecr.eu-west-2.amazonaws.com/jotw-content-devs/hale-platform-dev-ecr:hale-platform_wordpress && \
+	docker push 754256621582.dkr.ecr.eu-west-2.amazonaws.com/jotw-content-devs/hale-platform-dev-ecr:hale-platform_nginx && \
+	aws ecr list-images --repository-name jotw-content-devs/hale-platform-dev-ecr
 
 ## AWS
 
