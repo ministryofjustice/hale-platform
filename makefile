@@ -21,6 +21,11 @@ build:
 shell:
 	docker exec -it wordpress bash
 
+# Remove all dangling <none> images
+none:
+	docker rmi $(docker images -f "dangling=true" -q)
+
+
 ## AWS
 
 # List all the images in ECR for our hale-platform-dev-ecr namespace
