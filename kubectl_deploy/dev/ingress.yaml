@@ -21,6 +21,6 @@ spec:
         pathType: ImplementationSpecific
         backend:
           service:
-            name: wordpress 
+            name: nginx 
             port:
               number: 8080 
