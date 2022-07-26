@@ -36,13 +36,13 @@ RUN adduser --disabled-password hale -u 1002 && \
     chown -R hale:hale /var/www/html
 
 # Add WP multisite network script
-#COPY entrypoint.sh /usr/local/bin/
+COPY entrypoint.sh /usr/local/bin/
 
 # Make multisite script executable
-#RUN chmod +x /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
-#ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 USER 1002
 
-#CMD ["php-fpm"]
+CMD ["/usr/local/bin/docker-entrypoint.sh", "php-fpm"]

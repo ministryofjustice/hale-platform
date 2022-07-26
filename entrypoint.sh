@@ -8,6 +8,6 @@ set -e
 #wp config set MULTISITE true --raw --anchor="/* That's all, stop editing! Happy publishing. */" --placement='after' --config-file=/var/www/html
 #wp core multisite-convert
 
-#echo " Test shell is working " > filename2.txt
+echo " Test shell is working " > filename2.txt
 
 exec "$@"
