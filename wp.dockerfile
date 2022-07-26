@@ -23,7 +23,6 @@ RUN chmod +x wp-cli.phar && mv wp-cli.phar /usr/local/bin/wp
 
 # neovim
 RUN apk update && \
-    apk add neovim && \
     apk add less && \
     apk add neovim --no-cache
 
@@ -36,4 +35,14 @@ RUN cp -r /usr/src/wordpress/wp-content/themes/* /var/www/html/wp-content/themes
 RUN adduser --disabled-password hale -u 1002 && \
     chown -R hale:hale /var/www/html
 
+# Add WP multisite network script
+#COPY entrypoint.sh /usr/local/bin/
+
+# Make multisite script executable
+#RUN chmod +x /usr/local/bin/entrypoint.sh
+
+#ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+
 USER 1002
+
+#CMD ["php-fpm"]
