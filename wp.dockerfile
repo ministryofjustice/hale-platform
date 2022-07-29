@@ -4,7 +4,7 @@ COPY composer.json /tmp
 WORKDIR /tmp
 RUN composer install -vvv
 
-# PHP system env and WordPress setup
+# Build WordPress multisite image
 FROM --platform=linux/amd64 wordpress:6.0.1-php7.4-fpm-alpine
 
 # Adjust php.ini configuration settings
@@ -17,35 +17,40 @@ COPY ./php/www.conf /usr/local/etc/php-fpm.d/www.conf
 RUN addgroup -g 1001 wp && adduser -G wp -g wp -s /bin/sh -D wp
 RUN chown wp:wp /var/www/html
 
-# wp-cli
+# Install wp-cli
 RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
 RUN chmod +x wp-cli.phar && mv wp-cli.phar /usr/local/bin/wp
 
-# Add WP multisite network script
-COPY entrypoint.sh /usr/local/bin/
+# Add WP multisite network scripts
+COPY hale-entrypoint.sh /usr/local/bin/
 COPY config.sh /usr/local/bin/
 
-# Make multisite script executable
-RUN chmod +x /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/config.sh
+# Make multisite scripts executable
+RUN chmod +x /usr/local/bin/hale-entrypoint.sh && \
+    chmod +x /usr/local/bin/config.sh
 
 # neovim
 RUN apk update && \
     apk add less && \
     apk add neovim --no-cache
 
-# Install WP application and repos
+# Install WP applications and repos
 COPY --from=composer /tmp/wordpress/wp-content/plugins /usr/src/wordpress/wp-content/plugins
 COPY --from=composer /tmp/wordpress/wp-content/themes /usr/src/wordpress/wp-content/themes
 RUN cp -r /usr/src/wordpress/wp-content/plugins/* /var/www/html/wp-content/plugins
 RUN cp -r /usr/src/wordpress/wp-content/themes/* /var/www/html/wp-content/themes
 
+# Create new user to run container as non-root
 RUN adduser --disabled-password hale -u 1002 && \
     chown -R hale:hale /var/www/html
+
 RUN chown hale:hale /usr/local/bin/docker-entrypoint.sh
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+# Overwrite offical WP image ENTRYPOINT (docker-entrypoint.sh) 
+# with custom entrypoint so we can launch WP multisite network 
+ENTRYPOINT ["/usr/local/bin/hale-entrypoint.sh"]
 
+# Set container user 'root' to 'hale'
 USER 1002
 
 CMD ["php-fpm"]
