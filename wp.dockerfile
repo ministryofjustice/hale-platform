@@ -5,7 +5,7 @@ WORKDIR /tmp
 RUN composer install -vvv
 
 # PHP system env and WordPress setup
-FROM --platform=linux/amd64 wordpress:6.0.0-php7.4-fpm-alpine
+FROM --platform=linux/amd64 wordpress:6.0.1-php7.4-fpm-alpine
 
 # Adjust php.ini configuration settings
 # COPY custom.ini $PHP_INI_DIR/conf.d/
@@ -21,6 +21,14 @@ RUN chown wp:wp /var/www/html
 RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
 RUN chmod +x wp-cli.phar && mv wp-cli.phar /usr/local/bin/wp
 
+# Add WP multisite network script
+COPY entrypoint.sh /usr/local/bin/
+COPY config.sh /usr/local/bin/
+
+# Make multisite script executable
+RUN chmod +x /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/config.sh
+
 # neovim
 RUN apk update && \
     apk add less && \
@@ -34,15 +42,10 @@ RUN cp -r /usr/src/wordpress/wp-content/themes/* /var/www/html/wp-content/themes
 
 RUN adduser --disabled-password hale -u 1002 && \
     chown -R hale:hale /var/www/html
-
-# Add WP multisite network script
-COPY entrypoint.sh /usr/local/bin/
-
-# Make multisite script executable
-RUN chmod +x /usr/local/bin/entrypoint.sh
+RUN chown hale:hale /usr/local/bin/docker-entrypoint.sh
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 USER 1002
 
-CMD ["/usr/local/bin/docker-entrypoint.sh", "php-fpm"]
+CMD ["php-fpm"]
