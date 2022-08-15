@@ -22,8 +22,8 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
 RUN chmod +x wp-cli.phar && mv wp-cli.phar /usr/local/bin/wp
 
 # Add WP multisite network scripts
-COPY hale-entrypoint.sh /usr/local/bin/
-COPY config.sh /usr/local/bin/
+COPY opt/hale-entrypoint.sh /usr/local/bin/
+COPY opt/config.sh /usr/local/bin/
 
 # Make multisite scripts executable
 RUN chmod +x /usr/local/bin/hale-entrypoint.sh && \

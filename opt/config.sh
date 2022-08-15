@@ -20,6 +20,13 @@ fi
 # Run DB check and update
 wp core update-db --network
 
+# Setup Hale theme
+#wp theme enable wp-hale --network
+#wp theme enable wp-hale --activate
+
+wp theme enable twentytwentytwo --network
+wp theme enable twentytwentytwo --activate
+
 # Check plugins are activated
 wp plugin --all --network activate
 
