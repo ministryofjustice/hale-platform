@@ -22,6 +22,9 @@ services:
       - mariadb
     networks:
       - wordpress
+    environment:
+      VIRTUAL_HOST: hale.docker
+      VIRTUAL_PORT: 8080
 
   mariadb:
     image: mariadb:10.7.1-focal 
@@ -29,7 +32,7 @@ services:
     ports:
       - 3306:3306
     env_file:
-      - .env
+      - .env.local
     volumes:
       - database:/var/lib/mysql
     networks:
@@ -45,15 +48,15 @@ services:
     networks:
       - wordpress
     env_file:
-      - .env
+      - .env.local
 
-  wp:
-    build:
-      context: .
-      dockerfile: wp.dockerfile
-    container_name: wp
-    entrypoint: ['wp', '--allow-root']
-    volumes:
-      - ./wordpress:/var/www/html:delegated
-    networks:
-      - wordpress
+  #wp:
+  #build:
+  #   context: .
+  #   dockerfile: wp.dockerfile
+  # container_name: wp
+  # entrypoint: ['wp', '--allow-root']
+  #  volumes:
+  #   - ./wordpress:/var/www/html:delegated
+  # networks:
+  #    - wordpress
