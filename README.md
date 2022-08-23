@@ -21,22 +21,8 @@ You can choose to launch the site in Docker or Kubernetes.
 
 ### Launch instructions
 
-Create a `.env` file in the root of this repository and populate it with some dummy secrets
-
-```
-SERVICE_TAGS=dev
-SERVICE_NAME=mariadb
-MYSQL_DATABASE=wordpress
-MYSQL_USER=wp
-MYSQL_PASSWORD=secret
-MYSQL_ROOT_PASSWORD=secret
-WORDPRESS_DB_HOST=mariadb:3306
-WORDPRESS_DB_USER=wp
-WORDPRESS_DB_PASSWORD=secret
-WORDPRESS_ADMIN_USER="admin"
-WORDPRESS_ADMIN_PASSWORD="secret"
-WORDPRESS_ADMIN_EMAIL="admin@email.com"
-```
+You will need an `.env.local` file in the root of this project with all the
+variables needed to run the app. 
 
 1. Run `make build` to build all the Docker images you'll need locally for k8s to use.
 2. Setup the config map by running `kubectl create configmap wpconfig --from-env-file=.env`
@@ -64,4 +50,3 @@ In terminal run `make launch`. For other commands see `makefile`.
 -   namespaces not working right
 -   set Hale and plugins to default when sites loads.
 -   setup sync so that changes made to files reflect in the k8s cluster and local hosted site.
--   Convert this standard WP install to a multisite using the WP Docker image variables
