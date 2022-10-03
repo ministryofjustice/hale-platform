@@ -40,6 +40,21 @@ COPY --from=composer /tmp/wordpress/wp-content/themes /usr/src/wordpress/wp-cont
 RUN cp -r /usr/src/wordpress/wp-content/plugins/* /var/www/html/wp-content/plugins
 RUN cp -r /usr/src/wordpress/wp-content/themes/* /var/www/html/wp-content/themes
 
+RUN apk add --update npm
+
+# Compile Theme and Plugins
+WORKDIR /var/www/html/wp-content/themes/wp-hale
+
+RUN npm install
+
+RUN npm run production --if-present
+
+RUN rm -rf node_modules
+
+RUN touch test.txt
+
+WORKDIR /var/www/html
+
 # Create new user to run container as non-root
 RUN adduser --disabled-password hale -u 1002 && \
     chown -R hale:hale /var/www/html
@@ -54,3 +69,4 @@ ENTRYPOINT ["/usr/local/bin/hale-entrypoint.sh"]
 USER 1002
 
 CMD ["php-fpm"]
+
