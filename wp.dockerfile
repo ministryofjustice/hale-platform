@@ -37,13 +37,12 @@ RUN apk update && \
 # Install WP applications and repos
 COPY --from=composer /tmp/wordpress/wp-content/plugins /usr/src/wordpress/wp-content/plugins
 COPY --from=composer /tmp/wordpress/wp-content/themes /usr/src/wordpress/wp-content/themes
-RUN cp -r /usr/src/wordpress/wp-content/plugins/* /var/www/html/wp-content/plugins
-RUN cp -r /usr/src/wordpress/wp-content/themes/* /var/www/html/wp-content/themes
 
+# Install NPM
 RUN apk add --update npm
 
-# Compile Theme and Plugins
-WORKDIR /var/www/html/wp-content/themes/wp-hale
+# Compile Hale Theme
+WORKDIR /usr/src/wordpress/wp-content/themes/wp-hale
 
 RUN npm install
 
@@ -51,9 +50,13 @@ RUN npm run production --if-present
 
 RUN rm -rf node_modules
 
-RUN touch test.txt
-
 WORKDIR /var/www/html
+
+# COPY Plugins and themes
+# WARNING - Do not apply changes to plugins or themes in /var folder as it will not work
+
+RUN cp -r /usr/src/wordpress/wp-content/plugins/* /var/www/html/wp-content/plugins
+RUN cp -r /usr/src/wordpress/wp-content/themes/* /var/www/html/wp-content/themes
 
 # Create new user to run container as non-root
 RUN adduser --disabled-password hale -u 1002 && \
