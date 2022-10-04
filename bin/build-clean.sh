@@ -13,7 +13,7 @@ while true; do
             if [[ -d "$DIR" ]]; then
                 rm -rf $DIR
             fi
-            docker-compose --verbose build --no-cache
+            docker-compose build --no-cache
             break;;
         [Nn]* ) 
             exit;;
