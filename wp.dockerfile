@@ -32,21 +32,19 @@ RUN chmod +x /usr/local/bin/hale-entrypoint.sh && \
 # neovim
 RUN apk update && \
     apk add less && \
+    apk add --update npm && \
     apk add neovim --no-cache
 
 # Install WP applications and repos
 COPY --from=composer /tmp/wordpress/wp-content/plugins /usr/src/wordpress/wp-content/plugins
+COPY --from=composer /tmp/wordpress/wp-content/mu-plugins /usr/src/wordpress/wp-content/mu-plugins
 COPY --from=composer /tmp/wordpress/wp-content/themes /usr/src/wordpress/wp-content/themes
-
-# Install NPM
-RUN apk add --update npm
 
 # Compile Hale Theme
 WORKDIR /usr/src/wordpress/wp-content/themes/wp-hale
 
-RUN npm install
-
-RUN npm run production --if-present
+RUN npm install && \
+    npm run production --if-present
 
 RUN rm -rf node_modules
 
@@ -56,6 +54,7 @@ WORKDIR /var/www/html
 # WARNING - Do not apply changes to plugins or themes in /var folder as it will not work
 
 RUN cp -r /usr/src/wordpress/wp-content/plugins/* /var/www/html/wp-content/plugins
+RUN cp -r /usr/src/wordpress/wp-content/mu-plugins/* /var/www/html/wp-content/mu-plugins
 RUN cp -r /usr/src/wordpress/wp-content/themes/* /var/www/html/wp-content/themes
 
 # Create new user to run container as non-root
