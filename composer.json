@@ -30,11 +30,6 @@
             "url": "https://wpackagist.org"
         },
         {
-            "type": "vcs",
-            "no-api": true,
-            "url": "https://github.com/ministryofjustice/hale.git"
-        },
-        {
             "type": "composer",
             "url": "https://composer.wp.dsd.io"
         },
