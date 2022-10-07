@@ -28,10 +28,13 @@ wp core update-db --network
 wp theme enable wp-hale --network
 wp theme enable wp-hale --activate
 
-wp theme enable twentytwentytwo --network
-wp theme enable twentytwentytwo --activate
+# wp theme enable twentytwentytwo --network
+# wp theme enable twentytwentytwo --activate
 
 # Check plugins are activated
-wp plugin --all --network activate
+wp plugin --network activate advanced-custom-fields-pro
+wp plugin --network activate wp-user-roles
+wp plugin --network activate wp-moj-blocks
+
 
 exec "$@"
