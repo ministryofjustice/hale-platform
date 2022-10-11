@@ -3,5 +3,7 @@ mysql
 .DS_Store
 .idea
 .sql
+auth.json
+vendor/
 wordpress/
 !helm_deploy/wordpress/
