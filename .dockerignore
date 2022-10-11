@@ -2,3 +2,10 @@
 .git
 .DS_Store
 .env
+auth.json
+
+# We can't ignore these as we need them when building the image
+!/wordpress/wp-content/plugins
+!/wordpress/wp-content/themes
+!/wordpress/wp-content/mu-plugins
+

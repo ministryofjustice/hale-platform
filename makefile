@@ -14,8 +14,8 @@ down:
 # overwrite already exiting folder and therefore
 # doesn't update when bumping WP version for example.
 build:
-	chmod +x bin/build-clean.sh && \
-	./bin/build-clean.sh
+	chmod +x bin/build-launch.sh && \
+	./bin/build-launch.sh
 
 # Shell into the wordpress container
 shell:
@@ -31,6 +31,11 @@ tagpush:
 	docker push 754256621582.dkr.ecr.eu-west-2.amazonaws.com/jotw-content-devs/hale-platform-dev-ecr:hale-platform_wordpress && \
 	docker push 754256621582.dkr.ecr.eu-west-2.amazonaws.com/jotw-content-devs/hale-platform-dev-ecr:hale-platform_nginx && \
 	aws ecr list-images --repository-name jotw-content-devs/hale-platform-dev-ecr
+
+
+deploylocal:
+	chmod +x bin/deploy.sh && \
+	./bin/deploy.sh
 
 ## AWS
 
