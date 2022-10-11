@@ -1,0 +1,24 @@
+# Default values for wordpress.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+namespace: hale-platform-dev
+
+replicaCount: 1 
+
+# nginx
+nginx:
+  image:
+    repository: 754256621582.dkr.ecr.eu-west-2.amazonaws.com/jotw-content-devs/hale-platform-dev-ecr:hale-platform_nginx
+    pullPolicy: IfNotPresent
+
+# wordpress 
+image:
+  repository: 754256621582.dkr.ecr.eu-west-2.amazonaws.com/jotw-content-devs/hale-platform-dev-ecr:hale-platform_wordpress
+  pullPolicy: IfNotPresent
+
+mariadb:
+  enabled: false
+
+ingress:
+  enabled: true

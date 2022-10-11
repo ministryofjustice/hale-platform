@@ -1,0 +1,26 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hale-platform-ingress
+  namespace: {{ .Values.namespace }} 
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    external-dns.alpha.kubernetes.io/set-identifier: hale-platform-ingress-hale-platform-dev-green
+    external-dns.alpha.kubernetes.io/aws-weight: "100"
+spec:
+  tls:
+  - hosts:
+    - hale-platform-dev.apps.live.cloud-platform.service.justice.gov.uk
+  rules:
+  - host: hale-platform-dev.apps.live.cloud-platform.service.justice.gov.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: nginx 
+            port:
+              number: 8080 
+{{- end }}
