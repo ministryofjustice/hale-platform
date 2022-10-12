@@ -3,11 +3,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx
-  namespace: {{ .Values.namespace }}
   labels:
     app: nginx
 spec:
-  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app: nginx
@@ -19,7 +17,7 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: "{{ .Values.nginx.image.repository }}"
+          image: {{ .Values.nginx.image.repository }}
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - name: wordpress-persistent-storage
@@ -37,7 +35,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mariadb
-  namespace: {{ .Values.namespace }}
   labels:
     app: mariadb
 spec:
@@ -75,7 +72,6 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: mysql-pvc-claim
-  namespace: {{ .Values.namespace }} 
 spec:
   accessModes:
     - ReadWriteOnce
@@ -87,7 +83,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: wordpress
-  namespace: {{ .Values.namespace }} 
   labels:
     app: wordpress
 spec:
@@ -104,7 +99,7 @@ spec:
         tier: frontend-c
     spec:
       containers:
-        - image: "{{ .Values.image.repository }}"
+        - image: {{ .Values.image.repository }}
           imagePullPolicy: IfNotPresent
           name: wordpress
           ports:
@@ -125,8 +120,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name:  wp-pvc-claim
-   namespace: {{ .Values.namespace }}
-   labels:
+  labels:
      app: wordpress
 spec:
   accessModes:
