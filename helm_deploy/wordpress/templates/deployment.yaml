@@ -19,18 +19,11 @@ spec:
         - name: nginx
           image: {{ .Values.nginx.image.repository }}
           imagePullPolicy: IfNotPresent
-          volumeMounts:
-            - name: wordpress-persistent-storage
-              mountPath: /var/www/html
           ports:
             - containerPort: 8080
             - containerPort: 443
-      volumes:
-        - name: wordpress-persistent-storage
-          persistentVolumeClaim:
-            claimName: wp-pvc-claim
-{{- if .Values.mariadb.enabled }}
 ---
+{{- if .Values.mariadb.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -66,7 +59,6 @@ spec:
         - name: mysql-persistent-storage
           persistentVolumeClaim:
             claimName: mysql-pvc-claim
-{{- end }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -78,6 +70,7 @@ spec:
   resources:
     requests:
       storage: 20Gi
+{{- end }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -128,3 +121,4 @@ spec:
   resources:
     requests:
       storage: 20Gi
+  storageClassName: gp2 
