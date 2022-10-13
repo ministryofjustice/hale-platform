@@ -1,0 +1,5 @@
+Thank you for installing {{ .Chart.Name }}.
+
+Your release is named {{ .Release.Name }} and is available to view at
+
+{{ .Values.domain }}

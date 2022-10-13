@@ -4,3 +4,4 @@ mysql
 .idea
 .sql
 wordpress/
+!helm_deploy/wordpress/
