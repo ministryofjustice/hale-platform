@@ -51,8 +51,3 @@ In terminal run `make launch`. For other commands see `makefile`.
 5. In this root directory, run `make build`
 6. Go to your browser at the URL wordpress-docker.test
 
-### To Do
-
--   namespaces not working right
--   set Hale and plugins to default when sites loads.
--   setup sync so that changes made to files reflect in the k8s cluster and local hosted site.
