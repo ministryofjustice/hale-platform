@@ -32,6 +32,11 @@ tagpush:
 	docker push 754256621582.dkr.ecr.eu-west-2.amazonaws.com/jotw-content-devs/hale-platform-dev-ecr:hale-platform_nginx && \
 	aws ecr list-images --repository-name jotw-content-devs/hale-platform-dev-ecr
 
+
+deploylocal:
+	chmod +x bin/deploy.sh && \
+	./bin/deploy.sh
+
 ## AWS
 
 # List all the images in ECR for our hale-platform-dev-ecr namespace
