@@ -1,14 +1,19 @@
-# WordPress k8s build
+# Hale Platform WordPress Multisite 
 
-## Installation (local)
+## Installation
 
-This launches a working Wordpress site that pulls in the Hale theme (does not compile it yet).
+This launches a working Wordpress site that pulls in the Hale theme.
 You can choose to launch the site in Docker or Kubernetes.
+
+Currently only the Docker build works locally but for CloudPlatform
+environments you can use the kubernetes build.
 
 ## Required
 
--   Docker running (and kubernetes turned on if you are launching the site in k8s)
--   Uses localhost port 80 on your local machine. So if you have Dory (or anything else running on that) you'll need to turn that off.
+- Docker running (and kubernetes turned on if you are launching the site in k8s)
+- Have [Dory proxy](https://github.com/FreedomBen/dory) running for local install so you have a domain `hale.docker`
+  to work with.
+- Install [Helm](https://helm.sh/docs) - `brew install helm`
 
 ## Nice to have
 
@@ -22,13 +27,14 @@ You can choose to launch the site in Docker or Kubernetes.
 ### Launch instructions
 
 You will need an `.env.local` file in the root of this project with all the
-variables needed to run the app. 
+variables needed to run the app. Get this from Rob or Adam until we have
+a proper place for it.
 
-1. Run `make build` to build all the Docker images you'll need locally for k8s to use.
-2. Setup the config map by running `kubectl create configmap wpconfig --from-env-file=.env`
-3. Run `kubectl apply -k manifests/`
-4. Run `kubectl get pods` and make sure they are all 1/1, ie running.
-5. If all is running, go to `http://localhost` in your browser. You will be greeted by a WP installation page.
+1. Run `dory up` to get dory running as you will need this to proxy the
+   hale.docker domain locally which WP multisite needs.
+2. Run `make build` to build all the Docker images you'll need locally for k8s to use.
+3. Run `make deploylocal` to run the helm command which launches the site. 
+3. If all is running, go to `http://hale.docker` in your browser. You will be greeted by a WP installation page.
 
 ## Docker
 
