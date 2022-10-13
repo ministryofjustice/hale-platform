@@ -1,9 +1,8 @@
 #!/bin/bash
 
-
 # check for the .env file and generate a configmap out of it 
-if [[ -a ".env" ]]; then
-    kubectl create configmap wpconfig --from-env-file=.env
+if [[ -a ".env-local" ]]; then
+    kubectl create configmap wpconfig --from-env-file=.env-local
 else
     echo ".env file is missing, please add, so a configmap can be generated."
     exit
@@ -23,7 +22,7 @@ helm upgrade wordpress helm_deploy/wordpress \
     --values helm_deploy/wordpress/values.yaml \
     --namespace hale-platform-local \
     --create-namespace \
-    --timeout 1m \
+    --timeout 5m \
     --atomic
 
 set -e
