@@ -10,7 +10,7 @@ environments you can use the kubernetes build.
 
 ## Required
 
-- Docker running (and kubernetes turned on if you are launching the site in k8s)
+- [Docker](https://www.docker.com/) and kubernetes which can be turned on via the Docker-Desktop dashboard.
 - Have [Dory proxy](https://github.com/FreedomBen/dory) running for local install so you have a domain `hale.docker`
   to work with.
 - Install [Helm](https://helm.sh/docs) - `brew install helm`
@@ -20,8 +20,6 @@ environments you can use the kubernetes build.
 -   [Kubens and Kubectx - to switch between namespace & clusters](https://github.com/ahmetb/kubectx)
 -   [Stern - logging and debugging](https://github.com/wercker/stern)
 -   [JQ - processing JSON](https://stedolan.github.io/jq)
--   Modify your shell to alias `kubectl` to just `k` for less typing. Add
-    `alias k="kubectl"` into your .zshrc or .bashrc file in root.
 
 ## Kubernetes
 
