@@ -1,0 +1,46 @@
+name: Continuous Deployment
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  main:
+    name: Build and push to ECR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Build NGINX image
+        run: |
+          docker build --tag hale-platform_nginx --file nginx.dockerfile .
+      - name: Push NGINX image to ECR
+        uses: jwalton/gh-ecr-push@v1
+        with:
+          access-key-id: ${{ secrets.ECR_AWS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY }}
+          region: eu-west-2
+          local-image: hale-platform_nginx
+          image: ${{ secrets.ECR_NAME }}:hale-platform_nginx-${{ github.sha }}
+      - name: Run Composer
+        run: |
+          composer config http-basic.composer.wp.dsd.io ${{ secrets.COMPOSER_USER }} ${{ secrets.COMPOSER_PASS }}
+          composer install --prefer-dist --no-progress
+      - name: Run NPM
+        run: |
+          npm install --prefix ./wordpress/wp-content/themes/wp-hale
+          npm run production --if-present --prefix ./wordpress/wp-content/themes/wp-hale
+      - name: Build WordPress image
+        run: |
+          docker build --tag hale-platform_wordpress --file wp.dockerfile .
+      - name: Push WordPress image to ECR
+        uses: jwalton/gh-ecr-push@v1
+        with:
+          access-key-id: ${{ secrets.ECR_AWS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY }}
+          region: eu-west-2
+          local-image: hale-platform_wordpress
+          image: ${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
+          

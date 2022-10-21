@@ -1,9 +1,3 @@
-# WP package management
-FROM composer:latest AS composer
-COPY composer.json /tmp
-WORKDIR /tmp
-RUN composer install -vvv
-
 # Build WordPress multisite image
 FROM --platform=linux/amd64 wordpress:6.0.1-php7.4-fpm-alpine
 
@@ -14,12 +8,13 @@ FROM --platform=linux/amd64 wordpress:6.0.1-php7.4-fpm-alpine
 COPY ./php/www.conf /usr/local/etc/php-fpm.d/www.conf 
 
 # Set permissions for wp-cli
-RUN addgroup -g 1001 wp && adduser -G wp -g wp -s /bin/sh -D wp
-RUN chown wp:wp /var/www/html
+RUN addgroup -g 1001 wp && adduser -G wp -g wp -s /bin/sh -D wp && \
+    chown wp:wp /var/www/html
 
 # Install wp-cli
-RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-RUN chmod +x wp-cli.phar && mv wp-cli.phar /usr/local/bin/wp
+RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
+    chmod +x wp-cli.phar && \
+    mv wp-cli.phar /usr/local/bin/wp
 
 # Add WP multisite network scripts
 COPY opt/hale-entrypoint.sh /usr/local/bin/
@@ -29,33 +24,23 @@ COPY opt/config.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/hale-entrypoint.sh && \
     chmod +x /usr/local/bin/config.sh
 
-# neovim
+# Install additional Alpine packages
 RUN apk update && \
     apk add less && \
-    apk add --update npm && \
     apk add neovim --no-cache
 
-# Install WP applications and repos
-COPY --from=composer /tmp/wordpress/wp-content/plugins /usr/src/wordpress/wp-content/plugins
-COPY --from=composer /tmp/wordpress/wp-content/mu-plugins /usr/src/wordpress/wp-content/mu-plugins
-COPY --from=composer /tmp/wordpress/wp-content/themes /usr/src/wordpress/wp-content/themes
+# Generated Composer and NPM compiled artifacts (plugins, themes, CSS, JS)
+# are copied into place here, where WP Offical image expects. Note: artifacts 
+# can be copied into the /var/ folder but making changes directly to this folder
+# will not be lasting as the folder is ephemeral and systemlinked.
 
-# Compile Hale Theme
-WORKDIR /usr/src/wordpress/wp-content/themes/wp-hale
-
-RUN npm install && \
-    npm run production --if-present
-
-RUN rm -rf node_modules
-
-WORKDIR /var/www/html
-
-# COPY Plugins and themes
-# WARNING - Do not apply changes to plugins or themes in /var folder as it will not work
+COPY /wordpress/wp-content/plugins /usr/src/wordpress/wp-content/plugins
+COPY /wordpress/wp-content/mu-plugins /usr/src/wordpress/wp-content/mu-plugins
+COPY /wordpress/wp-content/themes /usr/src/wordpress/wp-content/themes
 
 RUN cp -r /usr/src/wordpress/wp-content/plugins/* /var/www/html/wp-content/plugins
 RUN cp -r /usr/src/wordpress/wp-content/mu-plugins/* /var/www/html/wp-content/mu-plugins
-RUN cp -r /usr/src/wordpress/wp-content/themes/* /var/www/html/wp-content/themes
+RUN cp -r /usr/src/wordpress/wp-content/themes/ /var/www/html/wp-content/themes/
 
 # Create new user to run container as non-root
 RUN adduser --disabled-password hale -u 1002 && \
@@ -71,4 +56,3 @@ ENTRYPOINT ["/usr/local/bin/hale-entrypoint.sh"]
 USER 1002
 
 CMD ["php-fpm"]
-
