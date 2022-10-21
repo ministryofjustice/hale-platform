@@ -14,8 +14,8 @@ down:
 # overwrite already exiting folder and therefore
 # doesn't update when bumping WP version for example.
 build:
-	chmod +x bin/build-launch.sh && \
-	./bin/build-launch.sh
+	chmod +x bin/build.sh && \
+	./bin/build.sh
 
 # Shell into the wordpress container
 shell:
