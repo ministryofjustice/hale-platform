@@ -6,8 +6,11 @@ on:
     branches:
       - 'main'
 
+env:
+  KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
+
 jobs:
-  main:
+  build:
     name: Build and push to ECR
     runs-on: ubuntu-latest
     steps:
@@ -43,4 +46,21 @@ jobs:
           region: eu-west-2
           local-image: hale-platform_wordpress
           image: ${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
-          
+
+  deploy:
+    needs: build
+    name: Deploy to cluster
+    runs-on: ubuntu-latest
+    steps:
+      Checkout
+    uses: actions/checkout@v3
+  - name: Authenticate to the cluster
+    env:
+      KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
+    run: |
+      echo "${{ secrets.KUBE_CERT }}" > ca.crt
+      kubectl config set-cluster ${KUBE_CLUSTER} --certificate-authority=./ca.crt --server=https://${KUBE_CLUSTER}
+      kubectl config set-credentials deploy-user --token=${{ secrets.KUBE_TOKEN }}
+      kubectl config set-context ${KUBE_CLUSTER} --cluster=${KUBE_CLUSTER} --user=deploy-user --namespace=${{ secrets.KUBE_NAMESPACE }}
+      kubectl config use-context ${KUBE_CLUSTER}
+
