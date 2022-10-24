@@ -46,6 +46,7 @@ jobs:
           region: eu-west-2
           local-image: hale-platform_wordpress
           image: ${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
+  
   deploy:
     name: Deploy to cluster
     needs: build
@@ -64,4 +65,8 @@ jobs:
           kubectl config use-context ${KUBE_CLUSTER}
       - name: Apply Helm charts
         run: | 
-          helm upgrade wordpress helm_deploy/wordpress --values helm_deploy/wordpress/values-dev.yaml -n hale-platform-dev 
+          helm upgrade wordpress helm_deploy/wordpress \
+          --namespace ${{ secrets.KUBE_NAMESPACE }} \
+          --values helm_deploy/wordpress/values-dev.yaml \
+          --set nginx.image.repository=${{ secrets.ECR_NAME }}:hale-platform_nginx-${{ github.sha }} \
+          --set image.repository=${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
