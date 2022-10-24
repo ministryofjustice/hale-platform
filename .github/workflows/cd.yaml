@@ -64,4 +64,4 @@ jobs:
           kubectl config use-context ${KUBE_CLUSTER}
       - name: Apply Helm charts
         run: | 
-          helm list
+          helm upgrade wordpress helm_deploy/wordpress --values helm_deploy/wordpress/values-dev.yaml -n hale-platform-dev 
