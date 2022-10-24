@@ -62,3 +62,6 @@ jobs:
           kubectl config set-credentials deploy-user --token=${{ secrets.KUBE_TOKEN }}
           kubectl config set-context ${KUBE_CLUSTER} --cluster=${KUBE_CLUSTER} --user=deploy-user --namespace=${{ secrets.KUBE_NAMESPACE }}
           kubectl config use-context ${KUBE_CLUSTER}
+      - name: Apply Helm charts
+        run: | 
+          helm install wordpress helm_deploy/wordpress --values helm_deploy/wordpress/values-dev.yaml --namespace hale-platform-dev
