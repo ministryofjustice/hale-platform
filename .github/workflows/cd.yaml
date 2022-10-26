@@ -66,6 +66,7 @@ jobs:
       - name: Apply Helm charts
         run: | 
           helm upgrade wordpress helm_deploy/wordpress \
+          --install \
           --namespace ${{ secrets.KUBE_NAMESPACE }} \
           --values helm_deploy/wordpress/values-dev.yaml \
           --set nginx.image.repository=${{ secrets.ECR_NAME }}:hale-platform_nginx-${{ github.sha }} \
