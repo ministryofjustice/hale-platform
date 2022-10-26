@@ -70,4 +70,4 @@ jobs:
           --namespace ${{ secrets.KUBE_NAMESPACE }} \
           --values helm_deploy/wordpress/values-dev.yaml \
           --set nginx.image.repository=${{ secrets.ECR_NAME }}:hale-platform_nginx-${{ github.sha }} \
-          --set image.repository=${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
+          --set image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
