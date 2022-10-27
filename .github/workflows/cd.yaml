@@ -71,3 +71,19 @@ jobs:
           --values helm_deploy/wordpress/values-dev.yaml \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_nginx-${{ github.sha }} \
           --set image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
+  
+  clean-ecr:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Run ECR cleanup script
+      uses: ministryofjustice/ecr-images-cleaner-action@v1.0.1
+      with:
+        aws-access-key-id: ${{ secrets.ECR_AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY }}
+        kube-cert: ${{ secrets.KUBE_CERT }}
+        kube-token: ${{ secrets.KUBE_TOKEN }}
+        kube-cluster: ${{ secrets.KUBE_CLUSTER }}
+        kube-namespace: ${{ secrets.KUBE_NAMESPACE }}
+        ecr-repo-name: ${{ secrets.ECR_NAME }}
+        days-to-keep-old-images: 15
+        max-old-images-to-keep: 30
