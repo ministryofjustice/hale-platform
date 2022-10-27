@@ -74,6 +74,7 @@ jobs:
   
   clean-ecr:
     runs-on: ubuntu-latest
+    needs: build
     steps:
     - name: Run ECR cleanup script
       uses: ministryofjustice/ecr-images-cleaner-action@v1.0.1
@@ -85,5 +86,5 @@ jobs:
         kube-cluster: ${{ secrets.KUBE_CLUSTER }}
         kube-namespace: ${{ secrets.KUBE_NAMESPACE }}
         ecr-repo-name: ${{ secrets.ECR_NAME }}
-        days-to-keep-old-images: 15
-        max-old-images-to-keep: 30
+        days-to-keep-old-images: 14
+        max-old-images-to-keep: 20
