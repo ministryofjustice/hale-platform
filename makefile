@@ -34,8 +34,12 @@ tagpush:
 
 
 deploylocal:
-	chmod +x bin/deploy.sh && \
-	./bin/deploy.sh
+	chmod +x bin/deploy-local.sh && \
+	./bin/deploy-local.sh
+
+deploydev:
+	chmod +x bin/deploy-dev.sh && \
+	./bin/deploy-dev.sh
 
 ## AWS
 
