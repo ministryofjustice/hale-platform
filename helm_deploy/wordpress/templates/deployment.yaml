@@ -6,6 +6,8 @@ metadata:
   labels:
     app: nginx
 spec:
+  revisionHistoryLimit: 5
+  replicas: 2
   selector:
     matchLabels:
       app: nginx
@@ -79,6 +81,8 @@ metadata:
   labels:
     app: wordpress
 spec:
+  revisionHistoryLimit: 5
+  replicas: 2
   selector:
     matchLabels:
       app: wordpress
