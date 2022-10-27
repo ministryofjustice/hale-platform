@@ -73,10 +73,11 @@ jobs:
           --set image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
   
   clean-ecr:
+    name: AWS ECR clean
     runs-on: ubuntu-latest
     needs: build
     steps:
-    - name: Run ECR cleanup script
+    - name: Run ECR clean-up script
       uses: ministryofjustice/ecr-images-cleaner-action@v1.0.1
       with:
         aws-access-key-id: ${{ secrets.ECR_AWS_ACCESS_KEY_ID }}
