@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - 'helm-deploy'
+      - 'main'
 
 env:
   KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
