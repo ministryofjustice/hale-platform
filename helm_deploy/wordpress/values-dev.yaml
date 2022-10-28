@@ -2,10 +2,10 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-domain: hale-platform-dev.apps.live.cloud-platform.service.justice.gov.uk
-
 # Empty strings likely mean value is overwritten when run by GitAction
 # during deployment
+
+domain: "" 
 
 nginx:
   image:
