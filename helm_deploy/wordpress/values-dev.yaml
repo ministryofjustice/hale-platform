@@ -17,7 +17,7 @@ wp:
   image:
     repository: "" 
     pullPolicy: IfNotPresent
-    replicaCount: 3
+    replicaCount: 1 
 
 mariadb:
   enabled: false
