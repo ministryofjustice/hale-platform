@@ -4,16 +4,20 @@
 
 domain: hale-platform-dev.apps.live.cloud-platform.service.justice.gov.uk
 
-# nginx
+# Empty strings likely mean value is overwritten when run by GitAction
+# during deployment
+
 nginx:
   image:
-    repository: 754256621582.dkr.ecr.eu-west-2.amazonaws.com/jotw-content-devs/hale-platform-dev-ecr:hale-platform_nginx
+    repository: "" 
     pullPolicy: IfNotPresent
-
-# wordpress 
-image:
-  repository: 754256621582.dkr.ecr.eu-west-2.amazonaws.com/jotw-content-devs/hale-platform-dev-ecr:hale-platform_wordpress
-  pullPolicy: IfNotPresent
+    replicaCount: 3
+ 
+wp:
+  image:
+    repository: "" 
+    pullPolicy: IfNotPresent
+    replicaCount: 3
 
 mariadb:
   enabled: false

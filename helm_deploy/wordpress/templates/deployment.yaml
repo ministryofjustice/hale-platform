@@ -6,7 +6,7 @@ metadata:
   labels:
     app: nginx
 spec:
-  replicas: 2
+  replicas: {{ .Values.nginx.image.replicaCount }} 
   selector:
     matchLabels:
       app: nginx
@@ -80,7 +80,7 @@ metadata:
   labels:
     app: wordpress
 spec:
-  replicas: 2 
+  replicas: {{ .Values.wp.image.replicaCount }}
   selector:
     matchLabels:
       app: wordpress
@@ -94,7 +94,7 @@ spec:
         tier: frontend-c
     spec:
       containers:
-        - image: {{ .Values.image.repository }}
+        - image: {{ .Values.wp.image.repository }}
           imagePullPolicy: IfNotPresent
           name: wordpress
           ports:
