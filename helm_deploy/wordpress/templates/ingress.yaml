@@ -8,6 +8,7 @@ metadata:
     external-dns.alpha.kubernetes.io/set-identifier: hale-platform-ingress-hale-platform-dev-green
     external-dns.alpha.kubernetes.io/aws-weight: "100"
 spec:
+  ingressClassName: modsec
   tls:
   - hosts:
     - {{ .Values.domain }} 
