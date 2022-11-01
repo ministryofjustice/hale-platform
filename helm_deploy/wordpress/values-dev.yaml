@@ -24,3 +24,19 @@ mariadb:
 
 ingress:
   enabled: true
+
+configmap:
+  wordpress-env-type: "dev"
+  server-name: ""
+
+secrets:
+  enabled: true
+  wordpress-db-user: ""
+  wordpress-db-host: ""
+  wordpress-db-name: ""
+  wordpress-db-password: ""
+  wordpress-admin-email: ""
+  wordpress-admin-user: ""
+  wordpress-admin-password: ""
+  service-name: ""
+  service-tag: ""

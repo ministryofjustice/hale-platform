@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Revision }}-wpconfig
+data:
+  WP_ENVIRONMENT_TYPE: {{ .Value.configmap.wordpress-env-type }} 
+  SERVER_NAME: {{ .Value.domain }}
