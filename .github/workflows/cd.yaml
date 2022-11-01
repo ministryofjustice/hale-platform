@@ -69,16 +69,16 @@ jobs:
           --install \
           --namespace ${{ secrets.KUBE_NAMESPACE }} \
           --values helm_deploy/wordpress/values-dev.yaml \
-          --set secrets.wordpress-db-user=${{ secrets.WORDPRESS_DB_USER }} \
-          --set secrets.wordpress-db-host=${{ secrets.WORDPRESS_DB_HOST }} \
-          --set secrets.wordpress-db-name=${{ secrets.WORDPRESS_DB_NAME }} \
-          --set secrets.wordpress-db-password=${{ secrets.WORDPRESS_DB_PASSWORD }} \
-          --set secrets.wordpress-admin-email=${{ secrets.WORDPRESS_ADMIN_EMAIL }} \
-          --set secrets.wordpress-admin-user=${{ secrets.WORDPRESS_ADMIN_USER }} \
-          --set secrets.wordpress-admin-password=${{ secrets.WORDPRESS_ADMIN_PASSWORD }} \
-          --set secrets.service-name=${{ secrets.SERVICE_NAME }} \
-          --set secrets.service-tag=${{ secrets.SERVICE_TAG }} \
-          --set configmap.server-name=${{ secrets.KUBE_NAMESPACE }}.apps.live.cloud-platform.service.justice.gov.uk \
+          --set secrets.wpdbuser=${{ secrets.WORDPRESS_DB_USER }} \
+          --set secrets.wpdbhost=${{ secrets.WORDPRESS_DB_HOST }} \
+          --set secrets.wpdbname=${{ secrets.WORDPRESS_DB_NAME }} \
+          --set secrets.wpdbpassword=${{ secrets.WORDPRESS_DB_PASSWORD }} \
+          --set secrets.wpadminemail=${{ secrets.WORDPRESS_ADMIN_EMAIL }} \
+          --set secrets.wpadminuser=${{ secrets.WORDPRESS_ADMIN_USER }} \
+          --set secrets.wpadminpassword=${{ secrets.WORDPRESS_ADMIN_PASSWORD }} \
+          --set secrets.servicename=${{ secrets.SERVICE_NAME }} \
+          --set secrets.servicetag=${{ secrets.SERVICE_TAG }} \
+          --set configmap.servername=${{ secrets.KUBE_NAMESPACE }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set domain=${{ secrets.KUBE_NAMESPACE }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_nginx-${{ github.sha }} \
           --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
