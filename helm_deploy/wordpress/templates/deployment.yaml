@@ -49,9 +49,9 @@ spec:
         image: mariadb:10.7.1-focal
         envFrom:
         - configMapRef:
-            name: {{ .Release.Revision }}-wpconfig
+            name: wpconfig-{{ .Release.Revision }}
         - secretRef:
-            name: {{ .Release.Revision }}-wpsecrets
+            name: wpsecrets-{{ .Release.Revision }}
         ports:
           - containerPort: 3306
             name: mysql
@@ -107,9 +107,9 @@ spec:
               mountPath: /var/www/html
           envFrom:
           - configMapRef:
-                name: {{ .Release.Revision }}-wpconfig
+                name: wpconfig-{{ .Release.Revision }}
           - secretRef:
-                name: {{ .Release.Revision }}-wpsecrets
+                name: wpsecrets-{{ .Release.Revision }}
       volumes:
         - name: wordpress-persistent-storage
           persistentVolumeClaim:
