@@ -8,8 +8,17 @@ on:
 
 env:
   KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 jobs:
+  setenv:
+    name: Establish environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract branch name
+        shell: bash
+        run: echo ${{ env.BRANCH_NAME }} 
+
   build:
     name: Build and push to ECR
     runs-on: ubuntu-latest
