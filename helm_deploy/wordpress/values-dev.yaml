@@ -2,7 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# Empty strings likely mean value is overwritten when run by GitAction
+# Empty strings mean value is overwritten and populated when run by GitAction
 # during deployment
 
 domain: "" 
