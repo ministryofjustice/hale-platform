@@ -3,5 +3,5 @@ kind: ConfigMap
 metadata:
   name: {{ .Release.Revision }}-wpconfig
 data:
-  WP_ENVIRONMENT_TYPE: {{ .Value.configmap.wpenvtype }} 
+  WP_ENVIRONMENT_TYPE: {{ .Values.configmap.wpenvtype }} 
   SERVER_NAME: {{ .Value.domain }}
