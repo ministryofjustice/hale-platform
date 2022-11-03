@@ -47,7 +47,7 @@ In terminal run `make launch`. For other commands see `makefile`.
 2. Run `mkdir -r /nginx/certs` , to create a new /certs folder.
 3. In the /certs folder run `mkcert wordpress-docker.test`
 4. Go to your host file on your mac /etc/hosts and add the wordpress-docker.test domain name
-5. In this root directory, run `make build`
+5. In this root directory, run `make build`.
 6. Go to your browser at the URL wordpress-docker.test
 
 ## Themes and Plugins
