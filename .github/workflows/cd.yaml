@@ -164,7 +164,7 @@ jobs:
 
   DeployProd:
     name: Deploy to prod
-    needs: staging 
+    needs: DeployStaging
     runs-on: ubuntu-latest
     environment: prod
     steps:
