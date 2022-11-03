@@ -11,14 +11,6 @@ env:
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 jobs:
-  setenv:
-    name: Establish environment
-    runs-on: ubuntu-latest
-    steps:
-      - name: Extract branch name
-        shell: bash
-        run: echo ${{ env.BRANCH_NAME }} 
-
   build:
     name: Build and push to ECR
     runs-on: ubuntu-latest
@@ -60,7 +52,7 @@ jobs:
     name: Deploy to cluster
     needs: build
     runs-on: ubuntu-latest
-    environment: dev
+    environment: ${{ env.BRANCH_NAME }} 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -108,5 +100,5 @@ jobs:
         kube-cluster: ${{ secrets.KUBE_CLUSTER }}
         kube-namespace: ${{ secrets.KUBE_NAMESPACE }}
         ecr-repo-name: ${{ secrets.ECR_NAME }}
-        days-to-keep-old-images: 5 
-        max-old-images-to-keep: 10
+        days-to-keep-old-images: 10 
+        max-old-images-to-keep: 24
