@@ -6,6 +6,8 @@ on:
     branches:
       - 'demo'
       - 'dev'
+      - 'staging'
+      - 'main'
 
 env:
   KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
