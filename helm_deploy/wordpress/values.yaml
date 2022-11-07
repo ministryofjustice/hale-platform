@@ -24,6 +24,9 @@ mariadb:
 
 ingress:
   enabled: true
+  metadata:
+    annotations:
+      setidentifier: ""
 
 configmap:
   wpenvtype: ""

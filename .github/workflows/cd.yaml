@@ -84,6 +84,7 @@ jobs:
           --set secrets.wpadminpassword=${{ secrets.WORDPRESS_ADMIN_PASSWORD }} \
           --set configmap.servername=${{ secrets.KUBE_NAMESPACE }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set configmap.wpenvtype=${{ secrets.WP_ENV_TYPE }} \
+          --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-hale-platform-${{ secrets.WP_ENV_TYPE }}-green \
           --set domain=${{ secrets.KUBE_NAMESPACE }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_nginx-${{ github.sha }} \
           --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
@@ -121,6 +122,7 @@ jobs:
           --set secrets.wpadminpassword=${{ secrets.WORDPRESS_ADMIN_PASSWORD }} \
           --set configmap.wpenvtype=${{ secrets.WP_ENV_TYPE }} \
           --set configmap.servername=${{ secrets.KUBE_NAMESPACE }}.apps.live.cloud-platform.service.justice.gov.uk \
+          --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-hale-platform-${{ secrets.WP_ENV_TYPE }}-green \
           --set domain=${{ secrets.KUBE_NAMESPACE }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_nginx-${{ github.sha }} \
           --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
@@ -158,6 +160,7 @@ jobs:
           --set secrets.wpadminpassword=${{ secrets.WORDPRESS_ADMIN_PASSWORD }} \
           --set configmap.wpenvtype=${{ secrets.WP_ENV_TYPE }} \
           --set configmap.servername=${{ secrets.KUBE_NAMESPACE }}.apps.live.cloud-platform.service.justice.gov.uk \
+          --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-hale-platform-${{ secrets.WP_ENV_TYPE }}-green \
           --set domain=${{ secrets.KUBE_NAMESPACE }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_nginx-${{ github.sha }} \
           --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
@@ -194,6 +197,7 @@ jobs:
           --set secrets.wpadminpassword=${{ secrets.WORDPRESS_ADMIN_PASSWORD }} \
           --set configmap.wpenvtype=${{ secrets.WP_ENV_TYPE }} \
           --set configmap.servername=${{ secrets.KUBE_NAMESPACE }}.apps.live.cloud-platform.service.justice.gov.uk \
+          --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-hale-platform-${{ secrets.WP_ENV_TYPE }}-green \
           --set domain=${{ secrets.KUBE_NAMESPACE }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_nginx-${{ github.sha }} \
           --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
