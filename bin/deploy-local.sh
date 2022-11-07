@@ -19,7 +19,7 @@ fi
 #
 helm upgrade wordpress helm_deploy/wordpress \
     --install \
-    --values helm_deploy/wordpress/values.yaml \
+    --values helm_deploy/wordpress/values-local.yaml \
     --namespace hale-platform-local \
     --create-namespace \
     --timeout 5m \
