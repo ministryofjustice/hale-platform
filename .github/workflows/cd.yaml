@@ -90,7 +90,7 @@ jobs:
           --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
 
   DeployDevelopment:
-    name: Deploy to development
+    name: Deploy to dev
     if: github.event.ref == 'refs/heads/dev'
     needs: build
     runs-on: ubuntu-latest
