@@ -2,21 +2,39 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-domain: hale.docker
+# Empty strings mean value is overwritten and populated when run by GitAction
+# during deployment
 
-# nginx
+domain: "" 
+
 nginx:
   image:
-    repository: hale-platform-nginx
+    repository: "" 
     pullPolicy: IfNotPresent
-
-# wordpress 
-image:
-  repository: hale-platform-wordpress
-  pullPolicy: IfNotPresent
+    replicaCount: 3
+ 
+wp:
+  image:
+    repository: "" 
+    pullPolicy: IfNotPresent
+    replicaCount: 1 
 
 mariadb:
-  enabled: true
+  enabled: false
 
 ingress:
-  enabled: false
+  enabled: true
+
+configmap:
+  wpenvtype: ""
+  servername: ""
+
+secrets:
+  enabled: true
+  wpdbuser: ""
+  wpdbhost: ""
+  wpdbname: ""
+  wpdbpassword: ""
+  wpadminemail: ""
+  wpadminuser: ""
+  wpadminpassword: ""
