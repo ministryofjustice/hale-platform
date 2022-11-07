@@ -39,7 +39,7 @@ services:
       MYSQL_PASSWORD: wordpress
       DB_NAME: wordpress
       DB_USER: wordpress
-      DB_PASSWORD: secret
+      DB_PASSWORD: wordpress
       DB_HOST: 'mariadb:3306'
     volumes:
       - database:/var/lib/mysql
