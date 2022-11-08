@@ -22,7 +22,7 @@ services:
     networks:
       - wordpress
     environment:
-      VIRTUAL_HOST: 'hale.docker'
+      VIRTUAL_HOST: hale.docker
       VIRTUAL_PORT: 8080
 
   mariadb:
@@ -30,8 +30,8 @@ services:
     container_name: mariadb
     ports:
       - 3306:3306
-    env_file:
-      - .env.local
+        #    env_file:
+        #- .env.local
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: wordpress
@@ -40,7 +40,7 @@ services:
       DB_NAME: wordpress
       DB_USER: wordpress
       DB_PASSWORD: wordpress
-      DB_HOST: 'mariadb:3306'
+      DB_HOST: mariadb:3306
     volumes:
       - database:/var/lib/mysql
     networks:
@@ -57,16 +57,16 @@ services:
       - ./wordpress:/var/www/html:delegated
     networks:
       - wordpress
-    env_file:
-      - .env.local
+        #env_file:
+        #- .env.local
     environment:
-      WORDPRESS_DB_HOST: 'mariadb:3306'
+      WORDPRESS_DB_HOST: mariadb:3306
       WORDPRESS_DB_USER: wordpress
       WORDPRESS_DB_PASSWORD: wordpress
       WORDPRESS_DB_NAME: wordpress
       WORDPRESS_ADMIN_USER: admin
       WORDPRESS_ADMIN_PASSWORD: wordpress
-      WORDPRESS_ADMIN_EMAIL: 'wordpress@hale.docker'
+      WORDPRESS_ADMIN_EMAIL: "wordpress@hale.docker"
       WP_ENVIRONMENT_TYPE: local
 
   #wp:
