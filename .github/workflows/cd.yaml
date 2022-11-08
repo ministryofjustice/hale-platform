@@ -6,7 +6,6 @@ on:
     branches:
       - 'demo'
       - 'dev'
-      - 'staging'
       - 'main'
 
 env:
