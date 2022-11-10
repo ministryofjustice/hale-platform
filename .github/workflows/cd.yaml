@@ -59,7 +59,7 @@ jobs:
         env:
           KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER_DEMO }}
         run: |
-          echo "${{ secrets.KUBE_CERT_DEV }}" > ca.crt
+          echo "${{ secrets.KUBE_CERT_DEMO }}" > ca.crt
           kubectl config set-cluster ${KUBE_CLUSTER} --certificate-authority=./ca.crt --server=https://${KUBE_CLUSTER}
           kubectl config set-credentials deploy-user --token=${{ secrets.KUBE_TOKEN_DEMO }}
           kubectl config set-context ${KUBE_CLUSTER} --cluster=${KUBE_CLUSTER} --user=deploy-user --namespace=${{ secrets.KUBE_NAMESPACE_DEMO }}
@@ -79,12 +79,12 @@ jobs:
           --set secrets.wpadminpassword=${{ secrets.WORDPRESS_ADMIN_PASSWORD }} \
           --set configmap.servername=${{ secrets.KUBE_NAMESPACE_DEMO }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set configmap.wpenvtype=${{ secrets.WP_ENV_TYPE }} \
-          --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-hale-platform-${{ secrets.WP_ENV_TYPE }}-green \
+          --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.KUBE_NAMESPACE_DEMO }}-green \
           --set domain=${{ secrets.KUBE_NAMESPACE_DEMO }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_nginx-${{ github.sha }} \
           --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
 
-  deployDevelopment:
+  deployDev:
     name: Deploy to Development
     if: github.event.ref == 'refs/heads/dev'
     needs: build
@@ -117,7 +117,7 @@ jobs:
           --set secrets.wpadminpassword=${{ secrets.WORDPRESS_ADMIN_PASSWORD }} \
           --set configmap.wpenvtype=${{ secrets.WP_ENV_TYPE }} \
           --set configmap.servername=${{ secrets.KUBE_NAMESPACE_DEV }}.apps.live.cloud-platform.service.justice.gov.uk \
-          --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-hale-platform-${{ secrets.WP_ENV_TYPE }}-green \
+          --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.KUBE_NAMESPACE_DEV }}-green \
           --set domain=${{ secrets.KUBE_NAMESPACE_DEV }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_nginx-${{ github.sha }} \
           --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
@@ -155,7 +155,7 @@ jobs:
           --set secrets.wpadminpassword=${{ secrets.WORDPRESS_ADMIN_PASSWORD }} \
           --set configmap.wpenvtype=${{ secrets.WP_ENV_TYPE }} \
           --set configmap.servername=${{ secrets.KUBE_NAMESPACE_STAGING }}.apps.live.cloud-platform.service.justice.gov.uk \
-          --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-hale-platform-${{ secrets.WP_ENV_TYPE }}-green \
+          --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-{{ secrets.KUBE_NAMESPACE_STAGING }}-green \
           --set domain=${{ secrets.KUBE_NAMESPACE_STAGING }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_nginx-${{ github.sha }} \
           --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
@@ -192,7 +192,7 @@ jobs:
           --set secrets.wpadminpassword=${{ secrets.WORDPRESS_ADMIN_PASSWORD }} \
           --set configmap.wpenvtype=${{ secrets.WP_ENV_TYPE }} \
           --set configmap.servername=${{ secrets.KUBE_NAMESPACE_PROD }}.apps.live.cloud-platform.service.justice.gov.uk \
-          --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-hale-platform-${{ secrets.WP_ENV_TYPE }}-green \
+          --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.KUBE_NAMESPACE_PROD }}-green \
           --set domain=${{ secrets.KUBE_NAMESPACE_PROD }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_nginx-${{ github.sha }} \
           --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
