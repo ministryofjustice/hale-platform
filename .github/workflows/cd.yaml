@@ -207,10 +207,10 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.ECR_AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY }}
-        kube-cert: ${{ secrets.KUBE_CERT }}
-        kube-token: ${{ secrets.KUBE_TOKEN }}
-        kube-cluster: ${{ secrets.KUBE_CLUSTER }}
-        kube-namespace: ${{ secrets.KUBE_NAMESPACE }}
-        ecr-repo-name: ${{ secrets.ECR_NAME }}
+        kube-cert: ${{ secrets.KUBE_CERT_DEV }}
+        kube-token: ${{ secrets.KUBE_TOKEN_DEV }}
+        kube-cluster: ${{ secrets.KUBE_CLUSTER_DEV }}
+        kube-namespace: ${{ secrets.KUBE_NAMESPACE_DEV }}
+        ecr-repo-name: ${{ secrets.ECR_NAME_DEV }}
         days-to-keep-old-images: 10 
         max-old-images-to-keep: 24
