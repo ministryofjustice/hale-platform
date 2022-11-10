@@ -8,10 +8,6 @@ on:
       - 'dev'
       - 'main'
 
-env:
-  KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
-  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-
 jobs:
   build:
     name: Build and push to ECR
@@ -61,18 +57,18 @@ jobs:
         uses: actions/checkout@v3
       - name: Authenticate to the cluster
         env:
-          KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
+          KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER_DEMO }}
         run: |
-          echo "${{ secrets.KUBE_CERT }}" > ca.crt
+          echo "${{ secrets.KUBE_CERT_DEV }}" > ca.crt
           kubectl config set-cluster ${KUBE_CLUSTER} --certificate-authority=./ca.crt --server=https://${KUBE_CLUSTER}
-          kubectl config set-credentials deploy-user --token=${{ secrets.KUBE_TOKEN }}
-          kubectl config set-context ${KUBE_CLUSTER} --cluster=${KUBE_CLUSTER} --user=deploy-user --namespace=${{ secrets.KUBE_NAMESPACE }}
+          kubectl config set-credentials deploy-user --token=${{ secrets.KUBE_TOKEN_DEMO }}
+          kubectl config set-context ${KUBE_CLUSTER} --cluster=${KUBE_CLUSTER} --user=deploy-user --namespace=${{ secrets.KUBE_NAMESPACE_DEMO }}
           kubectl config use-context ${KUBE_CLUSTER}
       - name: Apply Helm charts
         run: | 
           helm upgrade wordpress helm_deploy/wordpress \
           --install \
-          --namespace ${{ secrets.KUBE_NAMESPACE }} \
+          --namespace ${{ secrets.KUBE_NAMESPACE_DEMO }} \
           --values helm_deploy/wordpress/values.yaml \
           --set secrets.wpdbuser=${{ secrets.WORDPRESS_DB_USER }} \
           --set secrets.wpdbhost=${{ secrets.WORDPRESS_DB_HOST }} \
@@ -81,10 +77,10 @@ jobs:
           --set secrets.wpadminemail=${{ secrets.WORDPRESS_ADMIN_EMAIL }} \
           --set secrets.wpadminuser=${{ secrets.WORDPRESS_ADMIN_USER }} \
           --set secrets.wpadminpassword=${{ secrets.WORDPRESS_ADMIN_PASSWORD }} \
-          --set configmap.servername=${{ secrets.KUBE_NAMESPACE }}.apps.live.cloud-platform.service.justice.gov.uk \
+          --set configmap.servername=${{ secrets.KUBE_NAMESPACE_DEMO }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set configmap.wpenvtype=${{ secrets.WP_ENV_TYPE }} \
           --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-hale-platform-${{ secrets.WP_ENV_TYPE }}-green \
-          --set domain=${{ secrets.KUBE_NAMESPACE }}.apps.live.cloud-platform.service.justice.gov.uk \
+          --set domain=${{ secrets.KUBE_NAMESPACE_DEMO }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_nginx-${{ github.sha }} \
           --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
 
@@ -99,18 +95,18 @@ jobs:
         uses: actions/checkout@v3
       - name: Authenticate to the cluster
         env:
-          KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
+          KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER_DEV }}
         run: |
-          echo "${{ secrets.KUBE_CERT }}" > ca.crt
+          echo "${{ secrets.KUBE_CERT_DEV }}" > ca.crt
           kubectl config set-cluster ${KUBE_CLUSTER} --certificate-authority=./ca.crt --server=https://${KUBE_CLUSTER}
-          kubectl config set-credentials deploy-user --token=${{ secrets.KUBE_TOKEN }}
-          kubectl config set-context ${KUBE_CLUSTER} --cluster=${KUBE_CLUSTER} --user=deploy-user --namespace=${{ secrets.KUBE_NAMESPACE }}
+          kubectl config set-credentials deploy-user --token=${{ secrets.KUBE_TOKEN_DEV }}
+          kubectl config set-context ${KUBE_CLUSTER} --cluster=${KUBE_CLUSTER} --user=deploy-user --namespace=${{ secrets.KUBE_NAMESPACE_DEV }}
           kubectl config use-context ${KUBE_CLUSTER}
       - name: Apply Helm charts
         run: | 
           helm upgrade wordpress helm_deploy/wordpress \
           --install \
-          --namespace ${{ secrets.KUBE_NAMESPACE }} \
+          --namespace ${{ secrets.KUBE_NAMESPACE_DEV }} \
           --values helm_deploy/wordpress/values.yaml \
           --set secrets.wpdbuser=${{ secrets.WORDPRESS_DB_USER }} \
           --set secrets.wpdbhost=${{ secrets.WORDPRESS_DB_HOST }} \
@@ -120,9 +116,9 @@ jobs:
           --set secrets.wpadminuser=${{ secrets.WORDPRESS_ADMIN_USER }} \
           --set secrets.wpadminpassword=${{ secrets.WORDPRESS_ADMIN_PASSWORD }} \
           --set configmap.wpenvtype=${{ secrets.WP_ENV_TYPE }} \
-          --set configmap.servername=${{ secrets.KUBE_NAMESPACE }}.apps.live.cloud-platform.service.justice.gov.uk \
+          --set configmap.servername=${{ secrets.KUBE_NAMESPACE_DEV }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-hale-platform-${{ secrets.WP_ENV_TYPE }}-green \
-          --set domain=${{ secrets.KUBE_NAMESPACE }}.apps.live.cloud-platform.service.justice.gov.uk \
+          --set domain=${{ secrets.KUBE_NAMESPACE_DEV }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_nginx-${{ github.sha }} \
           --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
   
@@ -137,18 +133,18 @@ jobs:
         uses: actions/checkout@v3
       - name: Authenticate to the cluster
         env:
-          KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
+          KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER_STAGING }}
         run: |
-          echo "${{ secrets.KUBE_CERT }}" > ca.crt
+          echo "${{ secrets.KUBE_CERT_STAGING }}" > ca.crt
           kubectl config set-cluster ${KUBE_CLUSTER} --certificate-authority=./ca.crt --server=https://${KUBE_CLUSTER}
-          kubectl config set-credentials deploy-user --token=${{ secrets.KUBE_TOKEN }}
-          kubectl config set-context ${KUBE_CLUSTER} --cluster=${KUBE_CLUSTER} --user=deploy-user --namespace=${{ secrets.KUBE_NAMESPACE }}
+          kubectl config set-credentials deploy-user --token=${{ secrets.KUBE_TOKEN_STAGING }}
+          kubectl config set-context ${KUBE_CLUSTER} --cluster=${KUBE_CLUSTER} --user=deploy-user --namespace=${{ secrets.KUBE_NAMESPACE_STAGING }}
           kubectl config use-context ${KUBE_CLUSTER}
       - name: Apply Helm charts
         run: | 
           helm upgrade wordpress helm_deploy/wordpress \
           --install \
-          --namespace ${{ secrets.KUBE_NAMESPACE }} \
+          --namespace ${{ secrets.KUBE_NAMESPACE_STAGING }} \
           --values helm_deploy/wordpress/values.yaml \
           --set secrets.wpdbuser=${{ secrets.WORDPRESS_DB_USER }} \
           --set secrets.wpdbhost=${{ secrets.WORDPRESS_DB_HOST }} \
@@ -158,9 +154,9 @@ jobs:
           --set secrets.wpadminuser=${{ secrets.WORDPRESS_ADMIN_USER }} \
           --set secrets.wpadminpassword=${{ secrets.WORDPRESS_ADMIN_PASSWORD }} \
           --set configmap.wpenvtype=${{ secrets.WP_ENV_TYPE }} \
-          --set configmap.servername=${{ secrets.KUBE_NAMESPACE }}.apps.live.cloud-platform.service.justice.gov.uk \
+          --set configmap.servername=${{ secrets.KUBE_NAMESPACE_STAGING }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-hale-platform-${{ secrets.WP_ENV_TYPE }}-green \
-          --set domain=${{ secrets.KUBE_NAMESPACE }}.apps.live.cloud-platform.service.justice.gov.uk \
+          --set domain=${{ secrets.KUBE_NAMESPACE_STAGING }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_nginx-${{ github.sha }} \
           --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
 
@@ -174,18 +170,18 @@ jobs:
         uses: actions/checkout@v3
       - name: Authenticate to the cluster
         env:
-          KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
+          KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER_PROD }}
         run: |
-          echo "${{ secrets.KUBE_CERT }}" > ca.crt
+          echo "${{ secrets.KUBE_CERT_PROD }}" > ca.crt
           kubectl config set-cluster ${KUBE_CLUSTER} --certificate-authority=./ca.crt --server=https://${KUBE_CLUSTER}
-          kubectl config set-credentials deploy-user --token=${{ secrets.KUBE_TOKEN }}
-          kubectl config set-context ${KUBE_CLUSTER} --cluster=${KUBE_CLUSTER} --user=deploy-user --namespace=${{ secrets.KUBE_NAMESPACE }}
+          kubectl config set-credentials deploy-user --token=${{ secrets.KUBE_TOKEN_PROD }}
+          kubectl config set-context ${KUBE_CLUSTER} --cluster=${KUBE_CLUSTER} --user=deploy-user --namespace=${{ secrets.KUBE_NAMESPACE_PROD }}
           kubectl config use-context ${KUBE_CLUSTER}
       - name: Apply Helm charts
         run: | 
           helm upgrade wordpress helm_deploy/wordpress \
           --install \
-          --namespace ${{ secrets.KUBE_NAMESPACE }} \
+          --namespace ${{ secrets.KUBE_NAMESPACE_PROD }} \
           --values helm_deploy/wordpress/values.yaml \
           --set secrets.wpdbuser=${{ secrets.WORDPRESS_DB_USER }} \
           --set secrets.wpdbhost=${{ secrets.WORDPRESS_DB_HOST }} \
@@ -195,9 +191,9 @@ jobs:
           --set secrets.wpadminuser=${{ secrets.WORDPRESS_ADMIN_USER }} \
           --set secrets.wpadminpassword=${{ secrets.WORDPRESS_ADMIN_PASSWORD }} \
           --set configmap.wpenvtype=${{ secrets.WP_ENV_TYPE }} \
-          --set configmap.servername=${{ secrets.KUBE_NAMESPACE }}.apps.live.cloud-platform.service.justice.gov.uk \
+          --set configmap.servername=${{ secrets.KUBE_NAMESPACE_PROD }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-hale-platform-${{ secrets.WP_ENV_TYPE }}-green \
-          --set domain=${{ secrets.KUBE_NAMESPACE }}.apps.live.cloud-platform.service.justice.gov.uk \
+          --set domain=${{ secrets.KUBE_NAMESPACE_PROD }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_nginx-${{ github.sha }} \
           --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
   
