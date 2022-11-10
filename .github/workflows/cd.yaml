@@ -46,8 +46,8 @@ jobs:
           local-image: hale-platform_wordpress
           image: ${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
 
-  DeployDemo:
-    name: Deploy to demo
+  deployDemo:
+    name: Deploy to Demonstration 
     if: github.event.ref == 'refs/heads/demo'
     needs: build
     runs-on: ubuntu-latest
@@ -84,8 +84,8 @@ jobs:
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_nginx-${{ github.sha }} \
           --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
 
-  DeployDevelopment:
-    name: Deploy to dev
+  deployDevelopment:
+    name: Deploy to Development
     if: github.event.ref == 'refs/heads/dev'
     needs: build
     runs-on: ubuntu-latest
@@ -122,8 +122,8 @@ jobs:
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_nginx-${{ github.sha }} \
           --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
   
-  DeployStaging:
-    name: Deploy to staging
+  deployStaging:
+    name: Deploy to Staging
     if: github.event.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
@@ -160,9 +160,9 @@ jobs:
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_nginx-${{ github.sha }} \
           --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
 
-  DeployProd:
-    name: Deploy to prod
-    needs: DeployStaging
+  deployProd:
+    name: Deploy to Production
+    needs: deployStaging
     runs-on: ubuntu-latest
     environment: prod
     steps:
