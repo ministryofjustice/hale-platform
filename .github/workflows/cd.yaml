@@ -24,6 +24,10 @@ jobs:
         run: |
           echo "ECR_NAME=${{ secrets.ECR_NAME_TEST_STAGING }}" >> $GITHUB_ENV
 
+      - name: Test var out
+        run: |
+          echo "${{ env.ECR_NAME }}"
+
       - name: Checkout
         uses: actions/checkout@v3
       - name: Build NGINX image
