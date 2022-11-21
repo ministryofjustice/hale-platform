@@ -13,6 +13,17 @@ jobs:
     name: Build and push to ECR
     runs-on: ubuntu-latest
     steps:
+
+      - name: Configure demo env vars
+        if: github.event.ref == 'refs/heads/demo'
+        run: |
+          echo "ECR_NAME=${{ secrets.ECR_NAME_TEST }}" >> $GITHUB_ENV
+
+      - name: Configure staging env vars
+        if: github.event.ref == 'refs/heads/main'
+        run: |
+          echo "ECR_NAME=${{ secrets.ECR_NAME_TEST_STAGING }}" >> $GITHUB_ENV
+
       - name: Checkout
         uses: actions/checkout@v3
       - name: Build NGINX image
@@ -25,7 +36,7 @@ jobs:
           secret-access-key: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY }}
           region: eu-west-2
           local-image: hale-platform_nginx
-          image: ${{ secrets.ECR_NAME }}:hale-platform_nginx-${{ github.sha }}
+          image: ${{ env.ECR_NAME }}:hale-platform_nginx-${{ github.sha }}
       - name: Run Composer
         run: |
           composer config http-basic.composer.wp.dsd.io ${{ secrets.COMPOSER_USER }} ${{ secrets.COMPOSER_PASS }}
@@ -44,7 +55,7 @@ jobs:
           secret-access-key: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY }}
           region: eu-west-2
           local-image: hale-platform_wordpress
-          image: ${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
+          image: ${{ env.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
 
   deployDemo:
     name: Deploy to Demonstration 
@@ -193,8 +204,8 @@ jobs:
           --set configmap.servername=${{ secrets.KUBE_NAMESPACE_STAGING }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.KUBE_NAMESPACE_STAGING }}-green \
           --set domain=${{ secrets.KUBE_NAMESPACE_STAGING }}.apps.live.cloud-platform.service.justice.gov.uk \
-          --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_nginx-${{ github.sha }} \
-          --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
+          --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME_STAGING }}:hale-platform_nginx-${{ github.sha }} \
+          --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME_STAGING }}:hale-platform_wordpress-${{ github.sha }}
 
   ecrCleanStaging:
     name: ECR clean - Staging
