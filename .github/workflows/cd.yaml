@@ -44,7 +44,7 @@ jobs:
           access-key-id: ${{ secrets.ECR_AWS_ACCESS_KEY_ID_STAGING }}
           secret-access-key: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY_STAGING }}
           region: eu-west-2
-          local-image: hale-platform_wordpress
+          local-image: hale-platform_wordpress:latest
           image: ${{ secrets.ECR_NAME_STAGING }}:hale-platform_wordpress-${{ github.sha }}
 
   deployDemo:
