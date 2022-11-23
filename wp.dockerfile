@@ -9,7 +9,7 @@ COPY ./php/www.conf /usr/local/etc/php-fpm.d/www.conf
 
 # Set permissions for wp-cli
 RUN addgroup -g 1001 wp && adduser -G wp -g wp -s /bin/sh -D wp && \
-    chown wp:wp /var/www/html
+    chown wp:wp /var/www/html/wp-content
 
 # Install wp-cli
 RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
@@ -44,7 +44,7 @@ RUN cp -r /usr/src/wordpress/wp-content/themes/ /var/www/html/wp-content/themes/
 
 # Create new user to run container as non-root
 RUN adduser --disabled-password hale -u 1002 && \
-    chown -R hale:hale /var/www/html
+    chown -R hale:hale /var/www/html/wp-content
 
 RUN chown hale:hale /usr/local/bin/docker-entrypoint.sh
 
