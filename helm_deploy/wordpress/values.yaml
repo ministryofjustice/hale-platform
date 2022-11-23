@@ -10,13 +10,13 @@ domain: ""
 nginx:
   image:
     repository: "" 
-    pullPolicy: IfNotPresent
+    imagePullPolicy: IfNotPresent
     replicaCount: 1 
  
 wp:
   image:
     repository: "" 
-    pullPolicy: IfNotPresent
+    imagePullPolicy: Always
     replicaCount: 1 
 
 mariadb:

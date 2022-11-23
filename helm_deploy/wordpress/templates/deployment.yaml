@@ -19,7 +19,7 @@ spec:
       containers:
         - name: nginx
           image: {{ .Values.nginx.image.repository }}
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: {{ .Values.nginx.image.imagePullPolicy }} 
           ports:
             - containerPort: 8080
             - containerPort: 443
@@ -97,7 +97,7 @@ spec:
     spec:
       containers:
         - image: {{ .Values.wp.image.repository }}
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: {{ .Values.wp.image.imagePullPolicy }} 
           name: wordpress
           ports:
             - containerPort: 8080
