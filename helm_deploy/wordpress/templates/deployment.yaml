@@ -83,6 +83,11 @@ metadata:
     app: wordpress
 spec:
   replicas: {{ .Values.wp.image.replicaCount }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+        maxSurge: 1
+        maxUnaviable: 0
   selector:
     matchLabels:
       app: wordpress
