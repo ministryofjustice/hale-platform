@@ -10,6 +10,7 @@ wp config set DOMAIN_CURRENT_SITE "\$_SERVER['SERVER_NAME']" --raw
 wp config set COOKIE_DOMAIN "\$_SERVER['HTTP_HOST']" --raw 
 wp config set WP_ENVIRONMENT_TYPE "\$_SERVER['WP_ENVIRONMENT_TYPE']" --raw 
 wp config set WP_DEBUG true --raw
+wp config set AUTOMATIC_UPDATER_DISABLED true --raw
 
 #WP core install
 wp core multisite-install --title="Hale Multisite Platform" \
