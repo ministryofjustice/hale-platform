@@ -22,11 +22,11 @@ jobs:
       - name: Push NGINX image to ECR
         uses: jwalton/gh-ecr-push@v1
         with:
-          access-key-id: ${{ secrets.ECR_AWS_ACCESS_KEY_ID_STAGING_TEST }}
-          secret-access-key: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY_STAGING_TEST }}
+          access-key-id: ${{ secrets.ECR_AWS_ACCESS_KEY_ID_STAGING }}
+          secret-access-key: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY_STAGING }}
           region: eu-west-2
           local-image: hale-platform_nginx
-          image: ${{ secrets.ECR_NAME_STAGING_TEST }}:hale-platform_nginx-${{ github.sha }}
+          image: ${{ secrets.ECR_NAME_STAGING }}:hale-platform_nginx-${{ github.sha }}
       - name: Run Composer
         run: |
           composer config http-basic.composer.wp.dsd.io ${{ secrets.COMPOSER_USER }} ${{ secrets.COMPOSER_PASS }}
@@ -41,11 +41,11 @@ jobs:
       - name: Push WordPress image to ECR
         uses: jwalton/gh-ecr-push@v1
         with:
-          access-key-id: ${{ secrets.ECR_AWS_ACCESS_KEY_ID_STAGING_TEST }}
-          secret-access-key: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY_STAGING_TEST }}
+          access-key-id: ${{ secrets.ECR_AWS_ACCESS_KEY_ID_STAGING }}
+          secret-access-key: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY_STAGING }}
           region: eu-west-2
           local-image: hale-platform_wordpress
-          image: ${{ secrets.ECR_NAME_STAGING_TEST }}:hale-platform_wordpress-${{ github.sha }}
+          image: ${{ secrets.ECR_NAME_STAGING }}:hale-platform_wordpress-${{ github.sha }}
 
   deployDemo:
     name: Deploy to Demonstration 
@@ -194,8 +194,8 @@ jobs:
           --set configmap.servername=${{ secrets.KUBE_NAMESPACE_STAGING }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.KUBE_NAMESPACE_STAGING }}-green \
           --set domain=${{ secrets.KUBE_NAMESPACE_STAGING }}.apps.live.cloud-platform.service.justice.gov.uk \
-          --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME_STAGING_TEST }}:hale-platform_nginx-${{ github.sha }} \
-          --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME_STAGING_TEST }}:hale-platform_wordpress-${{ github.sha }}
+          --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME_STAGING }}:hale-platform_nginx-${{ github.sha }} \
+          --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME_STAGING }}:hale-platform_wordpress-${{ github.sha }}
 
   ecrCleanStaging:
     name: ECR clean - Staging
@@ -205,13 +205,13 @@ jobs:
     - name: Run ECR clean-up script
       uses: ministryofjustice/ecr-images-cleaner-action@v1.0.1
       with:
-        aws-access-key-id: ${{ secrets.ECR_AWS_ACCESS_KEY_ID_STAGING_TEST }}
-        aws-secret-access-key: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY_STAGING_TEST }}
+        aws-access-key-id: ${{ secrets.ECR_AWS_ACCESS_KEY_ID_STAGING }}
+        aws-secret-access-key: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY_STAGING }}
         kube-cert: ${{ secrets.KUBE_CERT_STAGING }}
         kube-token: ${{ secrets.KUBE_TOKEN_STAGING }}
         kube-cluster: ${{ secrets.KUBE_CLUSTER_STAGING }}
         kube-namespace: ${{ secrets.KUBE_NAMESPACE_STAGING }}
-        ecr-repo-name: ${{ secrets.ECR_NAME_STAGING_TEST }}
+        ecr-repo-name: ${{ secrets.ECR_NAME_STAGING }}
         days-to-keep-old-images: 10 
         max-old-images-to-keep: 24
 
