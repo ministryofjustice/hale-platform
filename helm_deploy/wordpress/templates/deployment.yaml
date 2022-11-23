@@ -109,7 +109,7 @@ spec:
               name: wordpress
           volumeMounts:
             - name: wordpress-persistent-storage
-              mountPath: /var/www/html/
+              mountPath: /var/www/html/wp-content
           envFrom:
           - configMapRef:
                 name: wpconfig-{{ .Release.Revision }}
