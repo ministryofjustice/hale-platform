@@ -15,8 +15,6 @@ spec:
     - name: "443"
       port: 443
       targetPort: 443
-
-{{- if .Values.mariadb.enabled }}
 ---
 apiVersion: v1
 kind: Service
@@ -30,8 +28,6 @@ spec:
   selector:
     app: mariadb
     tier: frontend-c
-{{- end }}
-
 ---
 apiVersion: v1
 kind: Service

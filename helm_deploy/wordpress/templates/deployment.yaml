@@ -23,9 +23,8 @@ spec:
           ports:
             - containerPort: 8080
             - containerPort: 443
-
-{{- if .Values.mariadb.enabled }}
 ---
+{{- if .Values.mariadb.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -75,7 +74,6 @@ spec:
     requests:
       storage: 20Gi
 {{- end }}
-
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -111,7 +109,7 @@ spec:
               name: wordpress
           volumeMounts:
             - name: wordpress-persistent-storage
-              mountPath: /var/www/html/wp-content
+              mountPath: /var/www/html
           envFrom:
           - configMapRef:
                 name: wpconfig-{{ .Release.Revision }}
