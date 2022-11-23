@@ -1,5 +1,5 @@
 # Build WordPress multisite image
-FROM --platform=linux/amd64 wordpress:6.1-php7.4-fpm-alpine
+FROM --platform=linux/amd64 wordpress:6.1.1-php8.1-fpm-alpine
 
 # Adjust php.ini configuration settings
 # COPY custom.ini $PHP_INI_DIR/conf.d/
