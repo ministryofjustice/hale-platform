@@ -23,8 +23,9 @@ spec:
           ports:
             - containerPort: 8080
             - containerPort: 443
----
+
 {{- if .Values.mariadb.enabled }}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -74,6 +75,7 @@ spec:
     requests:
       storage: 20Gi
 {{- end }}
+
 ---
 apiVersion: apps/v1
 kind: Deployment
