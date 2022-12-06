@@ -44,7 +44,7 @@ RUN cp -r /usr/src/wordpress/wp-content/themes/ /var/www/html/wp-content/themes/
 
 # Create new user to run container as non-root
 RUN adduser --disabled-password hale -u 1002 && \
-    chown -R hale:hale /var/www/html
+    chown -R hale:hale /var/www/html/wp-content
 
 RUN chown hale:hale /usr/local/bin/docker-entrypoint.sh
 
