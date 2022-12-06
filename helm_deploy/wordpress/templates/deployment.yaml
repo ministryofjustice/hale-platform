@@ -109,7 +109,7 @@ spec:
               name: wordpress
           volumeMounts:
             - name: wordpress-persistent-storage
-              mountPath: /var/www/html/wp-content/uploads 
+              mountPath: /var/www/html 
           envFrom:
           - configMapRef:
                 name: wpconfig-{{ .Release.Revision }}
@@ -118,12 +118,12 @@ spec:
       volumes:
         - name: wordpress-persistent-storage
           persistentVolumeClaim:
-            claimName: wp-pvc-claim-alpha
+            claimName: wp-pvc-claim-beta
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name:  wp-pvc-claim-alpha
+  name:  wp-pvc-claim-beta
   labels:
      app: wordpress
 spec:
