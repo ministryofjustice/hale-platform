@@ -118,12 +118,12 @@ spec:
       volumes:
         - name: wordpress-persistent-storage
           persistentVolumeClaim:
-            claimName: wp-pvc-claim-reinitialize
+            claimName: wp-pvc-claim-alpha
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name:  wp-pvc-claim-reinitialize
+  name:  wp-pvc-claim-alpha
   labels:
      app: wordpress
 spec:
