@@ -108,22 +108,22 @@ spec:
             - containerPort: 8080
               name: wordpress
           volumeMounts:
-            - name: wordpress-persistent-storage
-              mountPath: /var/www/html 
+            - name: wordpress-persistent-storage-alpha
+              mountPath: /var/www/html/wp-content
           envFrom:
           - configMapRef:
                 name: wpconfig-{{ .Release.Revision }}
           - secretRef:
                 name: wpsecrets-{{ .Release.Revision }}
       volumes:
-        - name: wordpress-persistent-storage
+        - name: wordpress-persistent-storage-alpha
           persistentVolumeClaim:
-            claimName: wp-pvc-claim-beta
+            claimName: wp-pvc-claim
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name:  wp-pvc-claim-beta
+  name:  wp-pvc-claim
   labels:
      app: wordpress
 spec:
