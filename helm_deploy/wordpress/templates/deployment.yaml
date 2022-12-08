@@ -117,6 +117,7 @@ spec:
                 name: wpsecrets-{{ .Release.Revision }}
       volumes:
         - name: wordpress-pv
+            emptyDir: {}
           persistentVolumeClaim:
             claimName: wp-pvc-claim
 ---
