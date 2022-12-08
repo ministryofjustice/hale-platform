@@ -119,12 +119,12 @@ spec:
       volumes:
         - name: site-data
           persistentVolumeClaim:
-            claimName: wp-pvc-claim-02
+            claimName: wp-pvc-claim-{{ .Release.Revision }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name:  wp-pvc-claim-02
+  name:  wp-pvc-claim-{{ .Release.Revision }}
   labels:
      app: wordpress
 spec:
