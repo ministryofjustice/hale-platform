@@ -110,7 +110,7 @@ spec:
           volumeMounts:
             - name: site-data 
               mountPath: /var/www/html/wp-content
-            - name: wp-core-files
+            - name: site-data
               mountPath: /var/www/html
           envFrom:
           - configMapRef:
@@ -118,10 +118,7 @@ spec:
           - secretRef:
                 name: wpsecrets-{{ .Release.Revision }}
       volumes:
-        - name: site-data
-          persistentVolumeClaim:
-            claimName: wp-pvc-claim
-        - name: wp-core-files
+        - name: site-data 
           emptyDir: {}
           persistentVolumeClaim:
             claimName: wp-pvc-claim
