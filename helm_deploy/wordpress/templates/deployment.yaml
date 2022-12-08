@@ -109,8 +109,9 @@ spec:
               name: wordpress
           volumeMounts:
             - name: site-data 
+              mountPath: /var/www/html/wp-content
+            - name: wp-core-files
               mountPath: /var/www/html
-              subPath: wp-content
           envFrom:
           - configMapRef:
                 name: wpconfig-{{ .Release.Revision }}
@@ -119,12 +120,16 @@ spec:
       volumes:
         - name: site-data
           persistentVolumeClaim:
-            claimName: wp-pvc-claim-{{ .Release.Revision }}
+            claimName: wp-pvc-claim
+        - name: wp-core-files
+          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: wp-pvc-claim
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name:  wp-pvc-claim-{{ .Release.Revision }}
+  name:  wp-pvc-claim
   labels:
      app: wordpress
 spec:
