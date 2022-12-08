@@ -118,8 +118,8 @@ spec:
       volumes:
         - name: wordpress-pv
           emptyDir: {}
-          persistentVolumeClaim:
-            claimName: wp-pvc-claim
+ #         persistentVolumeClaim:
+ #           claimName: wp-pvc-claim
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
