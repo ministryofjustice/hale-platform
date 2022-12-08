@@ -108,7 +108,7 @@ spec:
             - containerPort: 8080
               name: wordpress
           volumeMounts:
-            - name: wordpress-persistent-storage
+            - name: wordpress-pv
               mountPath: /var/www/html
           envFrom:
           - configMapRef:
@@ -116,7 +116,7 @@ spec:
           - secretRef:
                 name: wpsecrets-{{ .Release.Revision }}
       volumes:
-        - name: wordpress-persistent-storage
+        - name: wordpress-pv
           emptyDir: {}
           persistentVolumeClaim:
             claimName: wp-pvc-claim
