@@ -11,6 +11,14 @@ wp config set COOKIE_DOMAIN "\$_SERVER['HTTP_HOST']" --raw
 wp config set WP_ENVIRONMENT_TYPE "\$_SERVER['WP_ENVIRONMENT_TYPE']" --raw 
 wp config set WP_DEBUG true --raw
 wp config set AUTOMATIC_UPDATER_DISABLED true --raw
+wp config set WORDPRESS_AUTH_KEY "${WORDPRESS_AUTH_KEY_FILE}" --raw
+wp config set WORDPRESS_AUTH_SALT "${WORDPRESS_AUTH_SALT_FILE}" --raw
+wp config set WORDPRESS_LOGGED_IN_KEY "${WORDPRESS_LOGGED_IN_KEY_FILE}" --raw
+wp config set WORDPRESS_LOGGED_IN_SALT "${WORDPRESS_LOGGED_IN_SALT_FILE}" --raw
+wp config set WORDPRESS_NONCE_KEY "${WORDPRESS_NONCE_KEY_FILE}" --raw
+wp config set WORDPRESS_NONCE_SALT "${WORDPRESS_NONCE_SALT_FILE}" --raw
+wp config set WORDPRESS_SECURE_AUTH_KEY "${WORDPRESS_SECURE_AUTH_KEY_FILE}" --raw
+wp config set WORDPRESS_SECURE_AUTH_SALT "${WORDPRESS_SECURE_AUTH_SALT_FILE}" --raw
 
 #WP core install
 wp core multisite-install --title="Hale Multisite Platform" \
