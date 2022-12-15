@@ -1,6 +1,10 @@
 # Build WordPress multisite image
 FROM --platform=linux/amd64 wordpress:6.1.1-php8.0-fpm-alpine
 
+
+ARG WORDPRESS_AUTH_KEY_FILE_ARG
+ENV WORDPRESS_AUTH_KEY_FILE $WORDPRESS_AUTH_KEY_FILE_ARG
+
 # Adjust php.ini configuration settings
 # COPY custom.ini $PHP_INI_DIR/conf.d/
 

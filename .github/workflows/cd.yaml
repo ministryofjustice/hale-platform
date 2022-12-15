@@ -38,6 +38,11 @@ jobs:
       - name: Build WordPress image
         run: |
           docker build --pull --no-cache --tag hale-platform_wordpress --file wp.dockerfile .
+        with:
+          docker_build_args: |
+            WORDPRESS_AUTH_KEY_FILE_ARG
+        env:
+          WORDPRESS_AUTH_KEY_FILE_ARG: ${{ secrets.WORDPRESS_AUTH_KEY_FILE }}
       - name: Push WordPress image to ECR
         uses: jwalton/gh-ecr-push@v1
         with:
