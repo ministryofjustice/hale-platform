@@ -192,6 +192,7 @@ jobs:
           --set secrets.wpadminemail=${{ secrets.WORDPRESS_ADMIN_EMAIL }} \
           --set secrets.wpadminuser=${{ secrets.WORDPRESS_ADMIN_USER }} \
           --set secrets.wpadminpassword=${{ secrets.WORDPRESS_ADMIN_PASSWORD }} \
+          --set secrets.wpauthkeyfile=${{ secrets.WORDPRESS_AUTH_KEY_FILE }} \
           --set configmap.wpenvtype=${{ secrets.WP_ENV_TYPE }} \
           --set configmap.servername=${{ secrets.KUBE_NAMESPACE_STAGING }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.KUBE_NAMESPACE_STAGING }}-green \

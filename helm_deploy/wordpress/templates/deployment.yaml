@@ -119,8 +119,7 @@ spec:
         - name: wordpress-pv
           emptyDir: {}
  #         persistentVolumeClaim:
- #           claimName: wp-pvc-claim
-      command: ['sh', '-c', "wp config set WORDPRESS_AUTH_SALT_FILE $(WP_ENV_TYPE)"]
+ #         claimName: wp-pvc-claim
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
