@@ -194,6 +194,12 @@ jobs:
           --set secrets.wpadminpassword=${{ secrets.WORDPRESS_ADMIN_PASSWORD }} \
           --set secrets.wpauthkeyfile=${{ secrets.WORDPRESS_AUTH_KEY_FILE }} \
           --set secrets.wpauthsaltfile=${{ secrets.WORDPRESS_AUTH_SALT_FILE }} \
+          --set secrets.wploggedinkeyfile=${{ secrets.WORDPRESS_LOGGED_IN_KEY_FILE }} \
+          --set secrets.wploggedinsaltfile=${{ secrets.WORDPRESS_LOGGED_IN_SALT_FILE }} \
+          --set secrets.wpnoncekeyfile=${{ secrets.WORDPRESS_NONCE_KEY_FILE }} \
+          --set secrets.wpnoncesaltfile=${{ secrets.WORDPRESS_NONCE_SALT_FILE }} \
+          --set secrets.wpsecureauthkeyfile=${{ secrets.WORDPRESS_SECURE_AUTH_KEY_FILE }} \
+          --set secrets.wpsecureauthsaltfile=${{ secrets.WORDPRESS_SECURE_AUTH_SALT_FILE }} \
           --set configmap.wpenvtype=${{ secrets.WP_ENV_TYPE }} \
           --set configmap.servername=${{ secrets.KUBE_NAMESPACE_STAGING }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.KUBE_NAMESPACE_STAGING }}-green \
