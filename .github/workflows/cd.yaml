@@ -27,6 +27,10 @@ jobs:
           region: eu-west-2
           local-image: hale-platform_nginx
           image: ${{ secrets.ECR_NAME_STAGING }}:hale-platform_nginx-${{ github.sha }}
+          docker_build_args: |
+            WORDPRESS_AUTH_KEY_FILE_ARG
+        env:
+          WORDPRESS_AUTH_KEY_FILE_ARG: ${{ secrets.WORDPRESS_AUTH_KEY_FILE }}
       - name: Run Composer
         run: |
           composer config http-basic.composer.wp.dsd.io ${{ secrets.COMPOSER_USER }} ${{ secrets.COMPOSER_PASS }}
@@ -36,14 +40,8 @@ jobs:
           npm install --prefix ./wordpress/wp-content/themes/wp-hale
           npm run production --if-present --prefix ./wordpress/wp-content/themes/wp-hale
       - name: Build WordPress image
-        uses: actions/checkout@v3
         run: |
           docker build --pull --no-cache --tag hale-platform_wordpress --file wp.dockerfile .
-        with:
-          docker_build_args: |
-            WORDPRESS_AUTH_KEY_FILE_ARG
-        env:
-          WORDPRESS_AUTH_KEY_FILE_ARG: ${{ secrets.WORDPRESS_AUTH_KEY_FILE }}
       - name: Push WordPress image to ECR
         uses: jwalton/gh-ecr-push@v1
         with:
