@@ -104,8 +104,6 @@ spec:
         - image: {{ .Values.wp.image.repository }}
           imagePullPolicy: {{ .Values.wp.image.imagePullPolicy }} 
           name: wordpress
-          command: ["/bin/bash"]
-          args: ["-c", "wp config set WORDPRESS_AUTH_SALT_FILE pusheen3"]
           ports:
             - containerPort: 8080
               name: wordpress
@@ -122,6 +120,10 @@ spec:
           emptyDir: {}
  #         persistentVolumeClaim:
  #           claimName: wp-pvc-claim
+      initContainers:
+      - name: init-wp
+        imagePullPolicy: {{ .Values.wp.image.imagePullPolicy }}
+        command: ['sh', '-c', "wp config set WORDPRESS_AUTH_SALT_FILE $(WP_ENV_TYPE)"]
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
