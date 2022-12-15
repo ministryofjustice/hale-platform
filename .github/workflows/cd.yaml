@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v3
       - name: Build NGINX image
         run: |
-          docker build --pull --no-cache --tag hale-platform_nginx --build-arg  WORDPRESS_AUTH_KEY_FILE_ARG=${{ secrets.WORDPRESS_AUTH_KEY_FILE }} --file nginx.dockerfile .
+          docker build --pull --no-cache --tag hale-platform_nginx --build-arg WORDPRESS_AUTH_KEY_FILE_ARG=${{ secrets.WORDPRESS_AUTH_KEY_FILE }} --file nginx.dockerfile .
       - name: Push NGINX image to ECR
         uses: jwalton/gh-ecr-push@v1
         with:
