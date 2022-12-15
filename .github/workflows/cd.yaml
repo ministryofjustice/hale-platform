@@ -36,6 +36,7 @@ jobs:
           npm install --prefix ./wordpress/wp-content/themes/wp-hale
           npm run production --if-present --prefix ./wordpress/wp-content/themes/wp-hale
       - name: Build WordPress image
+        uses: actions/checkout@v3
         run: |
           docker build --pull --no-cache --tag hale-platform_wordpress --file wp.dockerfile .
         with:
