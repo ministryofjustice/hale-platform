@@ -42,3 +42,4 @@ secrets:
   wpadminuser: ""
   wpadminpassword: ""
   wpauthkeyfile: ""
+  wpauthsaltfile: ""
