@@ -120,11 +120,7 @@ spec:
           emptyDir: {}
  #         persistentVolumeClaim:
  #           claimName: wp-pvc-claim
-      initContainers:
-      - name: init-wp
-        image: {{ .Values.wp.image.repository }}
-        imagePullPolicy: {{ .Values.wp.image.imagePullPolicy }}
-        command: ['sh', '-c', "wp config set WORDPRESS_AUTH_SALT_FILE $(WP_ENV_TYPE)"]
+      command: ['sh', '-c', "wp config set WORDPRESS_AUTH_SALT_FILE $(WP_ENV_TYPE)"]
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

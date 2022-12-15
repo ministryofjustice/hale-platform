@@ -39,7 +39,7 @@ jobs:
           npm run production --if-present --prefix ./wordpress/wp-content/themes/wp-hale
       - name: Build WordPress image
         run: |
-          docker build --pull --no-cache --tag hale-platform_wordpress --build-arg WORDPRESS_AUTH_KEY_FILE_ARG=${{ secrets.WORDPRESS_AUTH_KEY_FILE }} --file wp.dockerfile .
+          docker build --pull --no-cache --tag hale-platform_wordpress --file wp.dockerfile .
       - name: Push WordPress image to ECR
         uses: jwalton/gh-ecr-push@v1
         with:
