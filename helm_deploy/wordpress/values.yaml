@@ -10,7 +10,7 @@ domain: ""
 nginx:
   image:
     repository: "" 
-    imagePullPolicy: IfNotPresent
+    imagePullPolicy: Always 
     replicaCount: 1 
  
 wp:
