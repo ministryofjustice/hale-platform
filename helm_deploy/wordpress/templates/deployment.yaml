@@ -11,7 +11,7 @@ spec:
     type: RollingUpdate
     rollingUpdate:
         maxSurge: 1
-        maxUnaviable: 0
+        maxUnavailable: 0
   selector:
     matchLabels:
       app: nginx
@@ -92,7 +92,7 @@ spec:
     type: RollingUpdate
     rollingUpdate:
         maxSurge: 1
-        maxUnaviable: 0
+        maxUnavailable: 0
   selector:
     matchLabels:
       app: wordpress
