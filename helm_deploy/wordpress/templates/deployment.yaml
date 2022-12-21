@@ -23,6 +23,11 @@ spec:
           ports:
             - containerPort: 8080
             - containerPort: 443
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
 ---
 {{- if .Values.mariadb.enabled }}
 apiVersion: apps/v1
