@@ -1,11 +1,11 @@
 # Build WordPress multisite image
-FROM --platform=linux/amd64 wordpress:6.1.1-php8.0-fpm-alpine
+FROM --platform=linux/amd64 wordpress:6.1.1-php8.1-fpm-alpine
 
 # Adjust php.ini configuration settings
 # COPY custom.ini $PHP_INI_DIR/conf.d/
 
 # Adjust PHP-FPM configuration settings
-COPY ./php/www.conf /usr/local/etc/php-fpm.d/www.conf 
+COPY ./opt/php/www.conf /usr/local/etc/php-fpm.d/www.conf 
 
 # Set permissions for wp-cli
 RUN addgroup -g 1001 wp && adduser -G wp -g wp -s /bin/sh -D wp && \
@@ -17,8 +17,8 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
     mv wp-cli.phar /usr/local/bin/wp
 
 # Add WP multisite network scripts
-COPY opt/hale-entrypoint.sh /usr/local/bin/
-COPY opt/config.sh /usr/local/bin/
+COPY opt/scripts/hale-entrypoint.sh /usr/local/bin/
+COPY opt/scripts/config.sh /usr/local/bin/
 
 # Make multisite scripts executable
 RUN chmod +x /usr/local/bin/hale-entrypoint.sh && \

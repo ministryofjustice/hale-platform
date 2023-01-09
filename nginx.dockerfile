@@ -1,4 +1,5 @@
 FROM --platform=linux/amd64 nginxinc/nginx-unprivileged:1.23.3
 
-COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
-COPY ./nginx/default.conf /etc/nginx/conf.d/default.conf
+# Copy custom NGINX configurations required for WordPress Multisite
+COPY opt/nginx/nginx.conf /etc/nginx/
+COPY opt/nginx/wordpress.conf /etc/nginx/conf.d/
