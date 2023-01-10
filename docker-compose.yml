@@ -18,6 +18,8 @@ services:
       - 8080:8080
     volumes:
       - ./wordpress:/var/www/html:delegated
+      - ./opt/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./opt/nginx/wordpress.conf:/etc/nginx/conf.d/wordpress.conf
     depends_on:
       - wordpress
     networks:
