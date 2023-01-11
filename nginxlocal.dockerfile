@@ -1,7 +1,12 @@
-FROM --platform=linux/amd64 nginxinc/nginx-unprivileged:1.23.3
+FROM --platform=linux/arm64v8 arm64v8/nginx
+
+RUN apt-get -y update
+RUN apt-get -y install vim
 
 # Copy custom NGINX configurations required for WordPress Multisite
 COPY opt/nginx/nginx.conf /etc/nginx/
 COPY opt/nginx/wordpress.conf /etc/nginx/conf.d/
 
-RUN rm -r /etc/nginx/conf.d/default.conf
+RUN rm -r /etc/nginx/conf.d/wordpress.conf
+
+EXPOSE 8080

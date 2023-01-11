@@ -2,7 +2,7 @@
 FROM --platform=linux/amd64 wordpress:6.1.1-php8.1-fpm-alpine
 
 # Adjust php.ini configuration settings
-# COPY custom.ini $PHP_INI_DIR/conf.d/
+#COPY custom.ini $PHP_INI_DIR/conf.d/
 
 # Adjust PHP-FPM configuration settings
 COPY ./opt/php/www.conf /usr/local/etc/php-fpm.d/www.conf 
@@ -27,7 +27,7 @@ RUN chmod +x /usr/local/bin/hale-entrypoint.sh && \
 # Install additional Alpine packages
 RUN apk update && \
     apk add less && \
-    apk add neovim --no-cache
+    apk add vim --no-cache
 
 # Generated Composer and NPM compiled artifacts (plugins, themes, CSS, JS)
 # are copied into place here, where WP Offical image expects. Note: artifacts 

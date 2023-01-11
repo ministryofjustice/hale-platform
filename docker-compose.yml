@@ -9,10 +9,10 @@ volumes:
 
 services:
   nginx:
-    platform: linux/amd64
+    platform: linux/arm64v8
     build:
       context: .
-      dockerfile: nginx.dockerfile
+      dockerfile: nginxlocal.dockerfile
     container_name: nginx
     ports:
       - 8080:8080
