@@ -12,7 +12,7 @@ services:
     platform: linux/arm64v8
     build:
       context: .
-      dockerfile: nginxlocal.dockerfile
+      dockerfile: nginx.root.dockerfile
     container_name: nginx
     ports:
       - 8080:8080
@@ -24,6 +24,8 @@ services:
       - wordpress
     networks:
       - wordpress
+    env_file:
+      - .env.local
     environment:
       VIRTUAL_HOST: hale.docker
       VIRTUAL_PORT: 8080
