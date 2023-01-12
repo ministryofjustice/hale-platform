@@ -7,3 +7,4 @@ auth.json
 vendor/
 wordpress/
 !helm_deploy/wordpress/
+bin/certs/
