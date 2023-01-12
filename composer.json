@@ -2,7 +2,7 @@
     "name": "wp/multisite",
     "type": "project",
     "license": "MIT",
-    "description": "Hale multisite required packages,
+    "description": "Hale multisite required packages",
     "authors": [],
     "keywords": ["wordpress", "stack", "composer", "wp, multisite, php"],
     "support": {
