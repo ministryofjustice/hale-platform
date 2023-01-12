@@ -21,9 +21,9 @@ environments you can use the kubernetes build.
 -   [Stern - logging and debugging](https://github.com/wercker/stern)
 -   [JQ - processing JSON](https://stedolan.github.io/jq)
 
-## Kubernetes
+## Launch instructions
 
-### Launch instructions
+### Kubernetes
 
 You will need an `.env.local` file in the root of this project with all the
 variables needed to run the app. Get this from Rob or Adam until we have
@@ -35,13 +35,11 @@ a proper place for it.
 3. Run `make deploylocal` to run the helm command which launches the site. 
 3. If all is running, go to `http://hale.docker` in your browser. You will be greeted by a WP installation page.
 
-## Docker
-
-### Launch instructions
+### Docker
 
 In terminal run `make launch`. For other commands see `makefile`.
 
-### Setup the https certs (currently only setup for Docker not k8s)
+## Setup the https certs (currently only setup for Docker not k8s)
 
 1. Run `brew install mkcert` (if you don't have it)
 2. Run `mkdir -r /nginx/certs` , to create a new /certs folder.
