@@ -2,24 +2,11 @@
     "name": "wp/multisite",
     "type": "project",
     "license": "MIT",
-    "description": "A WordPress stack",
-    "homepage": "https://roots.io/bedrock/",
-    "authors": [
-        {
-            "name": "Scott Walkinshaw",
-            "email": "scott.walkinshaw@gmail.com",
-            "homepage": "https://github.com/swalkinshaw"
-        },
-        {
-            "name": "Ben Word",
-            "email": "ben@benword.com",
-            "homepage": "https://github.com/retlehs"
-        }
-    ],
-    "keywords": ["wordpress", "stack", "composer", "wp"],
+    "description": "Hale multisite required packages,
+    "authors": [],
+    "keywords": ["wordpress", "stack", "composer", "wp, multisite, php"],
     "support": {
-        "issues": "https://github.com/roots/bedrock/issues",
-        "forum": "https://discourse.roots.io/category/bedrock"
+        "issues": "https://github.com/ministryofjustice/hale-platform/issues" 
     },
     "config": {
         "allow-plugins": true
