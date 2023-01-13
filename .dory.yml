@@ -14,7 +14,7 @@ dory:
   nginx_proxy:
     enabled: true
     container_name: dory_dinghy_http_proxy
-    https_enabled: true
+    https_enabled: false 
     ssl_certs_dir: ''
     port: 80
     tls_port: 443
