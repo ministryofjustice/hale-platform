@@ -3,25 +3,25 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-name: hale-platform-security-txt-redirect
-annotations:
-    external-dns.alpha.kubernetes.io/set-identifier: {{ .Values.ingress.metadata.annotations.setidentifier }}
+  name: hale-platform-security-txt-redirect
+  annotations:
+    external-dns.alpha.kubernetes.io/set-identifier: {{ .Values.ingress.metadata.annotations.setidentifier }} 
     external-dns.alpha.kubernetes.io/aws-weight: "100"
     nginx.ingress.kubernetes.io/permanent-redirect: https://raw.githubusercontent.com/ministryofjustice/security-guidance/main/contact/vulnerability-disclosure-security.txt
 spec:
-ingressClassName: default
-tls:
-- hosts:
-  - {{ .Values.domain }}
+  ingressClassName: modsec 
+  tls:
+  - hosts:
+    - {{ .Values.domain }} 
   rules:
-    - host: {{ .Values.domain }}
-      http:
+  - host: {{ .Values.domain }} 
+    http:
       paths:
       - path: /.well-known/security.txt
-      pathType: ImplementationSpecific
-      backend:
-       service:
-        name: hale-platform-security-text-redirect
-        port:
-         number: 4567
+        pathType: ImplementationSpecific 
+        backend:
+          service:
+            name: hale-platform-security-text-redirect 
+            port:
+              number: 4567 
 {{- end }}
