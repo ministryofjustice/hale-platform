@@ -23,5 +23,5 @@ spec:
           service:
             name: hale-platform-security-text-redirect 
             port:
-              number: 4567 
+              number: 8080
 {{- end }}
