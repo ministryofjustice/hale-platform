@@ -5,7 +5,7 @@ kind: Ingress
 metadata:
   name: hale-platform-security-txt-redirect
   annotations:
-    external-dns.alpha.kubernetes.io/set-identifier: {{ .Values.ingress.metadata.annotations.setidentifier }} 
+    external-dns.alpha.kubernetes.io/set-identifier: hale-platform-security-txt-redirect-{{ .Values.domain }}-green
     external-dns.alpha.kubernetes.io/aws-weight: "100"
     nginx.ingress.kubernetes.io/permanent-redirect: https://raw.githubusercontent.com/ministryofjustice/security-guidance/main/contact/vulnerability-disclosure-security.txt
 spec:
