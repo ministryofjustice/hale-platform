@@ -21,6 +21,7 @@ services:
       - ./wordpress:/var/www/html:delegated
       - ./opt/nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./opt/nginx/localwordpress.conf:/etc/nginx/conf.d/localwordpress.conf
+      - ./bin/certs:/etc/nginx/certs/self-signed/
     depends_on:
       - wordpress
       - mariadb
