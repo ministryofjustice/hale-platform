@@ -36,10 +36,15 @@ a proper place for it.
 3. If all is running, go to `http://hale.docker` in your browser. You will be greeted by a WP installation page.
 
 ### Docker
+Make sure you have the `.env.local` file with correct .env vars in the root of 
+this repository.
 
-In terminal run `make launch`. For other commands see `makefile`.
+1. Create and install local TLS certs so the site runs on https.
+2. Run `Dory up` from within this repository.
+3. Run `make build`. This builds the images required and all assets.
+4. Run `make run` to launch the site on https://hale.docker
 
-## Setup the https certs (currently only setup for Docker not k8s)
+## Create and install TLS certs (currently only setup for Docker not k8s)
 
 1. Run `brew install mkcert` to install the mkcert app.
 2. Run `mkdir -r /bin/certs` in the root of this repository, to create a new /certs folder in the bin/ directory.
