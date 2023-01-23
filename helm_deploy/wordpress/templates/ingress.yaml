@@ -8,7 +8,7 @@ metadata:
     external-dns.alpha.kubernetes.io/set-identifier: {{ .Values.ingress.metadata.annotations.setidentifier }} 
     external-dns.alpha.kubernetes.io/aws-weight: "100"
 spec:
-  ingressClassName: default 
+  ingressClassName: modsec 
   tls:
   - hosts:
     - {{ .Values.domain }} 
