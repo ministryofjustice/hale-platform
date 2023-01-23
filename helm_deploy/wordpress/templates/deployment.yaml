@@ -101,6 +101,7 @@ spec:
           name: wordpress
           ports:
             - containerPort: 8080
+            - containerPort: 443
               name: wordpress
           volumeMounts:
             - name: wordpress-pv
