@@ -42,6 +42,8 @@ spec:
   ports:
     - name: "9000"
       port: 9000
+    - name: "443"
+      port: 443
   selector:
     app: wordpress
     tier: frontend-c
