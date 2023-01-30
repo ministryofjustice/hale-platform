@@ -23,6 +23,9 @@ spec:
           ports:
             - containerPort: 8080
             - containerPort: 443
+          volumeMounts:
+            - name: wordpress-pv
+              mountPath: /var/www/html
       volumes:
         - name: wordpress-pv
             emptyDir: {}
