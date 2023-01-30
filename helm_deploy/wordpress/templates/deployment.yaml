@@ -28,7 +28,7 @@ spec:
               mountPath: /var/www/html
       volumes:
         - name: wordpress-pv
-            emptyDir: {}
+          emptyDir: {}
 ---
 {{- if .Values.mariadb.enabled }}
 apiVersion: apps/v1
