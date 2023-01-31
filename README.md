@@ -49,9 +49,10 @@ this repository.
 1. Run `brew install mkcert` to install the mkcert app.
 2. Run `mkdir -r /bin/certs` in the root of this repository, to create a new /certs folder in the bin/ directory.
 3. In the /certs folder run `mkcert hale.docker` to create the certificates.
-4. Make sure Dory is running `Dory up`.
-5. Run `Make build`, to build the image and pull in the new cert pem files.
-6. Go to your browser at the URL https://hale.docker
+4. Run `mkcert -install` to apply certificates to your mac.
+5. Make sure Dory is running `Dory up`.
+6. Run `Make build`, to build the image and pull in the new cert pem files.
+7. Go to your browser at the URL https://hale.docker
 
 ## Themes and Plugins
 
