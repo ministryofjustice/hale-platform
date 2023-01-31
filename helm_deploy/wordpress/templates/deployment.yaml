@@ -100,7 +100,7 @@ spec:
     spec:
       initContainers:
       - name: init-wp-setup
-      - image: {{ .Values.wp.image.repository }}
+        image: {{ .Values.wp.image.repository }}
         command:
         - rm
         - "-r"
