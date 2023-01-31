@@ -23,6 +23,9 @@ spec:
           ports:
             - containerPort: 8080
             - containerPort: 443
+          volumeMounts:
+            - name: wordpress-pv
+              mountPath: /var/www/html
 ---
 {{- if .Values.mariadb.enabled }}
 apiVersion: apps/v1
@@ -95,6 +98,14 @@ spec:
         app: wordpress
         tier: frontend-c
     spec:
+      initContainers:
+      - name: init-wp-setup
+      - image: {{ .Values.wp.image.repository }}
+        command:
+        - rm
+        - "-r"
+        - "/var/www/html/."
+        - "/wordpress-pv"
       containers:
         - image: {{ .Values.wp.image.repository }}
           imagePullPolicy: {{ .Values.wp.image.imagePullPolicy }} 
@@ -113,9 +124,8 @@ spec:
                 name: wpsecrets-{{ .Release.Revision }}
       volumes:
         - name: wordpress-pv
-          emptyDir: {}
-          #persistentVolumeClaim:
-            #claimName: wp-pvc-claim
+          persistentVolumeClaim:
+            claimName: wp-pvc-claim
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
