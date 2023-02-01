@@ -50,7 +50,7 @@ In terminal run `make launch`. For other commands see `makefile`.
 5. In this root directory, run `make build`.
 6. Go to your browser at the URL wordpress-docker.test
 
-## Themes and Plugins.
+## Themes and Plugins
 
 WordPress themes and plugins are loaded as part of the Docker image build. They
 are pulled into the build using PHP's Composer dependancy manager. To add or
