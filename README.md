@@ -59,3 +59,39 @@ this repository.
 WordPress themes and plugins are loaded as part of the Docker image build. They
 are pulled into the build using PHP's Composer dependancy manager. To add or
 remove plugins, modify the composer.json file in the root of this directory.
+
+## Deployment
+Our deployment pipeline uses GitActions to deploy to our various environments.
+
+Hale platform can be deployed to 4 environments:
+- Demonstration
+- Development
+- Staging
+- Production
+
+### Demonstration
+
+The Demo environment is for showcases features and site functions to
+stakeholders. A commit to the `demo` branch will trigger a build of the site to
+the demostration environment. 
+
+### Development
+
+The Dev environment is for developers. This can be used for testing and
+trailing features and functions in a CloudPlatform environment. A commit to the
+`dev` branch will trigger a build in the development environment.
+
+### Staging
+
+The Staging environment is the preprod environment, used to test code
+deployments before they reach production. A commit to the `main` branch will
+trigger a build to the staging environment.
+
+### Production
+
+The Prod environment is the live environment for the multisite. Once a code
+change has been tested on staging, you can trigger the build to move from
+staging to production via the `Review deployments` button on the GitAction run
+page. If you don't have a review deployments button you may not have the
+correct permissions to deploy to production.
+
