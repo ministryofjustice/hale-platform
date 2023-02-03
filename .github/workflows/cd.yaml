@@ -49,6 +49,46 @@ jobs:
           local-image: hale-platform_wordpress:latest
           image: ${{ secrets.ECR_NAME_STAGING }}:hale-platform_wordpress-${{ github.sha }}
 
+  buildDemo:
+    name: Build and push to ECR
+    runs-on: ubuntu-latest
+    environment: demostration
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Build NGINX image
+        run: |
+          docker build --pull --no-cache --tag hale-platform_nginx --file nginx.dockerfile .
+      - name: Push NGINX image to ECR
+        uses: jwalton/gh-ecr-push@v1
+        with:
+          access-key-id: ${{ secrets.ECR_AWS_ACCESS_KEY_ID_DEMO }}
+          secret-access-key: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY_DEMO }}
+          region: eu-west-2
+          local-image: hale-platform_nginx
+          image: ${{ secrets.ECR_NAME_DEMO }}:hale-platform_nginx-${{ github.sha }}
+        env:
+          WORDPRESS_AUTH_KEY_FILE_ARG: ${{ secrets.WORDPRESS_AUTH_KEY_FILE }}
+      - name: Run Composer
+        run: |
+          composer config http-basic.composer.wp.dsd.io ${{ secrets.COMPOSER_USER }} ${{ secrets.COMPOSER_PASS }}
+          composer install --prefer-dist --no-progress
+      - name: Run NPM
+        run: |
+          npm install --prefix ./wordpress/wp-content/themes/wp-hale
+          npm run production --if-present --prefix ./wordpress/wp-content/themes/wp-hale
+      - name: Build WordPress image
+        run: |
+          docker build --pull --no-cache --tag hale-platform_wordpress --file wp.dockerfile .
+      - name: Push WordPress image to ECR
+        uses: jwalton/gh-ecr-push@v1
+        with:
+          access-key-id: ${{ secrets.ECR_AWS_ACCESS_KEY_ID_DEMO }}
+          secret-access-key: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY_DEMO }}
+          region: eu-west-2
+          local-image: hale-platform_wordpress:latest
+          image: ${{ secrets.ECR_NAME_DEMO }}:hale-platform_wordpress-${{ github.sha }}
+  
   deployDemo:
     name: Deploy to Demonstration 
     if: github.event.ref == 'refs/heads/demo'
@@ -81,6 +121,14 @@ jobs:
           --set secrets.wpadminuser=${{ secrets.WORDPRESS_ADMIN_USER }} \
           --set secrets.wpadminpassword=${{ secrets.WORDPRESS_ADMIN_PASSWORD }} \
           --set configmap.servername=${{ secrets.KUBE_NAMESPACE_DEMO }}.apps.live.cloud-platform.service.justice.gov.uk \
+          --set secrets.wpauthkey=${{ secrets.WORDPRESS_AUTH_KEY_FILE }} \
+          --set secrets.wpauthsalt=${{ secrets.WORDPRESS_AUTH_SALT_FILE }} \
+          --set secrets.wploggedinkey=${{ secrets.WORDPRESS_LOGGED_IN_KEY_FILE }} \
+          --set secrets.wploggedinsalt=${{ secrets.WORDPRESS_LOGGED_IN_SALT_FILE }} \
+          --set secrets.wpnoncekey=${{ secrets.WORDPRESS_NONCE_KEY_FILE }} \
+          --set secrets.wpnoncesalt=${{ secrets.WORDPRESS_NONCE_SALT_FILE }} \
+          --set secrets.wpsecureauthkey=${{ secrets.WORDPRESS_SECURE_AUTH_KEY_FILE }} \
+          --set secrets.wpsecureauthsalt=${{ secrets.WORDPRESS_SECURE_AUTH_SALT_FILE }} \
           --set configmap.wpenvtype=${{ secrets.WP_ENV_TYPE }} \
           --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.KUBE_NAMESPACE_DEMO }}-green \
           --set domain=${{ secrets.KUBE_NAMESPACE_DEMO }}.apps.live.cloud-platform.service.justice.gov.uk \
