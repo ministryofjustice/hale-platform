@@ -14,18 +14,15 @@ spec:
     metadata:
       labels:
         app: nginx
-        tier: frontend-c
+        tier: frontend
     spec:
       containers:
         - name: nginx
           image: {{ .Values.nginx.image.repository }}
-          imagePullPolicy: {{ .Values.nginx.image.imagePullPolicy }} 
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
             - containerPort: 443
-          volumeMounts:
-            - name: wordpress-pv
-              mountPath: /var/www/html
 ---
 {{- if .Values.mariadb.enabled }}
 apiVersion: apps/v1
@@ -98,24 +95,15 @@ spec:
         app: wordpress
         tier: frontend-c
     spec:
-      initContainers:
-      - name: init-wp-setup
-        image: {{ .Values.wp.image.repository }}
-        command:
-        - rm
-        - "-r"
-        - "/var/www/html/."
-        - "/wordpress-pv"
       containers:
         - image: {{ .Values.wp.image.repository }}
-          imagePullPolicy: {{ .Values.wp.image.imagePullPolicy }} 
+          imagePullPolicy: IfNotPresent
           name: wordpress
           ports:
             - containerPort: 8080
-            - containerPort: 443
               name: wordpress
           volumeMounts:
-            - name: wordpress-pv
+            - name: wordpress-persistent-storage
               mountPath: /var/www/html
           envFrom:
           - configMapRef:
@@ -123,7 +111,7 @@ spec:
           - secretRef:
                 name: wpsecrets-{{ .Release.Revision }}
       volumes:
-        - name: wordpress-pv
+        - name: wordpress-persistent-storage
           persistentVolumeClaim:
             claimName: wp-pvc-claim
 ---
