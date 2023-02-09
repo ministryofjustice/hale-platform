@@ -382,10 +382,10 @@ jobs:
           --install \
           --namespace ${{ secrets.KUBE_NAMESPACE_PROD }} \
           --values helm_deploy/wordpress/values.yaml \
-          --set secrets.wpdbuser=${{ secrets.WORDPRESS_DB_USER }} \
+          --set secrets.wpdbuser=${{ secrets.WORDPRESS_DB_USER_PROD }} \
           --set secrets.wpdbhost=${{ secrets.WORDPRESS_DB_HOST_PROD }} \
-          --set secrets.wpdbname=${{ secrets.WORDPRESS_DB_NAME }} \
-          --set secrets.wpdbpassword=${{ secrets.WORDPRESS_DB_PASSWORD }} \
+          --set secrets.wpdbname=${{ secrets.WORDPRESS_DB_NAME_PROD }} \
+          --set secrets.wpdbpassword=${{ secrets.WORDPRESS_DB_PASSWORD_PROD }} \
           --set secrets.wpadminemail=${{ secrets.WORDPRESS_ADMIN_EMAIL }} \
           --set secrets.wpadminuser=${{ secrets.WORDPRESS_ADMIN_USER }} \
           --set secrets.wpadminpassword=${{ secrets.WORDPRESS_ADMIN_PASSWORD }} \
