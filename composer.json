@@ -2,24 +2,11 @@
     "name": "wp/multisite",
     "type": "project",
     "license": "MIT",
-    "description": "A WordPress stack",
-    "homepage": "https://roots.io/bedrock/",
-    "authors": [
-        {
-            "name": "Scott Walkinshaw",
-            "email": "scott.walkinshaw@gmail.com",
-            "homepage": "https://github.com/swalkinshaw"
-        },
-        {
-            "name": "Ben Word",
-            "email": "ben@benword.com",
-            "homepage": "https://github.com/retlehs"
-        }
-    ],
-    "keywords": ["wordpress", "stack", "composer", "wp"],
+    "description": "Hale multisite required packages",
+    "authors": [],
+    "keywords": ["wordpress", "stack", "composer", "wp, multisite, php"],
     "support": {
-        "issues": "https://github.com/roots/bedrock/issues",
-        "forum": "https://discourse.roots.io/category/bedrock"
+        "issues": "https://github.com/ministryofjustice/hale-platform/issues" 
     },
     "config": {
         "allow-plugins": true
@@ -39,7 +26,7 @@
         }
     ],
     "require": {
-        "php": ">=7.1",
+        "php": ">=7.4",
         "composer/installers": "^v1.7.0",
         "vlucas/phpdotenv": "^3.0.0",
         "oscarotero/env": "^1.1.0",
@@ -59,7 +46,8 @@
         "ministryofjustice/wp-moj-components": "*",
         "ministryofjustice/wp-user-roles": "*",
         "ministryofjustice/cookie-compliance-for-wordpress": "*",
-        "ministryofjustice/wp-moj-blocks": "*"
+        "ministryofjustice/wp-moj-blocks": "*",
+        "ministryofjustice/wp-gov-uk-notify": "*"
     },
     "require-dev": {
         "squizlabs/php_codesniffer": "^3.0.2",

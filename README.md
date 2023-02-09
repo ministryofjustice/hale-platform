@@ -21,9 +21,9 @@ environments you can use the kubernetes build.
 -   [Stern - logging and debugging](https://github.com/wercker/stern)
 -   [JQ - processing JSON](https://stedolan.github.io/jq)
 
-## Kubernetes
+## Launch instructions
 
-### Launch instructions
+### Kubernetes
 
 You will need an `.env.local` file in the root of this project with all the
 variables needed to run the app. Get this from Rob or Adam until we have
@@ -35,23 +35,63 @@ a proper place for it.
 3. Run `make deploylocal` to run the helm command which launches the site. 
 3. If all is running, go to `http://hale.docker` in your browser. You will be greeted by a WP installation page.
 
-## Docker
+### Docker
+Make sure you have the `.env.local` file with correct .env vars in the root of 
+this repository.
 
-### Launch instructions
+1. Create and install local TLS certs so the site runs on https.
+2. Run `Dory up` from within this repository.
+3. Run `make build`. This builds the images required and all assets.
+4. Run `make run` to launch the site on https://hale.docker
 
-In terminal run `make launch`. For other commands see `makefile`.
+## Create and install TLS certs (currently only setup for Docker not k8s)
 
-### Setup the https certs (currently only setup for Docker not k8s)
-
-1. Run `brew install mkcert` (if you don't have it)
-2. Run `mkdir -r /nginx/certs` , to create a new /certs folder.
-3. In the /certs folder run `mkcert wordpress-docker.test`
-4. Go to your host file on your mac /etc/hosts and add the wordpress-docker.test domain name
-5. In this root directory, run `make build`.
-6. Go to your browser at the URL wordpress-docker.test
+1. Run `brew install mkcert` to install the mkcert app.
+2. Run `mkdir -r /bin/certs` in the root of this repository, to create a new /certs folder in the bin/ directory.
+3. In the /certs folder run `mkcert hale.docker` to create the certificates.
+4. Run `mkcert -install` to apply certificates to your mac.
+5. Make sure Dory is running `Dory up`.
+6. Run `Make build`, to build the image and pull in the new cert pem files.
+7. Go to your browser at the URL https://hale.docker
 
 ## Themes and Plugins.
 
 WordPress themes and plugins are loaded as part of the Docker image build. They
 are pulled into the build using PHP's Composer dependancy manager. To add or
 remove plugins, modify the composer.json file in the root of this directory.
+
+## Deployment
+Our deployment pipeline uses GitActions to deploy to our various environments.
+
+Hale platform can be deployed to 4 environments:
+- Demonstration
+- Development
+- Staging
+- Production
+
+### Demonstration
+
+The Demo environment is for showcases features and site functions to
+stakeholders. A commit to the `demo` branch will trigger a build of the site to
+the demostration environment. 
+
+### Development
+
+The Dev environment is for developers. This can be used for testing and
+trailing features and functions in a CloudPlatform environment. A commit to the
+`dev` branch will trigger a build in the development environment.
+
+### Staging
+
+The Staging environment is the preprod environment, used to test code
+deployments before they reach production. A commit to the `main` branch will
+trigger a build to the staging environment.
+
+### Production
+
+The Prod environment is the live environment for the multisite. Once a code
+change has been tested on staging, you can trigger the build to move from
+staging to production via the `Review deployments` button on the GitAction run
+page. If you don't have a review deployments button you may not have the
+correct permissions to deploy to production.
+

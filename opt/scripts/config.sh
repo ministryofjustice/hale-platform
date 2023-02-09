@@ -10,6 +10,8 @@ wp config set DOMAIN_CURRENT_SITE "\$_SERVER['SERVER_NAME']" --raw
 wp config set COOKIE_DOMAIN "\$_SERVER['HTTP_HOST']" --raw 
 wp config set WP_ENVIRONMENT_TYPE "\$_SERVER['WP_ENVIRONMENT_TYPE']" --raw 
 wp config set WP_DEBUG true --raw
+wp config set AUTOMATIC_UPDATER_DISABLED true --raw
+wp config set FORCE_SSL_ADMIN true --raw
 
 #WP core install
 wp core multisite-install --title="Hale Multisite Platform" \
@@ -22,19 +24,18 @@ wp core multisite-install --title="Hale Multisite Platform" \
     --quiet;
 
 # Run DB check and update
-wp core update-db --network
+wp core update-db --network --url="${SERVER_NAME}"
 
 # Setup Hale theme
 #wp theme enable wp-hale --network
 #wp theme enable wp-hale --activate
 
-wp theme enable twentytwentytwo --network
-wp theme enable twentytwentytwo --activate
+wp theme enable twentytwentytwo --network --url="${SERVER_NAME}"
+wp theme enable twentytwentytwo --activate --url="$SERVER_NAME"
 
 # Check plugins are activated
-wp plugin --network activate advanced-custom-fields-pro
-wp plugin --network activate wp-user-roles
-wp plugin --network activate wp-moj-blocks
-
+wp plugin --network activate advanced-custom-fields-pro --url="${SERVER_NAME}"
+wp plugin --network activate wp-user-roles --url="${SERVER_NAME}"
+wp plugin --network activate wp-moj-blocks --url="${SERVER_NAME}"
 
 exec "$@"

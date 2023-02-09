@@ -66,7 +66,7 @@ jobs:
           kubectl config set-credentials deploy-user --token=${{ secrets.KUBE_TOKEN_DEMO }}
           kubectl config set-context ${KUBE_CLUSTER} --cluster=${KUBE_CLUSTER} --user=deploy-user --namespace=${{ secrets.KUBE_NAMESPACE_DEMO }}
           kubectl config use-context ${KUBE_CLUSTER}
-      - name: Apply Helm charts
+      - name: Apply Helm chart
         run: | 
           helm upgrade wordpress helm_deploy/wordpress \
           --install \
@@ -170,7 +170,7 @@ jobs:
           kubectl config set-credentials deploy-user --token=${{ secrets.KUBE_TOKEN_DEV }}
           kubectl config set-context ${KUBE_CLUSTER} --cluster=${KUBE_CLUSTER} --user=deploy-user --namespace=${{ secrets.KUBE_NAMESPACE_DEV }}
           kubectl config use-context ${KUBE_CLUSTER}
-      - name: Apply Helm charts
+      - name: Apply Helm chart
         run: | 
           helm upgrade wordpress helm_deploy/wordpress \
           --install \
@@ -273,7 +273,7 @@ jobs:
           kubectl config set-credentials deploy-user --token=${{ secrets.KUBE_TOKEN_STAGING }}
           kubectl config set-context ${KUBE_CLUSTER} --cluster=${KUBE_CLUSTER} --user=deploy-user --namespace=${{ secrets.KUBE_NAMESPACE_STAGING }}
           kubectl config use-context ${KUBE_CLUSTER}
-      - name: Apply Helm charts
+      - name: Apply Helm chart
         run: | 
           helm upgrade wordpress helm_deploy/wordpress \
           --install \
@@ -397,8 +397,8 @@ jobs:
           --set secrets.wpnoncesalt=${{ secrets.WORDPRESS_NONCE_SALT_FILE }} \
           --set secrets.wpsecureauthkey=${{ secrets.WORDPRESS_SECURE_AUTH_KEY_FILE }} \
           --set secrets.wpsecureauthsalt=${{ secrets.WORDPRESS_SECURE_AUTH_SALT_FILE }} \
-          --set configmap.wpenvtype=${{ secrets.WP_ENV_TYPE }} \
           --set configmap.servername=${{ secrets.KUBE_NAMESPACE_PROD }}.apps.live.cloud-platform.service.justice.gov.uk \
+          --set configmap.wpenvtype=${{ secrets.WP_ENV_TYPE }} \
           --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.KUBE_NAMESPACE_PROD }}-green \
           --set domain=${{ secrets.KUBE_NAMESPACE_PROD }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME_PROD }}:hale-platform_nginx-${{ github.sha }} \
