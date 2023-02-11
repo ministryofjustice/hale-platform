@@ -9,7 +9,7 @@ wp config set SUBDOMAIN_INSTALL false --raw
 wp config set DOMAIN_CURRENT_SITE "\$_SERVER['SERVER_NAME']" --raw
 wp config set COOKIE_DOMAIN "\$_SERVER['SERVER_NAME']" --raw 
 wp config set WP_ENVIRONMENT_TYPE "\$_SERVER['WP_ENVIRONMENT_TYPE']" --raw 
-wp config set WP_DEBUG true --raw
+#wp config set WP_DEBUG true --raw
 wp config set AUTOMATIC_UPDATER_DISABLED true --raw
 wp config set FORCE_SSL_ADMIN true --raw
 
