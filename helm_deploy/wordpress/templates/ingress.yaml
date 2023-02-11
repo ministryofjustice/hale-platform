@@ -20,7 +20,7 @@ spec:
         pathType: ImplementationSpecific 
         backend:
           service:
-            name: nginx 
+            name: wordpress 
             port:
               number: 8080 
 {{- end }}
