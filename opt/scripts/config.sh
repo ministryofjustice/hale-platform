@@ -7,12 +7,11 @@ wp config set BLOG_ID_CURRENT_SITE 1 --raw
 wp config set SITE_ID_CURRENT_SITE 1 --raw
 wp config set SUBDOMAIN_INSTALL false --raw
 wp config set DOMAIN_CURRENT_SITE "\$_SERVER['SERVER_NAME']" --raw
-wp config set COOKIE_DOMAIN "" --raw 
-wp config set ADMIN_COOKIE_PATH "/" --raw
-wp config set COOKIEPATH "/" --raw
-wp config set SITECOOKIEPATH "/" --raw
+wp config set COOKIE_DOMAIN "" --raw
+wp config set ADMIN_COOKIE_PATH "/"
+wp config set COOKIEPATH "/"
+wp config set SITECOOKIEPATH "/"
 wp config set WP_ENVIRONMENT_TYPE "\$_SERVER['WP_ENVIRONMENT_TYPE']" --raw 
-#wp config set WP_DEBUG true --raw
 wp config set AUTOMATIC_UPDATER_DISABLED true --raw
 wp config set FORCE_SSL_ADMIN true --raw
 
