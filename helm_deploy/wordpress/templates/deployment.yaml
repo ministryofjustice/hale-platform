@@ -88,7 +88,10 @@ spec:
       app: wordpress
       tier: frontend-c
   strategy:
-    type: Recreate
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 100%
+      maxUnavailable: 50%
   template:
     metadata:
       labels:
