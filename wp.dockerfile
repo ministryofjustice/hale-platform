@@ -1,5 +1,5 @@
 # Build WordPress multisite image
-FROM --platform=linux/amd64 wordpress:6.1.1-php8.1-fpm-alpine
+FROM --platform=linux/amd64 wordpress:6.1.1-php8.2-fpm-alpine
 
 # Adjust php.ini configuration settings
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"

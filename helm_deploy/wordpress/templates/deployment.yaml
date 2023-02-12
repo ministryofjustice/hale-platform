@@ -1,28 +1,77 @@
-# ---
-# apiVersion: apps/v1
-# kind: Deployment
-# metadata:
-#   name: nginx
-#   labels:
-#     app: nginx
-# spec:
-#   replicas: {{ .Values.nginx.image.replicaCount }} 
-#   selector:
-#     matchLabels:
-#       app: nginx
-#   template:
-#     metadata:
-#       labels:
-#         app: nginx
-#         tier: frontend-c
-#     spec:
-#       containers:
-#         - name: nginx
-#           image: {{ .Values.nginx.image.repository }}
-#           imagePullPolicy: {{ .Values.nginx.image.imagePullPolicy }} 
-#           ports:
-#             - containerPort: 8080
-#             - containerPort: 443
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress
+  labels:
+    app: wordpress
+spec:
+  replicas: {{ .Values.wp.image.replicaCount }}
+  selector:
+    matchLabels:
+      app: wordpress
+      tier: frontend-c
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 100%
+      maxUnavailable: 50%
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: frontend-c
+    spec:
+      containers:
+        - name: nginx
+          image: {{ .Values.nginx.image.repository }}
+          imagePullPolicy: {{ .Values.nginx.image.imagePullPolicy }} 
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: wordpress-pv
+              mountPath: /var/www/html
+        - image: {{ .Values.wp.image.repository }}
+          imagePullPolicy: {{ .Values.wp.image.imagePullPolicy }} 
+          name: wordpress
+          env:
+            - name: PHP_INI_SCAN_DIR
+              value: :/usr/local/etc/php/conf.custom
+          ports:
+            - containerPort: 9000
+          volumeMounts:
+            - name: wordpress-pv
+              mountPath: /var/www/html
+            - name: php-config
+              mountPath: /usr/local/etc/php/conf.custom
+          envFrom:
+          - configMapRef:
+                name: wpconfig-{{ .Release.Revision }}
+          - secretRef:
+                name: wpsecrets-{{ .Release.Revision }}
+      volumes:
+        - name: wordpress-pv
+          emptyDir: {}
+        - name: php-config
+          configMap:
+            name: hale-wordpress-multisite-php-config-{{ .Release.Revision }}
+        - name: old-pvc
+          persistentVolumeClaim:
+            claimName: wp-pvc-claim
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name:  wp-pvc-claim
+  labels:
+     app: wordpress
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: gp2
 ---
 {{- if .Values.mariadb.enabled }}
 apiVersion: apps/v1
@@ -74,78 +123,3 @@ spec:
     requests:
       storage: 20Gi
 {{- end }}
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: wordpress
-  labels:
-    app: wordpress
-spec:
-  replicas: {{ .Values.wp.image.replicaCount }}
-  selector:
-    matchLabels:
-      app: wordpress
-      tier: frontend-c
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 100%
-      maxUnavailable: 50%
-  template:
-    metadata:
-      labels:
-        app: wordpress
-        tier: frontend-c
-    spec:
-      containers:
-        - name: nginx
-          image: {{ .Values.nginx.image.repository }}
-          imagePullPolicy: {{ .Values.nginx.image.imagePullPolicy }} 
-          ports:
-            - containerPort: 8080
-          #   - containerPort: 443
-          volumeMounts:
-            - name: wordpress-pv
-              mountPath: /var/www/html
-        - image: {{ .Values.wp.image.repository }}
-          imagePullPolicy: {{ .Values.wp.image.imagePullPolicy }} 
-          name: wordpress
-          env:
-            - name: PHP_INI_SCAN_DIR
-              value: :/usr/local/etc/php/conf.custom
-          ports:
-            - containerPort: 9000
-          volumeMounts:
-            - name: wordpress-pv
-              mountPath: /var/www/html
-            - name: php-config
-              mountPath: /usr/local/etc/php/conf.custom
-          envFrom:
-          - configMapRef:
-                name: wpconfig-{{ .Release.Revision }}
-          - secretRef:
-                name: wpsecrets-{{ .Release.Revision }}
-      volumes:
-        - name: wordpress-pv
-          emptyDir: {}
-        - name: php-config
-          configMap:
-            name: hale-wordpress-multisite-php-config-{{ .Release.Revision }}
-        - name: old-pvc
-          persistentVolumeClaim:
-            claimName: wp-pvc-claim
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name:  wp-pvc-claim
-  labels:
-     app: wordpress
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 20Gi
-  storageClassName: gp2 
