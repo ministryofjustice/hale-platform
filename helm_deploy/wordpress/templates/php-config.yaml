@@ -4,5 +4,5 @@ metadata:
   name: hale-wordpress-multisite-php-config-{{ .Release.Revision }}
 data:
   wordpress-custom.ini: |-
-    upload_max_filesize = 50M
-    post_max_size = 50M
+    upload_max_filesize = 64M
+    post_max_size = 64M

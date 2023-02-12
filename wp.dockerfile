@@ -1,9 +1,9 @@
 # Build WordPress multisite image
 FROM --platform=linux/amd64 wordpress:6.1.1-php8.2-fpm-alpine
 
-# Adjust php.ini configuration settings
+# Load default production php.ini file in
+# Custom php.ini additions for dev, staging & prod are done via k8s manifest
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
-COPY opt/php/custom.ini $PHP_INI_DIR/conf.d/
 
 # Adjust PHP-FPM configuration settings
 COPY opt/php/www.conf /usr/local/etc/php-fpm.d/www.conf 
