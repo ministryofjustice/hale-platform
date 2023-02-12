@@ -2,10 +2,11 @@
 FROM --platform=linux/amd64 wordpress:6.1.1-php8.1-fpm-alpine
 
 # Adjust php.ini configuration settings
-#COPY custom.ini $PHP_INI_DIR/conf.d/
+RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+COPY opt/php/custom.ini $PHP_INI_DIR/conf.d/
 
 # Adjust PHP-FPM configuration settings
-COPY ./opt/php/www.conf /usr/local/etc/php-fpm.d/www.conf 
+COPY opt/php/www.conf /usr/local/etc/php-fpm.d/www.conf 
 
 # Set permissions for wp-cli
 RUN addgroup -g 1001 wp && adduser -G wp -g wp -s /bin/sh -D wp && \
