@@ -17,6 +17,11 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
     chmod +x wp-cli.phar && \
     mv wp-cli.phar /usr/local/bin/wp
 
+# Install AWS SDK
+RUN curl -O https://docs.aws.amazon.com/aws-sdk-php/v3/download/aws.phar && \
+    chmod +x aws.phar && \
+    mv aws.phar /usr/local/bin/aws
+
 # Add WP multisite network scripts
 COPY opt/scripts/hale-entrypoint.sh /usr/local/bin/
 COPY opt/scripts/config.sh /usr/local/bin/
