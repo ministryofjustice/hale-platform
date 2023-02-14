@@ -17,11 +17,6 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
     chmod +x wp-cli.phar && \
     mv wp-cli.phar /usr/local/bin/wp
 
-# Install AWS SDK
-RUN curl -O https://docs.aws.amazon.com/aws-sdk-php/v3/download/aws.phar && \
-    chmod +x aws.phar && \
-    mv aws.phar /usr/local/bin/aws
-
 # Add WP multisite network scripts
 COPY opt/scripts/hale-entrypoint.sh /usr/local/bin/
 COPY opt/scripts/config.sh /usr/local/bin/
@@ -43,10 +38,12 @@ RUN apk update && \
 COPY /wordpress/wp-content/plugins /usr/src/wordpress/wp-content/plugins
 COPY /wordpress/wp-content/mu-plugins /usr/src/wordpress/wp-content/mu-plugins
 COPY /wordpress/wp-content/themes /usr/src/wordpress/wp-content/themes
+COPY .../vendor /usr/src/wordpress
 
 RUN cp -r /usr/src/wordpress/wp-content/plugins/* /var/www/html/wp-content/plugins
 RUN cp -r /usr/src/wordpress/wp-content/mu-plugins/* /var/www/html/wp-content/mu-plugins
 RUN cp -r /usr/src/wordpress/wp-content/themes/ /var/www/html/wp-content/themes/
+RUN cp -r /usr/src/wordpress/vendor/ /var/www/html/
 
 # Create new user to run container as non-root
 RUN adduser --disabled-password hale -u 1002 && \
