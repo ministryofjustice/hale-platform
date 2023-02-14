@@ -18,6 +18,10 @@
         },
         {
             "type": "composer",
+            "url": "https://packagist.org"
+        },
+        {
+            "type": "composer",
             "url": "https://composer.wp.dsd.io"
         },
         {
@@ -35,6 +39,7 @@
         "ministryofjustice/wp-hale": "*",
         "wpackagist-plugin/wordpress-seo": "*",
         "wpackagist-plugin/simple-301-redirects": "*",
+        "humanmade/s3-uploads": "*",
         "wpackagist-plugin/query-monitor": "*",
         "wpackagist-plugin/ewww-image-optimizer": "*",
         "wpackagist-plugin/unconfirmed": "*",
