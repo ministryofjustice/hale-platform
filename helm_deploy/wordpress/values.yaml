@@ -49,3 +49,7 @@ secrets:
   wpnoncesalt: ""
   wpsecureauthkey: ""
   wpsecureauthsalt: ""
+  s3uploadsbucket: ""
+  s3uploadsregion: ""
+  s3uploadskey: ""
+  s3uploadssecret: ""
