@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "08191d98493d6ee9ac948b39d53acd1c",
+    "content-hash": "6d7060c34c13b7323a91704c357b58fe",
     "packages": [
         {
             "name": "acf/advanced-custom-fields-pro",
@@ -121,16 +121,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.258.9",
+            "version": "3.258.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "1d42f8170ecc775a85e0efa96476caa2d4be13ae"
+                "reference": "e164c9c5faf3965bd27ff2a4e9b7b3048ba8a337"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/1d42f8170ecc775a85e0efa96476caa2d4be13ae",
-                "reference": "1d42f8170ecc775a85e0efa96476caa2d4be13ae",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/e164c9c5faf3965bd27ff2a4e9b7b3048ba8a337",
+                "reference": "e164c9c5faf3965bd27ff2a4e9b7b3048ba8a337",
                 "shasum": ""
             },
             "require": {
@@ -209,9 +209,9 @@
             "support": {
                 "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.258.9"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.258.10"
             },
-            "time": "2023-02-13T19:21:26+00:00"
+            "time": "2023-02-14T19:21:16+00:00"
         },
         {
             "name": "composer/installers",
@@ -759,57 +759,6 @@
             "time": "2022-10-26T14:07:24+00:00"
         },
         {
-            "name": "humanmade/s3-uploads",
-            "version": "3.0.6",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/humanmade/S3-Uploads.git",
-                "reference": "1f3a7a29ef93370ae0400cad748fb0877707d225"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/humanmade/S3-Uploads/zipball/1f3a7a29ef93370ae0400cad748fb0877707d225",
-                "reference": "1f3a7a29ef93370ae0400cad748fb0877707d225",
-                "shasum": ""
-            },
-            "require": {
-                "aws/aws-sdk-php": "~3.18",
-                "composer/installers": "~1.0 || ^2.0"
-            },
-            "require-dev": {
-                "humanmade/psalm-plugin-wordpress": "^1.0",
-                "pcov/clobber": "^2.0",
-                "phpunit/phpunit": "7.5"
-            },
-            "type": "wordpress-plugin",
-            "autoload": {
-                "classmap": [
-                    "./inc"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "GPL-2.0+"
-            ],
-            "authors": [
-                {
-                    "name": "Human Made Limited",
-                    "email": "support@humanmade.co.uk",
-                    "homepage": "http://hmn.md/"
-                }
-            ],
-            "description": "WordPress plugin to store uploads on S3",
-            "homepage": "https://github.com/humanmade/S3-Uploads",
-            "keywords": [
-                "wordpress"
-            ],
-            "support": {
-                "issues": "https://github.com/humanmade/s3-uploads/issues",
-                "source": "https://github.com/humanmade/s3-uploads"
-            },
-            "time": "2022-11-29T09:34:07+00:00"
-        },
-        {
             "name": "ministryofjustice/cookie-compliance-for-wordpress",
             "version": "3.3.0",
             "source": {
@@ -1050,6 +999,51 @@
             },
             "abandoned": true,
             "time": "2020-05-14T16:29:40+00:00"
+        },
+        {
+            "name": "ministryofjustice/wp-s3-uploads",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ministryofjustice/wp-s3-uploads.git",
+                "reference": "77866e393951a27988b8a9dcb55b20179e61a2c6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ministryofjustice/wp-s3-uploads/zipball/77866e393951a27988b8a9dcb55b20179e61a2c6",
+                "reference": "77866e393951a27988b8a9dcb55b20179e61a2c6",
+                "shasum": ""
+            },
+            "require": {
+                "aws/aws-sdk-php": "~3.18",
+                "composer/installers": "~1.0 || ^2.0"
+            },
+            "default-branch": true,
+            "type": "wordpress-plugin",
+            "autoload": {
+                "classmap": [
+                    "./inc"
+                ]
+            },
+            "license": [
+                "GPL-2.0+"
+            ],
+            "authors": [
+                {
+                    "name": "Human Made Limited",
+                    "email": "support@humanmade.co.uk",
+                    "homepage": "http://hmn.md/"
+                }
+            ],
+            "description": "WordPress plugin to store uploads on S3",
+            "keywords": [
+                "wordpress"
+            ],
+            "support": {
+                "issues": "https://github.com/humanmade/s3-uploads/issues",
+                "source": "https://github.com/humanmade/s3-uploads"
+            },
+            "time": "2023-02-15T10:40:58+00:00"
         },
         {
             "name": "ministryofjustice/wp-user-roles",
@@ -2130,12 +2124,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Roave/SecurityAdvisories.git",
-                "reference": "72ca3d8b529b6679ccbefcdc1433fa6aeb7564b8"
+                "reference": "bc35b8e9853346249e3adec090d33c6041fb2df4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/72ca3d8b529b6679ccbefcdc1433fa6aeb7564b8",
-                "reference": "72ca3d8b529b6679ccbefcdc1433fa6aeb7564b8",
+                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/bc35b8e9853346249e3adec090d33c6041fb2df4",
+                "reference": "bc35b8e9853346249e3adec090d33c6041fb2df4",
                 "shasum": ""
             },
             "conflict": {
@@ -2374,6 +2368,7 @@
                 "matyhtf/framework": "<3.0.6",
                 "mautic/core": "<4.3|= 2.13.1",
                 "mediawiki/core": ">=1.27,<1.27.6|>=1.29,<1.29.3|>=1.30,<1.30.2|>=1.31,<1.31.9|>=1.32,<1.32.6|>=1.32.99,<1.33.3|>=1.33.99,<1.34.3|>=1.34.99,<1.35",
+                "mediawiki/matomo": "<2.4.3",
                 "melisplatform/melis-asset-manager": "<5.0.1",
                 "melisplatform/melis-cms": "<5.0.1",
                 "melisplatform/melis-front": "<5.0.1",
@@ -2382,6 +2377,7 @@
                 "microweber/microweber": "<1.3.2",
                 "miniorange/miniorange-saml": "<1.4.3",
                 "mittwald/typo3_forum": "<1.2.1",
+                "mobiledetect/mobiledetectlib": "<2.8.32",
                 "modx/revolution": "<= 2.8.3-pl|<2.8",
                 "mojo42/jirafeau": "<4.4",
                 "monolog/monolog": ">=1.8,<1.12",
@@ -2580,6 +2576,7 @@
                 "thinkcmf/thinkcmf": "<=5.1.7",
                 "thorsten/phpmyfaq": "<3.1.11",
                 "tinymce/tinymce": "<5.10.7|>=6,<6.3.1",
+                "tinymighty/wiki-seo": "<1.2.2",
                 "titon/framework": ">=0,<9.9.99",
                 "tobiasbg/tablepress": "<= 2.0-RC1",
                 "topthink/framework": "<6.0.14",
@@ -2698,7 +2695,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-02-14T01:32:29+00:00"
+            "time": "2023-02-14T22:04:31+00:00"
         },
         {
             "name": "squizlabs/php_codesniffer",
@@ -2760,6 +2757,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "ministryofjustice/wp-s3-uploads": 20,
         "roave/security-advisories": 20
     },
     "prefer-stable": false,
