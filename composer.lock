@@ -1006,12 +1006,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-s3-uploads.git",
-                "reference": "77866e393951a27988b8a9dcb55b20179e61a2c6"
+                "reference": "cc7ab0669e1ac06f355a6169622037ee89cc49cc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/wp-s3-uploads/zipball/77866e393951a27988b8a9dcb55b20179e61a2c6",
-                "reference": "77866e393951a27988b8a9dcb55b20179e61a2c6",
+                "url": "https://api.github.com/repos/ministryofjustice/wp-s3-uploads/zipball/cc7ab0669e1ac06f355a6169622037ee89cc49cc",
+                "reference": "cc7ab0669e1ac06f355a6169622037ee89cc49cc",
                 "shasum": ""
             },
             "require": {
@@ -1043,7 +1043,7 @@
                 "issues": "https://github.com/humanmade/s3-uploads/issues",
                 "source": "https://github.com/humanmade/s3-uploads"
             },
-            "time": "2023-02-15T10:40:58+00:00"
+            "time": "2023-02-15T11:28:53+00:00"
         },
         {
             "name": "ministryofjustice/wp-user-roles",
