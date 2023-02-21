@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-echo "DB downloader. 
+echo "DB Download Bot [o_o]
 You will need to enter 3 secrets, db user, db password and db name.
 You will also need to be logged into the cluster and have port-fowarding on."
 
@@ -14,26 +14,26 @@ while true; do
 
             echo "Enter DB user:"
 
-            read -s HALE_PLATFORM_DEV_DB_USER
+            read -s HALE_PLATFORM_DB_USER
 
             echo "Enter DB password:"
 
-            read -s HALE_PLATFORM_DEV_DB_PASSWORD
+            read -s HALE_PLATFORM_DB_PASSWORD
 
             echo "Enter DB name:"
 
-            read -s HALE_PALTFORM_DEV_DB_NAME
+            read -s HALE_PALTFORM_DB_NAME
 
             mysqldump -h 127.0.0.1 \
-                -u ${HALE_PLATFORM_DEV_DB_USER} \
-                -p${HALE_PLATFORM_DEV_DB_PASSWORD} \
+                -u ${HALE_PLATFORM_DB_USER} \
+                -p${HALE_PLATFORM_DB_PASSWORD} \
                 --port=5432 \
                 --single-transaction \
                 --routines \
                 --triggers \
                 --column-statistics=0 \
                 --verbose \
-                --databases ${HALE_PALTFORM_DEV_DB_NAME} > hale-platform-db-export.sql
+                --databases ${HALE_PALTFORM_DB_NAME} > hale-platform-db-export.sql
 
             echo "Download complete"
 
