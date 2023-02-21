@@ -33,7 +33,7 @@ while true; do
                 --triggers \
                 --column-statistics=0 \
                 --verbose \
-                --databases ${HALE_PALTFORM_DEV_DB_NAME} > hale-platform-dev-db-export.sql
+                --databases ${HALE_PALTFORM_DEV_DB_NAME} > hale-platform-db-export.sql
 
             echo "Download complete"
 
