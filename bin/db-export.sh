@@ -1,26 +1,34 @@
-#!/bin/bash
+#!/bin/sh
+# Basic tool to download WordPress database (.sql) file
 
+RESTORE='\033[0m'
+YELLOW='\033[00;33m'
+GREEN='\033[00;32m'
 
-echo "DB Download Bot [o_o]
-You will need to enter 3 secrets, db user, db password and db name.
-You will also need to be logged into the cluster and have port-fowarding on."
+function msg {
+  echo "$1"$RESTORE
+}
 
-echo "You can get these using cloud-platform decode-secret tool"
+msg $GREEN"\nDownload Bot [o_o]\n"
+
+echo "You will need to enter 3 secrets, db user, db password and db name.
+You will also need to be logged into the cluster and have port-fowarding on. 
+You can get secrets using cloud-platform decode-secret tool\n"
 
 while true; do
     read -p "Do you wish to continue?[y/n] " yn
     case $yn in
         [Yy]* )
 
-            echo "Enter DB user:"
+            msg "Enter DB user:"
 
             read -s HALE_PLATFORM_DB_USER
 
-            echo "Enter DB password:"
+            msg "Enter DB password:"
 
             read -s HALE_PLATFORM_DB_PASSWORD
 
-            echo "Enter DB name:"
+            msg "Enter DB name:"
 
             read -s HALE_PALTFORM_DB_NAME
 
@@ -35,13 +43,13 @@ while true; do
                 --verbose \
                 --databases ${HALE_PALTFORM_DB_NAME} > hale-platform-db-export.sql
 
-            echo "Download complete"
+            msg $GREEN"Download complete"
 
             break;;
 
         [Nn]* )
             exit;;
-        * ) echo "Please answer yes or no.";;
+        * ) msg $YELLOW"Please answer yes or no.";;
     esac
 done
 set -e
