@@ -2,7 +2,7 @@ mysql
 .env*
 .DS_Store
 .idea
-.sql
+*.sql
 auth.json
 vendor/
 wordpress/
