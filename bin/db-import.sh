@@ -32,14 +32,12 @@ while true; do
 
             read -s HALE_PALTFORM_DB_NAME
 
-            mysqlimport -h 127.0.0.1 \
+            mysql -h 127.0.0.1 \
                 -u ${HALE_PLATFORM_DB_USER} \
                 -p${HALE_PLATFORM_DB_PASSWORD} \
                 --port=5432 \
-                --local \
-                --compress \
                 --verbose \
-                ${HALE_PALTFORM_DB_NAME} hale-platform-db-export.sql
+                ${HALE_PALTFORM_DB_NAME} < hale-platform-db-export.sql
 
             msg $GREEN"Import complete"
 
