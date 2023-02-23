@@ -38,9 +38,7 @@ RUN apk update && \
 COPY /wordpress/wp-content/plugins /usr/src/wordpress/wp-content/plugins
 COPY /wordpress/wp-content/mu-plugins /usr/src/wordpress/wp-content/mu-plugins
 COPY /wordpress/wp-content/themes /usr/src/wordpress/wp-content/themes
-#COPY ../vendor /usr/src/wordpress
-RUN ls
-
+COPY /vendor /usr/src/wordpress/vendor
 
 RUN cp -r /usr/src/wordpress/wp-content/plugins/* /var/www/html/wp-content/plugins
 RUN cp -r /usr/src/wordpress/wp-content/mu-plugins/* /var/www/html/wp-content/mu-plugins
