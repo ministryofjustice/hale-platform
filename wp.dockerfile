@@ -44,7 +44,7 @@ RUN cp -R /usr/src/wordpress/wp-content/plugins/* /var/www/html/wp-content/plugi
 RUN cp -R /usr/src/wordpress/wp-content/mu-plugins/* /var/www/html/wp-content/mu-plugins
 RUN cp -R /usr/src/wordpress/wp-content/themes/ /var/www/html/wp-content/themes/
 RUN mkdir -p /var/www/html/wp-content/plugins/s3-uploads/vendor
-RUN cp -R /usr/src/wordpress/vendor /var/www/html/wp-content/plugins/s3-uploads/vendor/
+RUN cp -R /usr/src/wordpress/vendor /var/www/html/wp-content/plugins/vendor/
 
 
 # Create new user to run container as non-root
