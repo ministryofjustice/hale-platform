@@ -44,7 +44,7 @@ RUN cp -R /usr/src/wordpress/wp-content/plugins/* /var/www/html/wp-content/plugi
 RUN cp -R /usr/src/wordpress/wp-content/mu-plugins/* /var/www/html/wp-content/mu-plugins
 RUN cp -R /usr/src/wordpress/wp-content/themes/ /var/www/html/wp-content/themes/
 #RUN cp -R /usr/src/wordpress/vendor /var/www/html/vendor 
-RUN cp -R vendor wp-content/plugins/s3-uploads
+RUN cp -R /var/www/html/vendor wp-content/plugins/s3-uploads
 
 # Create new user to run container as non-root
 RUN adduser --disabled-password hale -u 1002 && \
