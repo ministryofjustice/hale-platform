@@ -39,7 +39,7 @@
         "ministryofjustice/wp-hale": "*",
         "wpackagist-plugin/wordpress-seo": "*",
         "wpackagist-plugin/simple-301-redirects": "*",
-        "ministryofjustice/wp-s3-uploads": "dev-master",
+        "humanmade/s3-uploads": "*",
         "wpackagist-plugin/query-monitor": "*",
         "wpackagist-plugin/ewww-image-optimizer": "*",
         "wpackagist-plugin/unconfirmed": "*",
