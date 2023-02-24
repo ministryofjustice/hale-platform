@@ -37,7 +37,7 @@ RUN chmod +x /usr/local/bin/hale-entrypoint.sh && \
 RUN apk update && \
     apk add less && \
     apk add vim --no-cache && \
-    apk add mariadb‑client
+    apk add mariadb
 
 # Generated Composer and NPM compiled artifacts (plugins, themes, CSS, JS)
 # are copied into place at this stage of build.
