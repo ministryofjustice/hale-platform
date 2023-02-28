@@ -30,10 +30,6 @@ spec:
                     name: wpconfig-{{ .Release.Revision }}
               - secretRef:
                     name: wpsecrets-{{ .Release.Revision }}
-              args:
-              - /bin/sh
-              - -c
-              - date; echo "Hello, World!"
           restartPolicy: OnFailure
           volumes:
             - name: wordpress-cron-pv
