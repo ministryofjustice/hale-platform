@@ -1,7 +1,7 @@
 <?php
 /** Define ABSPATH as this file's directory */
 if ( ! defined( 'ABSPATH' ) ) {
-    define( 'ABSPATH', dirname( __FILE__ ) . '/wp/' );
+    define( 'ABSPATH', dirname( __FILE__ ) . '/' );
 }
 if ( file_exists( ABSPATH . 'wp-load.php' ) ) {
     $message .= "[". date('h:i:s') ."] Loading WordPress: " . ABSPATH . "wp-load.php\n";
