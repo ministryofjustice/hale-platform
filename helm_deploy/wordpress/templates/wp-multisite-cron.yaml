@@ -1,0 +1,37 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: hello
+spec:
+  schedule: "* * * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 100
+      template:
+        spec:
+          containers:
+        - image: {{ .Values.wp.image.repository }}
+          imagePullPolicy: {{ .Values.wp.image.imagePullPolicy }} 
+          name: wordpress
+          env:
+            - name: PHP_INI_SCAN_DIR
+              value: :/usr/local/etc/php/conf.custom
+          ports:
+            - containerPort: 9000
+          volumeMounts:
+            - name: wordpress-pv
+              mountPath: /var/www/html
+            - name: php-config
+              mountPath: /usr/local/etc/php/conf.custom
+          envFrom:
+          - configMapRef:
+                name: wpconfig-{{ .Release.Revision }}
+          - secretRef:
+                name: wpsecrets-{{ .Release.Revision }}
+          args:
+          - /bin/sh
+          - -c
+          - date; echo "Hello, World!"
+          restartPolicy: OnFailure
