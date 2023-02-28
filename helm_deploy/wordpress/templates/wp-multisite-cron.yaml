@@ -21,7 +21,7 @@ spec:
               ports:
                 - containerPort: 9000
               volumeMounts:
-                - name: wordpress-pv
+                - name: wordpress-cron-pv
                   mountPath: /var/www/html
                 - name: php-config
                   mountPath: /usr/local/etc/php/conf.custom
@@ -35,3 +35,12 @@ spec:
               - -c
               - date; echo "Hello, World!"
           restartPolicy: OnFailure
+          volumes:
+            - name: wordpress-cron-pv
+              emptyDir: {}
+            - name: php-config
+              configMap:
+                name: hale-wordpress-multisite-php-config-{{ .Release.Revision }}
+            - name: old-pvc
+              persistentVolumeClaim:
+                claimName: wp-pvc-claim
