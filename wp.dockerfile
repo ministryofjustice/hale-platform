@@ -10,6 +10,7 @@ RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 # Adjust PHP-FPM configuration settings
 
 COPY opt/php/www.conf /usr/local/etc/php-fpm.d/www.conf 
+COPY opt/php/wp-cron-multisite.php /usr/src/wordpress/wp-cron-multisite.php
 
 # Set permissions for wp-cli
 
