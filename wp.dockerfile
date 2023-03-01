@@ -63,4 +63,4 @@ ENTRYPOINT ["/usr/local/bin/hale-entrypoint.sh"]
 # Set container user 'root' to 'hale'
 USER 1002
 
-CMD ["/bin/bash", "-c", "php", "/usr/src/wordpress/wp-cron-multisite.php"]
+CMD ["php-fpm"]
