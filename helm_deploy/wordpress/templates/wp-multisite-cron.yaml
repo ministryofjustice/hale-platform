@@ -12,7 +12,7 @@ spec:
       template:
         spec:
           containers:
-          - name: Alpine curl
+          - name: alpine-curl
             image: alpine/curl:3.14
             args:
             - curl
