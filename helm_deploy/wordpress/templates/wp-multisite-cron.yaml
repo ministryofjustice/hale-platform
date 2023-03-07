@@ -12,8 +12,8 @@ spec:
       template:
         spec:
           containers:
-          - name: alpine-curl
-            image: alpine/curl:3.14
+          - name: busybox-curl
+            image: joeshaw/busybox-nonroot 
             args:
             - curl
             - https://hale-platform-dev.apps.live.cloud-platform.service.justice.gov.uk/wp-cron-multisite.php
