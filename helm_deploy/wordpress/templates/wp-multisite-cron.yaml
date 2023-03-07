@@ -12,8 +12,8 @@ spec:
       template:
         spec:
           containers:
-          - name: busybox-curl
-            image: joeshaw/busybox-nonroot 
+          - name: nginx-curl
+            image: nginxinc/nginx-unprivileged:1.23.3 
             args:
             - curl
             - https://hale-platform-dev.apps.live.cloud-platform.service.justice.gov.uk/wp-cron-multisite.php
