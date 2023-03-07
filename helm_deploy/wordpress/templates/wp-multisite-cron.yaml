@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: wp-cron 
+spec:
+  schedule: "* * * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 100
+      template:
+        spec:
+          containers:
+          - name: nginx-curl
+            image: nginxinc/nginx-unprivileged:1.23.3 
+            args:
+            - curl
+            - https://hale-platform-dev.apps.live.cloud-platform.service.justice.gov.uk/wp-cron-multisite.php
+          restartPolicy: OnFailure

@@ -54,7 +54,7 @@ this repository.
 6. Run `Make build`, to build the image and pull in the new cert pem files.
 7. Go to your browser at the URL https://hale.docker
 
-## Themes and Plugins
+## Themes and Plugins.
 
 WordPress themes and plugins are loaded as part of the Docker image build. They
 are pulled into the build using PHP's Composer dependancy manager. To add or
@@ -94,4 +94,49 @@ change has been tested on staging, you can trigger the build to move from
 staging to production via the `Review deployments` button on the GitAction run
 page. If you don't have a review deployments button you may not have the
 correct permissions to deploy to production.
+
+## DB Import/Export
+
+This has to be done in steps.
+
+First step, setup a pod in your k8s namespace. Use the following kubectl
+command (delete pod after you're done using):
+
+```
+kubectl \                                                                                                                :dev
+  -n <add namespace> \
+  run port-forward-pod \
+  --image=ministryofjustice/port-forward \
+  --port=5432 \
+  --env="REMOTE_HOST=<add in cloudplatform remote host aws address - port not needed>" \
+  --env="LOCAL_PORT=5432" \
+  --env="REMOTE_PORT=3306"
+```
+
+Second, step, setup port-forwarding pod with the following command.
+
+```
+kubectl \                                                                                                                :dev
+  -n hale-platform-dev \
+  port-forward \
+  port-forward-pod 5432:5432
+```
+
+Third, once portforwarding is running, in a new tab, you can import and export using the
+scripts db-import.sh and db-export.sh in the /bin directory. They will ask
+for the db secrets, which you will need to get via the CloudPlatform brew
+tool. 
+
+Note: to import you will need to have the `mysql` & `mysqldump` program installed running on your local
+machine.
+
+### Connect using MySQL Pro
+
+Using the CloudPlatform secrets tool, fill in the fields as following:
+
+Host: 127.0.0.1
+Username: <db username>
+Password: <db password>
+Database: <db database name>
+Port: 5432
 
