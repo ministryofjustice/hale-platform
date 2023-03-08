@@ -13,8 +13,8 @@ spec:
         spec:
           containers:
           - name: nginx-curl
-            image: nginxinc/nginx-unprivileged:1.23.3 
+            image: nginxinc/nginx-unprivileged 
             args:
             - curl
-            - https://hale-platform-dev.apps.live.cloud-platform.service.justice.gov.uk/wp-cron-multisite.php
+            - {{ .Values.domain }}/wp-cron-multisite.php
           restartPolicy: OnFailure
