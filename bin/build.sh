@@ -42,8 +42,8 @@ while true; do
             echo -e '\n######################'
             echo -e '# Run NPM'
             echo -e '######################\n'
-            npm install --prefix ./wordpress/wp-content/themes/wp-hale
-            npm run build --prefix ./wordpress/wp-content/themes/wp-hale
+            npm install --prefix ./wordpress/wp-content/themes/hale
+            npm run build --prefix ./wordpress/wp-content/themes/hale
            
             # Test Docker is running locally            
             if ! docker info > /dev/null 2>&1; then
