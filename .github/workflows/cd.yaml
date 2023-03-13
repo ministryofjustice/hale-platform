@@ -138,8 +138,8 @@ jobs:
           composer install --prefer-dist --no-progress
       - name: Run NPM
         run: |
-          npm install --prefix ./wordpress/wp-content/themes/wp-hale
-          npm run production --if-present --prefix ./wordpress/wp-content/themes/wp-hale
+          npm install --prefix ./wordpress/wp-content/themes/hale
+          npm run production --if-present --prefix ./wordpress/wp-content/themes/hale
       - name: Build WordPress image
         run: |
           docker build --pull --no-cache --tag hale-platform_wordpress --file wp.dockerfile .
