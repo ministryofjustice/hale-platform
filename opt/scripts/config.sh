@@ -33,11 +33,8 @@ wp core multisite-install --title="Hale Multisite Platform" \
 wp core update-db --network --url="${SERVER_NAME}"
 
 # Setup Hale theme
-#wp theme enable wp-hale --network
-#wp theme enable wp-hale --activate
-
-wp theme enable twentytwentytwo --network --url="${SERVER_NAME}"
-wp theme enable twentytwentytwo --activate --url="$SERVER_NAME"
+wp theme enable hale --network --url="${SERVER_NAME}"
+wp theme enable hale --activate --url="$SERVER_NAME"
 
 # Check plugins are activated
 wp plugin --network activate advanced-custom-fields-pro --url="${SERVER_NAME}"
