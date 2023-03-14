@@ -5,7 +5,7 @@ kind: Ingress
 metadata:
   name: hale-platform-ingress-haletest1
   annotations:
-    external-dns.alpha.kubernetes.io/set-identifier: {{ .Values.ingress.metadata.annotations.setidentifier }} 
+    external-dns.alpha.kubernetes.io/set-identifier: hale-platform-ingress-haletest1-hale-platform-dev-green
     external-dns.alpha.kubernetes.io/aws-weight: "100"
     nginx.ingress.kubernetes.io/rewrite-target: https://haletest1.service.justice.gov.uk/$1
 spec:
