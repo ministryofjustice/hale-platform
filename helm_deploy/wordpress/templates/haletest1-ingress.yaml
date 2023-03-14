@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: https://haletest1.service.justice.gov.uk/$1
+    external-dns.alpha.kubernetes.io/set-identifier: 
+    external-dns.alpha.kubernetes.io/aws-weight: "100"
+  name: hale-platform-dev-hale-test-1 
+spec:
+  ingressClassName: default
+  rules:
+  - host: {{ .Values.domain }} 
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific 
+        backend:
+          service:
+            name: wordpress 
+            port:
+              number: 8080 
+  tls:
+    - hosts:
+        - haletest1.service.justice.gov.uk 
