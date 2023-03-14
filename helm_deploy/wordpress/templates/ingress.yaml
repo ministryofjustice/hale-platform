@@ -11,9 +11,20 @@ spec:
   ingressClassName: modsec 
   tls:
   - hosts:
-    - {{ .Values.domain }} 
+    - {{ .Values.domain }}
+    - haletest1.service.justice.gov.uk
   rules:
   - host: {{ .Values.domain }} 
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific 
+        backend:
+          service:
+            name: wordpress 
+            port:
+              number: 8080
+  - host: haletest1.service.justice.gov.uk
     http:
       paths:
       - path: /
