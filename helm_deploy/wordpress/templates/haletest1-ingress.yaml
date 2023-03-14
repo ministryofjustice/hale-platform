@@ -1,15 +1,20 @@
+{{- if .Values.ingress.enabled }}
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
+  name: hale-platform-ingress-haletest1
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: https://haletest1.service.justice.gov.uk/$1
-    external-dns.alpha.kubernetes.io/set-identifier: 
+    external-dns.alpha.kubernetes.io/set-identifier: {{ .Values.ingress.metadata.annotations.setidentifier }} 
     external-dns.alpha.kubernetes.io/aws-weight: "100"
-  name: hale-platform-dev-hale-test-1 
+    nginx.ingress.kubernetes.io/rewrite-target: https://haletest1.service.justice.gov.uk/$1
 spec:
-  ingressClassName: default
+  ingressClassName: modsec 
+  tls:
+  - hosts:
+    - haletest1.service.justice.gov.uk
   rules:
-  - host: {{ .Values.domain }} 
+  - host: haletest1.service.justice.gov.uk
     http:
       paths:
       - path: /
@@ -19,6 +24,4 @@ spec:
             name: wordpress 
             port:
               number: 8080 
-  tls:
-    - hosts:
-        - haletest1.service.justice.gov.uk 
+{{- end }}
