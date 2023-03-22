@@ -899,12 +899,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-moj-components.git",
-                "reference": "2e05aa99ea552797ebefc79ebb21715db41ad642"
+                "reference": "5c44198f1b82ebe230f9f352726272267e6396d4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/wp-moj-components/zipball/2e05aa99ea552797ebefc79ebb21715db41ad642",
-                "reference": "2e05aa99ea552797ebefc79ebb21715db41ad642",
+                "url": "https://api.github.com/repos/ministryofjustice/wp-moj-components/zipball/5c44198f1b82ebe230f9f352726272267e6396d4",
+                "reference": "5c44198f1b82ebe230f9f352726272267e6396d4",
                 "shasum": ""
             },
             "require": {
@@ -963,7 +963,7 @@
                 "source": "https://github.com/ministryofjustice/wp-moj-components/tree/hale-platform",
                 "issues": "https://github.com/ministryofjustice/wp-moj-components/issues"
             },
-            "time": "2023-03-22T12:53:47+00:00"
+            "time": "2023-03-22T13:03:23+00:00"
         },
         {
             "name": "ministryofjustice/wp-s3-uploads",
