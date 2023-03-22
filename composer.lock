@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "96f239c7456b3d49ec86ad99d966abc7",
+    "content-hash": "bb85bc8b1036c3d024d4d82bc6b1ddc1",
     "packages": [
         {
             "name": "acf/advanced-custom-fields-pro",
@@ -895,17 +895,17 @@
         },
         {
             "name": "ministryofjustice/wp-moj-components",
-            "version": "3.5.1",
+            "version": "dev-hale-platform",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-moj-components.git",
-                "reference": "bc735aaab6ee2d67e6afed2fad6399ecf9accf05"
+                "reference": "039450c3de8b2398a7801e1fb6eef68212964cb0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/wp-moj-components/ministryofjustice-wp-moj-components-bc735aaab6ee2d67e6afed2fad6399ecf9accf05-zip-447db5.zip",
-                "reference": "bc735aaab6ee2d67e6afed2fad6399ecf9accf05",
-                "shasum": "409a59383d53bfcdb53696b3356b9d4191cefc1b"
+                "url": "https://api.github.com/repos/ministryofjustice/wp-moj-components/zipball/039450c3de8b2398a7801e1fb6eef68212964cb0",
+                "reference": "039450c3de8b2398a7801e1fb6eef68212964cb0",
+                "shasum": ""
             },
             "require": {
                 "composer/installers": "^1.0"
@@ -960,10 +960,10 @@
             ],
             "description": "A plugin to introduce global functions to a collection of WP sites",
             "support": {
-                "source": "https://github.com/ministryofjustice/wp-moj-components/tree/3.5.1",
+                "source": "https://github.com/ministryofjustice/wp-moj-components/tree/hale-platform",
                 "issues": "https://github.com/ministryofjustice/wp-moj-components/issues"
             },
-            "time": "2022-02-23T10:40:42+00:00"
+            "time": "2023-03-22T12:41:39+00:00"
         },
         {
             "name": "ministryofjustice/wp-s3-uploads",
@@ -2145,6 +2145,7 @@
     "minimum-stability": "stable",
     "stability-flags": {
         "ministryofjustice/wp-hale": 20,
+        "ministryofjustice/wp-moj-components": 20,
         "ministryofjustice/wp-s3-uploads": 20
     },
     "prefer-stable": false,

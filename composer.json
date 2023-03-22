@@ -6,7 +6,7 @@
     "authors": [],
     "keywords": ["wordpress", "stack", "composer", "wp, multisite, php"],
     "support": {
-        "issues": "https://github.com/ministryofjustice/hale-platform/issues" 
+        "issues": "https://github.com/ministryofjustice/hale-platform/issues"
     },
     "config": {
         "allow-plugins": true
@@ -45,7 +45,7 @@
         "wpackagist-plugin/safe-svg":"*",
         "wpackagist-plugin/redirection": "*",
         "relevanssi/relevanssi-premium": "*",
-        "ministryofjustice/wp-moj-components": "*",
+        "ministryofjustice/wp-moj-components": "dev-hale-platform",
         "ministryofjustice/wp-user-roles": "*",
         "ministryofjustice/cookie-compliance-for-wordpress": "*",
         "ministryofjustice/wp-moj-blocks": "*",
@@ -59,7 +59,7 @@
         "installer-paths": {
             "wordpress/wp-content/mu-plugins/{$name}/": [
                 "type:wordpress-muplugin",
-                "ministryofjustice/wp-user-roles", 
+                "ministryofjustice/wp-user-roles",
                 "ministryofjustice/wp-gov-uk-notify"
             ],
             "wordpress/wp-content/plugins/{$name}/": ["type:wordpress-plugin"],
