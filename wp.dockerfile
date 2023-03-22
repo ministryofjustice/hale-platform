@@ -7,9 +7,12 @@ FROM --platform=linux/amd64 wordpress:6.1.1-php8.2-fpm-alpine
 
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
+# Copy load.php into mu-plugins
+COPY opt/php/load.php /usr/src/wordpress/wp-content/mu-plugins/load.php
+
 # Adjust PHP-FPM configuration settings
 
-COPY opt/php/www.conf /usr/local/etc/php-fpm.d/www.conf 
+COPY opt/php/www.conf /usr/local/etc/php-fpm.d/www.conf
 COPY opt/php/wp-cron-multisite.php /usr/src/wordpress/wp-cron-multisite.php
 
 # Set permissions for wp-cli
@@ -55,11 +58,8 @@ RUN adduser --disabled-password hale -u 1002 && \
 
 RUN chown hale:hale /usr/local/bin/docker-entrypoint.sh
 
-# Create the uploads folder
-RUN mkdir -p /usr/src/wordpress/wp-content/uploads
-
-# Overwrite offical WP image ENTRYPOINT (docker-entrypoint.sh) 
-# with custom entrypoint so we can launch WP multisite network 
+# Overwrite offical WP image ENTRYPOINT (docker-entrypoint.sh)
+# with custom entrypoint so we can launch WP multisite network
 # This allows us to run conifguations on wp-config.php just before site launches.
 ENTRYPOINT ["/usr/local/bin/hale-entrypoint.sh"]
 
