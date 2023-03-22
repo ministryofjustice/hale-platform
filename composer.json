@@ -60,8 +60,7 @@
             "wordpress/wp-content/mu-plugins/{$name}/": [
                 "type:wordpress-muplugin",
                 "ministryofjustice/wp-user-roles", 
-                "ministryofjustice/wp-gov-uk-notify",
-                "ministryofjustice/wp-s3-uploads"
+                "ministryofjustice/wp-gov-uk-notify"
             ],
             "wordpress/wp-content/plugins/{$name}/": ["type:wordpress-plugin"],
             "wordpress/wp-content/themes/hale/": ["ministryofjustice/wp-hale"],
