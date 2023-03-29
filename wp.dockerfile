@@ -58,9 +58,11 @@ RUN adduser --disabled-password hale -u 1002 && \
 
 RUN chown hale:hale /usr/local/bin/docker-entrypoint.sh
 
-# Overwrite offical WP image ENTRYPOINT (docker-entrypoint.sh)
-# with custom entrypoint so we can launch WP multisite network
-# This allows us to run conifguations on wp-config.php just before site launches.
+# Create the uploads folder
+RUN mkdir -p /usr/src/wordpress/wp-content/uploads
+
+# Overwrite offical WP image ENTRYPOINT (docker-entrypoint.sh) 
+# with custom entrypoint so we can launch WP multisite network 
 ENTRYPOINT ["/usr/local/bin/hale-entrypoint.sh"]
 
 # Set container user 'root' to 'hale'
