@@ -34,8 +34,8 @@ jobs:
           composer install --prefer-dist --no-progress
       - name: Run NPM
         run: |
-          npm install --prefix ./wordpress/wp-content/themes/wp-hale
-          npm run production --if-present --prefix ./wordpress/wp-content/themes/wp-hale
+          npm install --prefix ./wordpress/wp-content/themes/hale
+          npm run production --if-present --prefix ./wordpress/wp-content/themes/hale
       - name: Build WordPress image
         run: |
           docker build --pull --no-cache --tag hale-platform_wordpress --file wp.dockerfile .
@@ -49,7 +49,7 @@ jobs:
           image: ${{ secrets.ECR_NAME_DEMO }}:hale-platform_wordpress-${{ github.sha }}
 
   deployDemo:
-    name: Deploy to Demonstration 
+    name: Deploy to Demonstration
     if: github.event.ref == 'refs/heads/demo'
     needs: buildDemo
     runs-on: ubuntu-latest
@@ -67,7 +67,7 @@ jobs:
           kubectl config set-context ${KUBE_CLUSTER} --cluster=${KUBE_CLUSTER} --user=deploy-user --namespace=${{ secrets.KUBE_NAMESPACE_DEMO }}
           kubectl config use-context ${KUBE_CLUSTER}
       - name: Apply Helm chart
-        run: | 
+        run: |
           helm upgrade wordpress helm_deploy/wordpress \
           --install \
           --namespace ${{ secrets.KUBE_NAMESPACE_DEMO }} \
@@ -171,7 +171,7 @@ jobs:
           kubectl config set-context ${KUBE_CLUSTER} --cluster=${KUBE_CLUSTER} --user=deploy-user --namespace=${{ secrets.KUBE_NAMESPACE_DEV }}
           kubectl config use-context ${KUBE_CLUSTER}
       - name: Apply Helm chart
-        run: | 
+        run: |
           helm upgrade wordpress helm_deploy/wordpress \
           --install \
           --namespace ${{ secrets.KUBE_NAMESPACE_DEV }} \
@@ -201,7 +201,7 @@ jobs:
           --set domain=${{ secrets.KUBE_NAMESPACE_DEV }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME_DEV }}:hale-platform_nginx-${{ github.sha }} \
           --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME_DEV }}:hale-platform_wordpress-${{ github.sha }}
-  
+
   ecrCleanDev:
     name: ECR clean - Dev
     runs-on: ubuntu-latest
@@ -217,7 +217,7 @@ jobs:
         kube-cluster: ${{ secrets.KUBE_CLUSTER_DEV }}
         kube-namespace: ${{ secrets.KUBE_NAMESPACE_DEV }}
         ecr-repo-name: ${{ secrets.ECR_NAME_DEV }}
-        days-to-keep-old-images: 10 
+        days-to-keep-old-images: 10
         max-old-images-to-keep: 24
 
   buildStaging:
@@ -245,8 +245,8 @@ jobs:
           composer install --prefer-dist --no-progress
       - name: Run NPM
         run: |
-          npm install --prefix ./wordpress/wp-content/themes/wp-hale
-          npm run production --if-present --prefix ./wordpress/wp-content/themes/wp-hale
+          npm install --prefix ./wordpress/wp-content/themes/hale
+          npm run production --if-present --prefix ./wordpress/wp-content/themes/hale
       - name: Build WordPress image
         run: |
           docker build --pull --no-cache --tag hale-platform_wordpress --file wp.dockerfile .
@@ -278,7 +278,7 @@ jobs:
           kubectl config set-context ${KUBE_CLUSTER} --cluster=${KUBE_CLUSTER} --user=deploy-user --namespace=${{ secrets.KUBE_NAMESPACE_STAGING }}
           kubectl config use-context ${KUBE_CLUSTER}
       - name: Apply Helm chart
-        run: | 
+        run: |
           helm upgrade wordpress helm_deploy/wordpress \
           --install \
           --namespace ${{ secrets.KUBE_NAMESPACE_STAGING }} \
@@ -324,7 +324,7 @@ jobs:
         kube-cluster: ${{ secrets.KUBE_CLUSTER_STAGING }}
         kube-namespace: ${{ secrets.KUBE_NAMESPACE_STAGING }}
         ecr-repo-name: ${{ secrets.ECR_NAME_STAGING }}
-        days-to-keep-old-images: 10 
+        days-to-keep-old-images: 10
         max-old-images-to-keep: 24
 
   buildProd:
@@ -353,8 +353,8 @@ jobs:
           composer install --prefer-dist --no-progress
       - name: Run NPM
         run: |
-          npm install --prefix ./wordpress/wp-content/themes/wp-hale
-          npm run production --if-present --prefix ./wordpress/wp-content/themes/wp-hale
+          npm install --prefix ./wordpress/wp-content/themes/hale
+          npm run production --if-present --prefix ./wordpress/wp-content/themes/hale
       - name: Build WordPress image
         run: |
           docker build --pull --no-cache --tag hale-platform_wordpress --file wp.dockerfile .
@@ -366,7 +366,7 @@ jobs:
           region: eu-west-2
           local-image: hale-platform_wordpress:latest
           image: ${{ secrets.ECR_NAME_PROD }}:hale-platform_wordpress-${{ github.sha }}
-  
+
   deployProd:
     name: Deploy to Production
     needs: buildProd
@@ -385,7 +385,7 @@ jobs:
           kubectl config set-context ${KUBE_CLUSTER} --cluster=${KUBE_CLUSTER} --user=deploy-user --namespace=${{ secrets.KUBE_NAMESPACE_PROD }}
           kubectl config use-context ${KUBE_CLUSTER}
       - name: Apply Helm charts
-        run: | 
+        run: |
           helm upgrade wordpress helm_deploy/wordpress \
           --install \
           --namespace ${{ secrets.KUBE_NAMESPACE_PROD }} \
@@ -415,7 +415,7 @@ jobs:
           --set domain=${{ secrets.KUBE_NAMESPACE_PROD }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME_PROD }}:hale-platform_nginx-${{ github.sha }} \
           --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME_PROD }}:hale-platform_wordpress-${{ github.sha }}
-  
+
   ecrCleanProd:
     name: ECR clean - Prod
     runs-on: ubuntu-latest
@@ -431,5 +431,5 @@ jobs:
         kube-cluster: ${{ secrets.KUBE_CLUSTER_PROD }}
         kube-namespace: ${{ secrets.KUBE_NAMESPACE_PROD }}
         ecr-repo-name: ${{ secrets.ECR_NAME_PROD }}
-        days-to-keep-old-images: 10 
+        days-to-keep-old-images: 10
         max-old-images-to-keep: 24
