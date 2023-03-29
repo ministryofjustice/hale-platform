@@ -283,13 +283,13 @@ jobs:
           --install \
           --namespace ${{ secrets.KUBE_NAMESPACE_STAGING }} \
           --values helm_deploy/wordpress/values.yaml \
-          --set secrets.wpdbuser=${{ secrets.WORDPRESS_DB_USER }} \
-          --set secrets.wpdbhost=${{ secrets.WORDPRESS_DB_HOST }} \
-          --set secrets.wpdbname=${{ secrets.WORDPRESS_DB_NAME }} \
-          --set secrets.wpdbpassword=${{ secrets.WORDPRESS_DB_PASSWORD }} \
-          --set secrets.wpadminemail=${{ secrets.WORDPRESS_ADMIN_EMAIL }} \
-          --set secrets.wpadminuser=${{ secrets.WORDPRESS_ADMIN_USER }} \
-          --set secrets.wpadminpassword=${{ secrets.WORDPRESS_ADMIN_PASSWORD }} \
+          --set secrets.wpdbuser=${{ secrets.WORDPRESS_DB_USER_STAGING }} \
+          --set secrets.wpdbhost=${{ secrets.WORDPRESS_DB_HOST_STAGING }} \
+          --set secrets.wpdbname=${{ secrets.WORDPRESS_DB_NAME_STAGING }} \
+          --set secrets.wpdbpassword=${{ secrets.WORDPRESS_DB_PASSWORD_STAGING }} \
+          --set secrets.wpadminemail=${{ secrets.WORDPRESS_ADMIN_EMAIL_STAGING }} \
+          --set secrets.wpadminuser=${{ secrets.WORDPRESS_ADMIN_USER_STAGING }} \
+          --set secrets.wpadminpassword=${{ secrets.WORDPRESS_ADMIN_PASSWORD_STAGING }} \
           --set secrets.wpauthkey=${{ secrets.WORDPRESS_AUTH_KEY_FILE }} \
           --set secrets.wpauthsalt=${{ secrets.WORDPRESS_AUTH_SALT_FILE }} \
           --set secrets.wploggedinkey=${{ secrets.WORDPRESS_LOGGED_IN_KEY_FILE }} \
@@ -302,7 +302,6 @@ jobs:
           --set secrets.s3uploadsregion=${{ secrets.S3_UPLOADS_REGION_STAGING }} \
           --set secrets.s3uploadskey=${{ secrets.S3_UPLOADS_KEY_STAGING }} \
           --set secrets.s3uploadssecret=${{ secrets.S3_UPLOADS_SECRET_STAGING }} \
-          --set configmap.wpenvtype=${{ secrets.WP_ENV_TYPE }} \
           --set configmap.envtype=${{ vars.ENV_TYPE_STAGING }} \
           --set configmap.servername=${{ secrets.KUBE_NAMESPACE_STAGING }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.KUBE_NAMESPACE_STAGING }}-green \

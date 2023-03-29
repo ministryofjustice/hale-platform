@@ -29,7 +29,6 @@ ingress:
       setidentifier: ""
 
 configmap:
-  wpenvtype: ""
   servername: ""
   envtype: ""
 
