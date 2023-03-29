@@ -5,33 +5,37 @@ kind: Ingress
 metadata:
   name: hale-platform-ingress
   annotations:
-    external-dns.alpha.kubernetes.io/set-identifier: {{ .Values.ingress.metadata.annotations.setidentifier }} 
+    external-dns.alpha.kubernetes.io/set-identifier: {{ .Values.ingress.metadata.annotations.setidentifier }}
     external-dns.alpha.kubernetes.io/aws-weight: "100"
 spec:
-  ingressClassName: modsec 
+  ingressClassName: modsec
   tls:
   - hosts:
     - {{ .Values.domain }}
+    {{- if eq .Values.configmap.envtype "prod" }}
     - haletest1.service.justice.gov.uk
+    {{- end }}
   rules:
-  - host: {{ .Values.domain }} 
+  - host: {{ .Values.domain }}
     http:
       paths:
       - path: /
-        pathType: ImplementationSpecific 
+        pathType: ImplementationSpecific
         backend:
           service:
-            name: wordpress 
+            name: wordpress
             port:
               number: 8080
+  {{- if eq .Values.configmap.envtype "prod" }}
   - host: haletest1.service.justice.gov.uk
     http:
       paths:
       - path: /
-        pathType: ImplementationSpecific 
+        pathType: ImplementationSpecific
         backend:
           service:
-            name: wordpress 
+            name: wordpress
             port:
-              number: 8080 
+              number: 8080
+   {{- end }}
 {{- end }}

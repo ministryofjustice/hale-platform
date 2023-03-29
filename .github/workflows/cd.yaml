@@ -303,6 +303,7 @@ jobs:
           --set secrets.s3uploadskey=${{ secrets.S3_UPLOADS_KEY_STAGING }} \
           --set secrets.s3uploadssecret=${{ secrets.S3_UPLOADS_SECRET_STAGING }} \
           --set configmap.wpenvtype=${{ secrets.WP_ENV_TYPE }} \
+          --set configmap.envtype=${{ env.ENV_TYPE_STAGING )) \
           --set configmap.servername=${{ secrets.KUBE_NAMESPACE_STAGING }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.KUBE_NAMESPACE_STAGING }}-green \
           --set domain=${{ secrets.KUBE_NAMESPACE_STAGING }}.apps.live.cloud-platform.service.justice.gov.uk \

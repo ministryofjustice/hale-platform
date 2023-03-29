@@ -5,19 +5,19 @@
 # Empty strings mean value is overwritten and populated when run by GitAction
 # during deployment
 
-domain: "" 
+domain: ""
 
 nginx:
   image:
-    repository: "" 
-    imagePullPolicy: Always 
-    replicaCount: 1 
- 
+    repository: ""
+    imagePullPolicy: Always
+    replicaCount: 1
+
 wp:
   image:
-    repository: "" 
+    repository: ""
     imagePullPolicy: Always
-    replicaCount: 2 
+    replicaCount: 2
 
 mariadb:
   enabled: false
@@ -31,6 +31,7 @@ ingress:
 configmap:
   wpenvtype: ""
   servername: ""
+  envtype: ""
 
 secrets:
   enabled: true
