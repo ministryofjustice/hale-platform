@@ -12,7 +12,7 @@ spec:
   tls:
   - hosts:
     - {{ .Values.domain }}
-    {{- if eq .Values.configmap.envtype "prod" }}
+    {{- if eq .Values.configmap.envtype "add prod var here when go live" }}
     - haletest1.service.justice.gov.uk
     {{- end }}
   rules:
@@ -26,7 +26,7 @@ spec:
             name: wordpress
             port:
               number: 8080
-  {{- if eq .Values.configmap.envtype "prod" }}
+  {{- if eq .Values.configmap.envtype "add prod var here when go live" }}
   - host: haletest1.service.justice.gov.uk
     http:
       paths:
