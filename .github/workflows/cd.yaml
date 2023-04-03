@@ -200,7 +200,7 @@ jobs:
           --set secrets.s3uploadskey=${{ secrets.S3_UPLOADS_KEY }} \
           --set secrets.s3uploadssecret=${{ secrets.S3_UPLOADS_SECRET }} \
           --set configmap.servername=${{ secrets.KUBE_NAMESPACE_DEV }}.apps.live.cloud-platform.service.justice.gov.uk \
-          --set configmap.wpenvtype=${{ secrets.WP_ENV_TYPE }} \
+          --set configmap.envtype=${{ vars.ENV_TYPE_DEV }} \
           --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.KUBE_NAMESPACE_DEV }}-green \
           --set domain=${{ secrets.KUBE_NAMESPACE_DEV }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME_DEV }}:hale-platform_nginx-${{ github.sha }} \
