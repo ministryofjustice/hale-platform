@@ -398,9 +398,9 @@ jobs:
           --set secrets.wpdbhost=${{ secrets.WORDPRESS_DB_HOST_PROD }} \
           --set secrets.wpdbname=${{ secrets.WORDPRESS_DB_NAME_PROD }} \
           --set secrets.wpdbpassword=${{ secrets.WORDPRESS_DB_PASSWORD_PROD }} \
-          --set secrets.wpadminemail=${{ secrets.WORDPRESS_ADMIN_EMAIL }} \
-          --set secrets.wpadminuser=${{ secrets.WORDPRESS_ADMIN_USER }} \
-          --set secrets.wpadminpassword=${{ secrets.WORDPRESS_ADMIN_PASSWORD }} \
+          --set secrets.wpadminemail=${{ secrets.WORDPRESS_ADMIN_EMAIL_PROD }} \
+          --set secrets.wpadminuser=${{ secrets.WORDPRESS_ADMIN_USER_PROD }} \
+          --set secrets.wpadminpassword=${{ secrets.WORDPRESS_ADMIN_PASSWORD_PROD }} \
           --set secrets.wpauthkey=${{ secrets.WORDPRESS_AUTH_KEY_FILE }} \
           --set secrets.wpauthsalt=${{ secrets.WORDPRESS_AUTH_SALT_FILE }} \
           --set secrets.wploggedinkey=${{ secrets.WORDPRESS_LOGGED_IN_KEY_FILE }} \
@@ -414,7 +414,7 @@ jobs:
           --set secrets.s3uploadskey=${{ secrets.S3_UPLOADS_KEY_PROD }} \
           --set secrets.s3uploadssecret=${{ secrets.S3_UPLOADS_SECRET_PROD }} \
           --set configmap.servername=${{ secrets.KUBE_NAMESPACE_PROD }}.apps.live.cloud-platform.service.justice.gov.uk \
-          --set configmap.wpenvtype=${{ secrets.WP_ENV_TYPE }} \
+          --set configmap.envtype=${{ vars.ENV_TYPE_PROD }} \
           --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.KUBE_NAMESPACE_PROD }}-green \
           --set domain=${{ secrets.KUBE_NAMESPACE_PROD }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME_PROD }}:hale-platform_nginx-${{ github.sha }} \
