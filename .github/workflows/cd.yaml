@@ -88,7 +88,7 @@ jobs:
           --set secrets.wpsecureauthkey=${{ secrets.WORDPRESS_SECURE_AUTH_KEY_FILE }} \
           --set secrets.wpsecureauthsalt=${{ secrets.WORDPRESS_SECURE_AUTH_SALT_FILE }} \
           --set secrets.s3uploadsbucket=${{ secrets.S3_UPLOADS_BUCKET_DEMO }} \
-          --set secrets.s3uploadsregion=${{ secrets.S3_UPLOADS_REGION }} \
+          --set secrets.s3uploadsregion=${{ secrets.S3_UPLOADS_REGION_DEMO }} \
           --set secrets.s3uploadskey=${{ secrets.S3_UPLOADS_KEY_DEMO }} \
           --set secrets.s3uploadssecret=${{ secrets.S3_UPLOADS_SECRET_DEMO }} \
           --set configmap.servername=${{ secrets.KUBE_NAMESPACE_DEMO }}.apps.live.cloud-platform.service.justice.gov.uk \
