@@ -50,7 +50,8 @@
         "ministryofjustice/cookie-compliance-for-wordpress": "*",
         "ministryofjustice/wp-moj-blocks": "*",
         "ministryofjustice/wp-gov-uk-notify": "*",
-        "ministryofjustice/wp-s3-uploads": "dev-master"
+        "ministryofjustice/wp-s3-uploads": "dev-master",
+        "sentry/sdk": "^3.3"
     },
     "require-dev": {
         "squizlabs/php_codesniffer": "^3.0.2"
