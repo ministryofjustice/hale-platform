@@ -51,6 +51,7 @@ RUN apk update && \
 COPY /wordpress/wp-content/plugins /usr/src/wordpress/wp-content/plugins
 COPY /wordpress/wp-content/mu-plugins /usr/src/wordpress/wp-content/mu-plugins
 COPY /wordpress/wp-content/themes /usr/src/wordpress/wp-content/themes
+COPY /vendor /usr/src/vendor
 
 # Create new user to run container as non-root
 RUN adduser --disabled-password hale -u 1002 && \
@@ -61,8 +62,8 @@ RUN chown hale:hale /usr/local/bin/docker-entrypoint.sh
 # Create the uploads folder
 RUN mkdir -p /usr/src/wordpress/wp-content/uploads
 
-# Overwrite offical WP image ENTRYPOINT (docker-entrypoint.sh) 
-# with custom entrypoint so we can launch WP multisite network 
+# Overwrite offical WP image ENTRYPOINT (docker-entrypoint.sh)
+# with custom entrypoint so we can launch WP multisite network
 ENTRYPOINT ["/usr/local/bin/hale-entrypoint.sh"]
 
 # Set container user 'root' to 'hale'
