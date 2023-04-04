@@ -51,7 +51,7 @@ RUN apk update && \
 COPY /wordpress/wp-content/plugins /usr/src/wordpress/wp-content/plugins
 COPY /wordpress/wp-content/mu-plugins /usr/src/wordpress/wp-content/mu-plugins
 COPY /wordpress/wp-content/themes /usr/src/wordpress/wp-content/themes
-COPY /vendor /usr/src/vendor
+COPY /vendor /usr/src/wordpress/wp-content/vendor
 
 # Create new user to run container as non-root
 RUN adduser --disabled-password hale -u 1002 && \
