@@ -3,7 +3,7 @@
 /** @var string Directory containing all of the site's files */
 $root_dir = dirname(__DIR__);
 
-require $root_dir . 'html/wp-content/vendor/autoload.php';
+require $root_dir . '/vendor/autoload.php';
 
 /**
  * Initialise Sentry
