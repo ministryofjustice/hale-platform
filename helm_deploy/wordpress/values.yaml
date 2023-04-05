@@ -17,7 +17,7 @@ wp:
   image:
     repository: ""
     imagePullPolicy: Always
-    replicaCount: 6
+    replicaCount: 12
 
 mariadb:
   enabled: false
