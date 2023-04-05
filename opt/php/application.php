@@ -27,8 +27,6 @@ switch ($envType) {
 if (function_exists('sentry\init')) {
         Sentry\init(['dsn' => "$dsnSentry" ]);
 
-        trigger_error("Env type is: $envType", E_USER_WARNING);
-
     try {
         $this->functionFailsForSure();
     } catch (\Throwable $exception) {
