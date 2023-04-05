@@ -11,13 +11,15 @@ nginx:
   image:
     repository: ""
     imagePullPolicy: Always
-    replicaCount: 1
 
 wp:
   image:
     repository: ""
     imagePullPolicy: Always
-    replicaCount: 12
+    replicaCountProd: 3
+    replicaCountStaging: 2
+    replicaCountDev: 1
+    replicaCountDemo: 2
 
 mariadb:
   enabled: false
