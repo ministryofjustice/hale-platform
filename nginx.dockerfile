@@ -1,5 +1,7 @@
 FROM --platform=linux/amd64 nginxinc/nginx-unprivileged:1.23.3
 
+RUN mkdir -p /var/run/nginx-cache
+
 RUN chgrp -R root /var/run/nginx-cache /var/run /var/log/nginx && \
     chmod -R 770 /var/run/nginx-cache /var/run /var/log/nginx
 
