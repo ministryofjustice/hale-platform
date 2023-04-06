@@ -1,4 +1,4 @@
-<<?php
+<?php
 
 $envType = getenv('ENV_TYPE');
 
@@ -26,7 +26,6 @@ switch ($envType) {
 
 if (function_exists('sentry\init')) {
         Sentry\init(['dsn' => "$dsnSentry" ]);
-
     try {
         $this->functionFailsForSure();
     } catch (\Throwable $exception) {
