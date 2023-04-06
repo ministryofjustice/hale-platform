@@ -18,7 +18,7 @@ wp:
     imagePullPolicy: Always
     replicaCount:
       prod: 3
-      staging: 2
+      staging: 3
       dev: 1
       demo: 2
 
