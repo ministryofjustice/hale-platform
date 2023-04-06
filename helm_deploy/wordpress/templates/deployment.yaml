@@ -7,13 +7,13 @@ metadata:
     app: wordpress
 spec:
   {{- if eq .Values.configmap.envtype "staging" }}
-  replicas: {{ .Values.wp.image.replicaCountStaging }}
+  replicas: {{ .Values.wp.image.replicaCount.staging }}
   {{ else if eq .Values.configmap.envtype "dev" }}
-  replicas: {{ .Values.wp.image.replicaCountDev }}
+  replicas: {{ .Values.wp.image.replicaCount.dev }}
   {{ else if eq .Values.configmap.envtype "demo" }}
-  replicas: {{ .Values.wp.image.replicaCountDemo }}
+  replicas: {{ .Values.wp.image.replicaCount.demo }}
   {{ else }}
-  replicas: {{ .Values.wp.image.replicaCountProd }}
+  replicas: {{ .Values.wp.image.replicaCount.prod }}
   {{- end }}
   selector:
     matchLabels:

@@ -16,10 +16,11 @@ wp:
   image:
     repository: ""
     imagePullPolicy: Always
-    replicaCountProd: 3
-    replicaCountStaging: 2
-    replicaCountDev: 1
-    replicaCountDemo: 2
+    replicaCount:
+      prod: 3
+      staging: 2
+      dev: 1
+      demo: 2
 
 mariadb:
   enabled: false
