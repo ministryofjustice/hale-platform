@@ -14,3 +14,7 @@ COPY opt/nginx/wordpress.conf /etc/nginx/conf.d/
 RUN rm -r /etc/nginx/conf.d/default.conf
 
 USER nginx
+
+EXPOSE 8080
+
+CMD ["nginx", "-g", "daemon off;"]
