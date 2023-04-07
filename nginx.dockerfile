@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 nginxinc/nginx-unprivileged:1.23.3
+FROM --platform=linux/amd64 nginxinc/nginx-unprivileged:latest
 
 # Copy custom NGINX configurations required for WordPress Multisite
 COPY opt/nginx/nginx.conf /etc/nginx/
