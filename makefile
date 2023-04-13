@@ -2,7 +2,9 @@
 
 # Run site using Docker.
 run:
-	docker-compose up
+	docker-compose up -d
+	chmod +x bin/upload.sh
+	./bin/upload.sh
 
 # Shutdown site using Docker.
 down:
@@ -10,7 +12,7 @@ down:
 
 # Build all images on local machine
 # and remove any previous WP installations.
-# Without this docker build doesn't 
+# Without this docker build doesn't
 # overwrite already exiting folder and therefore
 # doesn't update when bumping WP version for example.
 build:
