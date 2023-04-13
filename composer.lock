@@ -125,16 +125,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.263.3",
+            "version": "3.263.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "be23e6b278e9a3f4a5b15394f85e9c3f54c9dd7e"
+                "reference": "539a5fa9d27017120db16c7a0e5fc345858835d4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/be23e6b278e9a3f4a5b15394f85e9c3f54c9dd7e",
-                "reference": "be23e6b278e9a3f4a5b15394f85e9c3f54c9dd7e",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/539a5fa9d27017120db16c7a0e5fc345858835d4",
+                "reference": "539a5fa9d27017120db16c7a0e5fc345858835d4",
                 "shasum": ""
             },
             "require": {
@@ -213,9 +213,9 @@
             "support": {
                 "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.263.3"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.263.9"
             },
-            "time": "2023-04-04T18:24:59+00:00"
+            "time": "2023-04-12T18:22:17+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -947,17 +947,17 @@
         },
         {
             "name": "ministryofjustice/cookie-compliance-for-wordpress",
-            "version": "3.3.2",
+            "version": "3.3.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/cookie-compliance-for-wordpress.git",
-                "reference": "808a75f6af9e8475cf323944f39798eac83ac3ff"
+                "reference": "d7ecdaef82c94213d304b5280aa77a4c6ac31926"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/cookie-compliance-for-wordpress/ministryofjustice-cookie-compliance-for-wordpress-808a75f6af9e8475cf323944f39798eac83ac3ff-zip-94796b.zip",
-                "reference": "808a75f6af9e8475cf323944f39798eac83ac3ff",
-                "shasum": "b73fe60cc85bf0f12d56d192a03feead5a03bb71"
+                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/cookie-compliance-for-wordpress/ministryofjustice-cookie-compliance-for-wordpress-d7ecdaef82c94213d304b5280aa77a4c6ac31926-zip-e14b97.zip",
+                "reference": "d7ecdaef82c94213d304b5280aa77a4c6ac31926",
+                "shasum": "256950ca52b405ec93ef4607d319f9ac5b4fb989"
             },
             "require-dev": {
                 "composer/composer": "*",
@@ -980,10 +980,10 @@
             ],
             "description": "WP plugin that presents visitor with a cookie consent banner and opt-in setting page.",
             "support": {
-                "source": "https://github.com/ministryofjustice/cookie-compliance-for-wordpress/tree/3.3.2",
+                "source": "https://github.com/ministryofjustice/cookie-compliance-for-wordpress/tree/3.3.3",
                 "issues": "https://github.com/ministryofjustice/cookie-compliance-for-wordpress/issues"
             },
-            "time": "2023-03-30T09:32:57+00:00"
+            "time": "2023-04-11T13:00:51+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
@@ -1024,12 +1024,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-hale.git",
-                "reference": "e14acca78910cdaf21d685e42999664078e45087"
+                "reference": "030bfa91b16535c7d864b826ee0069673a12c3d7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/wp-hale/zipball/e14acca78910cdaf21d685e42999664078e45087",
-                "reference": "e14acca78910cdaf21d685e42999664078e45087",
+                "url": "https://api.github.com/repos/ministryofjustice/wp-hale/zipball/030bfa91b16535c7d864b826ee0069673a12c3d7",
+                "reference": "030bfa91b16535c7d864b826ee0069673a12c3d7",
                 "shasum": ""
             },
             "type": "wordpress-theme",
@@ -1038,7 +1038,7 @@
                 "source": "https://github.com/ministryofjustice/wp-hale/tree/hale-platform",
                 "issues": "https://github.com/ministryofjustice/wp-hale/issues"
             },
-            "time": "2023-03-22T11:18:10+00:00"
+            "time": "2023-04-13T09:10:36+00:00"
         },
         {
             "name": "ministryofjustice/wp-moj-blocks",
@@ -1933,21 +1933,21 @@
         },
         {
             "name": "psr/http-client",
-            "version": "1.0.1",
+            "version": "1.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-fig/http-client.git",
-                "reference": "2dfb5f6c5eff0e91e20e913f8c5452ed95b86621"
+                "reference": "0955afe48220520692d2d09f7ab7e0f93ffd6a31"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/http-client/zipball/2dfb5f6c5eff0e91e20e913f8c5452ed95b86621",
-                "reference": "2dfb5f6c5eff0e91e20e913f8c5452ed95b86621",
+                "url": "https://api.github.com/repos/php-fig/http-client/zipball/0955afe48220520692d2d09f7ab7e0f93ffd6a31",
+                "reference": "0955afe48220520692d2d09f7ab7e0f93ffd6a31",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.0 || ^8.0",
-                "psr/http-message": "^1.0"
+                "psr/http-message": "^1.0 || ^2.0"
             },
             "type": "library",
             "extra": {
@@ -1967,7 +1967,7 @@
             "authors": [
                 {
                     "name": "PHP-FIG",
-                    "homepage": "http://www.php-fig.org/"
+                    "homepage": "https://www.php-fig.org/"
                 }
             ],
             "description": "Common interface for HTTP clients",
@@ -1979,27 +1979,27 @@
                 "psr-18"
             ],
             "support": {
-                "source": "https://github.com/php-fig/http-client/tree/master"
+                "source": "https://github.com/php-fig/http-client/tree/1.0.2"
             },
-            "time": "2020-06-29T06:28:15+00:00"
+            "time": "2023-04-10T20:12:12+00:00"
         },
         {
             "name": "psr/http-factory",
-            "version": "1.0.1",
+            "version": "1.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-fig/http-factory.git",
-                "reference": "12ac7fcd07e5b077433f5f2bee95b3a771bf61be"
+                "reference": "e616d01114759c4c489f93b099585439f795fe35"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/http-factory/zipball/12ac7fcd07e5b077433f5f2bee95b3a771bf61be",
-                "reference": "12ac7fcd07e5b077433f5f2bee95b3a771bf61be",
+                "url": "https://api.github.com/repos/php-fig/http-factory/zipball/e616d01114759c4c489f93b099585439f795fe35",
+                "reference": "e616d01114759c4c489f93b099585439f795fe35",
                 "shasum": ""
             },
             "require": {
                 "php": ">=7.0.0",
-                "psr/http-message": "^1.0"
+                "psr/http-message": "^1.0 || ^2.0"
             },
             "type": "library",
             "extra": {
@@ -2019,7 +2019,7 @@
             "authors": [
                 {
                     "name": "PHP-FIG",
-                    "homepage": "http://www.php-fig.org/"
+                    "homepage": "https://www.php-fig.org/"
                 }
             ],
             "description": "Common interfaces for PSR-7 HTTP message factories",
@@ -2034,9 +2034,9 @@
                 "response"
             ],
             "support": {
-                "source": "https://github.com/php-fig/http-factory/tree/master"
+                "source": "https://github.com/php-fig/http-factory/tree/1.0.2"
             },
-            "time": "2019-04-30T12:38:16+00:00"
+            "time": "2023-04-10T20:10:41+00:00"
         },
         {
             "name": "psr/http-message",
@@ -3125,15 +3125,15 @@
         },
         {
             "name": "wpackagist-plugin/safe-svg",
-            "version": "2.1.0",
+            "version": "2.1.1",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/safe-svg/",
-                "reference": "tags/2.1.0"
+                "reference": "tags/2.1.1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/safe-svg.2.1.0.zip"
+                "url": "https://downloads.wordpress.org/plugin/safe-svg.2.1.1.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -3179,15 +3179,15 @@
         },
         {
             "name": "wpackagist-plugin/wordpress-seo",
-            "version": "20.4",
+            "version": "20.5",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/wordpress-seo/",
-                "reference": "tags/20.4"
+                "reference": "tags/20.5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/wordpress-seo.20.4.zip"
+                "url": "https://downloads.wordpress.org/plugin/wordpress-seo.20.5.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
