@@ -6,6 +6,7 @@ mysql
 auth.json
 vendor/
 wordpress/
+uploads./
 media/
 !helm_deploy/wordpress/
 bin/certs/
