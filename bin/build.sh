@@ -32,8 +32,8 @@ while true; do
             echo -e '######################\n'
             echo -e "Make sure you're connected to MoJ Digital VPN.\n"
             composer install --no-cache
-          
-            # Test NPM is installed locally            
+
+            # Test NPM is installed locally
             if npm > /dev/null 2>&1; then
             echo -e "Oops, NPM does not appear to be installed locally.\nMake sure NPM is installed and try again.\n"
             exit 1
@@ -44,8 +44,8 @@ while true; do
             echo -e '######################\n'
             npm install --prefix ./wordpress/wp-content/themes/hale
             npm run build --prefix ./wordpress/wp-content/themes/hale
-           
-            # Test Docker is running locally            
+
+            # Test Docker is running locally
             if ! docker info > /dev/null 2>&1; then
             echo -e "Oops, where is Docker? Start Docker and try again.\n"
             exit 1
@@ -56,8 +56,9 @@ while true; do
             echo -e '# Run Docker Build'
             echo -e '######################\n'
             docker-compose build --no-cache
+
             break;;
-        [Nn]* ) 
+        [Nn]* )
             exit;;
         * ) echo "Please answer yes or no.";;
     esac
