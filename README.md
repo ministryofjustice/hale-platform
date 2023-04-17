@@ -113,7 +113,7 @@ kubectl \                                                                       
   --env="REMOTE_PORT=3306"
 ```
 
-Second, step, setup port-forwarding pod with the following command
+Second, step, setup port-forwarding pod with the following command:
 
 ```
 kubectl \                                                                                                                :dev
