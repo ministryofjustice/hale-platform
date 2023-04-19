@@ -7,31 +7,26 @@ include_once dirname(__DIR__) . '/vendor/autoload.php';
 /**
  * Initialise Sentry
  */
-$dsnSentry = '';
 $environment = '';
 
 switch ($envType) {
     case 'prod':
-        $dsnSentry = 'https://089f64c901484b31aff96b3fd0c0e709@o345774.ingest.sentry.io/4504963493593088';
-        $environment = 'prod';
+        $environment = 'Production';
         break;
     case 'staging':
-        $dsnSentry = 'https://14810aad50d046fb86df8f357de999d1@o345774.ingest.sentry.io/4504963487432704';
-        $environment = 'staging';
+        $environment = 'Staging';
         break;
     case 'dev':
-        $dsnSentry = 'https://f1d6c41335d94ca49536a80ed1d6ae1c@o345774.ingest.sentry.io/4504955899478016';
-        $environment = 'dev';
+        $environment = 'Development';
         break;
     case 'demo':
-        $dsnSentry = 'https://2b3609a14a424859ab34254d47d731c1@o345774.ingest.sentry.io/4504963496148992';
-        $environment = 'demo';
+        $environment = 'Demonstration';
         break;
 }
 
 if (function_exists('sentry\init')) {
     \Sentry\init([
-        'dsn' => "$dsnSentry",
+        'dsn' => "https://4d7a410074614517899f22cf025d2e74@o345774.ingest.sentry.io/4505040969400320",
         'environment' => "$environment",
     ]);
 
