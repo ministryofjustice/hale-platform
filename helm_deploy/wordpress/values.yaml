@@ -18,8 +18,8 @@ wp:
     imagePullPolicy: Always
     replicaCount:
       prod: 3
-      staging: 1
-      dev: 3
+      staging: 3
+      dev: 1
       demo: 2
 
 mariadb:
