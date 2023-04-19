@@ -30,5 +30,5 @@ if (function_exists('sentry\init')) {
         'environment' => "$environment",
     ]);
 
-    \Sentry\captureLastError();
+    Sentry\captureLastError();
 }
