@@ -63,8 +63,8 @@ spec:
               httpHeaders:
               - name: Host
                 value: {{ .Values.domain }}
-              path: /?nocache
-              port: 8080
+              path: /
+              port: 80
             initialDelaySeconds: 10
             periodSeconds: 5
             successThreshold: 1
