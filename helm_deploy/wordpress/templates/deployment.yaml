@@ -63,23 +63,6 @@ spec:
         - name: php-config
           configMap:
             name: hale-wordpress-multisite-php-config-{{ .Release.Revision }}
-#        - name: old-pvc
-#          persistentVolumeClaim:
-#            claimName: wp-pvc-claim
-#---
-#apiVersion: v1
-#kind: PersistentVolumeClaim
-#metadata:
-#  name:  wp-pvc-claim
-#  labels:
-#     app: wordpress
-#spec:
-#  accessModes:
-#    - ReadWriteOnce
-#  resources:
-#    requests:
-#      storage: 20Gi
-#  storageClassName: gp2
 ---
 {{- if .Values.mariadb.enabled }}
 apiVersion: apps/v1
