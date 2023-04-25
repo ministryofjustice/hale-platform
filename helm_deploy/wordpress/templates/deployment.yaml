@@ -57,41 +57,29 @@ spec:
                 name: wpconfig-{{ .Release.Revision }}
           - secretRef:
                 name: wpsecrets-{{ .Release.Revision }}
-          readinessProbe:
-            failureThreshold: 3
-            httpGet:
-              httpHeaders:
-              - name: Host
-                value: {{ .Values.domain }}
-              path: /
-              port: 80
-            initialDelaySeconds: 10
-            periodSeconds: 5
-            successThreshold: 1
-            timeoutSeconds: 30
       volumes:
         - name: wordpress-pv
           emptyDir: {}
         - name: php-config
           configMap:
             name: hale-wordpress-multisite-php-config-{{ .Release.Revision }}
-        - name: old-pvc
-          persistentVolumeClaim:
-            claimName: wp-pvc-claim
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name:  wp-pvc-claim
-  labels:
-     app: wordpress
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 20Gi
-  storageClassName: gp2
+#        - name: old-pvc
+#          persistentVolumeClaim:
+#            claimName: wp-pvc-claim
+#---
+#apiVersion: v1
+#kind: PersistentVolumeClaim
+#metadata:
+#  name:  wp-pvc-claim
+#  labels:
+#     app: wordpress
+#spec:
+#  accessModes:
+#    - ReadWriteOnce
+#  resources:
+#    requests:
+#      storage: 20Gi
+#  storageClassName: gp2
 ---
 {{- if .Values.mariadb.enabled }}
 apiVersion: apps/v1
