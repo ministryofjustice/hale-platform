@@ -57,6 +57,18 @@ spec:
                 name: wpconfig-{{ .Release.Revision }}
           - secretRef:
                 name: wpsecrets-{{ .Release.Revision }}
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              httpHeaders:
+              - name: Host
+                value: {{ .Values.domain }}
+              path: /?nocache
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 30
       volumes:
         - name: wordpress-pv
           emptyDir: {}
