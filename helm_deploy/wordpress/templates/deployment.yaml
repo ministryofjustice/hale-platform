@@ -45,7 +45,9 @@ spec:
               command:
               - sh
               - -c
-              - "echo 'PING' | socat - tcp:127.0.0.1:9000 && exit 0 || exit 1"
+              - "SCRIPT_NAME=/ping SCRIPT_FILENAME=/ping QUERY_STRING= REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000"
+            failureThreshold: 10
+            periodSeconds: 2
         - image: {{ .Values.wp.image.repository }}
           imagePullPolicy: {{ .Values.wp.image.imagePullPolicy }}
           name: wordpress
