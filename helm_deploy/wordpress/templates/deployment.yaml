@@ -41,16 +41,11 @@ spec:
             - name: wordpress-pv
               mountPath: /var/www/html
           readinessProbe:
-            exec:
-              command:
-                - curl
-                - --silent
-                - --fail
-                - http://localhost:9000/
-            failureThreshold: 10
-            initialDelaySeconds: 8
-            periodSeconds: 2
-            timeoutSeconds: 3
+            httpGet:
+              path: /
+              port: 9000
+            initialDelaySeconds: 6
+            periodSeconds: 5
         - image: {{ .Values.wp.image.repository }}
           imagePullPolicy: {{ .Values.wp.image.imagePullPolicy }}
           name: wordpress
