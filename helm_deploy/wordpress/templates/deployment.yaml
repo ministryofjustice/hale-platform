@@ -60,7 +60,7 @@ spec:
           livenessProbe:
             httpGet:
               path: /wp-login.php
-              port: {{ .Values.domain }}
+              port: 8080
             failureThreshold: 3
             periodSeconds: 10
             timeoutSeconds: 3
