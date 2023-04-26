@@ -43,9 +43,10 @@ spec:
           readinessProbe:
             exec:
               command:
-              - sh
-              - -c
-              - "curl -I -m 3 -o /dev/null -s -w '%{http_code}' http://localhost:9000/ || exit 1 | grep -q 200"
+                - curl
+                - --silent
+                - --fail
+                - http://localhost:9000/
             failureThreshold: 10
             initialDelaySeconds: 8
             periodSeconds: 2
