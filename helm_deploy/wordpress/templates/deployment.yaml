@@ -57,27 +57,27 @@ spec:
                 name: wpconfig-{{ .Release.Revision }}
           - secretRef:
                 name: wpsecrets-{{ .Release.Revision }}
-      livenessProbe:
-        httpGet:
-          path: /wp-login.php
-          port: liveness-port
-        failureThreshold: 3
-        periodSeconds: 10
-        timeoutSeconds: 10
-        initialDelaySeconds: 120
-        terminationGracePeriodSeconds: 30
-      readinessProbe:
-        failureThreshold: 3
-        httpGet:
-          httpHeaders:
-          - name: Host
-            value: {{ .Values.domain }}
-          path: /wp-login.php
-          port: 8080
-        initialDelaySeconds: 10
-        periodSeconds: 5
-        successThreshold: 1
-        timeoutSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /wp-login.php
+            port: liveness-port
+          failureThreshold: 3
+          periodSeconds: 10
+          timeoutSeconds: 10
+          initialDelaySeconds: 120
+          terminationGracePeriodSeconds: 30
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            httpHeaders:
+            - name: Host
+              value: {{ .Values.domain }}
+            path: /wp-login.php
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 10
       volumes:
         - name: wordpress-pv
           emptyDir: {}
