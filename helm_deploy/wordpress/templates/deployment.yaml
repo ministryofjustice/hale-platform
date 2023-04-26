@@ -30,8 +30,8 @@ spec:
         app: wordpress
         tier: frontend-c
     spec:
-      containers:
       restartPolicy: Always
+      containers:
         - name: nginx
           image: {{ .Values.nginx.image.repository }}
           imagePullPolicy: {{ .Values.nginx.image.imagePullPolicy }}
