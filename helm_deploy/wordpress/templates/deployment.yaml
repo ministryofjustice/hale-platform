@@ -34,6 +34,7 @@ spec:
         - name: nginx
           image: {{ .Values.nginx.image.repository }}
           imagePullPolicy: {{ .Values.nginx.image.imagePullPolicy }}
+          restartPolicy: Always
           ports:
             - containerPort: 8080
           volumeMounts:
