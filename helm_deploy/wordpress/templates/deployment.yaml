@@ -30,7 +30,7 @@ spec:
         app: wordpress
         tier: frontend-c
     spec:
-      restartPolicy: Never
+      restartPolicy: Always
       containers:
         - name: nginx
           image: {{ .Values.nginx.image.repository }}
@@ -65,10 +65,9 @@ spec:
               scheme: HTTPS
               host: {{ .Values.domain }}
             failureThreshold: 3
-            periodSeconds: 2
+            periodSeconds: 3
             timeoutSeconds: 3
-            initialDelaySeconds: 60
-            terminationGracePeriodSeconds: 30
+            initialDelaySeconds: 120
       volumes:
         - name: wordpress-pv
           emptyDir: {}
