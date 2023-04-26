@@ -42,12 +42,6 @@ spec:
               mountPath: /var/www/html
           depends_on:
             - wordpress
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 9000
-            initialDelaySeconds: 6
-            periodSeconds: 5
         - image: {{ .Values.wp.image.repository }}
           imagePullPolicy: {{ .Values.wp.image.imagePullPolicy }}
           name: wordpress
