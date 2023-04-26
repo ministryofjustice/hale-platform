@@ -40,6 +40,8 @@ spec:
           volumeMounts:
             - name: wordpress-pv
               mountPath: /var/www/html
+          depends_on:
+            - wordpress
           readinessProbe:
             httpGet:
               path: /
