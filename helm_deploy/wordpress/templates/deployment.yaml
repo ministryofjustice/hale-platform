@@ -60,13 +60,6 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 10
             initialDelaySeconds: 120
-          readinessProbe:
-            httpGet:
-              path: /index.php
-              port: 9000
-            initialDelaySeconds: 30
-            periodSeconds: 5
-            failureThreshold: 4
         - name: nginx
           image: {{ .Values.nginx.image.repository }}
           imagePullPolicy: {{ .Values.nginx.image.imagePullPolicy }}
