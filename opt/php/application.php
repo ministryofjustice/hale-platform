@@ -34,11 +34,11 @@ if (function_exists('sentry\init')) {
 }
 
 
-if ($envType === 'demo') {
-    // Enable error reporting
-    error_reporting(E_ALL);
-    ini_set('display_errors', 1);
-    define('WP_DEBUG', true);
-    define('WP_DEBUG_LOG', true);
-    define('WP_DEBUG_DISPLAY', true);
-}
+// if ($envType === 'demo') {
+//     // Enable error reporting
+//     error_reporting(E_ALL);
+//     ini_set('display_errors', 1);
+//     define('WP_DEBUG', true);
+//     define('WP_DEBUG_LOG', true);
+//     define('WP_DEBUG_DISPLAY', true);
+// }
