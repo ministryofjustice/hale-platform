@@ -14,8 +14,8 @@ spec:
           containers:
           - name: nginx-curl
             image: nginxinc/nginx-unprivileged
+            imagePullPolicy: IfNotPresent
             args:
             - curl
             - {{ .Values.domain }}/wp-cron-multisite.php
           restartPolicy: OnFailure
-          imagePullPolicy: IfNotPresent
