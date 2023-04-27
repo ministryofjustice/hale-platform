@@ -61,15 +61,12 @@ spec:
             timeoutSeconds: 10
             initialDelaySeconds: 120
           readinessProbe:
-            exec:
-              command:
-              - sh
-              - -c
-              - |
-                response=$(curl --silent --show-error --head http://localhost:9000)
-                echo "$response" | grep "HTTP/1.1 200 OK"
+            httpGet:
+              path: /index.php
+              port: 9000
             initialDelaySeconds: 10
             periodSeconds: 5
+            failureThreshold: 3
         - name: nginx
           image: {{ .Values.nginx.image.repository }}
           imagePullPolicy: {{ .Values.nginx.image.imagePullPolicy }}
