@@ -24,8 +24,8 @@ spec:
   ports:
     - name: "8080"
       port: 8080
-    - name: "443"
-      port: 443
+#    - name: "443"
+ #     port: 443
   selector:
     app: wordpress
     tier: frontend-c
