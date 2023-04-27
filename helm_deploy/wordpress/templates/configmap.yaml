@@ -6,4 +6,12 @@ data:
   WP_ENVIRONMENT_TYPE: {{ .Values.configmap.envtype }}
   SERVER_NAME: {{ .Values.domain }}
   ENV_TYPE: {{ .Values.configmap.envtype }}
-  WP_DEBUG: {{ .Values.configmap.wpdebug | quotes }}
+  {{- if eq .Values.configmap.envtype "staging" }}
+  WP_DEBUG: {{ .Values.configmap.wpdebug.staging }}
+  {{ else if eq .Values.configmap.envtype "dev" }}
+  WP_DEBUG: {{ .Values.configmap.wpdebug.dev }}
+  {{ else if eq .Values.configmap.envtype "demo" }}
+  WP_DEBUG: {{ .Values.configmap.wpdebug.demo }}
+  {{ else }}
+  WP_DEBUG: {{ .Values.configmap.wpdebug.prod }}
+  {{- end }}
