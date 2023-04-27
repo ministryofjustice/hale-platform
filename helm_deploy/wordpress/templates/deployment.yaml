@@ -60,14 +60,6 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 10
             initialDelaySeconds: 120
-        - name: nginx
-          image: {{ .Values.nginx.image.repository }}
-          imagePullPolicy: {{ .Values.nginx.image.imagePullPolicy }}
-          ports:
-            - containerPort: 8080
-          volumeMounts:
-            - name: wordpress-volume-file-mount
-              mountPath: /var/www/html
           readinessProbe:
             exec:
               command:
@@ -78,6 +70,14 @@ spec:
                 echo "$response" | grep "HTTP/1.1 200 OK"
             initialDelaySeconds: 10
             periodSeconds: 5
+        - name: nginx
+          image: {{ .Values.nginx.image.repository }}
+          imagePullPolicy: {{ .Values.nginx.image.imagePullPolicy }}
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: wordpress-volume-file-mount
+              mountPath: /var/www/html
       volumes:
         - name: wordpress-volume-file-mount
           emptyDir: {}
