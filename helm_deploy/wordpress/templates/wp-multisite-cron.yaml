@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: wp-cron 
+  name: wp-cron
 spec:
   schedule: "* * * * *"
   successfulJobsHistoryLimit: 1
@@ -13,8 +13,9 @@ spec:
         spec:
           containers:
           - name: nginx-curl
-            image: nginxinc/nginx-unprivileged 
+            image: nginxinc/nginx-unprivileged
             args:
             - curl
             - {{ .Values.domain }}/wp-cron-multisite.php
           restartPolicy: OnFailure
+          imagePullPolicy: IfNotPresent
