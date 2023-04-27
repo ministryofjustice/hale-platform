@@ -41,7 +41,7 @@ spec:
           ports:
             - containerPort: 9000
           volumeMounts:
-            - name: wordpress-pv
+            - name: wordpress-volume-file-mount
               mountPath: /var/www/html
             - name: php-config
               mountPath: /usr/local/etc/php/conf.custom
@@ -66,10 +66,10 @@ spec:
           ports:
             - containerPort: 8080
           volumeMounts:
-            - name: wordpress-pv
+            - name: wordpress-volume-file-mount
               mountPath: /var/www/html
       volumes:
-        - name: wordpress-pv
+        - name: wordpress-volume-file-mount
           emptyDir: {}
         - name: php-config
           configMap:
