@@ -68,6 +68,16 @@ spec:
           volumeMounts:
             - name: wordpress-volume-file-mount
               mountPath: /var/www/html
+          readinessProbe:
+            exec:
+              command:
+              - sh
+              - -c
+              - |
+                response=$(curl --silent --show-error --head http://localhost:9000)
+                echo "$response" | grep "HTTP/1.1 200 OK"
+            initialDelaySeconds: 10
+            periodSeconds: 5
       volumes:
         - name: wordpress-volume-file-mount
           emptyDir: {}
