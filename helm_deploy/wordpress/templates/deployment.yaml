@@ -64,9 +64,9 @@ spec:
             httpGet:
               path: /index.php
               port: 9000
-            initialDelaySeconds: 10
+            initialDelaySeconds: 20
             periodSeconds: 5
-            failureThreshold: 3
+            failureThreshold: 4
         - name: nginx
           image: {{ .Values.nginx.image.repository }}
           imagePullPolicy: {{ .Values.nginx.image.imagePullPolicy }}
