@@ -64,7 +64,7 @@ spec:
             httpGet:
               path: /index.php
               port: 9000
-            initialDelaySeconds: 20
+            initialDelaySeconds: 30
             periodSeconds: 5
             failureThreshold: 4
         - name: nginx
