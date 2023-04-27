@@ -6,4 +6,4 @@ data:
   WP_ENVIRONMENT_TYPE: {{ .Values.configmap.envtype }}
   SERVER_NAME: {{ .Values.domain }}
   ENV_TYPE: {{ .Values.configmap.envtype }}
-  WP_DEBUG: {{ .Values.configmap.wpDebug }}
+  WP_DEBUG: {{ .Values.configmap.wpdebug }}

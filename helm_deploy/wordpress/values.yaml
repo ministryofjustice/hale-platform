@@ -34,7 +34,7 @@ ingress:
 configmap:
   servername: ""
   envtype: ""
-  wpDebug: ""
+  wpdebug: ""
 
 secrets:
   enabled: true
