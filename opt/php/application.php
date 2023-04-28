@@ -37,8 +37,11 @@ if (function_exists('sentry\init')) {
 
 if ($envType === 'demo') {
     
-    // error_reporting(E_ALL);
-    // ini_set('display_errors', 1);
+    // Turn on error reporting
+    error_reporting(E_ALL);
+
+    // Exclude deprecated warnings
+    error_reporting(error_reporting() & ~E_DEPRECATED);
 
     $errorConstants = [
         'WP_DEBUG' => 'true',
