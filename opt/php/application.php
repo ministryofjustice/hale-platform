@@ -33,18 +33,23 @@ if (function_exists('sentry\init')) {
     \Sentry\captureLastError();
 }
 
+//Enable error reporting
 
 if ($envType === 'demo') {
-    // Enable error reporting
+    
     // error_reporting(E_ALL);
     // ini_set('display_errors', 1);
-    // define('WP_DEBUG', true);
-    // define('WP_DEBUG_LOG', true);
-    // define('WP_DEBUG_DISPLAY', true);
 
+    $errorConstants = [
+        'WP_DEBUG' => 'true',
+        'WP_DEBUG_LOG' => 'true',
+        'WP_DEBUG_DISPLAY' => 'true'
+    ];
+
+    foreach ($errorConstants as $errorConstant => $value) {
 
     // Set the WP-CLI command to run
-    $command = 'wp config set WP_DEBUG true --raw';
+    $command = "wp config set $errorConstant $value --raw";
 
     // Execute the command using exec()
     exec($command, $output, $return_var);
@@ -57,4 +62,6 @@ if ($envType === 'demo') {
 
     // Print the output of the command to the screen
     echo implode("\n", $output);
+
+    }
 }

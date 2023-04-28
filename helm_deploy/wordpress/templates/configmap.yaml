@@ -6,7 +6,7 @@ data:
   WP_ENVIRONMENT_TYPE: {{ .Values.configmap.envtype }}
   SERVER_NAME: {{ .Values.domain }}
   ENV_TYPE: {{ .Values.configmap.envtype }}
-  {{- if eq .Values.configmap.envtype "staging" }}
+  #{{- if eq .Values.configmap.envtype "staging" }}
   # WP_DEBUG: "false"
   # {{ else if eq .Values.configmap.envtype "dev" }}
   # WP_DEBUG: "true"
