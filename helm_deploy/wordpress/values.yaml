@@ -34,11 +34,11 @@ ingress:
 configmap:
   servername: ""
   envtype: ""
-  wpdebug:
-    prod: false
-    staging: true
-    dev: true
-    demo: true
+  # wpdebug:
+  #   prod: false
+  #   staging: true
+  #   dev: true
+  #   demo: true
 
 secrets:
   enabled: true

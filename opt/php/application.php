@@ -34,11 +34,27 @@ if (function_exists('sentry\init')) {
 }
 
 
-// if ($envType === 'demo') {
-//     // Enable error reporting
-//     error_reporting(E_ALL);
-//     ini_set('display_errors', 1);
-//     define('WP_DEBUG', true);
-//     define('WP_DEBUG_LOG', true);
-//     define('WP_DEBUG_DISPLAY', true);
-// }
+if ($envType === 'demo') {
+    // Enable error reporting
+    // error_reporting(E_ALL);
+    // ini_set('display_errors', 1);
+    // define('WP_DEBUG', true);
+    // define('WP_DEBUG_LOG', true);
+    // define('WP_DEBUG_DISPLAY', true);
+
+
+    // Set the WP-CLI command to run
+    $command = 'wp config set WP_DEBUG true --raw';
+
+    // Execute the command using exec()
+    exec($command, $output, $return_var);
+
+    // Check the return status
+    if ($return_var !== 0) {
+        echo 'WP-CLI command failed';
+        exit;
+    }
+
+    // Print the output of the command to the screen
+    echo implode("\n", $output);
+}
