@@ -11,7 +11,7 @@ data:
   {{ else if eq .Values.configmap.envtype "dev" }}
   WP_DEBUG: "true"
   {{ else if eq .Values.configmap.envtype "demo" }}
-  WP_DEBUG: "true"
+  WP_DEBUG_FILE: "true"
   {{ else }}
   WP_DEBUG: "false"
   {{- end }}
