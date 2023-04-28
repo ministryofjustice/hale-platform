@@ -7,11 +7,11 @@ data:
   SERVER_NAME: {{ .Values.domain }}
   ENV_TYPE: {{ .Values.configmap.envtype }}
   {{- if eq .Values.configmap.envtype "staging" }}
-  WP_DEBUG: {{ .Values.configmap.wpdebug.staging }}
+  WP_DEBUG: false
   {{ else if eq .Values.configmap.envtype "dev" }}
-  WP_DEBUG: {{ .Values.configmap.wpdebug.dev }}
+  WP_DEBUG: true
   {{ else if eq .Values.configmap.envtype "demo" }}
-  WP_DEBUG: {{ .Values.configmap.wpdebug.demo }}
+  WP_DEBUG: false
   {{ else }}
-  WP_DEBUG: {{ .Values.configmap.wpdebug.prod }}
+  WP_DEBUG: false
   {{- end }}
