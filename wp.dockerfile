@@ -10,8 +10,9 @@ RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 # Copy load.php into mu-plugins
 COPY opt/php/load.php /usr/src/wordpress/wp-content/mu-plugins/load.php
 
-# Copy application conifg
+# Copy application conifg & error handling
 COPY opt/php/application.php /usr/src/wordpress/wp-content/mu-plugins/application.php
+COPY opt/php/error-handling.php /usr/src/wordpress/wp-content/mu-plugins/error-handling.php
 
 # Adjust PHP-FPM configuration settings
 
