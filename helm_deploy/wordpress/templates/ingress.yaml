@@ -12,7 +12,7 @@ spec:
   tls:
   - hosts:
     - {{ .Values.domain }}
-    {{- if eq .Values.configmap.envtype "prod" }}
+    {{- if eq .Values.configmap.envtype "prod goes here" }}
     - magistrates.judiciary.uk
     - victimscommissioner.org.uk
     - publicdefenderservice.org.uk
@@ -28,7 +28,7 @@ spec:
             name: wordpress
             port:
               number: 8080
-  {{- if eq .Values.configmap.envtype "prod" }}
+  {{- if eq .Values.configmap.envtype "prod goes here" }}
   - host: magistrates.judiciary.uk
     http:
       paths:
