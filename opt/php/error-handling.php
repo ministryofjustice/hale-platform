@@ -6,6 +6,11 @@ error_reporting(E_ALL);
 // Exclude deprecated warnings
 error_reporting(error_reporting() & ~E_DEPRECATED);
 
+
+if ( !ERROR_HANDLE_RUN ) {
+
+$envType = getenv('ENV_TYPE');
+
 if ($envType === 'dev') {
 
     $errorConstants = [
@@ -15,6 +20,8 @@ if ($envType === 'dev') {
     ];
 
 } else {
+
+    @ini_set( 'display_errors', 0 );
 
     $errorConstants = [
         'WP_DEBUG' => 'true',
@@ -39,5 +46,9 @@ if ($return_var !== 0) {
 
 // Print the output of the command to the screen
 echo implode("\n", $output);
+
+}
+
+define('ERROR_HANDLE_RUN', true);
 
 }
