@@ -2,7 +2,7 @@
 
 $envType = getenv('ENV_TYPE');
 
-if ($envType === 'dev') {
+if ($envType === 'demo') {
 
     // Turn on error reporting
     error_reporting(E_ALL);
@@ -17,8 +17,9 @@ if ($envType === 'dev') {
     ];
 
 } else {
-    error_reporting(0);
+
     @ini_set( 'display_errors', 0 );
+    error_reporting(error_reporting(0) & ~E_DEPRECATED);
 
     $errorConstants = [
         'WP_DEBUG' => 'true',
