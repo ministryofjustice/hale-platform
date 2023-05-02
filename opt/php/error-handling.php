@@ -1,16 +1,14 @@
 <?php
-session_start();
-// Turn on error reporting
-error_reporting(E_ALL);
-
-// Exclude deprecated warnings
-error_reporting(error_reporting() & ~E_DEPRECATED);
-
-if(!isset($_SESSION['ERROR_HANDLE_RUN'])) {
 
 $envType = getenv('ENV_TYPE');
 
 if ($envType === 'dev') {
+
+    // Turn on error reporting
+    error_reporting(E_ALL);
+
+    // Exclude deprecated warnings
+    error_reporting(error_reporting() & ~E_DEPRECATED);
 
     $errorConstants = [
         'WP_DEBUG' => 'true',
@@ -19,7 +17,7 @@ if ($envType === 'dev') {
     ];
 
 } else {
-
+    error_reporting(0);
     @ini_set( 'display_errors', 0 );
 
     $errorConstants = [
@@ -31,23 +29,17 @@ if ($envType === 'dev') {
 
 foreach ($errorConstants as $errorConstant => $value) {
 
-// Set the WP-CLI command to run
-$command = "wp config set $errorConstant $value --raw";
+    // Set the WP-CLI command to run
+    $command = "wp config set $errorConstant $value --raw";
 
-// Execute the command using exec()
-exec($command, $output, $return_var);
+    // Execute the command using exec()
+    exec($command, $output, $return_var);
 
-// Check the return status
-if ($return_var !== 0) {
-    echo 'WP-CLI command failed';
-    exit;
-}
-
-// Print the output of the command to the screen
-echo implode("\n", $output);
+    // Check the return status
+    if ($return_var !== 0) {
+        echo 'WP-CLI command failed';
+        exit;
+    }
 
 }
 
-$_SESSION['ERROR_HANDLE_RUN'] = true;
-
-}
