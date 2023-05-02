@@ -12,7 +12,7 @@ COPY opt/php/load.php /usr/src/wordpress/wp-content/mu-plugins/load.php
 
 # Copy application conifg & error handling
 COPY opt/php/application.php /usr/src/wordpress/wp-content/mu-plugins/application.php
-COPY opt/php/error-handling.php /usr/src/wordpress/wp-content/mu-plugins/error-handling.php
+COPY opt/php/error-handling.php /usr/src/wordpress/error-handling.php
 
 # Adjust PHP-FPM configuration settings
 

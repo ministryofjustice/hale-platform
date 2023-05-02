@@ -36,4 +36,4 @@ if (function_exists('sentry\init')) {
 /**
  * Handle errors in different environments
  */
-require_once __DIR__ . '/error-handling.php';
+include_once dirname(__DIR__, 2) . '/error-handling.php';
