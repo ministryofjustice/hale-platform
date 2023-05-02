@@ -1,13 +1,12 @@
 <?php
-
+session_start();
 // Turn on error reporting
 error_reporting(E_ALL);
 
 // Exclude deprecated warnings
 error_reporting(error_reporting() & ~E_DEPRECATED);
 
-
-if ( !ERROR_HANDLE_RUN ) {
+if(!isset($_SESSION['ERROR_HANDLE_RUN'])) {
 
 $envType = getenv('ENV_TYPE');
 
@@ -49,6 +48,6 @@ echo implode("\n", $output);
 
 }
 
-define('ERROR_HANDLE_RUN', true);
+$_SESSION['ERROR_HANDLE_RUN'] = true;
 
 }
