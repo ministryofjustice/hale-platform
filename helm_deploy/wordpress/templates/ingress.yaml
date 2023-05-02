@@ -10,54 +10,17 @@ metadata:
 spec:
   ingressClassName: modsec
   tls:
-    - hosts:
-      - {{ .Values.domain }}
-      {{- if eq .Values.configmap.envtype "prod goes here" }}
-      - magistrates.judiciary.uk
-      - victimscommissioner.org.uk
-      - publicdefenderservice.org.uk
-      {{- end }}
+  - hosts:
+    - {{ .Values.domain }}
   rules:
-    - host: {{ .Values.domain }}
-      http:
-        paths:
-        - path: /
-          pathType: ImplementationSpecific
-          backend:
-            service:
-              name: wordpress
-              port:
-                number: 8080
-  {{- if eq .Values.configmap.envtype "prod goes here" }}
-    - host: magistrates.judiciary.uk
-      http:
-        paths:
-        - path: /
-          pathType: ImplementationSpecific
-          backend:
-            service:
-              name: wordpress
-              port:
-                number: 8080
-    - host: victimscommissioner.org.uk
-      http:
-        paths:
-        - path: /
-          pathType: ImplementationSpecific
-          backend:
-            service:
-              name: wordpress
-              port:
-                number: 8080
-    - host: publicdefenderservice.org.uk
-      http:
-        paths:
-        - path: /
-          pathType: ImplementationSpecific
-          backend:
-            service:
-              name: wordpress
-              port:
-                number: 8080
-   {{- end }}
+  - host: {{ .Values.domain }}
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
 {{- end }}
