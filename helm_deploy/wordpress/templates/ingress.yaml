@@ -16,6 +16,7 @@ spec:
     - magistrates.judiciary.uk
     - victimscommissioner.org.uk
     - publicdefenderservice.org.uk
+    - ccrc.gov.uk
     {{- end }}
   rules:
   - host: {{ .Values.domain }}
@@ -50,6 +51,16 @@ spec:
             port:
               number: 8080
   - host: publicdefenderservice.org.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: ccrc.gov.uk
     http:
       paths:
       - path: /
