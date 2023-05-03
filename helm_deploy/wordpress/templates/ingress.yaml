@@ -31,6 +31,7 @@ spec:
               number: 8080
   {{- if eq .Values.configmap.envtype "prod" }}
   - host: magistrates.judiciary.uk
+    secretName: magistrates.judiciary.uk
     http:
       paths:
       - path: /
@@ -41,6 +42,7 @@ spec:
             port:
               number: 8080
   - host: victimscommissioner.org.uk
+    secretName: victimscommissioner.org.uk
     http:
       paths:
       - path: /
@@ -51,6 +53,7 @@ spec:
             port:
               number: 8080
   - host: publicdefenderservice.org.uk
+    secretName: publicdefenderservice.org.uk
     http:
       paths:
       - path: /
@@ -61,6 +64,7 @@ spec:
             port:
               number: 8080
   - host: ccrc.gov.uk
+    secretName: ccrc.gov.uk
     http:
       paths:
       - path: /
