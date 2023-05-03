@@ -13,10 +13,18 @@ spec:
   - hosts:
     - {{ .Values.domain }}
     {{- if eq .Values.configmap.envtype "prod" }}
+  - hosts:
     - magistrates.judiciary.uk
+    secretName: magistrates-cert
+  - hosts:
     - victimscommissioner.org.uk
+    secretName: victimscommissioner-cert
+  - hosts:
     - publicdefenderservice.org.uk
+    secretName: publicdefenderservice-cert
+  - hosts:
     - ccrc.gov.uk
+    secretName: ccrc-cert
     {{- end }}
   rules:
   - host: {{ .Values.domain }}
@@ -31,7 +39,6 @@ spec:
               number: 8080
   {{- if eq .Values.configmap.envtype "prod" }}
   - host: magistrates.judiciary.uk
-    secretName: magistrates.judiciary.uk
     http:
       paths:
       - path: /
@@ -42,7 +49,6 @@ spec:
             port:
               number: 8080
   - host: victimscommissioner.org.uk
-    secretName: victimscommissioner.org.uk
     http:
       paths:
       - path: /
@@ -53,7 +59,6 @@ spec:
             port:
               number: 8080
   - host: publicdefenderservice.org.uk
-    secretName: publicdefenderservice.org.uk
     http:
       paths:
       - path: /
@@ -64,7 +69,6 @@ spec:
             port:
               number: 8080
   - host: ccrc.gov.uk
-    secretName: ccrc.gov.uk
     http:
       paths:
       - path: /
