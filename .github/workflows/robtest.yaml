@@ -14,14 +14,17 @@ jobs:
     runs-on: ubuntu-latest
     # Map a step output to a job output
     outputs:
-      deployenv: ${{ steps.step1.outputs.deployenv }}
+      deployenv: ${{ steps.step2.outputs.deployenv }}
     steps:
-      - id: step1
+      - id: stepDev
         if: github.event.ref == 'refs/heads/robdev'
-        run: echo "deployenv=RobDev" >> "$GITHUB_OUTPUT"
-      - id: step1
+        run: echo "DEPLOYENV=RobDev" >> $GITHUB_ENV
+      - id: stepDemo
         if: github.event.ref == 'refs/heads/robdemo'
-        run: echo "deployenv=RobDemo" >> "$GITHUB_OUTPUT"
+        run: echo "DEPLOYENV=RobDemo" >> $GITHUB_ENV
+      - id: step2
+        if: github.event.ref == 'refs/heads/robdemo'
+        run: echo $DEPLOYENV >> "$GITHUB_OUTPUT"
 
   testjob:
     name: Test Job
