@@ -7,11 +7,23 @@ on:
       - 'robdev'
       - 'robdemo'
 
+
 jobs:
+
+  job1:
+    runs-on: ubuntu-latest
+    # Map a step output to a job output
+    outputs:
+      deployenv: ${{ steps.step1.outputs.test }}
+    steps:
+      - id: step1
+        run: echo "test=RobDev" >> "$GITHUB_OUTPUT"
+
   testjob:
     name: Test Job
     runs-on: ubuntu-latest
-    environment: ${{ github.ref == 'refs/heads/robdemo' && 'RobDemo' || '' }} ${{ github.ref == 'refs/heads/robdev' && 'RobDev' || '' }}
+    needs: job1
+    environment: ${{needs.job1.outputs.deployenv}}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
