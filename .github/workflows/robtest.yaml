@@ -10,20 +10,20 @@ on:
 
 jobs:
 
-  job1:
+  setenv:
     runs-on: ubuntu-latest
     # Map a step output to a job output
     outputs:
-      deployenv: ${{ steps.step1.outputs.test }}
+      deployenv: ${{ steps.step1.outputs.deployenv }}
     steps:
       - id: step1
-        run: echo "test=RobDev" >> "$GITHUB_OUTPUT"
+        run: echo "deployenv=RobDev" >> "$GITHUB_OUTPUT"
 
   testjob:
     name: Test Job
     runs-on: ubuntu-latest
-    needs: job1
-    environment: ${{needs.job1.outputs.deployenv}}
+    needs: setenv
+    environment: ${{needs.setenv.outputs.deployenv}}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
