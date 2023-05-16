@@ -11,7 +11,7 @@ jobs:
   testjob:
     name: Test Job
     runs-on: ubuntu-latest
-    environment: ${{ github.ref == 'refs/heads/robdemo' && 'RobDemo' || '' }} ${{ github.ref == 'refs/heads/robdev' && 'RobDev' || '' }}
+    environment: ${{ github.ref == 'refs/heads/robdemo' && 'RobDemo' }} ${{ github.ref == 'refs/heads/robdev' && 'RobDev' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
