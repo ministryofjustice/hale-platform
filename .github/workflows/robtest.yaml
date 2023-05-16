@@ -7,13 +7,11 @@ on:
       - 'robdev'
       - 'robdemo'
 
-env: 
-  DEPLOY_ENV: RobDemo
 jobs:
   testjob:
     name: Test Job
     runs-on: ubuntu-latest
-    environment: ${DEPLOY_ENV} 
+    environment: ${{ github.ref == 'refs/heads/robdemo' && 'RobDemo' || 'RobDev' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
