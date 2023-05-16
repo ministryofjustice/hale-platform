@@ -15,5 +15,5 @@ jobs:
         uses: actions/checkout@v3
       - name: Authenticate to the cluster
         run: |
-          echo "${{ secrets.ECR_AWS_ACCESS_KEY_ID }}" 
-          echo "${{ secrets.ECR_AWS_SECRET_ACCESS_KEY }}" 
+          echo "${{ vars.EXAMPLEVAR1 }}" 
+          echo "${{ vars.EXAMPLEVAR2 }}" 
