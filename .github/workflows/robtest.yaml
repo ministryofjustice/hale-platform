@@ -23,7 +23,7 @@ jobs:
         if: github.event.ref == 'refs/heads/robdemo'
         run: echo "DEPLOYENV=RobDemo" >> $GITHUB_ENV
       - id: outputEnv
-        run: echo "deployenv=".$DEPLOYENV >> "$GITHUB_OUTPUT"
+        run: echo "deployenv=$DEPLOYENV" >> "$GITHUB_OUTPUT"
 
   testjob:
     name: Test Job
