@@ -24,7 +24,7 @@ jobs:
         run: echo "DEPLOYENV=RobDemo" >> $GITHUB_ENV
       - id: outputEnv
         run: |
-          echo $DEPLOYENV
+          echo Deploying to $DEPLOYENV
           echo "deployenv=$DEPLOYENV" >> "$GITHUB_OUTPUT"
 
   testjob:
