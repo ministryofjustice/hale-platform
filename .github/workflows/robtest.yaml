@@ -4,12 +4,16 @@ on:
   workflow_dispatch:
   push:
     branches:
+      - 'robdev'
       - 'robdemo'
+
+env: 
+  DEPLOY_ENV: RobDemo
 jobs:
   testjob:
     name: Test Job
     runs-on: ubuntu-latest
-    environment: RobDemo
+    environment: ${DEPLOY_ENV} 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
