@@ -60,6 +60,12 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 10
             initialDelaySeconds: 120
+          startupProbe:
+            httpGet:
+            path: /wp-login.php
+            port: 443
+            failureThreshold: 3
+            periodSeconds: 10
         - name: nginx
           image: {{ .Values.nginx.image.repository }}
           imagePullPolicy: {{ .Values.nginx.image.imagePullPolicy }}
