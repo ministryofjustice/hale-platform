@@ -38,7 +38,7 @@ COPY opt/scripts/config.sh /usr/local/bin/
 # Make multisite scripts executable
 
 RUN chmod +x /usr/local/bin/hale-entrypoint.sh && \
-    chmod +x /usr/local/bin/config.sh && \
+    chmod +x /usr/local/bin/config.sh
 
 # Install additional Alpine packages
 
