@@ -34,11 +34,13 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
 
 COPY opt/scripts/hale-entrypoint.sh /usr/local/bin/
 COPY opt/scripts/config.sh /usr/local/bin/
+COPY opt/scripts/php-fpm-health-check.sh /usr/local/bin/
 
 # Make multisite scripts executable
 
 RUN chmod +x /usr/local/bin/hale-entrypoint.sh && \
-    chmod +x /usr/local/bin/config.sh
+    chmod +x /usr/local/bin/config.sh && \
+    chmod +x /usr/local/bin/php-fpm-health-check.sh
 
 # Install additional Alpine packages
 

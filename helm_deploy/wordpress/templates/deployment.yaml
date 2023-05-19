@@ -51,10 +51,9 @@ spec:
           - secretRef:
                 name: wpsecrets-{{ .Release.Revision }}
           readinessProbe:
-            httpGet:
-                path: /
-                port: 9000
-                host: 127.0.0.1
+            exec:
+                command:
+                    - /usr/local/bin/php-fpm-health-check.sh
             initialDelaySeconds: 8
             failureThreshold: 3
             successThreshold: 1
