@@ -37,10 +37,8 @@ wp theme enable hale --network --url="${SERVER_NAME}"
 wp theme enable hale --activate --url="$SERVER_NAME"
 
 # Check plugins are activated
-wp plugin --network activate advanced-custom-fields-pro --url="${SERVER_NAME}"
-wp plugin --network activate wp-user-roles --url="${SERVER_NAME}"
-wp plugin --network activate wp-moj-blocks --url="${SERVER_NAME}"
-
-exit 0
+#wp plugin --network activate advanced-custom-fields-pro --url="${SERVER_NAME}"
+#wp plugin --network activate wp-user-roles --url="${SERVER_NAME}"
+#wp plugin --network activate wp-moj-blocks --url="${SERVER_NAME}"
 
 exec "$@"
