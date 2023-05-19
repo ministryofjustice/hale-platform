@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Define settings in wp-config.php
 wp config set MULTISITE true --raw
