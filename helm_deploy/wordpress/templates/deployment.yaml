@@ -50,12 +50,14 @@ spec:
                 name: wpconfig-{{ .Release.Revision }}
           - secretRef:
                 name: wpsecrets-{{ .Release.Revision }}
-          startupProbe:
+          readinessProbe:
             httpGet:
-                path: {{ .Values.domain }}/wp-login.php
-                port: 443
-            failureThreshold: 10
-            periodSeconds: 3
+                path: /
+                port: 9000
+            initialDelaySeconds: 8
+            failureThreshold: 3
+            successThreshold: 1
+            periodSeconds: 5
         - name: nginx
           image: {{ .Values.nginx.image.repository }}
           imagePullPolicy: {{ .Values.nginx.image.imagePullPolicy }}
