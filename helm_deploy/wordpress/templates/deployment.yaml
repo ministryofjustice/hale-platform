@@ -54,6 +54,7 @@ spec:
             httpGet:
                 path: /
                 port: 9000
+                host: localhost
             initialDelaySeconds: 8
             failureThreshold: 3
             successThreshold: 1
