@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 # Define settings in wp-config.php
 wp config set MULTISITE true --raw
@@ -41,5 +40,7 @@ wp theme enable hale --activate --url="$SERVER_NAME"
 wp plugin --network activate advanced-custom-fields-pro --url="${SERVER_NAME}"
 wp plugin --network activate wp-user-roles --url="${SERVER_NAME}"
 wp plugin --network activate wp-moj-blocks --url="${SERVER_NAME}"
+
+exit 0
 
 exec "$@"
