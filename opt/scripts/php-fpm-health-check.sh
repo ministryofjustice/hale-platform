@@ -1,6 +1,9 @@
 #!/bin/bash
+
 if ps aux | grep -q '[p]hp-fpm'; then
-    echo "1"
+    # Readiness check pass
+    exit 0
 else
-    echo "0"
+    # Readiness check fail
+    exit 1
 fi
