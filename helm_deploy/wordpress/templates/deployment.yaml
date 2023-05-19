@@ -52,7 +52,7 @@ spec:
                 name: wpsecrets-{{ .Release.Revision }}
           startupProbe:
             httpGet:
-                path: /wp-login.php
+                path: {{ .Values.domain }}/wp-login.php
                 port: 443
             failureThreshold: 10
             periodSeconds: 3
