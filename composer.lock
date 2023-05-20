@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "399d7549ad7ffe341aeb6d7468f2f9a6",
+    "content-hash": "d8a4b12b4a3b3afc5d1aa387fae96363",
     "packages": [
         {
             "name": "acf/advanced-custom-fields-pro",
@@ -3071,6 +3071,24 @@
             },
             "type": "wordpress-plugin",
             "homepage": "https://wordpress.org/plugins/ewww-image-optimizer/"
+        },
+        {
+            "name": "wpackagist-plugin/limit-login-attempts-reloaded",
+            "version": "2.25.16",
+            "source": {
+                "type": "svn",
+                "url": "https://plugins.svn.wordpress.org/limit-login-attempts-reloaded/",
+                "reference": "tags/2.25.16"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://downloads.wordpress.org/plugin/limit-login-attempts-reloaded.2.25.16.zip"
+            },
+            "require": {
+                "composer/installers": "^1.0 || ^2.0"
+            },
+            "type": "wordpress-plugin",
+            "homepage": "https://wordpress.org/plugins/limit-login-attempts-reloaded/"
         },
         {
             "name": "wpackagist-plugin/query-monitor",
