@@ -44,6 +44,8 @@
         "wpackagist-plugin/wp-force-login": "*",
         "wpackagist-plugin/safe-svg":"*",
         "wpackagist-plugin/redirection": "*",
+        "wpackagist-plugin/wps-hide-login": "*",
+        "wpackagist-plugin/wps-limit-login": "*",
         "relevanssi/relevanssi-premium": "*",
         "ministryofjustice/wp-moj-components": "dev-hale-platform",
         "ministryofjustice/wp-user-roles": "*",
