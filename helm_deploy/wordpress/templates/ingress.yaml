@@ -11,7 +11,7 @@ metadata:
     nginx.ingress.kubernetes.io/modsecurity-snippet: |
         SecRuleEngine On
         SecDefaultAction "phase:2,pass,log,tag:github_team=hale-platform"
-        SecRuleRemoveById 300015 300016 300017 950907 950005 950006 960008 960011 960904 959006 981173 980130
+        SecRuleRemoveById 300015 300016 300017 950907 950005 950006 960008 960011 960904 959006 981173 980130 949110
 spec:
   ingressClassName: modsec
   tls:
