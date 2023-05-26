@@ -50,16 +50,6 @@ spec:
                 name: wpconfig-{{ .Release.Revision }}
           - secretRef:
                 name: wpsecrets-{{ .Release.Revision }}
-          livenessProbe:
-            httpGet:
-              path: /wp-login.php
-              port: 443
-              scheme: HTTPS
-              host: {{ .Values.domain }}
-            failureThreshold: 3
-            periodSeconds: 10
-            timeoutSeconds: 10
-            initialDelaySeconds: 120
         - name: nginx
           image: {{ .Values.nginx.image.repository }}
           imagePullPolicy: {{ .Values.nginx.image.imagePullPolicy }}

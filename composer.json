@@ -44,6 +44,7 @@
         "wpackagist-plugin/wp-force-login": "*",
         "wpackagist-plugin/safe-svg":"*",
         "wpackagist-plugin/redirection": "*",
+        "wpackagist-plugin/limit-login-attempts-reloaded": "*",
         "wpackagist-plugin/wps-hide-login": "*",
         "wpackagist-plugin/wps-limit-login": "*",
         "relevanssi/relevanssi-premium": "*",

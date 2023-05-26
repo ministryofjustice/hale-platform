@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5df0d43ae06244398dfe12ee8b82b99b",
+    "content-hash": "8b4f5bb02734c8bcbe2bd0d0c5b6269b",
     "packages": [
         {
             "name": "acf/advanced-custom-fields-pro",
@@ -1015,12 +1015,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-hale.git",
-                "reference": "691bc788cb3baa37dfe26f543c4a7e82d74691cd"
+                "reference": "56d0220b731cce8833fd84aac3c0a90da785156a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/wp-hale/zipball/691bc788cb3baa37dfe26f543c4a7e82d74691cd",
-                "reference": "691bc788cb3baa37dfe26f543c4a7e82d74691cd",
+                "url": "https://api.github.com/repos/ministryofjustice/wp-hale/zipball/56d0220b731cce8833fd84aac3c0a90da785156a",
+                "reference": "56d0220b731cce8833fd84aac3c0a90da785156a",
                 "shasum": ""
             },
             "type": "wordpress-theme",
@@ -1029,7 +1029,7 @@
                 "source": "https://github.com/ministryofjustice/wp-hale/tree/hale-platform",
                 "issues": "https://github.com/ministryofjustice/wp-hale/issues"
             },
-            "time": "2023-05-18T10:10:21+00:00"
+            "time": "2023-05-24T13:09:33+00:00"
         },
         {
             "name": "ministryofjustice/wp-moj-blocks",
@@ -3067,6 +3067,24 @@
             },
             "type": "wordpress-plugin",
             "homepage": "https://wordpress.org/plugins/ewww-image-optimizer/"
+        },
+        {
+            "name": "wpackagist-plugin/limit-login-attempts-reloaded",
+            "version": "2.25.17",
+            "source": {
+                "type": "svn",
+                "url": "https://plugins.svn.wordpress.org/limit-login-attempts-reloaded/",
+                "reference": "tags/2.25.17"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://downloads.wordpress.org/plugin/limit-login-attempts-reloaded.2.25.17.zip"
+            },
+            "require": {
+                "composer/installers": "^1.0 || ^2.0"
+            },
+            "type": "wordpress-plugin",
+            "homepage": "https://wordpress.org/plugins/limit-login-attempts-reloaded/"
         },
         {
             "name": "wpackagist-plugin/query-monitor",
