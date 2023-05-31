@@ -57,8 +57,6 @@ COPY /wordpress/wp-content/mu-plugins /usr/src/wordpress/wp-content/mu-plugins
 COPY /wordpress/wp-content/themes /usr/src/wordpress/wp-content/themes
 COPY /vendor /usr/src/wordpress/wp-content/vendor
 
-COPY /404.html /usr/src/wordpress/404.html
-
 # Create new user to run container as non-root
 RUN adduser --disabled-password hale -u 1002 && \
     chown -R hale:hale /var/www/html
