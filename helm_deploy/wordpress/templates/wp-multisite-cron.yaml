@@ -13,7 +13,7 @@ spec:
         spec:
           containers:
           - name: nginx-curl
-            image: nginxinc/nginx-unprivileged
+            image: {{ .Values.nginx.image.repository }}
             imagePullPolicy: IfNotPresent
             args:
             - curl
