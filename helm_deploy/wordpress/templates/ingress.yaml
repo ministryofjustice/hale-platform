@@ -30,6 +30,9 @@ spec:
   - hosts:
     - ccrc.gov.uk
     secretName: ccrc-cert
+  - hosts:
+    - icrir.independent-inquiry.uk
+    secretName: icrir-cert
     {{- end }}
   rules:
   - host: {{ .Values.domain }}
@@ -74,6 +77,16 @@ spec:
             port:
               number: 8080
   - host: ccrc.gov.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: icrir.independent-inquiry.uk
     http:
       paths:
       - path: /
