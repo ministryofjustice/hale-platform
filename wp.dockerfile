@@ -1,6 +1,6 @@
 # Build WordPress Multisite image with all assets
 
-FROM --platform=linux/amd64 wordpress:6.2.0-php8.2-fpm-alpine
+FROM --platform=linux/amd64 wordpress:6.2.2-php8.2-fpm-alpine
 
 # Load default production php.ini file in
 # Custom php.ini additions for dev, staging & prod are done via k8s manifest

@@ -7,6 +7,11 @@ metadata:
   annotations:
     external-dns.alpha.kubernetes.io/set-identifier: {{ .Values.ingress.metadata.annotations.setidentifier }}
     external-dns.alpha.kubernetes.io/aws-weight: "100"
+    nginx.ingress.kubernetes.io/enable-modsecurity: "true"
+    nginx.ingress.kubernetes.io/modsecurity-snippet: |
+        SecRuleEngine On
+        SecDefaultAction "phase:2,pass,log,tag:github_team=hale-platform"
+        SecRuleRemoveById 949110
 spec:
   ingressClassName: modsec
   tls:
@@ -25,6 +30,9 @@ spec:
   - hosts:
     - ccrc.gov.uk
     secretName: ccrc-cert
+  - hosts:
+    - icrir.independent-inquiry.uk
+    secretName: icrir-cert
     {{- end }}
   rules:
   - host: {{ .Values.domain }}
@@ -69,6 +77,16 @@ spec:
             port:
               number: 8080
   - host: ccrc.gov.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: icrir.independent-inquiry.uk
     http:
       paths:
       - path: /
