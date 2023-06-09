@@ -61,3 +61,6 @@ secrets:
   s3uploadsregion: ""
   s3uploadskey: ""
   s3uploadssecret: ""
+
+alert-secrets:
+  slack_webhook_url: ""
