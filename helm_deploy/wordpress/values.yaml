@@ -62,5 +62,6 @@ secrets:
   s3uploadskey: ""
   s3uploadssecret: ""
 
-alert-secrets:
-  slackwebhookurl: ""
+alertSecrets:
+  enabled: true
+  slackWebhookUrl: ""
