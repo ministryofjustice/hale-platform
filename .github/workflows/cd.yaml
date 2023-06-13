@@ -91,7 +91,7 @@ jobs:
           --set secrets.s3uploadsregion=${{ secrets.S3_UPLOADS_REGION_DEMO }} \
           --set secrets.s3uploadskey=${{ secrets.S3_UPLOADS_KEY_DEMO }} \
           --set secrets.s3uploadssecret=${{ secrets.S3_UPLOADS_SECRET_DEMO }} \
-          --set alert-secrets.slackwebhookurl=${{ secrets.ALERT_SLACK_WEBHOOK_URL }} \
+          --set alertSecrets.slackWebhookUrl=${{ secrets.ALERT_SLACK_WEBHOOK_URL }} \
           --set configmap.servername=${{ secrets.KUBE_NAMESPACE_DEMO }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set configmap.envtype=${{ vars.ENV_TYPE_DEMO }} \
           --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.KUBE_NAMESPACE_DEMO }}-green \
@@ -200,7 +200,7 @@ jobs:
           --set secrets.s3uploadsregion=${{ secrets.S3_UPLOADS_REGION_DEV }} \
           --set secrets.s3uploadskey=${{ secrets.S3_UPLOADS_KEY_DEV }} \
           --set secrets.s3uploadssecret=${{ secrets.S3_UPLOADS_SECRET_DEV }} \
-          --set alert-secrets.slackwebhookurl=${{ secrets.ALERT_SLACK_WEBHOOK_URL }} \
+          --set alertSecrets.slackWebhookUrl=${{ secrets.ALERT_SLACK_WEBHOOK_URL }} \
           --set configmap.servername=${{ secrets.KUBE_NAMESPACE_DEV }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set configmap.envtype=${{ vars.ENV_TYPE_DEV }} \
           --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.KUBE_NAMESPACE_DEV }}-green \
@@ -308,7 +308,7 @@ jobs:
           --set secrets.s3uploadsregion=${{ secrets.S3_UPLOADS_REGION_STAGING }} \
           --set secrets.s3uploadskey=${{ secrets.S3_UPLOADS_KEY_STAGING }} \
           --set secrets.s3uploadssecret=${{ secrets.S3_UPLOADS_SECRET_STAGING }} \
-          --set alert-secrets.slackwebhookurl=${{ secrets.ALERT_SLACK_WEBHOOK_URL }} \
+          --set alertSecrets.slackWebhookUrl=${{ secrets.ALERT_SLACK_WEBHOOK_URL }} \
           --set configmap.envtype=${{ vars.ENV_TYPE_STAGING }} \
           --set configmap.servername=${{ secrets.KUBE_NAMESPACE_STAGING }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.KUBE_NAMESPACE_STAGING }}-green \
@@ -416,7 +416,7 @@ jobs:
           --set secrets.s3uploadsregion=${{ secrets.S3_UPLOADS_REGION_PROD }} \
           --set secrets.s3uploadskey=${{ secrets.S3_UPLOADS_KEY_PROD }} \
           --set secrets.s3uploadssecret=${{ secrets.S3_UPLOADS_SECRET_PROD }} \
-          --set alert-secrets.slackwebhookurl=${{ secrets.ALERT_SLACK_WEBHOOK_URL }} \
+          --set alertSecrets.slackWebhookUrl=${{ secrets.ALERT_SLACK_WEBHOOK_URL }} \
           --set configmap.servername=${{ secrets.KUBE_NAMESPACE_PROD }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set configmap.envtype=${{ vars.ENV_TYPE_PROD }} \
           --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.KUBE_NAMESPACE_PROD }}-green \
