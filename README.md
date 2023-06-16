@@ -128,7 +128,7 @@ for the db secrets, which you will need to get via the CloudPlatform brew
 tool. 
 
 Note: to import you will need to have the `mysql` & `mysqldump` program installed running on your local
-machine.
+machine
 
 ### Connect using MySQL Pro
 
