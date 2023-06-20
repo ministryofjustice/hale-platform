@@ -49,7 +49,6 @@ jobs:
         # Login to container repository
         - uses: aws-actions/amazon-ecr-login@v1
           id: login-ecr 
-        - name: Build NGINX image and Push image to ECR
         - run: |
             docker build --pull --no-cache --tag $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG --file nginx.dockerfile .
             docker push $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG 
