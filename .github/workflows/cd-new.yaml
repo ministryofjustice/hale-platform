@@ -13,20 +13,15 @@ jobs:
       runs-on: ubuntu-latest
       environment: Development
       steps:
-        - name: Checkout
-          uses: actions/checkout@v3
+      # Checkout GitHub repository
+        - uses: actions/checkout@v3
+
         # Assume role in Cloud Platform
         - uses: aws-actions/configure-aws-credentials@v2
           with:
             role-to-assume: ${{ secrets.ECR_ROLE_TO_ASSUME }}
             aws-region: ${{ vars.ECR_REGION }}
+
         # Login to container repository
         - uses: aws-actions/amazon-ecr-login@v1
-          id: login-ecr 
-        - run: |
-            docker build --pull --no-cache --tag $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG --file nginx.dockerfile .
-            docker push $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG 
-          env:
-            REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-            REPOSITORY: ${{ vars.ECR_REPOSITORY }}
-            IMAGE_TAG: ${{ github.sha }}
+          id: login-ecr
