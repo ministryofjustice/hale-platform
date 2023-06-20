@@ -66,8 +66,8 @@ jobs:
         - name: Push WordPress image to ECR
           uses: jwalton/gh-ecr-push@v1
           with:
-            access-key-id: ${{ secrets.ECR_AWS_ACCESS_KEY_ID }}
-            secret-access-key: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY }}
+            access-key-id: ${{ secrets.ECR_AWS_ACCESS_KEY_ID_DEV }}
+            secret-access-key: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY_DEV }}
             region: eu-west-2
             local-image: hale-platform_wordpress:latest
             image: ${{ secrets.ECR_NAME_DEV }}:hale-platform_wordpress-${{ github.sha }}
