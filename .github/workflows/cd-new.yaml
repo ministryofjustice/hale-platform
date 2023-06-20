@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - 'Robdev'
+      - 'dev'
 
 
 jobs:
@@ -70,4 +70,4 @@ jobs:
             secret-access-key: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY }}
             region: eu-west-2
             local-image: hale-platform_wordpress:latest
-            image: ${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
+            image: ${{ secrets.ECR_NAME_DEV }}:hale-platform_wordpress-${{ github.sha }}
