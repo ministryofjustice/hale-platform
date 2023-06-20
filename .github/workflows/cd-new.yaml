@@ -73,8 +73,7 @@ jobs:
             image: ${{ secrets.ECR_NAME }}:hale-platform_wordpress-${{ github.sha }}
 
   deployImage:
-    name: Deploy Image to Environment - ${{needs.setenv.outputs.deployenv}}
-    if: github.event.ref == 'refs/heads/dev'
+    name: Deploy Image to Environment
     needs: [setenv, buildImage]
     runs-on: ubuntu-latest
     environment: ${{needs.setenv.outputs.deployenv}}
