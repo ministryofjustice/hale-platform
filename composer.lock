@@ -125,16 +125,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.271.7",
+            "version": "3.273.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "d0fe1af38ef521e419004e5f990ceb8e0b2b001d"
+                "reference": "fc2995defbfa0e113a30d02b7b0ff52d8056841c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/d0fe1af38ef521e419004e5f990ceb8e0b2b001d",
-                "reference": "d0fe1af38ef521e419004e5f990ceb8e0b2b001d",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/fc2995defbfa0e113a30d02b7b0ff52d8056841c",
+                "reference": "fc2995defbfa0e113a30d02b7b0ff52d8056841c",
                 "shasum": ""
             },
             "require": {
@@ -214,9 +214,9 @@
             "support": {
                 "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.271.7"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.273.3"
             },
-            "time": "2023-06-02T18:21:03+00:00"
+            "time": "2023-06-19T18:21:47+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -437,16 +437,16 @@
         },
         {
             "name": "firebase/php-jwt",
-            "version": "v6.5.0",
+            "version": "v6.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/firebase/php-jwt.git",
-                "reference": "e94e7353302b0c11ec3cfff7180cd0b1743975d2"
+                "reference": "71278f20b0a623389beefe87a641d03948a38870"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/firebase/php-jwt/zipball/e94e7353302b0c11ec3cfff7180cd0b1743975d2",
-                "reference": "e94e7353302b0c11ec3cfff7180cd0b1743975d2",
+                "url": "https://api.github.com/repos/firebase/php-jwt/zipball/71278f20b0a623389beefe87a641d03948a38870",
+                "reference": "71278f20b0a623389beefe87a641d03948a38870",
                 "shasum": ""
             },
             "require": {
@@ -494,9 +494,9 @@
             ],
             "support": {
                 "issues": "https://github.com/firebase/php-jwt/issues",
-                "source": "https://github.com/firebase/php-jwt/tree/v6.5.0"
+                "source": "https://github.com/firebase/php-jwt/tree/v6.7.0"
             },
-            "time": "2023-05-12T15:47:07+00:00"
+            "time": "2023-06-14T15:29:26+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -1407,16 +1407,16 @@
         },
         {
             "name": "php-http/discovery",
-            "version": "1.18.1",
+            "version": "1.19.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-http/discovery.git",
-                "reference": "f258b3a1d16acb7b21f3b42d7a2494a733365237"
+                "reference": "1856a119a0b0ba8da8b5c33c080aa7af8fac25b4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-http/discovery/zipball/f258b3a1d16acb7b21f3b42d7a2494a733365237",
-                "reference": "f258b3a1d16acb7b21f3b42d7a2494a733365237",
+                "url": "https://api.github.com/repos/php-http/discovery/zipball/1856a119a0b0ba8da8b5c33c080aa7af8fac25b4",
+                "reference": "1856a119a0b0ba8da8b5c33c080aa7af8fac25b4",
                 "shasum": ""
             },
             "require": {
@@ -1479,9 +1479,9 @@
             ],
             "support": {
                 "issues": "https://github.com/php-http/discovery/issues",
-                "source": "https://github.com/php-http/discovery/tree/1.18.1"
+                "source": "https://github.com/php-http/discovery/tree/1.19.0"
             },
-            "time": "2023-05-17T08:53:10+00:00"
+            "time": "2023-06-19T08:45:36+00:00"
         },
         {
             "name": "php-http/guzzle7-adapter",
@@ -2172,21 +2172,21 @@
         },
         {
             "name": "sentry/sdk",
-            "version": "3.4.0",
+            "version": "3.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/getsentry/sentry-php-sdk.git",
-                "reference": "7f1e04a5380a91e41a1a68c363ec19f88619a870"
+                "reference": "cd91b752f07c4bab9fb3b173f81af68a78a78d6d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/getsentry/sentry-php-sdk/zipball/7f1e04a5380a91e41a1a68c363ec19f88619a870",
-                "reference": "7f1e04a5380a91e41a1a68c363ec19f88619a870",
+                "url": "https://api.github.com/repos/getsentry/sentry-php-sdk/zipball/cd91b752f07c4bab9fb3b173f81af68a78a78d6d",
+                "reference": "cd91b752f07c4bab9fb3b173f81af68a78a78d6d",
                 "shasum": ""
             },
             "require": {
                 "http-interop/http-factory-guzzle": "^1.0",
-                "sentry/sentry": "^3.18",
+                "sentry/sentry": "^3.19",
                 "symfony/http-client": "^4.3|^5.0|^6.0"
             },
             "type": "metapackage",
@@ -2213,7 +2213,7 @@
             ],
             "support": {
                 "issues": "https://github.com/getsentry/sentry-php-sdk/issues",
-                "source": "https://github.com/getsentry/sentry-php-sdk/tree/3.4.0"
+                "source": "https://github.com/getsentry/sentry-php-sdk/tree/3.5.0"
             },
             "funding": [
                 {
@@ -2225,7 +2225,7 @@
                     "type": "custom"
                 }
             ],
-            "time": "2023-05-22T16:02:39+00:00"
+            "time": "2023-06-12T17:50:36+00:00"
         },
         {
             "name": "sentry/sentry",
@@ -3126,15 +3126,15 @@
         },
         {
             "name": "wpackagist-plugin/ewww-image-optimizer",
-            "version": "7.0.1",
+            "version": "7.0.2",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/ewww-image-optimizer/",
-                "reference": "tags/7.0.1"
+                "reference": "tags/7.0.2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/ewww-image-optimizer.7.0.1.zip"
+                "url": "https://downloads.wordpress.org/plugin/ewww-image-optimizer.7.0.2.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -3144,15 +3144,15 @@
         },
         {
             "name": "wpackagist-plugin/limit-login-attempts-reloaded",
-            "version": "2.25.18",
+            "version": "2.25.19",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/limit-login-attempts-reloaded/",
-                "reference": "tags/2.25.18"
+                "reference": "tags/2.25.19"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/limit-login-attempts-reloaded.2.25.18.zip"
+                "url": "https://downloads.wordpress.org/plugin/limit-login-attempts-reloaded.2.25.19.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -3252,15 +3252,15 @@
         },
         {
             "name": "wpackagist-plugin/wordpress-seo",
-            "version": "20.8",
+            "version": "20.9",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/wordpress-seo/",
-                "reference": "tags/20.8"
+                "reference": "tags/20.9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/wordpress-seo.20.8.zip"
+                "url": "https://downloads.wordpress.org/plugin/wordpress-seo.20.9.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
