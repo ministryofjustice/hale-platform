@@ -28,3 +28,10 @@ jobs:
         # Login to container repository
         - uses: aws-actions/amazon-ecr-login@v1
           id: login-ecr
+        - run: |
+            docker build --pull --no-cache --tag $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG --file nginx.dockerfile .
+            docker push $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG 
+          env:
+            REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+            REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+            IMAGE_TAG: ${{ github.sha }}
