@@ -17,20 +17,40 @@ jobs:
         contents: read  # This is required for actions/checkout
       steps:
       # Checkout GitHub repository
-        - uses: actions/checkout@v3
+        - name: Checkout
+          uses: actions/checkout@v3
 
         # Assume role in Cloud Platform
-        - uses: aws-actions/configure-aws-credentials@v2
+        - name: Config Credentials
+          uses: aws-actions/configure-aws-credentials@v2
           with:
             role-to-assume: ${{ secrets.ECR_ROLE_TO_ASSUME }}
             aws-region: ${{ vars.ECR_REGION }}
 
         # Login to container repository
-        - uses: aws-actions/amazon-ecr-login@v1
+        - name: Login to ECR
+          uses: aws-actions/amazon-ecr-login@v1
           id: login-ecr
-        - run: |
+        - name: Build and Push Nginx Image
+          run: |
             docker build --pull --no-cache --tag $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG --file nginx.dockerfile .
             docker push $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG 
+          env:
+            REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+            REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+            IMAGE_TAG: ${{ github.sha }}
+        - name: Run Composer
+          run: |
+            composer config http-basic.composer.wp.dsd.io ${{ secrets.COMPOSER_USER }} ${{ secrets.COMPOSER_PASS }}
+            composer install --prefer-dist --no-progress
+        - name: Run NPM
+          run: |
+            npm install --prefix ./wordpress/wp-content/themes/hale
+            npm run production --if-present --prefix ./wordpress/wp-content/themes/hale
+        - name: Build and Push Wordpress Image
+          run: |
+            docker build --pull --no-cache --tag $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG --file wp.dockerfile .
+            docker push $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG 
           env:
             REGISTRY: ${{ steps.login-ecr.outputs.registry }}
             REPOSITORY: ${{ vars.ECR_REPOSITORY }}
