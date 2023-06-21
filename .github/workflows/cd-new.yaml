@@ -5,13 +5,27 @@ on:
   push:
     branches:
       - 'dev'
-
-
 jobs:
+
+  setenv:
+    runs-on: ubuntu-latest
+    # Map a step output to a job output
+    outputs:
+      deployenv: ${{ steps.outputEnv.outputs.deployenv }}
+    steps:
+      - id: stepDev
+        if: github.event.ref == 'refs/heads/dev'
+        run: echo "DEPLOYENV=Development" >> $GITHUB_ENV
+      - id: outputEnv
+        run: |
+          echo Deploying to $DEPLOYENV
+          echo "deployenv=$DEPLOYENV" >> "$GITHUB_OUTPUT"
+
   buildImage:
       name: Build Image and push to ECR
+      needs: setenv
       runs-on: ubuntu-latest
-      environment: Development
+      environment: ${{needs.setenv.outputs.deployenv}}
       permissions:
         id-token: write # This is required for requesting the JWT
         contents: read  # This is required for actions/checkout
@@ -58,9 +72,9 @@ jobs:
 
   deployImage:
     name: Deploy to Development
-    needs: buildImage
+    needs: [setenv, buildImage]
     runs-on: ubuntu-latest
-    environment: Development
+    environment: ${{needs.setenv.outputs.deployenv}}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -109,8 +123,8 @@ jobs:
   ecrClean:
     name: ECR clean
     runs-on: ubuntu-latest
-    needs: [buildImage, deployImage]
-    environment: Development
+    needs: [setenv, buildImage, deployImage]
+    environment: ${{needs.setenv.outputs.deployenv}}
     steps:
     - name: Run ECR clean-up script
       uses: ministryofjustice/ecr-images-cleaner-action@v1.0.1
