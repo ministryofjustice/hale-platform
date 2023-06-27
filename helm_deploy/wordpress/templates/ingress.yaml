@@ -33,6 +33,9 @@ spec:
   - hosts:
     - icrir.independent-inquiry.uk
     secretName: icrir-cert
+  - hosts:
+    - imb.org.uk
+    secretName: imb-cert
     {{- end }}
   rules:
   - host: {{ .Values.domain }}
@@ -87,6 +90,16 @@ spec:
             port:
               number: 8080
   - host: icrir.independent-inquiry.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: imb.org.uk
     http:
       paths:
       - path: /
