@@ -60,8 +60,6 @@ secrets:
   wpsecureauthsalt: ""
   s3uploadsbucket: ""
   s3uploadsregion: ""
-  s3uploadskey: ""
-  s3uploadssecret: ""
 
 alertSecrets:
   enabled: true
