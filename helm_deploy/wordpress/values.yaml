@@ -34,6 +34,7 @@ ingress:
 configmap:
   servername: ""
   envtype: ""
+  s3useprofile: true
   # wpdebug:
   #   prod: false
   #   staging: true
