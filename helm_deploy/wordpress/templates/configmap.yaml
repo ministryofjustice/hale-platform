@@ -6,7 +6,7 @@ data:
   WP_ENVIRONMENT_TYPE: {{ .Values.configmap.envtype }}
   SERVER_NAME: {{ .Values.domain }}
   ENV_TYPE: {{ .Values.configmap.envtype }}
-  #S3_UPLOADS_USE_INSTANCE_PROFILE: {{ .Values.configmap.s3useprofile }}
+  S3_UPLOADS_USE_INSTANCE_PROFILE: "true"
   #{{- if eq .Values.configmap.envtype "staging" }}
   # WP_DEBUG: "false"
   # {{ else if eq .Values.configmap.envtype "dev" }}
