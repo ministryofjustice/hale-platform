@@ -8,6 +8,7 @@ on:
 jobs:
 
   setenv:
+    name: Set Environment
     runs-on: ubuntu-latest
     # Map a step output to a job output
     outputs:
