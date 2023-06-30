@@ -108,11 +108,11 @@ jobs:
           --set secrets.wpnoncesalt=${{ secrets.WORDPRESS_NONCE_SALT_FILE }} \
           --set secrets.wpsecureauthkey=${{ secrets.WORDPRESS_SECURE_AUTH_KEY_FILE }} \
           --set secrets.wpsecureauthsalt=${{ secrets.WORDPRESS_SECURE_AUTH_SALT_FILE }} \
-          --set secrets.s3uploadsbucket=${{ secrets.S3_UPLOADS_BUCKET_DEV }} \
-          --set secrets.s3uploadsregion=${{ secrets.S3_UPLOADS_REGION_DEV }} \
+          --set secrets.s3uploadsbucket=${{ secrets.S3_UPLOADS_BUCKET }} \
+          --set secrets.s3uploadsregion=${{ secrets.S3_UPLOADS_REGION }} \
           --set alertSecrets.slackWebhookUrl=${{ secrets.ALERT_SLACK_WEBHOOK_URL }} \
           --set configmap.servername=${{ secrets.KUBE_NAMESPACE }}.apps.live.cloud-platform.service.justice.gov.uk \
-          --set configmap.envtype=${{ vars.ENV_TYPE_DEV }} \
+          --set configmap.envtype=${{ vars.ENV_TYPE }} \
           --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.KUBE_NAMESPACE }}-green \
           --set domain=${{ secrets.KUBE_NAMESPACE }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ECR_NAME }}:hale-platform_nginx-${{ github.sha }} \
