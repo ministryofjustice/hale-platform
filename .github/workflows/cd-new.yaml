@@ -91,7 +91,7 @@ jobs:
         run: |
           helm upgrade wordpress helm_deploy/wordpress \
           --install \
-          --namespace ${{ secrets.KUBE_NAMESPACE_DEV }} \
+          --namespace ${{ secrets.KUBE_NAMESPACE }} \
           --values helm_deploy/wordpress/values.yaml \
           --set secrets.wpdbuser=${{ secrets.WORDPRESS_DB_USER_DEV }} \
           --set secrets.wpdbhost=${{ secrets.WORDPRESS_DB_HOST_DEV }} \
