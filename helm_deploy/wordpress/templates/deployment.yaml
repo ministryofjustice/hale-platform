@@ -31,7 +31,7 @@ spec:
         tier: frontend-c
     spec:
       restartPolicy: Always
-      serviceAccountName: hale-platform-dev-service
+      serviceAccountName: hale-platform-{{ .Values.configmap.envtype }}-service
       containers:
         - image: {{ .Values.wp.image.repository }}
           imagePullPolicy: {{ .Values.wp.image.imagePullPolicy }}
