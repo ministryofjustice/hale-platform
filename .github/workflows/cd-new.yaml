@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - 'dev'
+      - 'demo'
 jobs:
 
   setenv:
@@ -17,6 +18,9 @@ jobs:
       - id: stepDev
         if: github.event.ref == 'refs/heads/dev'
         run: echo "DEPLOYENV=Development" >> $GITHUB_ENV
+      - id: stepDemo
+        if: github.event.ref == 'refs/heads/demo'
+        run: echo "DEPLOYENV=Demonstration" >> $GITHUB_ENV
       - id: outputEnv
         run: |
           echo Deploying to $DEPLOYENV
@@ -72,7 +76,7 @@ jobs:
             IMAGE_TAG: ${{ github.sha }}
 
   deployImage:
-    name: Deploy to Development
+    name: Deploy to Environment
     needs: [setenv, buildImage]
     runs-on: ubuntu-latest
     environment: ${{needs.setenv.outputs.deployenv}}
