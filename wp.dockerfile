@@ -72,5 +72,3 @@ ENTRYPOINT ["/usr/local/bin/hale-entrypoint.sh"]
 
 # Set container user 'root' to 'hale'
 USER 1002
-
-CMD ["php-fpm"]
