@@ -1033,17 +1033,17 @@
         },
         {
             "name": "ministryofjustice/wp-moj-blocks",
-            "version": "3.8.7",
+            "version": "3.8.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-moj-blocks.git",
-                "reference": "18bb5b1969f43ffd3d643b0ebf54a345b93cb7cf"
+                "reference": "5841443d46355d7287da4bcc64c44f408ac41dae"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/wp-moj-blocks/ministryofjustice-wp-moj-blocks-18bb5b1969f43ffd3d643b0ebf54a345b93cb7cf-zip-036262.zip",
-                "reference": "18bb5b1969f43ffd3d643b0ebf54a345b93cb7cf",
-                "shasum": "12f29ce7e48050b3059057d4f449c11ece54bcdd"
+                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/wp-moj-blocks/ministryofjustice-wp-moj-blocks-5841443d46355d7287da4bcc64c44f408ac41dae-zip-ea51fb.zip",
+                "reference": "5841443d46355d7287da4bcc64c44f408ac41dae",
+                "shasum": "4eee5ab22a61287ab4d6fddfbae9ef95a9ffde4b"
             },
             "require-dev": {
                 "composer/composer": "*",
@@ -1066,10 +1066,10 @@
             ],
             "description": "WP plugin that adds addtional blocks.",
             "support": {
-                "source": "https://github.com/ministryofjustice/wp-moj-blocks/tree/3.8.7",
+                "source": "https://github.com/ministryofjustice/wp-moj-blocks/tree/3.8.8",
                 "issues": "https://github.com/ministryofjustice/wp-moj-blocks/issues"
             },
-            "time": "2023-06-05T12:38:18+00:00"
+            "time": "2023-07-05T12:35:17+00:00"
         },
         {
             "name": "ministryofjustice/wp-moj-components",
@@ -3050,15 +3050,15 @@
         },
         {
             "name": "wpackagist-plugin/ewww-image-optimizer",
-            "version": "7.0.2",
+            "version": "7.1.0",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/ewww-image-optimizer/",
-                "reference": "tags/7.0.2"
+                "reference": "tags/7.1.0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/ewww-image-optimizer.7.0.2.zip"
+                "url": "https://downloads.wordpress.org/plugin/ewww-image-optimizer.7.1.0.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
