@@ -1011,39 +1011,39 @@
         },
         {
             "name": "ministryofjustice/wp-hale",
-            "version": "3.9.0",
+            "version": "3.9.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-hale.git",
-                "reference": "a2e21b5bd4a23732959d48a2035ba08ddb4be8b9"
+                "reference": "bbcfa49c230b02cfc3e7138fe6b263176bb3910b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/wp-hale/ministryofjustice-wp-hale-a2e21b5bd4a23732959d48a2035ba08ddb4be8b9-zip-07af35.zip",
-                "reference": "a2e21b5bd4a23732959d48a2035ba08ddb4be8b9",
-                "shasum": "b94175d327ad08aa1f74e613d4ab36ee3942a19c"
+                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/wp-hale/ministryofjustice-wp-hale-bbcfa49c230b02cfc3e7138fe6b263176bb3910b-zip-e6a192.zip",
+                "reference": "bbcfa49c230b02cfc3e7138fe6b263176bb3910b",
+                "shasum": "099aa90c1f0932f48ddb3b8bd39f65db8c334576"
             },
             "type": "wordpress-theme",
             "description": "Hale theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/wp-hale/tree/3.9.0",
+                "source": "https://github.com/ministryofjustice/wp-hale/tree/3.9.1",
                 "issues": "https://github.com/ministryofjustice/wp-hale/issues"
             },
-            "time": "2023-06-27T13:53:45+00:00"
+            "time": "2023-07-06T10:46:04+00:00"
         },
         {
             "name": "ministryofjustice/wp-moj-blocks",
-            "version": "3.8.8",
+            "version": "3.8.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-moj-blocks.git",
-                "reference": "5841443d46355d7287da4bcc64c44f408ac41dae"
+                "reference": "4a2a3223818b28c6f60044347075a58658300448"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/wp-moj-blocks/ministryofjustice-wp-moj-blocks-5841443d46355d7287da4bcc64c44f408ac41dae-zip-ea51fb.zip",
-                "reference": "5841443d46355d7287da4bcc64c44f408ac41dae",
-                "shasum": "4eee5ab22a61287ab4d6fddfbae9ef95a9ffde4b"
+                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/wp-moj-blocks/ministryofjustice-wp-moj-blocks-4a2a3223818b28c6f60044347075a58658300448-zip-7511b7.zip",
+                "reference": "4a2a3223818b28c6f60044347075a58658300448",
+                "shasum": "c3462f7af672e9f98eecd6884360a61df6658f38"
             },
             "require-dev": {
                 "composer/composer": "*",
@@ -1066,10 +1066,10 @@
             ],
             "description": "WP plugin that adds addtional blocks.",
             "support": {
-                "source": "https://github.com/ministryofjustice/wp-moj-blocks/tree/3.8.8",
+                "source": "https://github.com/ministryofjustice/wp-moj-blocks/tree/3.8.9",
                 "issues": "https://github.com/ministryofjustice/wp-moj-blocks/issues"
             },
-            "time": "2023-07-05T12:35:17+00:00"
+            "time": "2023-07-06T10:48:17+00:00"
         },
         {
             "name": "ministryofjustice/wp-moj-components",
