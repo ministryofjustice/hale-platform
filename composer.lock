@@ -1011,39 +1011,39 @@
         },
         {
             "name": "ministryofjustice/wp-hale",
-            "version": "3.9.1",
+            "version": "3.9.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-hale.git",
-                "reference": "bbcfa49c230b02cfc3e7138fe6b263176bb3910b"
+                "reference": "66c8f964dc7c134487fc1fd9b0b6e379a128b598"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/wp-hale/ministryofjustice-wp-hale-bbcfa49c230b02cfc3e7138fe6b263176bb3910b-zip-e6a192.zip",
-                "reference": "bbcfa49c230b02cfc3e7138fe6b263176bb3910b",
-                "shasum": "099aa90c1f0932f48ddb3b8bd39f65db8c334576"
+                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/wp-hale/ministryofjustice-wp-hale-66c8f964dc7c134487fc1fd9b0b6e379a128b598-zip-dd840b.zip",
+                "reference": "66c8f964dc7c134487fc1fd9b0b6e379a128b598",
+                "shasum": "02bf19c132ecd3ba316739e9ab87a862f4e157da"
             },
             "type": "wordpress-theme",
             "description": "Hale theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/wp-hale/tree/3.9.1",
+                "source": "https://github.com/ministryofjustice/wp-hale/tree/3.9.2",
                 "issues": "https://github.com/ministryofjustice/wp-hale/issues"
             },
-            "time": "2023-07-06T10:46:04+00:00"
+            "time": "2023-07-10T09:54:06+00:00"
         },
         {
             "name": "ministryofjustice/wp-moj-blocks",
-            "version": "3.8.9",
+            "version": "3.8.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-moj-blocks.git",
-                "reference": "4a2a3223818b28c6f60044347075a58658300448"
+                "reference": "6b2da6137ca8175bef2df10037c5733f5b86fa5f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/wp-moj-blocks/ministryofjustice-wp-moj-blocks-4a2a3223818b28c6f60044347075a58658300448-zip-7511b7.zip",
-                "reference": "4a2a3223818b28c6f60044347075a58658300448",
-                "shasum": "c3462f7af672e9f98eecd6884360a61df6658f38"
+                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/wp-moj-blocks/ministryofjustice-wp-moj-blocks-6b2da6137ca8175bef2df10037c5733f5b86fa5f-zip-ed989b.zip",
+                "reference": "6b2da6137ca8175bef2df10037c5733f5b86fa5f",
+                "shasum": "95a9f165697d9eeff5a3b8f67e67045f0dcb4a7c"
             },
             "require-dev": {
                 "composer/composer": "*",
@@ -1066,10 +1066,10 @@
             ],
             "description": "WP plugin that adds addtional blocks.",
             "support": {
-                "source": "https://github.com/ministryofjustice/wp-moj-blocks/tree/3.8.9",
+                "source": "https://github.com/ministryofjustice/wp-moj-blocks/tree/3.8.10",
                 "issues": "https://github.com/ministryofjustice/wp-moj-blocks/issues"
             },
-            "time": "2023-07-06T10:48:17+00:00"
+            "time": "2023-07-10T13:03:24+00:00"
         },
         {
             "name": "ministryofjustice/wp-moj-components",
@@ -3086,15 +3086,15 @@
         },
         {
             "name": "wpackagist-plugin/query-monitor",
-            "version": "3.12.3",
+            "version": "3.13.0",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/query-monitor/",
-                "reference": "tags/3.12.3"
+                "reference": "tags/3.13.0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/query-monitor.3.12.3.zip"
+                "url": "https://downloads.wordpress.org/plugin/query-monitor.3.13.0.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
