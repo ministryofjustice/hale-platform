@@ -6,25 +6,19 @@ metadata:
   labels:
     app: wordpress
 spec:
-  # {{- if eq .Values.configmap.envtype "staging" }}
-  # replicas: {{ .Values.wp.image.replicaCount.staging }}
-  # {{ else if eq .Values.configmap.envtype "dev" }}
-  # replicas: {{ .Values.wp.image.replicaCount.dev }}
-  # {{ else if eq .Values.configmap.envtype "demo" }}
-  # replicas: {{ .Values.wp.image.replicaCount.demo }}
-  # {{ else }}
-  # replicas: {{ .Values.wp.image.replicaCount.prod }}
-  # {{- end }}
-  replicas: 1
+  {{- if eq .Values.configmap.envtype "staging" }}
+  replicas: {{ .Values.wp.image.replicaCount.staging }}
+  {{ else if eq .Values.configmap.envtype "dev" }}
+  replicas: {{ .Values.wp.image.replicaCount.dev }}
+  {{ else if eq .Values.configmap.envtype "demo" }}
+  replicas: {{ .Values.wp.image.replicaCount.demo }}
+  {{ else }}
+  replicas: {{ .Values.wp.image.replicaCount.prod }}
+  {{- end }}
   selector:
     matchLabels:
       app: wordpress
       tier: frontend-c
-  # strategy:
-  #   type: RollingUpdate
-  #   rollingUpdate:
-  #     maxSurge: 100%
-  #     maxUnavailable: 50%
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -36,30 +30,53 @@ spec:
         app: wordpress
         tier: frontend-c
     spec:
-      restartPolicy: Always
       serviceAccountName: hale-platform-{{ .Values.configmap.envtype }}-service
       containers:
         - image: {{ .Values.wp.image.repository }}
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .Values.wp.image.imagePullPolicy }}
           name: wordpress
-          # env:
-          #   - name: PHP_INI_SCAN_DIR
-          #     value: :/usr/local/etc/php/conf.custom
+          env:
+            - name: PHP_INI_SCAN_DIR
+              value: :/usr/local/etc/php/conf.custom
           ports:
             - containerPort: 9000
           volumeMounts:
             - name: wordpress-volume-file-mount
               mountPath: /var/www/html
-            # - name: php-config
-            #   mountPath: /usr/local/etc/php/conf.custom
+            - name: php-config
+              mountPath: /usr/local/etc/php/conf.custom
           envFrom:
           - configMapRef:
                 name: wpconfig-{{ .Release.Revision }}
           - secretRef:
                 name: wpsecrets-{{ .Release.Revision }}
+          livenessProbe:
+            httpGet:
+              port: 443
+              path: /hale-wpms-2020
+              scheme: HTTPS
+              host: {{ .Values.domain }}
+            initialDelaySeconds: 120
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - |
+                  if ! ps aux | grep '[p]hp-fpm: master process' >/dev/null; then
+                    exit 1
+                  fi
+            initialDelaySeconds: 8
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+            successThreshold: 1
         - name: nginx
           image: {{ .Values.nginx.image.repository }}
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .Values.nginx.image.imagePullPolicy }}
           ports:
             - containerPort: 8080
           volumeMounts:
@@ -68,57 +85,7 @@ spec:
       volumes:
         - name: wordpress-volume-file-mount
           emptyDir: {}
-        # - name: php-config
-        #   configMap:
-        #     name: hale-wordpress-multisite-php-config-{{ .Release.Revision }}
----
-{{- if .Values.mariadb.enabled }}
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: mariadb
-  labels:
-    app: mariadb
-spec:
-  selector:
-    matchLabels:
-      app: mariadb
-      tier: frontend-c
-  strategy:
-    type: Recreate
-  template:
-    metadata:
-      labels:
-        app: mariadb
-        tier: frontend-c
-    spec:
-      containers:
-      - name: mysql
-        image: mariadb:10.7.1-focal
-        envFrom:
-        - configMapRef:
-            name: wpconfig-{{ .Release.Revision }}
-        - secretRef:
-            name: wpsecrets-{{ .Release.Revision }}
-        ports:
-          - containerPort: 3306
-            name: mysql
-        volumeMounts:
-          - name: mysql-persistent-storage
-            mountPath: /var/li/mysql
-      volumes:
-        - name: mysql-persistent-storage
-          persistentVolumeClaim:
-            claimName: mysql-pvc-claim
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mysql-pvc-claim
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 20Gi
-{{- end }}
+        - name: php-config
+          configMap:
+            name: hale-wordpress-multisite-php-config-{{ .Release.Revision }}
+            
