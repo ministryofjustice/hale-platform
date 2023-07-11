@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: hale-wordpress-multisite-php-config-{{ .Release.Revision }}
+  name: hale-php-config-{{ .Release.Revision }}
 data:
   wordpress-custom.ini: |-
     upload_max_filesize = 64M

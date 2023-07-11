@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: wpconfig-{{ .Release.Revision }}
+  name: hale-config-{{ .Release.Revision }}
 data:
   WP_ENVIRONMENT_TYPE: {{ .Values.configmap.envtype }}
   SERVER_NAME: {{ .Values.domain }}

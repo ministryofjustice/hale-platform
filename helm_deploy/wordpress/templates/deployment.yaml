@@ -47,9 +47,9 @@ spec:
               mountPath: /usr/local/etc/php/conf.custom
           envFrom:
           - configMapRef:
-                name: wpconfig-{{ .Release.Revision }}
+                name: hale-config-{{ .Release.Revision }}
           - secretRef:
-                name: wpsecrets-{{ .Release.Revision }}
+                name: hale-secrets-{{ .Release.Revision }}
           livenessProbe:
             httpGet:
               port: 443
@@ -69,8 +69,8 @@ spec:
                   if ! ps aux | grep '[p]hp-fpm: master process' >/dev/null; then
                     exit 1
                   fi
-            initialDelaySeconds: 8
-            periodSeconds: 5
+            initialDelaySeconds: 10
+            periodSeconds: 3
             timeoutSeconds: 3
             failureThreshold: 3
             successThreshold: 1
@@ -87,5 +87,4 @@ spec:
           emptyDir: {}
         - name: php-config
           configMap:
-            name: hale-wordpress-multisite-php-config-{{ .Release.Revision }}
-            
+            name: hale-php-config-{{ .Release.Revision }}
