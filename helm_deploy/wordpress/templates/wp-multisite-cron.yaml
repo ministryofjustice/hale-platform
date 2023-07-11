@@ -12,7 +12,7 @@ spec:
       template:
         spec:
           containers:
-          - name: nginx-curl
+          - name: nginx-cron-curl
             image: {{ .Values.nginx.image.repository }}
             imagePullPolicy: IfNotPresent
             args:

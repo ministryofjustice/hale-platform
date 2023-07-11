@@ -47,9 +47,9 @@ spec:
               mountPath: /usr/local/etc/php/conf.custom
           envFrom:
           - configMapRef:
-                name: hale-config-{{ .Release.Revision }}
+                name: hale-wp-config-{{ .Release.Revision }}
           - secretRef:
-                name: hale-secrets-{{ .Release.Revision }}
+                name: hale-wp-secrets-{{ .Release.Revision }}
           livenessProbe:
             httpGet:
               port: 443
