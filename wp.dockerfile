@@ -48,18 +48,18 @@ RUN apk update && \
     apk add vim --no-cache && \
     apk add mysql mysql-client
 
-# Create new user to run container as non-root
-RUN adduser --disabled-password hale -u 1002 && \
-    chown -R hale:hale /var/www/html
-
-RUN chown hale:hale /usr/local/bin/docker-entrypoint.sh
-
 # Create the uploads folder
 RUN mkdir -p /usr/src/wordpress/wp-content/uploads
 
 # Overwrite offical WP image ENTRYPOINT (docker-entrypoint.sh)
 # with custom entrypoint so we can launch WP multisite network
 ENTRYPOINT ["/usr/local/bin/hale-entrypoint.sh"]
+
+# Create new user to run container as non-root
+RUN adduser --disabled-password hale -u 1002 && \
+    chown -R hale:hale /var/www/html
+
+RUN chown hale:hale /usr/local/bin/docker-entrypoint.sh
 
 # Set container user 'root' to 'hale'
 USER 1002
