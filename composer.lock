@@ -1033,17 +1033,17 @@
         },
         {
             "name": "ministryofjustice/wp-moj-blocks",
-            "version": "3.8.11",
+            "version": "3.8.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-moj-blocks.git",
-                "reference": "48119e4090bd8347341e9a5401844f39213430ca"
+                "reference": "8b1574b2db8be5f2d983308685064837a4e722aa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/wp-moj-blocks/ministryofjustice-wp-moj-blocks-48119e4090bd8347341e9a5401844f39213430ca-zip-9fda34.zip",
-                "reference": "48119e4090bd8347341e9a5401844f39213430ca",
-                "shasum": "7a8101e9e191fe883a149c4d619d3c6e75ee3df0"
+                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/wp-moj-blocks/ministryofjustice-wp-moj-blocks-8b1574b2db8be5f2d983308685064837a4e722aa-zip-2860a4.zip",
+                "reference": "8b1574b2db8be5f2d983308685064837a4e722aa",
+                "shasum": "aa0f5e6a69e22f04b6f05a96ef2460943e4047ab"
             },
             "require-dev": {
                 "composer/composer": "*",
@@ -1066,10 +1066,10 @@
             ],
             "description": "WP plugin that adds addtional blocks.",
             "support": {
-                "source": "https://github.com/ministryofjustice/wp-moj-blocks/tree/3.8.11",
+                "source": "https://github.com/ministryofjustice/wp-moj-blocks/tree/3.8.12",
                 "issues": "https://github.com/ministryofjustice/wp-moj-blocks/issues"
             },
-            "time": "2023-07-10T13:54:26+00:00"
+            "time": "2023-07-12T09:43:34+00:00"
         },
         {
             "name": "ministryofjustice/wp-moj-components",
@@ -1407,16 +1407,16 @@
         },
         {
             "name": "php-http/discovery",
-            "version": "1.19.0",
+            "version": "1.19.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-http/discovery.git",
-                "reference": "1856a119a0b0ba8da8b5c33c080aa7af8fac25b4"
+                "reference": "57f3de01d32085fea20865f9b16fb0e69347c39e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-http/discovery/zipball/1856a119a0b0ba8da8b5c33c080aa7af8fac25b4",
-                "reference": "1856a119a0b0ba8da8b5c33c080aa7af8fac25b4",
+                "url": "https://api.github.com/repos/php-http/discovery/zipball/57f3de01d32085fea20865f9b16fb0e69347c39e",
+                "reference": "57f3de01d32085fea20865f9b16fb0e69347c39e",
                 "shasum": ""
             },
             "require": {
@@ -1479,9 +1479,9 @@
             ],
             "support": {
                 "issues": "https://github.com/php-http/discovery/issues",
-                "source": "https://github.com/php-http/discovery/tree/1.19.0"
+                "source": "https://github.com/php-http/discovery/tree/1.19.1"
             },
-            "time": "2023-06-19T08:45:36+00:00"
+            "time": "2023-07-11T07:02:26+00:00"
         },
         {
             "name": "php-http/guzzle7-adapter",
@@ -3176,15 +3176,15 @@
         },
         {
             "name": "wpackagist-plugin/wordpress-seo",
-            "version": "20.10",
+            "version": "20.11",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/wordpress-seo/",
-                "reference": "tags/20.10"
+                "reference": "tags/20.11"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/wordpress-seo.20.10.zip"
+                "url": "https://downloads.wordpress.org/plugin/wordpress-seo.20.11.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
