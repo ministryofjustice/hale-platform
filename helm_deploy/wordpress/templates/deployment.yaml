@@ -1,4 +1,3 @@
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -31,6 +30,7 @@ spec:
         app: wordpress
         tier: frontend-c
     spec:
+      terminationGracePeriodSeconds: 20
       serviceAccountName: hale-platform-{{ .Values.configmap.envtype }}-service
       containers:
         - image: {{ .Values.wp.image.repository }}
@@ -44,12 +44,12 @@ spec:
           volumeMounts:
             - name: wordpress-volume-file-mount
               mountPath: /var/www/html
-            - name: php-config
+            - name: hale-php-config
               mountPath: /usr/local/etc/php/conf.custom
           envFrom:
-          - configMapRef:
+            - configMapRef:
                 name: hale-wp-config-{{ .Release.Revision }}
-          - secretRef:
+            - secretRef:
                 name: hale-wp-secrets-{{ .Release.Revision }}
           livenessProbe:
             httpGet:
@@ -86,7 +86,7 @@ spec:
       volumes:
         - name: wordpress-volume-file-mount
           emptyDir: {}
-        - name: php-config
+        - name: hale-php-config
           configMap:
             name: hale-php-config-{{ .Release.Revision }}
 ---
