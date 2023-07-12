@@ -3,6 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: wordpress
+  namespace: hale-platform-{{ .Values.configmap.envtype }}
   labels:
     app: wordpress
 spec:
@@ -57,7 +58,7 @@ spec:
               scheme: HTTPS
               host: {{ .Values.domain }}
             initialDelaySeconds: 120
-            periodSeconds: 10
+            periodSeconds: 30
             timeoutSeconds: 5
             failureThreshold: 3
           readinessProbe:
@@ -69,11 +70,11 @@ spec:
                   if ! ps aux | grep '[p]hp-fpm: master process' >/dev/null; then
                     exit 1
                   fi
-            initialDelaySeconds: 10
-            periodSeconds: 3
-            timeoutSeconds: 3
-            failureThreshold: 3
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            timeoutSeconds: 5
             successThreshold: 1
+            failureThreshold: 3
         - name: nginx
           image: {{ .Values.nginx.image.repository }}
           imagePullPolicy: {{ .Values.nginx.image.imagePullPolicy }}
@@ -88,3 +89,4 @@ spec:
         - name: php-config
           configMap:
             name: hale-php-config-{{ .Release.Revision }}
+---
