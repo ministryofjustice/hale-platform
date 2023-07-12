@@ -30,7 +30,7 @@ spec:
         app: wordpress
         tier: frontend-c
     spec:
-      terminationGracePeriodSeconds: 20
+      terminationGracePeriodSeconds: 30
       serviceAccountName: hale-platform-{{ .Values.configmap.envtype }}-service
       containers:
         - image: {{ .Values.wp.image.repository }}

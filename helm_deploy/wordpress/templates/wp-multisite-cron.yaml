@@ -2,6 +2,7 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: wp-cron
+  namespace: hale-platform-{{ .Values.configmap.envtype }}
 spec:
   schedule: "* * * * *"
   successfulJobsHistoryLimit: 1
