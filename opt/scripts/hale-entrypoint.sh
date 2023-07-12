@@ -12,10 +12,9 @@ exec /usr/local/bin/docker-entrypoint.sh &
 # Wait for the entrypoint script to complete
 wait
 
-# Add your additional commands here
 # Create new user to run container as non-root
 adduser --disabled-password hale -u 1002
 chown -R hale:hale /var/www/html
 
 # Run PHP-FPM ready for requests
-exec "php-fpm"
+exec php-fpm
