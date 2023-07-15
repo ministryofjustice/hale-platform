@@ -14,6 +14,8 @@ wait
 
 # Create new user to run container as non-root
 adduser --disabled-password hale -u 1002
+
+# Change the owner of the files in /var/www/html to hale
 chown -R hale:hale /var/www/html
 
 # Run PHP-FPM ready for requests
