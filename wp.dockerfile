@@ -55,12 +55,11 @@ RUN mkdir -p /usr/src/wordpress/wp-content/uploads
 # with custom entrypoint so we can launch WP multisite network
 ENTRYPOINT ["/usr/local/bin/hale-entrypoint.sh"]
 
-# # Create new user to run container as non-root
-# RUN adduser --disabled-password hale -u 1002 && \
-#     chown -R hale:hale /var/www/html
+# Create new user to run container as non-root
+RUN adduser --disabled-password hale -u 1002 && \
+    chown -R hale:hale /var/www/html
 
-# RUN chown hale:hale /usr/local/bin/docker-entrypoint.sh
+RUN chown hale:hale /usr/local/bin/docker-entrypoint.sh
 
 # Set container user 'root' to 'hale'
 USER 1002
- 
