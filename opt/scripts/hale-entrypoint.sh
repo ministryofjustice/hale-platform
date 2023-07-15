@@ -2,6 +2,11 @@
 set -e
 #set -o xtrace # Uncomment this line for debugging purposes
 
+# Set a default value for $1 if it is not provided
+if [ -z "$1" ]; then
+  set -- default_argument
+fi
+
 # Inject shell script into docker-entrypoint so that our own config script can run
 sed "$ i /usr/local/bin/config.sh" /usr/local/bin/docker-entrypoint.sh > /tmp/docker-entrypoint.sh
 cat /tmp/docker-entrypoint.sh > /usr/local/bin/docker-entrypoint.sh
