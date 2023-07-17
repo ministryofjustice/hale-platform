@@ -46,8 +46,8 @@ jobs:
         - name: Config Credentials
           uses: aws-actions/configure-aws-credentials@v2
           with:
-            role-to-assume: ${{ secrets.${{needs.setenv.outputs.prefix}}_ECR_ROLE_TO_ASSUME }}
-            aws-region: ${{ vars.${{needs.setenv.outputs.prefix}}_ECR_REGION }}
+            role-to-assume: ${{ secrets[needs.setenv.outputs.prefix + "_ECR_ROLE_TO_ASSUME"] }}
+            aws-region: ${{ vars[needs.setenv.outputs.prefix + "_ECR_REGION"] }}
 
         # Login to container repository
         - name: Login to ECR
