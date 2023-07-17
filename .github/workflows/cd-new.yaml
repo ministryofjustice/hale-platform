@@ -26,6 +26,7 @@ jobs:
         run: |
           echo Deploying to $DEPLOYENV
           echo "deployenv=$DEPLOYENV" >> "$GITHUB_OUTPUT"
+          
   buildImage:
       needs: setenv
       uses: ./.github/workflows/rw-build-image.yaml
@@ -34,7 +35,10 @@ jobs:
       secrets:
         ecr-role: ${{ secrets.DEV_ECR_ROLE_TO_ASSUME }}
         ecr-region: ${{ vars.DEV_ECR_REGION }}
-
+        ecr-repo: ${{ vars.DEV_ECR_REPOSITORY }} 
+        cp-user: ${{ secrets.COMPOSER_USER }}
+        cp-password: ${{ secrets.COMPOSER_PASS }}
+  
   deployImage:
     name: Deploy to Environment
     if: github.event.ref == 'refs/heads/demo2'

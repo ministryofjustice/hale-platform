@@ -11,6 +11,12 @@ on:
         required: true
       ecr-region:
         required: true
+      ecr-repo:
+        required: true
+      cp-user:
+        required: true
+      cp-password:
+        required: true
 
 jobs:
 
@@ -44,11 +50,11 @@ jobs:
             docker push $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG 
           env:
             REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-            REPOSITORY: ${{ vars.DEV_ECR_REPOSITORY }} 
+            REPOSITORY: ${{ secrets.ecr-repo }} 
             IMAGE_TAG: ${{ github.sha }}
         - name: Run Composer
           run: |
-            composer config http-basic.composer.wp.dsd.io ${{ secrets.COMPOSER_USER }} ${{ secrets.COMPOSER_PASS }}
+            composer config http-basic.composer.wp.dsd.io ${{ secrets.cp-user }} ${{ secrets.cp-password }}
             composer install --prefer-dist --no-progress
         - name: Run NPM
           run: |
@@ -60,5 +66,5 @@ jobs:
             docker push $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG 
           env:
             REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-            REPOSITORY: ${{ vars.DEV_ECR_REPOSITORY }} 
+            REPOSITORY: ${{ secrets.ecr-repo }} 
             IMAGE_TAG: ${{ github.sha }}
