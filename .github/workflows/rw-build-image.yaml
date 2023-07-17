@@ -1,0 +1,59 @@
+name: Resuable Workflow - Build Image
+
+on:
+  workflow_call:
+    inputs:
+      deploy-env:
+        required: true
+        type: string
+
+jobs:
+
+  buildImage:
+      name: Build Image and push to ECR
+      runs-on: ubuntu-latest
+      environment: ${{inputs.deploy-env}}
+      permissions:
+        id-token: write # This is required for requesting the JWT
+        contents: read  # This is required for actions/checkout
+      steps:
+      # Checkout GitHub repository
+        - name: Checkout
+          uses: actions/checkout@v3
+
+        # Assume role in Cloud Platform
+        - name: Config Credentials
+          uses: aws-actions/configure-aws-credentials@v2
+          with:
+            role-to-assume: ${{ secrets.DEV_ECR_ROLE_TO_ASSUME }}
+            aws-region: ${{ vars.DEV_ECR_REGION }}
+
+
+        # Login to container repository
+        - name: Login to ECR
+          uses: aws-actions/amazon-ecr-login@v1
+          id: login-ecr
+        - name: Build and Push Nginx Image
+          run: |
+            docker build --pull --no-cache --tag $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG --file nginx.dockerfile .
+            docker push $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG 
+          env:
+            REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+            REPOSITORY: ${{ vars.DEV_ECR_REPOSITORY }} 
+            IMAGE_TAG: ${{ github.sha }}
+        - name: Run Composer
+          run: |
+            composer config http-basic.composer.wp.dsd.io ${{ secrets.COMPOSER_USER }} ${{ secrets.COMPOSER_PASS }}
+            composer install --prefer-dist --no-progress
+        - name: Run NPM
+          run: |
+            npm install --prefix ./wordpress/wp-content/themes/hale
+            npm run production --if-present --prefix ./wordpress/wp-content/themes/hale
+        - name: Build and Push Wordpress Image
+          run: |
+            docker build --pull --no-cache --tag $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG --file wp.dockerfile .
+            docker push $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG 
+          env:
+            REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+            REPOSITORY: ${{ vars.DEV_ECR_REPOSITORY }} 
+            IMAGE_TAG: ${{ github.sha }}
