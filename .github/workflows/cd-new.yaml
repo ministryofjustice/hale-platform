@@ -20,6 +20,7 @@ jobs:
         run: |
           echo "DEPLOYENV=Development" >> $GITHUB_ENV
           echo "ECR_ROLE=${{ secrets.DEV_ECR_ROLE_TO_ASSUME }}" >> $GITHUB_ENV
+          echo "ECR_REGION=${{ secrets.DEV_ECR_REGION }}" >> $GITHUB_ENV
       - id: stepDemo
         if: github.event.ref == 'refs/heads/demo'
         run: echo "DEPLOYENV=Demonstration" >> $GITHUB_ENV
@@ -28,6 +29,7 @@ jobs:
           echo Deploying to $DEPLOYENV
           echo "deployenv=$DEPLOYENV" >> "$GITHUB_OUTPUT"
           echo "ecr_role=$ECR_ROLE" >> "$GITHUB_OUTPUT"
+          echo "ecr_region=$ECR_REGION" >> "$GITHUB_OUTPUT"
 
   buildImage:
       name: Build Image and push to ECR
@@ -47,7 +49,7 @@ jobs:
           uses: aws-actions/configure-aws-credentials@v2
           with:
             role-to-assume: ${{needs.setenv.outputs.ecr_role}}
-            aws-region: ${{ vars.ECR_REGION }}
+            aws-region: ${{needs.setenv.outputs.ecr_region}}
 
         # Login to container repository
         - name: Login to ECR
