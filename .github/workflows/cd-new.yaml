@@ -14,13 +14,11 @@ jobs:
     # Map a step output to a job output
     outputs:
       deployenv: ${{ steps.outputEnv.outputs.deployenv }}
-      prefix: ${{ steps.outputEnv.outputs.prefix }}
     steps:
       - id: stepDev
         if: github.event.ref == 'refs/heads/dev'
         run: |
           echo "DEPLOYENV=Development" >> $GITHUB_ENV
-          echo "PREFIX=DEV" >> $GITHUB_ENV
       - id: stepDemo
         if: github.event.ref == 'refs/heads/demo'
         run: echo "DEPLOYENV=Demonstration" >> $GITHUB_ENV
@@ -28,7 +26,6 @@ jobs:
         run: |
           echo Deploying to $DEPLOYENV
           echo "deployenv=$DEPLOYENV" >> "$GITHUB_OUTPUT"
-          echo "prefix=$PREFIX" >> "$GITHUB_OUTPUT"
   buildImage:
       name: Build Image and push to ECR
       needs: setenv
@@ -46,8 +43,9 @@ jobs:
         - name: Config Credentials
           uses: aws-actions/configure-aws-credentials@v2
           with:
-            role-to-assume: ${{ secrets[needs.setenv.outputs.prefix + "_ECR_ROLE_TO_ASSUME"] }}
-            aws-region: ${{ vars[needs.setenv.outputs.prefix + "_ECR_REGION"] }}
+            role-to-assume: ${{ github.ref == 'refs/heads/dev' && secrets.DEV_ECR_ROLE_TO_ASSUME || '' }}
+            aws-region: ${{ github.ref == 'refs/heads/dev' && vars.DEV_ECR_REGION || '' }}
+
 
         # Login to container repository
         - name: Login to ECR
