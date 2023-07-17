@@ -6,6 +6,11 @@ on:
       deploy-env:
         required: true
         type: string
+    secrets:
+      ecr-role:
+        required: true
+      ecr-region:
+        required: true
 
 jobs:
 
@@ -25,8 +30,8 @@ jobs:
         - name: Config Credentials
           uses: aws-actions/configure-aws-credentials@v2
           with:
-            role-to-assume: ${{ secrets.DEV_ECR_ROLE_TO_ASSUME }}
-            aws-region: ${{ vars.DEV_ECR_REGION }}
+            role-to-assume: ${{ secrets.ecr-role }}
+            aws-region: ${{ secrets.ecr-region }}
 
 
         # Login to container repository

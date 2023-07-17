@@ -31,7 +31,9 @@ jobs:
       uses: ./.github/workflows/rw-build-image.yaml
       with:
         deploy-env: ${{needs.setenv.outputs.deployenv}}
-
+      secrets:
+        ecr-role: ${{ secrets.DEV_ECR_ROLE_TO_ASSUME }}
+        ecr-region: ${{ vars.DEV_ECR_REGION }}
 
   deployImage:
     name: Deploy to Environment
