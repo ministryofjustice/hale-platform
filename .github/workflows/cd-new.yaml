@@ -20,7 +20,7 @@ jobs:
         run: |
           echo "DEPLOYENV=Development" >> $GITHUB_ENV
           echo "ECR_ROLE=${{ secrets.DEV_ECR_ROLE_TO_ASSUME }}" >> $GITHUB_ENV
-          echo "ECR_REGION=${{ secrets.DEV_ECR_REGION }}" >> $GITHUB_ENV
+          echo "ECR_REGION=${{ vars.DEV_ECR_REGION }}" >> $GITHUB_ENV
       - id: stepDemo
         if: github.event.ref == 'refs/heads/demo'
         run: echo "DEPLOYENV=Demonstration" >> $GITHUB_ENV
