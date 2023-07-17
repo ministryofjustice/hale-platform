@@ -28,24 +28,35 @@ jobs:
           echo "deployenv=$DEPLOYENV" >> "$GITHUB_OUTPUT"
           
   buildImage:
-  
+      name: Build Image - Dev
       needs: setenv
-      steps:
-        - name: Build Image - Dev
-          if: github.event.ref == 'refs/heads/dev'
-          uses: ./.github/workflows/rw-build-image.yaml
-          with:
-            deploy-env: ${{needs.setenv.outputs.deployenv}}
-          secrets:
-            ecr-role: ${{ secrets.DEV_ECR_ROLE_TO_ASSUME }}
-            ecr-region: ${{ vars.DEV_ECR_REGION }}
-            ecr-repo: ${{ vars.DEV_ECR_REPOSITORY }} 
-            cp-user: ${{ secrets.COMPOSER_USER }}
-            cp-password: ${{ secrets.COMPOSER_PASS }}
+      if: github.event.ref == 'refs/heads/dev'
+      uses: ./.github/workflows/rw-build-image.yaml
+      with:
+        deploy-env: ${{needs.setenv.outputs.deployenv}}
+      secrets:
+        ecr-role: ${{ secrets.DEV_ECR_ROLE_TO_ASSUME }}
+        ecr-region: ${{ vars.DEV_ECR_REGION }}
+        ecr-repo: ${{ vars.DEV_ECR_REPOSITORY }} 
+        cp-user: ${{ secrets.COMPOSER_USER }}
+        cp-password: ${{ secrets.COMPOSER_PASS }}
+
+  buildImageDemo:
+      name: Build Image - Dev
+      needs: setenv
+      if: github.event.ref == 'refs/heads/demo'
+      uses: ./.github/workflows/rw-build-image.yaml
+      with:
+        deploy-env: ${{needs.setenv.outputs.deployenv}}
+      secrets:
+        ecr-role: ${{ secrets.DEMO_ECR_ROLE_TO_ASSUME }}
+        ecr-region: ${{ vars.DEMO_ECR_REGION }}
+        ecr-repo: ${{ vars.DEMO_ECR_REPOSITORY }} 
+        cp-user: ${{ secrets.COMPOSER_USER }}
+        cp-password: ${{ secrets.COMPOSER_PASS }} 
   
   deployImage:
     name: Deploy to Environment
-    if: github.event.ref == 'refs/heads/demo2'
     needs: [setenv, buildImage]
     runs-on: ubuntu-latest
     environment: ${{needs.setenv.outputs.deployenv}}
