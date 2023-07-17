@@ -31,3 +31,4 @@ jobs:
     name: Deploy to Dev
     needs: setenv
     environment: ${{needs.setenv.outputs.deployenv}}
+    uses: ./.github/workflows/rw-build-image.yaml
