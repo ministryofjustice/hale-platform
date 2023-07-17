@@ -43,8 +43,8 @@ jobs:
         - name: Config Credentials
           uses: aws-actions/configure-aws-credentials@v2
           with:
-            role-to-assume: ${{ github.ref == 'refs/heads/dev' && secrets.DEV_ECR_ROLE_TO_ASSUME || '' }} ${{ github.ref == 'refs/heads/demo' && secrets.DEMO_ECR_ROLE_TO_ASSUME || '' }}
-            aws-region: ${{ github.ref == 'refs/heads/dev' && vars.DEV_ECR_REGION || '' }} ${{ github.ref == 'refs/heads/demo' && vars.DEMO_ECR_REGION || '' }}
+            role-to-assume: ${{ secrets.DEV_ECR_ROLE_TO_ASSUME }}
+            aws-region: ${{ vars.DEV_ECR_REGION }}
 
 
         # Login to container repository
@@ -57,7 +57,7 @@ jobs:
             docker push $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG 
           env:
             REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-            REPOSITORY: ${{ github.ref == 'refs/heads/dev' && vars.DEV_ECR_REPOSITORY || '' }} ${{ github.ref == 'refs/heads/demo' && vars.DEMO_ECR_REPOSITORY || '' }} 
+            REPOSITORY: ${{ vars.DEV_ECR_REPOSITORY }} 
             IMAGE_TAG: ${{ github.sha }}
         - name: Run Composer
           run: |
@@ -73,7 +73,7 @@ jobs:
             docker push $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG 
           env:
             REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-            REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+            REPOSITORY: ${{ vars.DEV_ECR_REPOSITORY }} 
             IMAGE_TAG: ${{ github.sha }}
 
   deployImage:
