@@ -28,7 +28,7 @@ jobs:
           echo "deployenv=$DEPLOYENV" >> "$GITHUB_OUTPUT"
   buildImage:
       needs: setenv
-      uses: ./.github/workflows/rw-build-image.yml
+      uses: ./.github/workflows/rw-build-image.yaml
       with:
         deploy-env: ${{needs.setenv.outputs.deployenv}}
 
