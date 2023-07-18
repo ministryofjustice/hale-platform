@@ -3,7 +3,7 @@ name: Resuable Workflow - Build Image
 on:
   workflow_call:
     inputs:
-      deploy-env:
+      environment:
         required: true
         type: string
       env-type:
@@ -71,6 +71,7 @@ jobs:
   testVars:
       name: Test
       runs-on: ubuntu-latest
+      environment: ${{inputs.environment}}
       steps:
         - name: Test vars
           run: |

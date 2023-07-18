@@ -33,7 +33,7 @@ jobs:
       if: github.event.ref == 'refs/heads/dev'
       uses: ./.github/workflows/rw-build-image.yaml
       with:
-        deploy-env: ${{needs.setenv.outputs.deployenv}}
+        environment: ${{needs.setenv.outputs.deployenv}}
         env-type: ${{ vars.ENV_TYPE }}
       secrets:
         ecr-name: ${{ secrets.ECR_NAME }}
