@@ -7,8 +7,6 @@ on:
         required: true
         type: string
     secrets: 
-      test:
-        required: true
       ecr-name:
         required: true      
       ecr-role:
