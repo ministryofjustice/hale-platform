@@ -7,6 +7,8 @@ on:
         required: true
         type: string
     secrets: 
+      test:
+        required: true
       ecr-name:
         required: true      
       ecr-role:
@@ -75,13 +77,13 @@ jobs:
               echo Hello
               echo Environment1 is ${{inputs.environment}}
               echo Environment Type is ${{ vars.ENV_TYPE }}
-              echo ecr-repo is ${{ secrets.ecr-repo }}
+              echo test is ${{ secrets.test }}
 
   buildImage:
       name: Build Image and push to ECR
       if: github.event.ref == 'refs/heads/dev2'
       runs-on: ubuntu-latest
-      environment: ${{inputs.deploy-env}}
+      environment: ${{inputs.environment}}
       permissions:
         id-token: write # This is required for requesting the JWT
         contents: read  # This is required for actions/checkout
@@ -131,7 +133,7 @@ jobs:
     name: Deploy to Environment
     needs: [buildImage]
     runs-on: ubuntu-latest
-    environment: ${{inputs.deploy-env}}
+    environment: ${{inputs.environment}}
     if: github.event.ref == 'refs/heads/dev2'
     steps:
       - name: Checkout
