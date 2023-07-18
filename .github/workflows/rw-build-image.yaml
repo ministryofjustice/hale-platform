@@ -69,12 +69,13 @@ on:
 
 jobs:
   testVars:
-      name: Build Image and push to ECR
+      name: Test
       runs-on: ubuntu-latest
       steps:
-        - name: Run NPM
+        - name: Test vars
           run: |
               echo Hello
+              echo Environment is ${{inputs.env-type}}
 
   buildImage:
       name: Build Image and push to ECR
@@ -103,7 +104,6 @@ jobs:
           id: login-ecr
         - name: Build and Push Nginx Image
           run: |
-            echo Environment is ${{inputs.env-type}}
             docker build --pull --no-cache --tag $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG --file nginx.dockerfile .
             docker push $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG 
           env:
