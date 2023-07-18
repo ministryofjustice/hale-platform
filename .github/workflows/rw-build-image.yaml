@@ -78,6 +78,7 @@ jobs:
               echo Environment1 is ${{inputs.environment}}
               echo Environment Type is ${{ vars.ENV_TYPE }}
               echo test is ${{ secrets.test }}
+              echo ecr-repo is ${{ secrets.ecr-repo }}
 
   buildImage:
       name: Build Image and push to ECR
