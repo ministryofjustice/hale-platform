@@ -16,7 +16,7 @@ jobs:
         environment: Development
       secrets:
         ecr-name: ${{ secrets.ECR_NAME }}
-        ecr-role: ${{ secrets.ECR_ROLE_TO_ASSUME }}
+        ecr-role: ${{ secrets.DEV_ECR_ROLE_TO_ASSUME }}
         ecr-region: ${{ vars.DEV_ECR_REGION }}
         ecr-repo: ${{ vars.DEV_ECR_REPOSITORY }} 
         cp-user: ${{ secrets.COMPOSER_USER }}
