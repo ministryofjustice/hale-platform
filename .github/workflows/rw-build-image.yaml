@@ -65,20 +65,6 @@ on:
         required: true
 
 jobs:
-  testVars:
-      name: Test
-      if: github.event.ref == 'refs/heads/dev2'
-      runs-on: ubuntu-latest
-      environment: ${{inputs.environment}}
-      steps:
-        - name: Test vars
-          run: |
-              echo Hello
-              echo Environment1 is ${{inputs.environment}}
-              echo Environment Type is ${{ vars.ENV_TYPE }}
-              echo ecr-repo is ${{ secrets.ecr-repo }}
-              echo test is ${{ secrets.wp-admin-email }}
-
 
   buildImage:
       name: Build Image and push to ECR
