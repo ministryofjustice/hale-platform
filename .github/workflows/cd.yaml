@@ -7,6 +7,7 @@ on:
       - 'main'
 
 jobs:
+
   buildStaging:
     name: Build Staging and push to ECR
     if: github.event.ref == 'refs/heads/main'

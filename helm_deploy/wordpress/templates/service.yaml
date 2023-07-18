@@ -1,18 +1,3 @@
-{{- if .Values.mariadb.enabled }}
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: mariadb
-  labels:
-    app: mariadb
-spec:
-  ports:
-  - port: 3306
-  selector:
-    app: mariadb
-    tier: frontend-c
-{{- end }}
 ---
 apiVersion: v1
 kind: Service

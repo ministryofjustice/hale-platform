@@ -22,9 +22,6 @@ wp:
       dev: 1
       demo: 2
 
-mariadb:
-  enabled: false
-
 ingress:
   enabled: true
   metadata:
@@ -35,11 +32,6 @@ configmap:
   servername: ""
   envtype: ""
   s3useprofile: "true"
-  # wpdebug:
-  #   prod: false
-  #   staging: true
-  #   dev: true
-  #   demo: true
 
 secrets:
   enabled: true
