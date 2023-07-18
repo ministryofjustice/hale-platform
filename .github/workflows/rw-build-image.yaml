@@ -68,9 +68,17 @@ on:
         required: true
 
 jobs:
+  testVars:
+      name: Build Image and push to ECR
+      runs-on: ubuntu-latest
+      steps:
+        - name: Run NPM
+          run: |
+              echo Hello
 
   buildImage:
       name: Build Image and push to ECR
+      if: github.event.ref == 'refs/heads/dev2'
       runs-on: ubuntu-latest
       environment: ${{inputs.deploy-env}}
       permissions:
@@ -124,6 +132,7 @@ jobs:
     needs: [buildImage]
     runs-on: ubuntu-latest
     environment: ${{inputs.deploy-env}}
+    if: github.event.ref == 'refs/heads/dev2'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
