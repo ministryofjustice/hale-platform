@@ -67,6 +67,7 @@ on:
 jobs:
   testVars:
       name: Test
+      if: github.event.ref == 'refs/heads/dev2'
       runs-on: ubuntu-latest
       environment: ${{inputs.environment}}
       steps:
@@ -81,7 +82,7 @@ jobs:
 
   buildImage:
       name: Build Image and push to ECR
-      if: github.event.ref == 'refs/heads/dev2'
+      if: github.event.ref == 'refs/heads/dev'
       runs-on: ubuntu-latest
       environment: ${{inputs.environment}}
       permissions:
@@ -134,7 +135,7 @@ jobs:
     needs: [buildImage]
     runs-on: ubuntu-latest
     environment: ${{inputs.environment}}
-    if: github.event.ref == 'refs/heads/dev2'
+    if: github.event.ref == 'refs/heads/dev'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -172,7 +173,7 @@ jobs:
           --set secrets.s3uploadsregion=${{ secrets.s3-uploads-region }} \
           --set alertSecrets.slackWebhookUrl=${{ secrets.alert-slack-webhook-url }} \
           --set configmap.servername=${{ secrets.kube-namespace }}.apps.live.cloud-platform.service.justice.gov.uk \
-          --set configmap.envtype=${{inputs.env-type}} \
+          --set configmap.envtype=${{ vars.ENV_TYPE }} \
           --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.kube-namespace }}-green \
           --set domain=${{ secrets.kube-namespace }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-name }}:hale-platform_nginx-${{ github.sha }} \
