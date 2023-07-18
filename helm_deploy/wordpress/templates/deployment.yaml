@@ -30,6 +30,7 @@ spec:
         app: wordpress
         tier: frontend-c
     spec:
+      restartPolicy: Always
       terminationGracePeriodSeconds: 30
       serviceAccountName: hale-platform-{{ .Values.configmap.envtype }}-service
       containers:

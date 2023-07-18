@@ -1,0 +1,166 @@
+name: Resuable Workflow - Build Image
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+    secrets: 
+      ecr-name:
+        required: true      
+      ecr-role:
+        required: true
+      ecr-region:
+        required: true
+      ecr-repo:
+        required: true
+      cp-user:
+        required: true
+      cp-password:
+        required: true
+      kube-cluster:
+        required: true
+      kube-cert:
+        required: true
+      kube-namespace:
+        required: true
+      kube-token:
+        required: true
+      wp-db-user:
+        required: true
+      wp-db-host:
+        required: true
+      wp-db-name:
+        required: true
+      wp-db-password:
+        required: true
+      wp-admin-email:
+        required: true
+      wp-admin-user:
+        required: true
+      wp-admin-password:
+        required: true
+      wp-auth-key-file:
+        required: true
+      wp-auth-salt-file:
+        required: true
+      wp-loggedin-key-file:
+        required: true
+      wp-loggedin-salt-file:
+        required: true
+      wp-nonce-key-file:
+        required: true
+      wp-nonce-salt-file:
+        required: true
+      wp-secure-auth-key-file:
+        required: true
+      wp-secure-auth-salt-file:
+        required: true
+      s3-uploads-bucket:
+        required: true
+      s3-uploads-region:
+        required: true
+      alert-slack-webhook-url:
+        required: true
+
+jobs:
+
+  buildImage:
+      name: Build Image and push to ECR
+      if: github.event.ref == 'refs/heads/dev'
+      runs-on: ubuntu-latest
+      environment: ${{inputs.environment}}
+      permissions:
+        id-token: write # This is required for requesting the JWT
+        contents: read  # This is required for actions/checkout
+      steps:
+        # Checkout GitHub repository
+        - name: Checkout
+          uses: actions/checkout@v3
+
+        # Assume role in Cloud Platform
+        - name: Config Credentials
+          uses: aws-actions/configure-aws-credentials@v2
+          with:
+            role-to-assume: ${{ secrets.ecr-role }}
+            aws-region: ${{ secrets.ecr-region }}
+
+
+        # Login to container repository
+        - name: Login to ECR
+          uses: aws-actions/amazon-ecr-login@v1
+          id: login-ecr
+        - name: Build and Push Nginx Image
+          run: |
+            docker build --pull --no-cache --tag $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG --file nginx.dockerfile .
+            docker push $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG 
+          env:
+            REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+            REPOSITORY: ${{ secrets.ecr-repo }} 
+            IMAGE_TAG: ${{ github.sha }}
+        - name: Run Composer
+          run: |
+            composer config http-basic.composer.wp.dsd.io ${{ secrets.cp-user }} ${{ secrets.cp-password }}
+            composer install --prefer-dist --no-progress
+        - name: Run NPM
+          run: |
+            npm install --prefix ./wordpress/wp-content/themes/hale
+            npm run production --if-present --prefix ./wordpress/wp-content/themes/hale
+        - name: Build and Push Wordpress Image
+          run: |
+            docker build --pull --no-cache --tag $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG --file wp.dockerfile .
+            docker push $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG 
+          env:
+            REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+            REPOSITORY: ${{ secrets.ecr-repo }} 
+            IMAGE_TAG: ${{ github.sha }}
+
+  deployImage:
+    name: Deploy to Environment
+    needs: [buildImage]
+    runs-on: ubuntu-latest
+    environment: ${{inputs.environment}}
+    if: github.event.ref == 'refs/heads/dev'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Authenticate to the cluster
+        env:
+          KUBE_CLUSTER: ${{ secrets.kube-cluster }}
+        run: |
+          echo "${{ secrets.kube-cert }}" > ca.crt
+          kubectl config set-cluster ${KUBE_CLUSTER} --certificate-authority=./ca.crt --server=https://${KUBE_CLUSTER}
+          kubectl config set-credentials deploy-user --token=${{ secrets.kube-token }}
+          kubectl config set-context ${KUBE_CLUSTER} --cluster=${KUBE_CLUSTER} --user=deploy-user --namespace=${{ secrets.kube-namespace }}
+          kubectl config use-context ${KUBE_CLUSTER}
+      - name: Apply Helm chart
+        run: |
+          helm upgrade wordpress helm_deploy/wordpress \
+          --install \
+          --namespace ${{ secrets.kube-namespace }} \
+          --values helm_deploy/wordpress/values.yaml \
+          --set secrets.wpdbuser=${{ secrets.wp-db-user }} \
+          --set secrets.wpdbhost=${{ secrets.wp-db-host }} \
+          --set secrets.wpdbname=${{ secrets.wp-db-name }} \
+          --set secrets.wpdbpassword=${{ secrets.wp-db-password }} \
+          --set secrets.wpadminemail=${{ secrets.wp-admin-email }} \
+          --set secrets.wpadminuser=${{ secrets.wp-admin-user }} \
+          --set secrets.wpadminpassword=${{ secrets.wp-admin-password }} \
+          --set secrets.wpauthkey=${{ secrets.wp-auth-key-file }} \
+          --set secrets.wpauthsalt=${{ secrets.wp-auth-salt-file }} \
+          --set secrets.wploggedinkey=${{ secrets.wp-loggedin-key-file }} \
+          --set secrets.wploggedinsalt=${{ secrets.wp-loggedin-salt-file }} \
+          --set secrets.wpnoncekey=${{ secrets.wp-nonce-key-file }} \
+          --set secrets.wpnoncesalt=${{ secrets.wp-nonce-salt-file }} \
+          --set secrets.wpsecureauthkey=${{ secrets.wp-secure-auth-key-file }} \
+          --set secrets.wpsecureauthsalt=${{ secrets.wp-secure-auth-salt-file }} \
+          --set secrets.s3uploadsbucket=${{ secrets.s3-uploads-bucket }} \
+          --set secrets.s3uploadsregion=${{ secrets.s3-uploads-region }} \
+          --set alertSecrets.slackWebhookUrl=${{ secrets.alert-slack-webhook-url }} \
+          --set configmap.servername=${{ secrets.kube-namespace }}.apps.live.cloud-platform.service.justice.gov.uk \
+          --set configmap.envtype=${{ vars.ENV_TYPE }} \
+          --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.kube-namespace }}-green \
+          --set domain=${{ secrets.kube-namespace }}.apps.live.cloud-platform.service.justice.gov.uk \
+          --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-name }}:hale-platform_nginx-${{ github.sha }} \
+          --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-name }}:hale-platform_wordpress-${{ github.sha }}
