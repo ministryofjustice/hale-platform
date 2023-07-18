@@ -20,7 +20,7 @@ wp:
       prod: 3
       staging: 3
       dev: 1
-      demo: 3
+      demo: 2
 
 ingress:
   enabled: true

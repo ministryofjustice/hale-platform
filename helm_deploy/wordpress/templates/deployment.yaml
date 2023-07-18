@@ -22,8 +22,8 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
+      maxSurge: 100%
+      maxUnavailable: 50%
   template:
     metadata:
       labels:
@@ -51,6 +51,7 @@ spec:
                 name: hale-wp-config-{{ .Release.Revision }}
             - secretRef:
                 name: hale-wp-secrets-{{ .Release.Revision }}
+        {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "demo") }}
           livenessProbe:
             httpGet:
               port: 443
@@ -72,9 +73,10 @@ spec:
                   fi
             initialDelaySeconds: 15
             periodSeconds: 5
-            timeoutSeconds: 5
+            timeoutSeconds: 15
             successThreshold: 1
             failureThreshold: 3
+        {{- end }}
         - name: nginx
           image: {{ .Values.nginx.image.repository }}
           imagePullPolicy: {{ .Values.nginx.image.imagePullPolicy }}
