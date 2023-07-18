@@ -30,6 +30,7 @@ jobs:
   deployDev:
       name: Deploy to Development Environment
       needs: setenv
+      environment: ${{needs.setenv.outputs.deployenv}}
       if: github.event.ref == 'refs/heads/dev'
       uses: ./.github/workflows/rw-build-image.yaml
       with:
