@@ -6,10 +6,9 @@ on:
       environment:
         required: true
         type: string
-      env-type:
-        required: true
-        type: string
     secrets:
+      env-type:
+        required: true  
       ecr-name:
         required: true      
       ecr-role:
@@ -77,8 +76,7 @@ jobs:
           run: |
               echo Hello
               echo Environment1 is ${{inputs.environment}}
-              echo Environment2 is ${{ vars.ENV_TYPE }} 
-              echo Environment2 is ${{ secrets.ecr-region }} 
+              echo Environment Type is ${{ secrets.env-type }} 
 
   buildImage:
       name: Build Image and push to ECR
