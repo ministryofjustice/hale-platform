@@ -77,10 +77,9 @@ jobs:
         id-token: write # This is required for requesting the JWT
         contents: read  # This is required for actions/checkout
       steps:
-
         - id: stepTest
           run: |
-          echo "${{inputs.env-type}}"
+          echo Deploy to ${{inputs.env-type}}
 
       # Checkout GitHub repository
         - name: Checkout
