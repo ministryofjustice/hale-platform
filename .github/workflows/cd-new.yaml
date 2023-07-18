@@ -35,7 +35,6 @@ jobs:
       with:
         environment: ${{needs.setenv.outputs.deployenv}}
       secrets:
-        env-type: ${{ vars.ENV_TYPE }}
         ecr-name: ${{ secrets.ECR_NAME }}
         ecr-role: ${{ secrets.DEV_ECR_ROLE_TO_ASSUME }}
         ecr-region: ${{ vars.DEV_ECR_REGION }}
