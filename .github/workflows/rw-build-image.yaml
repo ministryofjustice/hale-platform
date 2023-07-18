@@ -6,7 +6,12 @@ on:
       deploy-env:
         required: true
         type: string
+      env-type:
+        required: true
+        type: string
     secrets:
+      ecr-name:
+        required: true      
       ecr-role:
         required: true
       ecr-region:

@@ -27,14 +27,16 @@ jobs:
           echo Deploying to $DEPLOYENV
           echo "deployenv=$DEPLOYENV" >> "$GITHUB_OUTPUT"
           
-  buildImage:
-      name: Build Image - Dev
+  deployDev:
+      name: Deploy to Development Environment
       needs: setenv
       if: github.event.ref == 'refs/heads/dev'
       uses: ./.github/workflows/rw-build-image.yaml
       with:
         deploy-env: ${{needs.setenv.outputs.deployenv}}
+        env-type: Dev
       secrets:
+        ecr-name: ${{ secrets.ECR_NAME }}
         ecr-role: ${{ secrets.DEV_ECR_ROLE_TO_ASSUME }}
         ecr-region: ${{ vars.DEV_ECR_REGION }}
         ecr-repo: ${{ vars.DEV_ECR_REPOSITORY }} 
@@ -65,7 +67,7 @@ jobs:
   
   deployImage:
     name: Deploy to Environment
-    needs: [setenv, buildImage]
+    needs: [setenv, deployDev]
     if: github.event.ref == 'refs/heads/dev2'
     runs-on: ubuntu-latest
     environment: ${{needs.setenv.outputs.deployenv}}
