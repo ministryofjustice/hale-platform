@@ -30,12 +30,11 @@ jobs:
   deployDev:
       name: Deploy to Development Environment
       needs: setenv
-      environment: ${{needs.setenv.outputs.deployenv}}
       if: github.event.ref == 'refs/heads/dev'
       uses: ./.github/workflows/rw-build-image.yaml
       with:
         deploy-env: ${{needs.setenv.outputs.deployenv}}
-        env-type: dev
+        env-type: ${{ vars.ENV_TYPE }}
       secrets:
         ecr-name: ${{ secrets.ECR_NAME }}
         ecr-role: ${{ secrets.DEV_ECR_ROLE_TO_ASSUME }}
