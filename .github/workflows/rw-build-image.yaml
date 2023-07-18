@@ -17,6 +17,50 @@ on:
         required: true
       cp-password:
         required: true
+      kube-cluster:
+        required: true
+      kube-cert:
+        required: true
+      kube-namespace:
+        required: true
+      kube-token:
+        required: true
+      wp-db-user:
+        required: true
+      wp-db-host:
+        required: true
+      wp-db-name:
+        required: true
+      wp-db-password:
+        required: true
+      wp-admin-email:
+        required: true
+      wp-admin-user:
+        required: true
+      wp-admin-password:
+        required: true
+      wp-auth-key-file:
+        required: true
+      wp-auth-salt-file:
+        required: true
+      wp-loggedin-key-file:
+        required: true
+      wp-loggedin-salt-file:
+        required: true
+      wp-nonce-key-file:
+        required: true
+      wp-nonce-salt-file:
+        required: true
+      wp-secure-auth-key-file:
+        required: true
+      wp-secure-auth-salt-file:
+        required: true
+      s3-uploads-bucket:
+        required: true
+      s3-uploads-region:
+        required: true
+      alert-slack-webhook-url:
+        required: true
 
 jobs:
 
