@@ -80,8 +80,8 @@ jobs:
 
         - id: stepTest
           run: |
-          echo ${{inputs.env-type}}
-          
+          echo "${{inputs.env-type}}"
+
       # Checkout GitHub repository
         - name: Checkout
           uses: actions/checkout@v3
