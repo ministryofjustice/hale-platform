@@ -77,11 +77,7 @@ jobs:
         id-token: write # This is required for requesting the JWT
         contents: read  # This is required for actions/checkout
       steps:
-        - id: stepTest
-          run: |
-          echo Deploy to ${{inputs.env-type}}
-
-      # Checkout GitHub repository
+        # Checkout GitHub repository
         - name: Checkout
           uses: actions/checkout@v3
 
@@ -99,6 +95,7 @@ jobs:
           id: login-ecr
         - name: Build and Push Nginx Image
           run: |
+            echo Environment is ${{inputs.env-type}}
             docker build --pull --no-cache --tag $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG --file nginx.dockerfile .
             docker push $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG 
           env:
