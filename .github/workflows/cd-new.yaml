@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
+      - 'main'
       - 'dev'
       - 'demo'
 jobs:
@@ -79,3 +80,76 @@ jobs:
         s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
         s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}   
         alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}   
+
+  deployStaging:
+      name: Deploy to Staging Environment
+      if: github.event.ref == 'refs/heads/main'
+      uses: ./.github/workflows/rw-build-image.yaml
+      with:
+        environment: Staging
+      secrets:
+        ecr-name: ${{ secrets.ECR_NAME }}
+        ecr-role: ${{ secrets.STAGING_ECR_ROLE_TO_ASSUME }}
+        ecr-region: ${{ vars.STAGING_ECR_REGION }}
+        ecr-repo: ${{ vars.STAGING_ECR_REPOSITORY }} 
+        cp-user: ${{ secrets.COMPOSER_USER }}
+        cp-password: ${{ secrets.COMPOSER_PASS }}
+        kube-cluster: ${{ secrets.KUBE_CLUSTER }}
+        kube-cert: ${{ secrets.KUBE_CERT }}
+        kube-namespace: ${{ secrets.KUBE_NAMESPACE }}
+        kube-token: ${{ secrets.KUBE_TOKEN }}
+        wp-db-user: ${{ secrets.WORDPRESS_DB_USER }}
+        wp-db-host: ${{ secrets.WORDPRESS_DB_HOST }}
+        wp-db-name: ${{ secrets.WORDPRESS_DB_NAME }}
+        wp-db-password: ${{ secrets.WORDPRESS_DB_PASSWORD }}
+        wp-admin-email: ${{ secrets.WORDPRESS_ADMIN_EMAIL }}
+        wp-admin-user: ${{ secrets.WORDPRESS_ADMIN_USER }}
+        wp-admin-password: ${{ secrets.WORDPRESS_ADMIN_PASSWORD }}
+        wp-auth-key-file: ${{ secrets.WORDPRESS_AUTH_KEY_FILE }}
+        wp-auth-salt-file: ${{ secrets.WORDPRESS_AUTH_SALT_FILE }}
+        wp-loggedin-key-file: ${{ secrets.WORDPRESS_LOGGED_IN_KEY_FILE }}
+        wp-loggedin-salt-file: ${{ secrets.WORDPRESS_LOGGED_IN_SALT_FILE }}
+        wp-nonce-key-file: ${{ secrets.WORDPRESS_NONCE_KEY_FILE }}
+        wp-nonce-salt-file: ${{ secrets.WORDPRESS_NONCE_SALT_FILE }}
+        wp-secure-auth-key-file: ${{ secrets.WORDPRESS_SECURE_AUTH_KEY_FILE }}
+        wp-secure-auth-salt-file: ${{ secrets.WORDPRESS_SECURE_AUTH_SALT_FILE }}
+        s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
+        s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}   
+        alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }} 
+
+  deployProd:
+      name: Deploy to Production Environment
+      needs: deployStaging
+      if: github.event.ref == 'refs/heads/main'
+      uses: ./.github/workflows/rw-build-image.yaml
+      with:
+        environment: Production
+      secrets:
+        ecr-name: ${{ secrets.ECR_NAME }}
+        ecr-role: ${{ secrets.PROD_ECR_ROLE_TO_ASSUME }}
+        ecr-region: ${{ vars.PROD_ECR_REGION }}
+        ecr-repo: ${{ vars.PROD_ECR_REPOSITORY }} 
+        cp-user: ${{ secrets.COMPOSER_USER }}
+        cp-password: ${{ secrets.COMPOSER_PASS }}
+        kube-cluster: ${{ secrets.KUBE_CLUSTER }}
+        kube-cert: ${{ secrets.KUBE_CERT }}
+        kube-namespace: ${{ secrets.KUBE_NAMESPACE }}
+        kube-token: ${{ secrets.KUBE_TOKEN }}
+        wp-db-user: ${{ secrets.WORDPRESS_DB_USER }}
+        wp-db-host: ${{ secrets.WORDPRESS_DB_HOST }}
+        wp-db-name: ${{ secrets.WORDPRESS_DB_NAME }}
+        wp-db-password: ${{ secrets.WORDPRESS_DB_PASSWORD }}
+        wp-admin-email: ${{ secrets.WORDPRESS_ADMIN_EMAIL }}
+        wp-admin-user: ${{ secrets.WORDPRESS_ADMIN_USER }}
+        wp-admin-password: ${{ secrets.WORDPRESS_ADMIN_PASSWORD }}
+        wp-auth-key-file: ${{ secrets.WORDPRESS_AUTH_KEY_FILE }}
+        wp-auth-salt-file: ${{ secrets.WORDPRESS_AUTH_SALT_FILE }}
+        wp-loggedin-key-file: ${{ secrets.WORDPRESS_LOGGED_IN_KEY_FILE }}
+        wp-loggedin-salt-file: ${{ secrets.WORDPRESS_LOGGED_IN_SALT_FILE }}
+        wp-nonce-key-file: ${{ secrets.WORDPRESS_NONCE_KEY_FILE }}
+        wp-nonce-salt-file: ${{ secrets.WORDPRESS_NONCE_SALT_FILE }}
+        wp-secure-auth-key-file: ${{ secrets.WORDPRESS_SECURE_AUTH_KEY_FILE }}
+        wp-secure-auth-salt-file: ${{ secrets.WORDPRESS_SECURE_AUTH_SALT_FILE }}
+        s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
+        s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}   
+        alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }} 
