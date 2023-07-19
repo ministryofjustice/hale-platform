@@ -52,7 +52,7 @@ spec:
                 name: hale-wp-config-{{ .Release.Revision }}
             - secretRef:
                 name: hale-wp-secrets-{{ .Release.Revision }}
-        {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "demo") }}
+        {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
           livenessProbe:
             httpGet:
               port: 443
