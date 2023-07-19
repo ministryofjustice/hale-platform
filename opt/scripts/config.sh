@@ -16,8 +16,7 @@ wp config set AUTOMATIC_UPDATER_DISABLED true --raw
 wp config set FORCE_SSL_ADMIN true --raw
 wp config set S3_UPLOADS_BUCKET "\$_SERVER['S3_UPLOADS_BUCKET']" --raw
 wp config set S3_UPLOADS_REGION "\$_SERVER['S3_UPLOADS_REGION']" --raw
-wp config set S3_UPLOADS_KEY "\$_SERVER['S3_UPLOADS_KEY']" --raw
-wp config set S3_UPLOADS_SECRET "\$_SERVER['S3_UPLOADS_SECRET']" --raw
+wp config set S3_UPLOADS_USE_INSTANCE_PROFILE "\$_SERVER['S3_UPLOADS_USE_INSTANCE_PROFILE']" --raw
 
 #WP core install
 wp core multisite-install --title="Hale Multisite Platform" \
@@ -37,8 +36,8 @@ wp theme enable hale --network --url="${SERVER_NAME}"
 wp theme enable hale --activate --url="$SERVER_NAME"
 
 # Check plugins are activated
-wp plugin --network activate advanced-custom-fields-pro --url="${SERVER_NAME}"
-wp plugin --network activate wp-user-roles --url="${SERVER_NAME}"
-wp plugin --network activate wp-moj-blocks --url="${SERVER_NAME}"
+#wp plugin --network activate advanced-custom-fields-pro --url="${SERVER_NAME}"
+#wp plugin --network activate wp-user-roles --url="${SERVER_NAME}"
+#wp plugin --network activate wp-moj-blocks --url="${SERVER_NAME}"
 
 exec "$@"
