@@ -1,4 +1,4 @@
-name: New Deployment
+name: Hale Platform Deployment
 
 on:
   workflow_dispatch:
