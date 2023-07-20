@@ -25,17 +25,29 @@ spec:
     - victimscommissioner.org.uk
     secretName: victimscommissioner-cert
   - hosts:
+    - www.victimscommissioner.org.uk
+    secretName: victimscommissioner-www-cert
+  - hosts:
     - publicdefenderservice.org.uk
     secretName: publicdefenderservice-cert
   - hosts:
+    - www.publicdefenderservice.org.uk
+    secretName: publicdefenderservice-www-cert
+  - hosts:
     - ccrc.gov.uk
     secretName: ccrc-cert
+  - hosts:
+    - www.ccrc.gov.uk
+    secretName: ccrc-www-cert
   - hosts:
     - icrir.independent-inquiry.uk
     secretName: icrir-cert
   - hosts:
     - imb.org.uk
     secretName: imb-cert
+  - hosts:
+    - www.imb.org.uk
+    secretName: imb-www-cert
     {{- end }}
   rules:
   - host: {{ .Values.domain }}
@@ -69,6 +81,16 @@ spec:
             name: wordpress
             port:
               number: 8080
+  - host: www.victimscommissioner.org.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
   - host: publicdefenderservice.org.uk
     http:
       paths:
@@ -79,7 +101,27 @@ spec:
             name: wordpress
             port:
               number: 8080
+  - host: www.publicdefenderservice.org.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
   - host: ccrc.gov.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: www.ccrc.gov.uk
     http:
       paths:
       - path: /
@@ -100,6 +142,16 @@ spec:
             port:
               number: 8080
   - host: imb.org.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: www.imb.org.uk
     http:
       paths:
       - path: /

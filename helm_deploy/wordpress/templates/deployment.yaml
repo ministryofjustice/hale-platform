@@ -52,7 +52,7 @@ spec:
                 name: hale-wp-config-{{ .Release.Revision }}
             - secretRef:
                 name: hale-wp-secrets-{{ .Release.Revision }}
-        {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "demo") }}
+        {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
           livenessProbe:
             httpGet:
               port: 443
@@ -71,10 +71,12 @@ spec:
                 - |
                   if ! ps aux | grep '[p]hp-fpm: master process' >/dev/null; then
                     exit 1
+                  else
+                    exit 0
                   fi
-            initialDelaySeconds: 15
-            periodSeconds: 5
-            timeoutSeconds: 15
+            initialDelaySeconds: 30
+            periodSeconds: 3
+            timeoutSeconds: 10
             successThreshold: 1
             failureThreshold: 3
         {{- end }}
@@ -86,6 +88,24 @@ spec:
           volumeMounts:
             - name: wordpress-volume-file-mount
               mountPath: /var/www/html
+         {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - |
+                  if curl --silent --fail http://localhost:8080 >/dev/null; then
+                    exit 0
+                  else
+                    exit 1
+                  fi
+            initialDelaySeconds: 35
+            periodSeconds: 5
+            timeoutSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          {{- end }}
       volumes:
         - name: wordpress-volume-file-mount
           emptyDir: {}
