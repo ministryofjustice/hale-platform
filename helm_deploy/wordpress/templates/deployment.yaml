@@ -52,9 +52,6 @@ spec:
                 name: hale-wp-config-{{ .Release.Revision }}
             - secretRef:
                 name: hale-wp-secrets-{{ .Release.Revision }}
-          resources:
-            requests:
-              cpu: "10m"
         {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
           livenessProbe:
             httpGet:
@@ -91,9 +88,6 @@ spec:
           volumeMounts:
             - name: wordpress-volume-file-mount
               mountPath: /var/www/html
-          resources:
-            requests:
-              cpu: "10m"
          {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
           readinessProbe:
             exec:
