@@ -10,17 +10,17 @@ spec:
     kind: Deployment
     name: wordpress
   {{- if eq .Values.configmap.envtype "prod" }}
-    minReplicas: 3
-    maxReplicas: 8
+  minReplicas: 3
+  maxReplicas: 8
   {{- else if eq .Values.configmap.envtype "staging" }}
-    minReplicas: 2
-    maxReplicas: 5
+  minReplicas: 2
+  maxReplicas: 5
   {{- else if eq .Values.configmap.envtype "demo" }}
-    minReplicas: 1
-    maxReplicas: 3
+  minReplicas: 1
+  maxReplicas: 3
   {{- else }}
-    minReplicas: 1
-    maxReplicas: 1
+  minReplicas: 1
+  maxReplicas: 1
   {{- end }}
   targetCPUUtilizationPercentage: 95
 {{- end }}
