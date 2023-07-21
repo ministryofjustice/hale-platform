@@ -21,8 +21,7 @@ spec:
         app: wordpress
         tier: frontend-c
     spec:
-      restartPolicy: Always
-      terminationGracePeriodSeconds: 30
+      terminationGracePeriodSeconds: 35
       serviceAccountName: hale-platform-{{ .Values.configmap.envtype }}-service
       containers:
         - image: {{ .Values.wp.image.repository }}
@@ -43,7 +42,7 @@ spec:
                 name: hale-wp-config-{{ .Release.Revision }}
             - secretRef:
                 name: hale-wp-secrets-{{ .Release.Revision }}
-        {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
+{{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
           livenessProbe:
             httpGet:
               port: 443
@@ -70,7 +69,7 @@ spec:
             timeoutSeconds: 10
             successThreshold: 1
             failureThreshold: 3
-        {{- end }}
+{{- end }}
         - name: nginx
           image: {{ .Values.nginx.image.repository }}
           imagePullPolicy: {{ .Values.nginx.image.imagePullPolicy }}
@@ -79,7 +78,7 @@ spec:
           volumeMounts:
             - name: wordpress-volume-file-mount
               mountPath: /var/www/html
-         {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
+{{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
           readinessProbe:
             exec:
               command:
@@ -96,11 +95,10 @@ spec:
             timeoutSeconds: 10
             successThreshold: 1
             failureThreshold: 3
-          {{- end }}
+{{- end }}
       volumes:
         - name: wordpress-volume-file-mount
           emptyDir: {}
         - name: hale-php-config
           configMap:
             name: hale-php-config-{{ .Release.Revision }}
----

@@ -16,7 +16,7 @@ spec:
   minReplicas: 2
   maxReplicas: 5
   {{- else if eq .Values.configmap.envtype "demo" }}
-  minReplicas: 1
+  minReplicas: 2
   maxReplicas: 3
   {{- else }}
   minReplicas: 1
