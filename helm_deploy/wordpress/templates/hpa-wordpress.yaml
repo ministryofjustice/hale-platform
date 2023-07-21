@@ -2,7 +2,7 @@
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: wordpress
+  name: hale-platform-hpa
   namespace: hale-platform-{{ .Values.configmap.envtype }}
 spec:
   scaleTargetRef:
