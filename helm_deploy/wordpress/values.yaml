@@ -16,11 +16,9 @@ wp:
   image:
     repository: ""
     imagePullPolicy: Always
-    replicaCount:
-      prod: 3
-      staging: 3
-      dev: 1
-      demo: 2
+
+hpa:
+  enabled: true
 
 ingress:
   enabled: true

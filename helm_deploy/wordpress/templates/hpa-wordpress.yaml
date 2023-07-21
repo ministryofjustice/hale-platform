@@ -1,3 +1,4 @@
+{{- if .Values.hpa.enabled }}
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
@@ -8,6 +9,18 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: wordpress
-  minReplicas: 1
-  maxReplicas: 5
-  targetCPUUtilizationPercentage: 80
+  {{- if eq .Values.configmap.envtype "prod" }}
+    minReplicas: 3
+    maxReplicas: 8
+  {{- else if eq .Values.configmap.envtype "staging" }}
+    minReplicas: 2
+    maxReplicas: 5
+  {{- else if eq .Values.configmap.envtype "demo" }}
+    minReplicas: 1
+    maxReplicas: 3
+  {{- else }}
+    minReplicas: 1
+    maxReplicas: 1
+  {{- end }}
+  targetCPUUtilizationPercentage: 95
+{{- end }}

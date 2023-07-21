@@ -6,16 +6,6 @@ metadata:
   labels:
     app: wordpress
 spec:
-  # {{- if eq .Values.configmap.envtype "staging" }}
-  # replicas: {{ .Values.wp.image.replicaCount.staging }}
-  # {{ else if eq .Values.configmap.envtype "dev" }}
-  # replicas: {{ .Values.wp.image.replicaCount.dev }}
-  # {{ else if eq .Values.configmap.envtype "demo" }}
-  # replicas: {{ .Values.wp.image.replicaCount.demo }}
-  # {{ else }}
-  # replicas: {{ .Values.wp.image.replicaCount.prod }}
-  # {{- end }}
-  replicas: 2
   selector:
     matchLabels:
       app: wordpress
@@ -53,9 +43,6 @@ spec:
                 name: hale-wp-config-{{ .Release.Revision }}
             - secretRef:
                 name: hale-wp-secrets-{{ .Release.Revision }}
-          resources:
-            requests:
-              cpu: "10m"
         {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
           livenessProbe:
             httpGet:
@@ -92,10 +79,7 @@ spec:
           volumeMounts:
             - name: wordpress-volume-file-mount
               mountPath: /var/www/html
-          resources:
-            requests:
-              cpu: "10m"
-         {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
+        {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
           readinessProbe:
             exec:
               command:
