@@ -79,7 +79,7 @@ spec:
           volumeMounts:
             - name: wordpress-volume-file-mount
               mountPath: /var/www/html
-        {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
+         {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
           readinessProbe:
             exec:
               command:
