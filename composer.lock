@@ -938,17 +938,17 @@
         },
         {
             "name": "ministryofjustice/cookie-compliance-for-wordpress",
-            "version": "3.4.3",
+            "version": "3.4.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/cookie-compliance-for-wordpress.git",
-                "reference": "2cdef468b7c0481ee9a9230a1c4c0c16166e8980"
+                "reference": "df5f3b1e8baced6f545095ac195506b97d18c645"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/cookie-compliance-for-wordpress/ministryofjustice-cookie-compliance-for-wordpress-2cdef468b7c0481ee9a9230a1c4c0c16166e8980-zip-cfa455.zip",
-                "reference": "2cdef468b7c0481ee9a9230a1c4c0c16166e8980",
-                "shasum": "d8a75da5bb76828134604adfeea98ba0e777ae80"
+                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/cookie-compliance-for-wordpress/ministryofjustice-cookie-compliance-for-wordpress-df5f3b1e8baced6f545095ac195506b97d18c645-zip-74850e.zip",
+                "reference": "df5f3b1e8baced6f545095ac195506b97d18c645",
+                "shasum": "1b5b5e52996bf3cc59c2543dfabcf43faf268dfd"
             },
             "require-dev": {
                 "composer/composer": "*",
@@ -971,10 +971,10 @@
             ],
             "description": "WP plugin that presents visitor with a cookie consent banner and opt-in setting page.",
             "support": {
-                "source": "https://github.com/ministryofjustice/cookie-compliance-for-wordpress/tree/3.4.3",
+                "source": "https://github.com/ministryofjustice/cookie-compliance-for-wordpress/tree/3.4.4",
                 "issues": "https://github.com/ministryofjustice/cookie-compliance-for-wordpress/issues"
             },
-            "time": "2023-04-28T10:08:50+00:00"
+            "time": "2023-07-20T12:52:59+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
@@ -3050,15 +3050,15 @@
         },
         {
             "name": "wpackagist-plugin/ewww-image-optimizer",
-            "version": "7.1.0",
+            "version": "7.2.0",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/ewww-image-optimizer/",
-                "reference": "tags/7.1.0"
+                "reference": "tags/7.2.0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/ewww-image-optimizer.7.1.0.zip"
+                "url": "https://downloads.wordpress.org/plugin/ewww-image-optimizer.7.2.0.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
