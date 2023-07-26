@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6a6d4c98b76f23dc9d6c4eb36960c146",
+    "content-hash": "d68e69c1980d7bef62e9f25199b3bba4",
     "packages": [
         {
             "name": "acf/advanced-custom-fields-pro",
@@ -938,17 +938,17 @@
         },
         {
             "name": "ministryofjustice/cookie-compliance-for-wordpress",
-            "version": "3.4.3",
+            "version": "3.4.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/cookie-compliance-for-wordpress.git",
-                "reference": "2cdef468b7c0481ee9a9230a1c4c0c16166e8980"
+                "reference": "df5f3b1e8baced6f545095ac195506b97d18c645"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/cookie-compliance-for-wordpress/ministryofjustice-cookie-compliance-for-wordpress-2cdef468b7c0481ee9a9230a1c4c0c16166e8980-zip-cfa455.zip",
-                "reference": "2cdef468b7c0481ee9a9230a1c4c0c16166e8980",
-                "shasum": "d8a75da5bb76828134604adfeea98ba0e777ae80"
+                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/cookie-compliance-for-wordpress/ministryofjustice-cookie-compliance-for-wordpress-df5f3b1e8baced6f545095ac195506b97d18c645-zip-74850e.zip",
+                "reference": "df5f3b1e8baced6f545095ac195506b97d18c645",
+                "shasum": "1b5b5e52996bf3cc59c2543dfabcf43faf268dfd"
             },
             "require-dev": {
                 "composer/composer": "*",
@@ -971,10 +971,43 @@
             ],
             "description": "WP plugin that presents visitor with a cookie consent banner and opt-in setting page.",
             "support": {
-                "source": "https://github.com/ministryofjustice/cookie-compliance-for-wordpress/tree/3.4.3",
+                "source": "https://github.com/ministryofjustice/cookie-compliance-for-wordpress/tree/3.4.4",
                 "issues": "https://github.com/ministryofjustice/cookie-compliance-for-wordpress/issues"
             },
-            "time": "2023-04-28T10:08:50+00:00"
+            "time": "2023-07-20T12:52:59+00:00"
+        },
+        {
+            "name": "ministryofjustice/feed-fixer",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ministryofjustice/feed-fixer.git",
+                "reference": "d622a4b9a03c47f9f21dcb5ed3fb9bf9b09bf487"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ministryofjustice/feed-fixer/zipball/d622a4b9a03c47f9f21dcb5ed3fb9bf9b09bf487",
+                "reference": "d622a4b9a03c47f9f21dcb5ed3fb9bf9b09bf487",
+                "shasum": ""
+            },
+            "require": {
+                "aws/aws-sdk-php": "*",
+                "composer/installers": "^1.0"
+            },
+            "default-branch": true,
+            "type": "wordpress-plugin",
+            "authors": [
+                {
+                    "name": "Robert Lowe",
+                    "email": "wordpress@digital.justice.gov.uk"
+                }
+            ],
+            "description": "Parses a XML/JSON data feed into Wordpress",
+            "support": {
+                "source": "https://github.com/ministryofjustice/feed-fixer/tree/main",
+                "issues": "https://github.com/ministryofjustice/feed-fixer/issues"
+            },
+            "time": "2023-07-26T13:15:12+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
@@ -1015,12 +1048,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-hale.git",
-                "reference": "bded03d92a130c5521bf11cd2e7b84f8c4c34174"
+                "reference": "11ef3c3c4aadb4674af3a7d9c631722949731c18"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/wp-hale/zipball/bded03d92a130c5521bf11cd2e7b84f8c4c34174",
-                "reference": "bded03d92a130c5521bf11cd2e7b84f8c4c34174",
+                "url": "https://api.github.com/repos/ministryofjustice/wp-hale/zipball/11ef3c3c4aadb4674af3a7d9c631722949731c18",
+                "reference": "11ef3c3c4aadb4674af3a7d9c631722949731c18",
                 "shasum": ""
             },
             "type": "wordpress-theme",
@@ -1029,7 +1062,7 @@
                 "source": "https://github.com/ministryofjustice/wp-hale/tree/menu-orientation",
                 "issues": "https://github.com/ministryofjustice/wp-hale/issues"
             },
-            "time": "2023-07-18T12:08:36+00:00"
+            "time": "2023-07-19T13:38:20+00:00"
         },
         {
             "name": "ministryofjustice/wp-moj-blocks",
@@ -3050,15 +3083,15 @@
         },
         {
             "name": "wpackagist-plugin/ewww-image-optimizer",
-            "version": "7.1.0",
+            "version": "7.2.0",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/ewww-image-optimizer/",
-                "reference": "tags/7.1.0"
+                "reference": "tags/7.2.0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/ewww-image-optimizer.7.1.0.zip"
+                "url": "https://downloads.wordpress.org/plugin/ewww-image-optimizer.7.2.0.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -3176,15 +3209,15 @@
         },
         {
             "name": "wpackagist-plugin/wordpress-seo",
-            "version": "20.11",
+            "version": "20.12",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/wordpress-seo/",
-                "reference": "tags/20.11"
+                "reference": "tags/20.12"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/wordpress-seo.20.11.zip"
+                "url": "https://downloads.wordpress.org/plugin/wordpress-seo.20.12.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -3311,7 +3344,8 @@
     "stability-flags": {
         "ministryofjustice/wp-hale": 20,
         "ministryofjustice/wp-moj-components": 20,
-        "ministryofjustice/wp-s3-uploads": 20
+        "ministryofjustice/wp-s3-uploads": 20,
+        "ministryofjustice/feed-fixer": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
