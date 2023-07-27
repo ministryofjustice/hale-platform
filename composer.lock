@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d9e8bd35a792bfd7e7edddd01e245c0e",
+    "content-hash": "d68e69c1980d7bef62e9f25199b3bba4",
     "packages": [
         {
             "name": "acf/advanced-custom-fields-pro",
@@ -977,6 +977,39 @@
             "time": "2023-07-20T12:52:59+00:00"
         },
         {
+            "name": "ministryofjustice/feed-fixer",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ministryofjustice/feed-fixer.git",
+                "reference": "d622a4b9a03c47f9f21dcb5ed3fb9bf9b09bf487"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ministryofjustice/feed-fixer/zipball/d622a4b9a03c47f9f21dcb5ed3fb9bf9b09bf487",
+                "reference": "d622a4b9a03c47f9f21dcb5ed3fb9bf9b09bf487",
+                "shasum": ""
+            },
+            "require": {
+                "aws/aws-sdk-php": "*",
+                "composer/installers": "^1.0"
+            },
+            "default-branch": true,
+            "type": "wordpress-plugin",
+            "authors": [
+                {
+                    "name": "Robert Lowe",
+                    "email": "wordpress@digital.justice.gov.uk"
+                }
+            ],
+            "description": "Parses a XML/JSON data feed into Wordpress",
+            "support": {
+                "source": "https://github.com/ministryofjustice/feed-fixer/tree/main",
+                "issues": "https://github.com/ministryofjustice/feed-fixer/issues"
+            },
+            "time": "2023-07-26T13:15:12+00:00"
+        },
+        {
             "name": "ministryofjustice/wp-gov-uk-notify",
             "version": "1.0.2",
             "source": {
@@ -1011,25 +1044,25 @@
         },
         {
             "name": "ministryofjustice/wp-hale",
-            "version": "3.9.3",
+            "version": "dev-menu-orientation",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-hale.git",
-                "reference": "9241c778b78a88a7dc3290d464e3f38a0ae8516b"
+                "reference": "11ef3c3c4aadb4674af3a7d9c631722949731c18"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/wp-hale/ministryofjustice-wp-hale-9241c778b78a88a7dc3290d464e3f38a0ae8516b-zip-373744.zip",
-                "reference": "9241c778b78a88a7dc3290d464e3f38a0ae8516b",
-                "shasum": "3a7792ab0b58fcad3d994c882170848c22747f11"
+                "url": "https://api.github.com/repos/ministryofjustice/wp-hale/zipball/11ef3c3c4aadb4674af3a7d9c631722949731c18",
+                "reference": "11ef3c3c4aadb4674af3a7d9c631722949731c18",
+                "shasum": ""
             },
             "type": "wordpress-theme",
             "description": "Hale theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/wp-hale/tree/3.9.3",
+                "source": "https://github.com/ministryofjustice/wp-hale/tree/menu-orientation",
                 "issues": "https://github.com/ministryofjustice/wp-hale/issues"
             },
-            "time": "2023-07-17T11:25:59+00:00"
+            "time": "2023-07-19T13:38:20+00:00"
         },
         {
             "name": "ministryofjustice/wp-moj-blocks",
@@ -3176,15 +3209,15 @@
         },
         {
             "name": "wpackagist-plugin/wordpress-seo",
-            "version": "20.11",
+            "version": "20.12",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/wordpress-seo/",
-                "reference": "tags/20.11"
+                "reference": "tags/20.12"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/wordpress-seo.20.11.zip"
+                "url": "https://downloads.wordpress.org/plugin/wordpress-seo.20.12.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -3309,8 +3342,10 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "ministryofjustice/wp-hale": 20,
         "ministryofjustice/wp-moj-components": 20,
-        "ministryofjustice/wp-s3-uploads": 20
+        "ministryofjustice/wp-s3-uploads": 20,
+        "ministryofjustice/feed-fixer": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
