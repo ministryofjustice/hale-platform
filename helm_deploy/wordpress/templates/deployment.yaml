@@ -6,7 +6,15 @@ metadata:
   labels:
     app: wordpress
 spec:
-  replicas: 1
+  {{- if eq .Values.configmap.envtype "staging" }}
+  replicas: {{ .Values.wp.image.replicaCount.staging }}
+  {{ else if eq .Values.configmap.envtype "dev" }}
+  replicas: {{ .Values.wp.image.replicaCount.dev }}
+  {{ else if eq .Values.configmap.envtype "demo" }}
+  replicas: {{ .Values.wp.image.replicaCount.demo }}
+  {{ else }}
+  replicas: {{ .Values.wp.image.replicaCount.prod }}
+  {{- end }}
   selector:
     matchLabels:
       app: wordpress
