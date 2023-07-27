@@ -25,7 +25,7 @@ wp:
       demo: 2
 
 hpa:
-  enabled: true
+  enabled: false
 
 ingress:
   enabled: true
