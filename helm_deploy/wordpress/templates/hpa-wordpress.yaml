@@ -1,0 +1,26 @@
+{{- if .Values.hpa.enabled }}
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hale-platform-hpa
+  namespace: hale-platform-{{ .Values.configmap.envtype }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: wordpress
+  {{- if eq .Values.configmap.envtype "prod" }}
+  minReplicas: 3
+  maxReplicas: 8
+  {{- else if eq .Values.configmap.envtype "staging" }}
+  minReplicas: 2
+  maxReplicas: 4
+  {{- else if eq .Values.configmap.envtype "demo" }}
+  minReplicas: 2
+  maxReplicas: 3
+  {{- else }}
+  minReplicas: 1
+  maxReplicas: 1
+  {{- end }}
+  targetCPUUtilizationPercentage: 95
+{{- end }}
