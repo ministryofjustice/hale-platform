@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d68e69c1980d7bef62e9f25199b3bba4",
+    "content-hash": "6e47216e39e3cd13c2271be99ca98678",
     "packages": [
         {
             "name": "acf/advanced-custom-fields-pro",
@@ -1044,25 +1044,25 @@
         },
         {
             "name": "ministryofjustice/wp-hale",
-            "version": "dev-menu-orientation",
+            "version": "3.9.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-hale.git",
-                "reference": "11ef3c3c4aadb4674af3a7d9c631722949731c18"
+                "reference": "a60ffbe64ed1f30b56c2ab87c555703d6c6ee175"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/wp-hale/zipball/11ef3c3c4aadb4674af3a7d9c631722949731c18",
-                "reference": "11ef3c3c4aadb4674af3a7d9c631722949731c18",
-                "shasum": ""
+                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/wp-hale/ministryofjustice-wp-hale-a60ffbe64ed1f30b56c2ab87c555703d6c6ee175-zip-7290b0.zip",
+                "reference": "a60ffbe64ed1f30b56c2ab87c555703d6c6ee175",
+                "shasum": "96d474b744bba7e20c302e32180a1b521c2b7c1a"
             },
             "type": "wordpress-theme",
             "description": "Hale theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/wp-hale/tree/menu-orientation",
+                "source": "https://github.com/ministryofjustice/wp-hale/tree/3.9.4",
                 "issues": "https://github.com/ministryofjustice/wp-hale/issues"
             },
-            "time": "2023-07-19T13:38:20+00:00"
+            "time": "2023-07-28T09:55:08+00:00"
         },
         {
             "name": "ministryofjustice/wp-moj-blocks",
@@ -3342,7 +3342,6 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "ministryofjustice/wp-hale": 20,
         "ministryofjustice/wp-moj-components": 20,
         "ministryofjustice/wp-s3-uploads": 20,
         "ministryofjustice/feed-fixer": 20
