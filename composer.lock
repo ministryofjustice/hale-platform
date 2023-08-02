@@ -71,16 +71,16 @@
         },
         {
             "name": "aws/aws-crt-php",
-            "version": "v1.2.1",
+            "version": "v1.2.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/awslabs/aws-crt-php.git",
-                "reference": "1926277fc71d253dfa820271ac5987bdb193ccf5"
+                "reference": "2f1dc7b7eda080498be96a4a6d683a41583030e9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/awslabs/aws-crt-php/zipball/1926277fc71d253dfa820271ac5987bdb193ccf5",
-                "reference": "1926277fc71d253dfa820271ac5987bdb193ccf5",
+                "url": "https://api.github.com/repos/awslabs/aws-crt-php/zipball/2f1dc7b7eda080498be96a4a6d683a41583030e9",
+                "reference": "2f1dc7b7eda080498be96a4a6d683a41583030e9",
                 "shasum": ""
             },
             "require": {
@@ -119,9 +119,9 @@
             ],
             "support": {
                 "issues": "https://github.com/awslabs/aws-crt-php/issues",
-                "source": "https://github.com/awslabs/aws-crt-php/tree/v1.2.1"
+                "source": "https://github.com/awslabs/aws-crt-php/tree/v1.2.2"
             },
-            "time": "2023-03-24T20:22:19+00:00"
+            "time": "2023-07-20T16:49:55+00:00"
         },
         {
             "name": "aws/aws-sdk-php",
@@ -982,12 +982,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/feed-fixer.git",
-                "reference": "d622a4b9a03c47f9f21dcb5ed3fb9bf9b09bf487"
+                "reference": "1ac35112d4ecf39167044b578190b833b8a20fe3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/feed-fixer/zipball/d622a4b9a03c47f9f21dcb5ed3fb9bf9b09bf487",
-                "reference": "d622a4b9a03c47f9f21dcb5ed3fb9bf9b09bf487",
+                "url": "https://api.github.com/repos/ministryofjustice/feed-fixer/zipball/1ac35112d4ecf39167044b578190b833b8a20fe3",
+                "reference": "1ac35112d4ecf39167044b578190b833b8a20fe3",
                 "shasum": ""
             },
             "require": {
@@ -1007,7 +1007,7 @@
                 "source": "https://github.com/ministryofjustice/feed-fixer/tree/main",
                 "issues": "https://github.com/ministryofjustice/feed-fixer/issues"
             },
-            "time": "2023-07-26T13:15:12+00:00"
+            "time": "2023-08-02T14:15:52+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
@@ -1044,25 +1044,25 @@
         },
         {
             "name": "ministryofjustice/wp-hale",
-            "version": "3.9.3",
+            "version": "3.9.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-hale.git",
-                "reference": "9241c778b78a88a7dc3290d464e3f38a0ae8516b"
+                "reference": "d69a88f891928367151bec5ab27bc60a4e9d9181"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/wp-hale/ministryofjustice-wp-hale-9241c778b78a88a7dc3290d464e3f38a0ae8516b-zip-373744.zip",
-                "reference": "9241c778b78a88a7dc3290d464e3f38a0ae8516b",
-                "shasum": "3a7792ab0b58fcad3d994c882170848c22747f11"
+                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/wp-hale/ministryofjustice-wp-hale-d69a88f891928367151bec5ab27bc60a4e9d9181-zip-69c4d4.zip",
+                "reference": "d69a88f891928367151bec5ab27bc60a4e9d9181",
+                "shasum": "3ebe7fd4976e6e950700e20ad0b78ad7478bf5c3"
             },
             "type": "wordpress-theme",
             "description": "Hale theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/wp-hale/tree/3.9.3",
+                "source": "https://github.com/ministryofjustice/wp-hale/tree/3.9.5",
                 "issues": "https://github.com/ministryofjustice/wp-hale/issues"
             },
-            "time": "2023-07-17T11:25:59+00:00"
+            "time": "2023-07-31T14:39:07+00:00"
         },
         {
             "name": "ministryofjustice/wp-moj-blocks",
@@ -2267,16 +2267,16 @@
         },
         {
             "name": "sentry/sentry",
-            "version": "3.20.1",
+            "version": "3.21.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/getsentry/sentry-php.git",
-                "reference": "644ad9768c18139a80ac510090fad000d9ffd8a4"
+                "reference": "624aafc22b84b089ffa43b71fb01e0096505ec4f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/getsentry/sentry-php/zipball/644ad9768c18139a80ac510090fad000d9ffd8a4",
-                "reference": "644ad9768c18139a80ac510090fad000d9ffd8a4",
+                "url": "https://api.github.com/repos/getsentry/sentry-php/zipball/624aafc22b84b089ffa43b71fb01e0096505ec4f",
+                "reference": "624aafc22b84b089ffa43b71fb01e0096505ec4f",
                 "shasum": ""
             },
             "require": {
@@ -2320,11 +2320,6 @@
                 "monolog/monolog": "Allow sending log messages to Sentry by using the included Monolog handler."
             },
             "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "3.13.x-dev"
-                }
-            },
             "autoload": {
                 "files": [
                     "src/functions.php"
@@ -2356,7 +2351,7 @@
             ],
             "support": {
                 "issues": "https://github.com/getsentry/sentry-php/issues",
-                "source": "https://github.com/getsentry/sentry-php/tree/3.20.1"
+                "source": "https://github.com/getsentry/sentry-php/tree/3.21.0"
             },
             "funding": [
                 {
@@ -2368,7 +2363,7 @@
                     "type": "custom"
                 }
             ],
-            "time": "2023-06-26T11:01:40+00:00"
+            "time": "2023-07-31T15:31:24+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
@@ -2439,16 +2434,16 @@
         },
         {
             "name": "symfony/http-client",
-            "version": "v6.3.1",
+            "version": "v6.3.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-client.git",
-                "reference": "1c828a06aef2f5eeba42026dfc532d4fc5406123"
+                "reference": "15f9f4bad62bfcbe48b5dedd866f04a08fc7ff00"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-client/zipball/1c828a06aef2f5eeba42026dfc532d4fc5406123",
-                "reference": "1c828a06aef2f5eeba42026dfc532d4fc5406123",
+                "url": "https://api.github.com/repos/symfony/http-client/zipball/15f9f4bad62bfcbe48b5dedd866f04a08fc7ff00",
+                "reference": "15f9f4bad62bfcbe48b5dedd866f04a08fc7ff00",
                 "shasum": ""
             },
             "require": {
@@ -2511,7 +2506,7 @@
                 "http"
             ],
             "support": {
-                "source": "https://github.com/symfony/http-client/tree/v6.3.1"
+                "source": "https://github.com/symfony/http-client/tree/v6.3.2"
             },
             "funding": [
                 {
@@ -2527,7 +2522,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-06-24T11:51:27+00:00"
+            "time": "2023-07-05T08:41:27+00:00"
         },
         {
             "name": "symfony/http-client-contracts",
