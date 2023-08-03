@@ -1070,12 +1070,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-moj-blocks.git",
-                "reference": "171793cd29bda696267809fcaa376bc06ac3d4fb"
+                "reference": "a9419287854f75741e50fc2c3909922341f6d64f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/wp-moj-blocks/zipball/171793cd29bda696267809fcaa376bc06ac3d4fb",
-                "reference": "171793cd29bda696267809fcaa376bc06ac3d4fb",
+                "url": "https://api.github.com/repos/ministryofjustice/wp-moj-blocks/zipball/a9419287854f75741e50fc2c3909922341f6d64f",
+                "reference": "a9419287854f75741e50fc2c3909922341f6d64f",
                 "shasum": ""
             },
             "require-dev": {
@@ -1102,7 +1102,7 @@
                 "source": "https://github.com/ministryofjustice/wp-moj-blocks/tree/accordion-editor",
                 "issues": "https://github.com/ministryofjustice/wp-moj-blocks/issues"
             },
-            "time": "2023-08-03T09:58:15+00:00"
+            "time": "2023-08-03T11:20:41+00:00"
         },
         {
             "name": "ministryofjustice/wp-moj-components",
