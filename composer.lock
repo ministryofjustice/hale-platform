@@ -705,16 +705,16 @@
         },
         {
             "name": "guzzlehttp/psr7",
-            "version": "2.5.0",
+            "version": "2.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "b635f279edd83fc275f822a1188157ffea568ff6"
+                "reference": "8bd7c33a0734ae1c5d074360512beb716bef3f77"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/b635f279edd83fc275f822a1188157ffea568ff6",
-                "reference": "b635f279edd83fc275f822a1188157ffea568ff6",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/8bd7c33a0734ae1c5d074360512beb716bef3f77",
+                "reference": "8bd7c33a0734ae1c5d074360512beb716bef3f77",
                 "shasum": ""
             },
             "require": {
@@ -801,7 +801,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/psr7/issues",
-                "source": "https://github.com/guzzle/psr7/tree/2.5.0"
+                "source": "https://github.com/guzzle/psr7/tree/2.6.0"
             },
             "funding": [
                 {
@@ -817,7 +817,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-04-17T16:11:26+00:00"
+            "time": "2023-08-03T15:06:02+00:00"
         },
         {
             "name": "http-interop/http-factory-guzzle",
@@ -982,12 +982,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/feed-fixer.git",
-                "reference": "d622a4b9a03c47f9f21dcb5ed3fb9bf9b09bf487"
+                "reference": "1ac35112d4ecf39167044b578190b833b8a20fe3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/feed-fixer/zipball/d622a4b9a03c47f9f21dcb5ed3fb9bf9b09bf487",
-                "reference": "d622a4b9a03c47f9f21dcb5ed3fb9bf9b09bf487",
+                "url": "https://api.github.com/repos/ministryofjustice/feed-fixer/zipball/1ac35112d4ecf39167044b578190b833b8a20fe3",
+                "reference": "1ac35112d4ecf39167044b578190b833b8a20fe3",
                 "shasum": ""
             },
             "require": {
@@ -1007,7 +1007,7 @@
                 "source": "https://github.com/ministryofjustice/feed-fixer/tree/main",
                 "issues": "https://github.com/ministryofjustice/feed-fixer/issues"
             },
-            "time": "2023-07-26T13:15:12+00:00"
+            "time": "2023-08-02T14:15:52+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
@@ -1044,25 +1044,25 @@
         },
         {
             "name": "ministryofjustice/wp-hale",
-            "version": "3.9.5",
+            "version": "3.9.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-hale.git",
-                "reference": "d69a88f891928367151bec5ab27bc60a4e9d9181"
+                "reference": "7983510ee04162c1b7fca268515c7fdda3a53ec1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/wp-hale/ministryofjustice-wp-hale-d69a88f891928367151bec5ab27bc60a4e9d9181-zip-69c4d4.zip",
-                "reference": "d69a88f891928367151bec5ab27bc60a4e9d9181",
-                "shasum": "3ebe7fd4976e6e950700e20ad0b78ad7478bf5c3"
+                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/wp-hale/ministryofjustice-wp-hale-7983510ee04162c1b7fca268515c7fdda3a53ec1-zip-5dbba9.zip",
+                "reference": "7983510ee04162c1b7fca268515c7fdda3a53ec1",
+                "shasum": "e037e9cd9a1470f0712dae848163b3cb321cd288"
             },
             "type": "wordpress-theme",
             "description": "Hale theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/wp-hale/tree/3.9.5",
+                "source": "https://github.com/ministryofjustice/wp-hale/tree/3.9.6",
                 "issues": "https://github.com/ministryofjustice/wp-hale/issues"
             },
-            "time": "2023-07-31T14:39:07+00:00"
+            "time": "2023-08-04T12:11:19+00:00"
         },
         {
             "name": "ministryofjustice/wp-moj-blocks",
@@ -2267,16 +2267,16 @@
         },
         {
             "name": "sentry/sentry",
-            "version": "3.20.1",
+            "version": "3.21.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/getsentry/sentry-php.git",
-                "reference": "644ad9768c18139a80ac510090fad000d9ffd8a4"
+                "reference": "624aafc22b84b089ffa43b71fb01e0096505ec4f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/getsentry/sentry-php/zipball/644ad9768c18139a80ac510090fad000d9ffd8a4",
-                "reference": "644ad9768c18139a80ac510090fad000d9ffd8a4",
+                "url": "https://api.github.com/repos/getsentry/sentry-php/zipball/624aafc22b84b089ffa43b71fb01e0096505ec4f",
+                "reference": "624aafc22b84b089ffa43b71fb01e0096505ec4f",
                 "shasum": ""
             },
             "require": {
@@ -2320,11 +2320,6 @@
                 "monolog/monolog": "Allow sending log messages to Sentry by using the included Monolog handler."
             },
             "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "3.13.x-dev"
-                }
-            },
             "autoload": {
                 "files": [
                     "src/functions.php"
@@ -2356,7 +2351,7 @@
             ],
             "support": {
                 "issues": "https://github.com/getsentry/sentry-php/issues",
-                "source": "https://github.com/getsentry/sentry-php/tree/3.20.1"
+                "source": "https://github.com/getsentry/sentry-php/tree/3.21.0"
             },
             "funding": [
                 {
@@ -2368,7 +2363,7 @@
                     "type": "custom"
                 }
             ],
-            "time": "2023-06-26T11:01:40+00:00"
+            "time": "2023-07-31T15:31:24+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
