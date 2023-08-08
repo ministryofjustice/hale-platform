@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6e47216e39e3cd13c2271be99ca98678",
+    "content-hash": "ffa7ba20e13f30b03d5a9cb8549f768c",
     "packages": [
         {
             "name": "acf/advanced-custom-fields-pro",
@@ -705,16 +705,16 @@
         },
         {
             "name": "guzzlehttp/psr7",
-            "version": "2.5.0",
+            "version": "2.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "b635f279edd83fc275f822a1188157ffea568ff6"
+                "reference": "8bd7c33a0734ae1c5d074360512beb716bef3f77"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/b635f279edd83fc275f822a1188157ffea568ff6",
-                "reference": "b635f279edd83fc275f822a1188157ffea568ff6",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/8bd7c33a0734ae1c5d074360512beb716bef3f77",
+                "reference": "8bd7c33a0734ae1c5d074360512beb716bef3f77",
                 "shasum": ""
             },
             "require": {
@@ -801,7 +801,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/psr7/issues",
-                "source": "https://github.com/guzzle/psr7/tree/2.5.0"
+                "source": "https://github.com/guzzle/psr7/tree/2.6.0"
             },
             "funding": [
                 {
@@ -817,7 +817,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-04-17T16:11:26+00:00"
+            "time": "2023-08-03T15:06:02+00:00"
         },
         {
             "name": "http-interop/http-factory-guzzle",
@@ -977,17 +977,17 @@
             "time": "2023-07-20T12:52:59+00:00"
         },
         {
-            "name": "ministryofjustice/feed-fixer",
+            "name": "ministryofjustice/feed-importer",
             "version": "dev-main",
             "source": {
                 "type": "git",
-                "url": "https://github.com/ministryofjustice/feed-fixer.git",
-                "reference": "1ac35112d4ecf39167044b578190b833b8a20fe3"
+                "url": "https://github.com/ministryofjustice/feed-importer.git",
+                "reference": "80fddaf7b18e4450755957b2ad3555450dc5eb02"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/feed-fixer/zipball/1ac35112d4ecf39167044b578190b833b8a20fe3",
-                "reference": "1ac35112d4ecf39167044b578190b833b8a20fe3",
+                "url": "https://api.github.com/repos/ministryofjustice/feed-importer/zipball/80fddaf7b18e4450755957b2ad3555450dc5eb02",
+                "reference": "80fddaf7b18e4450755957b2ad3555450dc5eb02",
                 "shasum": ""
             },
             "require": {
@@ -1004,10 +1004,10 @@
             ],
             "description": "Parses a XML/JSON data feed into Wordpress",
             "support": {
-                "source": "https://github.com/ministryofjustice/feed-fixer/tree/main",
-                "issues": "https://github.com/ministryofjustice/feed-fixer/issues"
+                "source": "https://github.com/ministryofjustice/feed-importer/tree/main",
+                "issues": "https://github.com/ministryofjustice/feed-importer/issues"
             },
-            "time": "2023-08-02T14:15:52+00:00"
+            "time": "2023-08-07T20:32:34+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
@@ -1044,25 +1044,25 @@
         },
         {
             "name": "ministryofjustice/wp-hale",
-            "version": "3.9.5",
+            "version": "3.10.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-hale.git",
-                "reference": "d69a88f891928367151bec5ab27bc60a4e9d9181"
+                "reference": "624dbea79f2f8930822bff86bd68b1a89aaacd05"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/wp-hale/ministryofjustice-wp-hale-d69a88f891928367151bec5ab27bc60a4e9d9181-zip-69c4d4.zip",
-                "reference": "d69a88f891928367151bec5ab27bc60a4e9d9181",
-                "shasum": "3ebe7fd4976e6e950700e20ad0b78ad7478bf5c3"
+                "url": "https://composer.wp.dsd.io/dist/ministryofjustice/wp-hale/ministryofjustice-wp-hale-624dbea79f2f8930822bff86bd68b1a89aaacd05-zip-bdd0d6.zip",
+                "reference": "624dbea79f2f8930822bff86bd68b1a89aaacd05",
+                "shasum": "5600ceb3a261ea8a81e6ed54ed8c8e39416baba5"
             },
             "type": "wordpress-theme",
             "description": "Hale theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/wp-hale/tree/3.9.5",
+                "source": "https://github.com/ministryofjustice/wp-hale/tree/3.10.0",
                 "issues": "https://github.com/ministryofjustice/wp-hale/issues"
             },
-            "time": "2023-07-31T14:39:07+00:00"
+            "time": "2023-08-07T11:37:36+00:00"
         },
         {
             "name": "ministryofjustice/wp-moj-blocks",
@@ -3096,15 +3096,15 @@
         },
         {
             "name": "wpackagist-plugin/limit-login-attempts-reloaded",
-            "version": "2.25.20",
+            "version": "2.25.21",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/limit-login-attempts-reloaded/",
-                "reference": "tags/2.25.20"
+                "reference": "tags/2.25.21"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/limit-login-attempts-reloaded.2.25.20.zip"
+                "url": "https://downloads.wordpress.org/plugin/limit-login-attempts-reloaded.2.25.21.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -3204,15 +3204,15 @@
         },
         {
             "name": "wpackagist-plugin/wordpress-seo",
-            "version": "20.12",
+            "version": "20.13",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/wordpress-seo/",
-                "reference": "tags/20.12"
+                "reference": "tags/20.13"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/wordpress-seo.20.12.zip"
+                "url": "https://downloads.wordpress.org/plugin/wordpress-seo.20.13.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -3339,7 +3339,7 @@
     "stability-flags": {
         "ministryofjustice/wp-moj-components": 20,
         "ministryofjustice/wp-s3-uploads": 20,
-        "ministryofjustice/feed-fixer": 20
+        "ministryofjustice/feed-importer": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
