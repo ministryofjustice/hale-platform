@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6e47216e39e3cd13c2271be99ca98678",
+    "content-hash": "ffa7ba20e13f30b03d5a9cb8549f768c",
     "packages": [
         {
             "name": "acf/advanced-custom-fields-pro",
@@ -977,17 +977,17 @@
             "time": "2023-07-20T12:52:59+00:00"
         },
         {
-            "name": "ministryofjustice/feed-fixer",
+            "name": "ministryofjustice/feed-importer",
             "version": "dev-main",
             "source": {
                 "type": "git",
-                "url": "https://github.com/ministryofjustice/feed-fixer.git",
-                "reference": "1ac35112d4ecf39167044b578190b833b8a20fe3"
+                "url": "https://github.com/ministryofjustice/feed-importer.git",
+                "reference": "80fddaf7b18e4450755957b2ad3555450dc5eb02"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/feed-fixer/zipball/1ac35112d4ecf39167044b578190b833b8a20fe3",
-                "reference": "1ac35112d4ecf39167044b578190b833b8a20fe3",
+                "url": "https://api.github.com/repos/ministryofjustice/feed-importer/zipball/80fddaf7b18e4450755957b2ad3555450dc5eb02",
+                "reference": "80fddaf7b18e4450755957b2ad3555450dc5eb02",
                 "shasum": ""
             },
             "require": {
@@ -1004,10 +1004,10 @@
             ],
             "description": "Parses a XML/JSON data feed into Wordpress",
             "support": {
-                "source": "https://github.com/ministryofjustice/feed-fixer/tree/main",
-                "issues": "https://github.com/ministryofjustice/feed-fixer/issues"
+                "source": "https://github.com/ministryofjustice/feed-importer/tree/main",
+                "issues": "https://github.com/ministryofjustice/feed-importer/issues"
             },
-            "time": "2023-08-02T14:15:52+00:00"
+            "time": "2023-08-07T20:32:34+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
@@ -3096,15 +3096,15 @@
         },
         {
             "name": "wpackagist-plugin/limit-login-attempts-reloaded",
-            "version": "2.25.20",
+            "version": "2.25.21",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/limit-login-attempts-reloaded/",
-                "reference": "tags/2.25.20"
+                "reference": "tags/2.25.21"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/limit-login-attempts-reloaded.2.25.20.zip"
+                "url": "https://downloads.wordpress.org/plugin/limit-login-attempts-reloaded.2.25.21.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -3204,15 +3204,15 @@
         },
         {
             "name": "wpackagist-plugin/wordpress-seo",
-            "version": "20.12",
+            "version": "20.13",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/wordpress-seo/",
-                "reference": "tags/20.12"
+                "reference": "tags/20.13"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/wordpress-seo.20.12.zip"
+                "url": "https://downloads.wordpress.org/plugin/wordpress-seo.20.13.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -3339,7 +3339,7 @@
     "stability-flags": {
         "ministryofjustice/wp-moj-components": 20,
         "ministryofjustice/wp-s3-uploads": 20,
-        "ministryofjustice/feed-fixer": 20
+        "ministryofjustice/feed-importer": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
