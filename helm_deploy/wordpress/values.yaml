@@ -7,8 +7,6 @@
 
 domain: ""
 
-registry: ""
-
 nginx:
   image:
     repository: ""
@@ -32,9 +30,6 @@ hpa:
 cron:
   feedparser:
     enabled: true
-    image:
-      repository: "feedparser"
-      imagePullPolicy: Always
 
 ingress:
   enabled: true
