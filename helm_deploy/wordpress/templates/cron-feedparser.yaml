@@ -1,0 +1,22 @@
+{{- if .Values.cron.feedparser.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: feedparser-cron
+spec:
+  schedule: "0 */3 * * *" # Schedule the job to run every 3 hours
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: hale-platform-{{ .Values.configmap.envtype }}-service
+          containers:
+          - name: feedparser-cron
+            image: 754256621582.dkr.ecr.eu-west-2.amazonaws.com/jotw-content-devs/hale-platform-dev-ecr:xml-to-json-converter
+            envFrom:
+              - configMapRef:
+                  name: hale-wp-config-{{ .Release.Revision }}
+              - secretRef:
+                  name: hale-wp-secrets-{{ .Release.Revision }}
+          restartPolicy: OnFailure
+{{- end }}

@@ -7,6 +7,8 @@
 
 domain: ""
 
+registry: ""
+
 nginx:
   image:
     repository: ""
@@ -26,6 +28,13 @@ wp:
 
 hpa:
   enabled: false
+
+cron:
+  feedparser:
+    enabled: true
+    image:
+      repository: "feedparser"
+      imagePullPolicy: Always
 
 ingress:
   enabled: true
