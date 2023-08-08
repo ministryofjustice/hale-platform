@@ -27,6 +27,10 @@ wp:
 hpa:
   enabled: false
 
+cron:
+  feedparser:
+    enabled: true
+
 ingress:
   enabled: true
   metadata:
