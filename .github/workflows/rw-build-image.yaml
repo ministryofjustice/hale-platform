@@ -6,9 +6,7 @@ on:
       environment:
         required: true
         type: string
-    secrets: 
-      ecr-name:
-        required: true      
+    secrets:    
       ecr-role:
         required: true
       ecr-region:
