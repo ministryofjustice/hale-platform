@@ -16,8 +16,8 @@ wp:
   image:
     repository: ""
     imagePullPolicy: Always
-    
-    # Default if HPA is not turned on 
+
+    # Default if HPA is not turned on
     replicaCount:
       prod: 3
       staging: 3
@@ -26,6 +26,10 @@ wp:
 
 hpa:
   enabled: false
+
+cron:
+  feedparser:
+    enabled: false
 
 ingress:
   enabled: true

@@ -4,6 +4,7 @@ mysql
 .idea
 *.sql
 auth.json
+composer.lock
 vendor/
 wordpress/
 uploads/
