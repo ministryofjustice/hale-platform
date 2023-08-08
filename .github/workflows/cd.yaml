@@ -86,7 +86,6 @@ jobs:
       with:
         environment: Staging
       secrets:
-        ecr-name: ${{ secrets.ECR_NAME }}
         ecr-role: ${{ secrets.STAGING_ECR_ROLE_TO_ASSUME }}
         ecr-region: ${{ vars.STAGING_ECR_REGION }}
         ecr-repo: ${{ vars.STAGING_ECR_REPOSITORY }} 
