@@ -33,7 +33,7 @@ a proper place for it.
    hale.docker domain locally which WP multisite needs.
 2. Run `make build` to build all the Docker images you'll need locally for k8s to use.
 3. Run `make deploylocal` to run the helm command which launches the site. 
-3. If all is running, go to `http://hale.docker` in your browser. You will be greeted by a WP installation page.
+3. If all is running, go to `http://hale.docker` in your browser. You will be greeted by a WP installation page
 
 ### Docker
 Make sure you have the `.env.local` file with correct .env vars in the root of 
