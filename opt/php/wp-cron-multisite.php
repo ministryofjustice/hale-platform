@@ -19,6 +19,7 @@ foreach($blogs as $blog) {
     $site_url = $blog->domain . ($blog->path ? $blog->path : '/');
     $output = shell_exec("wp cron event run --due-now --url='" . $site_url . "'");
 }
+//Test
 //$output = shell_exec("wp cron event run --due-now --url='https://jotwpublic.prod.wp.dsd.io/playground/'");
 //$output = shell_exec("wp cron event run --due-now --url='https://magistrates.judiciary.uk'");
 //$output = shell_exec("wp cron event run --due-now --url='https://ccrc.gov.uk'");
