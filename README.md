@@ -27,7 +27,7 @@ environments you can use the kubernetes build.
 
 You will need an `.env.local` file in the root of this project with all the
 variables needed to run the app. Get this from Rob or Adam until we have
-a proper place for it.
+a proper place for it
 
 1. Run `dory up` to get dory running as you will need this to proxy the
    hale.docker domain locally which WP multisite needs.
