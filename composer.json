@@ -36,6 +36,7 @@
         "oscarotero/env": "^1.1.0",
         "acf/advanced-custom-fields-pro": "*",
         "ministryofjustice/wp-hale": "*",
+        "ministryofjustice/brookhouse": "dev-main",
         "wpackagist-plugin/wordpress-seo": "*",
         "wpackagist-plugin/simple-301-redirects": "*",
         "wpackagist-plugin/query-monitor": "*",
