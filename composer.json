@@ -38,6 +38,7 @@
         "ministryofjustice/wp-hale": "*",
         "ministryofjustice/brookhouse": "dev-main",
         "wpackagist-plugin/wordpress-seo": "*",
+        "wpackagist-plugin/footnotes-made-easy": "*",
         "wpackagist-plugin/simple-301-redirects": "*",
         "wpackagist-plugin/query-monitor": "*",
         "wpackagist-plugin/ewww-image-optimizer": "*",
