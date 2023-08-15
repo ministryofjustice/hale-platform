@@ -37,7 +37,7 @@ a proper place for it
 
 ### Docker
 Make sure you have the `.env.local` file with correct .env vars in the root of 
-this repository.
+this repository
 
 1. Create and install local TLS certs so the site runs on https.
 2. Run `Dory up` from within this repository.
