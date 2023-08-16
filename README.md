@@ -52,7 +52,7 @@ this repository.
 4. Run `mkcert -install` to apply certificates to your mac.
 5. Make sure Dory is running `Dory up`.
 6. Run `Make build`, to build the image and pull in the new cert pem files.
-7. Go to your browser at the URL https://hale.docker
+7. Go to your browser at the URL https://hale.docker.
 
 ## Themes and Plugins.
 
