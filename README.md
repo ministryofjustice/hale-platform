@@ -39,7 +39,7 @@ a proper place for it.
 Make sure you have the `.env.local` file with correct .env vars in the root of 
 this repository.
 
-1. Create and install local TLS certs so the site runs on https.
+1. Create and install local TLS certs so the site runs on https
 2. Run `Dory up` from within this repository.
 3. Run `make build`. This builds the images required and all assets.
 4. Run `make run` to launch the site on https://hale.docker
