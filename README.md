@@ -61,7 +61,7 @@ are pulled into the build using PHP's Composer dependancy manager. To add or
 remove plugins, modify the composer.json file in the root of this directory.
 
 ## Deployment
-Our deployment pipeline uses GitActions to deploy to our various environments.
+Our deployment pipeline uses GitActions to deploy to our various environments
 
 Hale platform can be deployed to 4 environments:
 - Demonstration
