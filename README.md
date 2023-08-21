@@ -10,7 +10,7 @@ environments you can use the kubernetes build.
 
 ## Required
 
-- [Docker](https://www.docker.com/) and kubernetes which can be turned on via the Docker-Desktop dashboard.
+- [Docker](https://www.docker.com/) and kubernetes which can be turned on via the Docker-Desktop dashboard
 - Have [Dory proxy](https://github.com/FreedomBen/dory) running for local install so you have a domain `hale.docker`
   to work with.
 - Install [Helm](https://helm.sh/docs) - `brew install helm`
