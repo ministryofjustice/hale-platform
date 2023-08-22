@@ -29,7 +29,7 @@ hpa:
 
 cron:
   feedparser:
-    enabled: false
+    enabled: true
 
 ingress:
   enabled: true
