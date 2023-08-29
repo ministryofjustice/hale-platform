@@ -13,7 +13,7 @@ spec:
           serviceAccountName: hale-platform-{{ .Values.configmap.envtype }}-service
           containers:
           - name: feedparser-cron
-            image: 754256621582.dkr.ecr.eu-west-2.amazonaws.com/jotw-content-devs/hale-platform-{{ .Values.configmap.envtype }}-feed-parser-ecr:feedparser
+            image: 754256621582.dkr.ecr.eu-west-2.amazonaws.com/jotw-content-devs/hale-platform-{{ .Values.configmap.envtype }}-feed-parser-ecr:latest
             imagePullPolicy: Always
             envFrom:
               - configMapRef:
