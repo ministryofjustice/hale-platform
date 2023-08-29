@@ -6,7 +6,7 @@ on:
       environment:
         required: true
         type: string
-    secrets:    
+    secrets:
       ecr-role:
         required: true
       ecr-region:
@@ -88,13 +88,15 @@ jobs:
         - name: Login to ECR
           uses: aws-actions/amazon-ecr-login@v1
           id: login-ecr
+          with:
+            mask-password: true
         - name: Build and Push Nginx Image
           run: |
             docker build --pull --no-cache --tag $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG --file nginx.dockerfile .
-            docker push $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG 
+            docker push $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG
           env:
             REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-            REPOSITORY: ${{ secrets.ecr-repo }} 
+            REPOSITORY: ${{ secrets.ecr-repo }}
             IMAGE_TAG: ${{ github.sha }}
         - name: Run Composer
           run: |
@@ -109,10 +111,10 @@ jobs:
         - name: Build and Push Wordpress Image
           run: |
             docker build --pull --no-cache --tag $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG --file wp.dockerfile .
-            docker push $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG 
+            docker push $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG
           env:
             REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-            REPOSITORY: ${{ secrets.ecr-repo }} 
+            REPOSITORY: ${{ secrets.ecr-repo }}
             IMAGE_TAG: ${{ github.sha }}
 
   deployImage:
