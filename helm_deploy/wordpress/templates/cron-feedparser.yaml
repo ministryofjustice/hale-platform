@@ -14,7 +14,7 @@ spec:
           containers:
           - name: feedparser-cron
             image: 754256621582.dkr.ecr.eu-west-2.amazonaws.com/jotw-content-devs/hale-platform-{{ .Values.configmap.envtype }}-feed-parser-ecr:latest
-            imagePullPolicy: IfNotPresent
+            imagePullPolicy: Always
             envFrom:
               - configMapRef:
                   name: hale-wp-config-{{ .Release.Revision }}
