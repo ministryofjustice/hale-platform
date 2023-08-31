@@ -48,6 +48,12 @@ spec:
   - hosts:
     - www.imb.org.uk
     secretName: imb-www-cert
+  - hosts:
+    - brookhouseinquiry.org.uk
+    secretName: brookhouse-cert
+  - hosts:
+    - www.brookhouseinquiry.org.uk
+    secretName: brookhouse-www-cert
     {{- end }}
   rules:
   - host: {{ .Values.domain }}
@@ -152,6 +158,26 @@ spec:
             port:
               number: 8080
   - host: www.imb.org.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: brookhouseinquiry.org.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: www.brookhouseinquiry.org.uk
     http:
       paths:
       - path: /
