@@ -50,6 +50,7 @@
         "wpackagist-plugin/limit-login-attempts-reloaded": "*",
         "wpackagist-plugin/wps-hide-login": "*",
         "wpackagist-plugin/wps-limit-login": "*",
+        "wpackagist-plugin/classic-editor":"1.6.3",
         "relevanssi/relevanssi-premium": "*",
         "ministryofjustice/wp-moj-components": "dev-hale-platform",
         "ministryofjustice/wp-user-roles": "*",
