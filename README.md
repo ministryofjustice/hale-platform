@@ -3,7 +3,7 @@
 ## Installation
 
 This launches a working Wordpress site that pulls in the Hale theme.
-You can choose to launch the site in Docker or Kubernetes.
+You can choose to launch the site in Docker or Kubernetes
 
 Currently only the Docker build works locally but for CloudPlatform
 environments you can use the kubernetes build
