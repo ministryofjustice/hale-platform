@@ -54,6 +54,12 @@ spec:
   - hosts:
     - www.brookhouseinquiry.org.uk
     secretName: brookhouse-www-cert
+  - hosts:
+    - prisonandprobationjobs.gov.uk
+    secretName: ppj-cert
+  - hosts:
+    - www.prisonandprobationjobs.gov.uk
+    secretName: ppj-www-cert
     {{- end }}
   rules:
   - host: {{ .Values.domain }}
@@ -178,6 +184,26 @@ spec:
             port:
               number: 8080
   - host: www.brookhouseinquiry.org.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: prisonandprobationjobs.gov.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: www.prisonandprobationjobs.gov.uk
     http:
       paths:
       - path: /
