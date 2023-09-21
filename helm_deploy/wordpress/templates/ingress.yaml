@@ -12,6 +12,11 @@ metadata:
         SecRuleEngine On
         SecDefaultAction "phase:2,pass,log,tag:github_team=hale-platform"
         SecRuleRemoveById 949110
+    nginx.ingress.kubernetes.io/server-snippet: |
+        location = /.well-known/security.txt {
+        auth_basic off;
+        return 301 https://raw.githubusercontent.com/ministryofjustice/security-guidance/main/contact/vulnerability-disclosure-security.txt;
+        }
 spec:
   ingressClassName: modsec
   tls:
