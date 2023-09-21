@@ -4,17 +4,11 @@ This repository provides all the code required to run an instance of WordPress m
 
 # Deploy to a kubernetes environment
 
-We use [Helm charts](https://github.com/ministryofjustice/hale-platform/tree/main/helm_deploy/wordpress) to manage our kubernetes manifest files. These are configured to work in the CloudPlatforms kubernetes environment but could be modified to work in any kubernetes cluster.
+We use [Helm charts](https://github.com/ministryofjustice/hale-platform/tree/main/helm_deploy/wordpress) to manage our kubernetes manifest files. These are configured to work in the CloudPlatforms kubernetes environment but could be modified to work in any kubernetes cluster. This repo is used to deploy infrastructure changes (ie helm chart/kubernetes changes) and changes to the application, as it pulls in the latest version of the Hale theme and plugins.
 
-As mentioned Hale platform can be deployed to 4 hosted environments:
-- Demonstration
-- Development
-- Staging
-- Production
+To deploy to one of our environments, push a code change to one of the corresponding branches in this repo which will trigger GitActions that deploy the code into the kubernetes cluster.
 
-To deploy out to the demo and dev environments, merge or push code changes to the `dev` or `demo` branch and this will automatically trigger GitActions to deploy the app into the corresponding kubernetes environment. To deploy to staging or production, push to the `main` branch first. This will deploy the code out to the `staging` environment where it can be reviewed. Once it is ready to deploy to production go into the GitActions section of GitHub and find the `Review deployments` button where you can approve deployment to production. You need to be added to the Hale Deployment team group to have permissions to deploy to prod.
-
-More information is available in our [Deployment](https://github.com/ministryofjustice/hale-platform/wiki/Deployment) wiki.
+More information about our deployment process, is available in our [Deployment](https://github.com/ministryofjustice/hale-platform/wiki/Deployment) wiki.
 
 # Deploy locally on a Mac using Docker
 
