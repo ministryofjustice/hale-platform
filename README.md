@@ -2,7 +2,9 @@
 
 # Hale Platform WordPress Multisite
 
-This repository provides all the code required to run an instance of WordPress multisite in kubernetes. It can be deployed to four environments (prod,staging,dev,demo). It also is possible to run this locally on a Mac using Docker. It uses the WordPress official Alpine image, modified to launch a multisite network and then uses PHP dependency manager Composer to pull in all the themes and plugins used by the multisite. For further technical details around the architecture, visit our wiki [overview](https://github.com/ministryofjustice/hale-platform/wiki).
+This repository provides all the code required to run an instance of WordPress multisite in kubernetes. It uses the [WordPress official Alpine image](https://hub.docker.com/_/wordpress), and is modified to launch a multisite network. It uses PHP dependency manager Composer to pull in all the themes and plugins used by the multisite. 
+
+For further technical details around the architecture, visit our wiki [overview](https://github.com/ministryofjustice/hale-platform/wiki).
 
 ## Deploy to a kubernetes environment
 
