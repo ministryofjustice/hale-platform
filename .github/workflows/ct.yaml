@@ -1,0 +1,5 @@
+target-branch: main
+chart-dirs:
+  - helm_deploy/wordpress
+helm-extra-args: --timeout 600s
+check-version-increment: false
