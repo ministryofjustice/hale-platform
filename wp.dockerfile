@@ -46,7 +46,8 @@ RUN chmod +x /usr/local/bin/hale-entrypoint.sh && \
 RUN apk update && \
     apk add less && \
     apk add vim --no-cache && \
-    apk add mysql mysql-client
+    apk add mysql mysql-client && \
+    apk add htop
 
 # Create the uploads folder
 RUN mkdir -p /usr/src/wordpress/wp-content/uploads
