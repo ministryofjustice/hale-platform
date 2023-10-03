@@ -22,5 +22,5 @@ spec:
   minReplicas: 1
   maxReplicas: 1
   {{- end }}
-  targetCPUUtilizationPercentage: 90
+  targetCPUUtilizationPercentage: 500
 {{- end }}
