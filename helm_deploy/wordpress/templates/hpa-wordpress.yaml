@@ -22,5 +22,11 @@ spec:
   minReplicas: 1
   maxReplicas: 1
   {{- end }}
-  targetCPUUtilizationPercentage: 95
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 95
 {{- end }}
