@@ -106,6 +106,8 @@ jobs:
           run: |
             npm install --prefix ./wordpress/wp-content/themes/hale
             npm run production --if-present --prefix ./wordpress/wp-content/themes/hale
+            npm install --prefix ./wordpress/wp-content/themes/hale-dash
+            npm run production --if-present --prefix ./wordpress/wp-content/themes/hale-dash
             npm install --prefix ./wordpress/wp-content/themes/brookhouse
             npm run production --if-present --prefix ./wordpress/wp-content/themes/brookhouse
             npm install --prefix ./wordpress/wp-content/themes/lawcom
