@@ -33,7 +33,7 @@ wp core update-db --network --url="${SERVER_NAME}"
 
 # Setup Hale theme
 wp theme enable hale --network --url="${SERVER_NAME}"
-wp theme enable hale --activate --url="$SERVER_NAME"
+#wp theme enable hale --activate --url="$SERVER_NAME"
 
 # Check plugins are activated
 #wp plugin --network activate advanced-custom-fields-pro --url="${SERVER_NAME}"
