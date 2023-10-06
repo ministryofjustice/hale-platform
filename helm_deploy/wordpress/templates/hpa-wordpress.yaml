@@ -1,5 +1,5 @@
 {{- if .Values.hpa.enabled }}
-apiVersion: autoscaling/v1
+apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: hale-platform-hpa
@@ -11,7 +11,7 @@ spec:
     name: wordpress
   {{- if eq .Values.configmap.envtype "prod" }}
   minReplicas: 3
-  maxReplicas: 20
+  maxReplicas: 12
   {{- else if eq .Values.configmap.envtype "staging" }}
   minReplicas: 2
   maxReplicas: 4
@@ -22,5 +22,11 @@ spec:
   minReplicas: 1
   maxReplicas: 1
   {{- end }}
-  targetCPUUtilizationPercentage: 90
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 95
 {{- end }}

@@ -40,6 +40,7 @@
         "ministryofjustice/brookhouse": "dev-main",
         "ministryofjustice/lawcom": "dev-main",
         "ministryofjustice/justicejobs": "dev-main",
+        "ministryofjustice/hale-dash": "dev-main",
         "wpackagist-plugin/wordpress-seo": "*",
         "wpackagist-plugin/footnotes-made-easy": "*",
         "wpackagist-plugin/simple-301-redirects": "*",
