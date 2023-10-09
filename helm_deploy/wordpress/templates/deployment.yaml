@@ -62,22 +62,22 @@ spec:
             periodSeconds: 30
             timeoutSeconds: 5
             failureThreshold: 3
-          readinessProbe:
-            exec:
-              command:
-                - sh
-                - -c
-                - |
-                  if ! ps aux | grep '[p]hp-fpm: master process' >/dev/null; then
-                    exit 1
-                  else
-                    exit 0
-                  fi
-            initialDelaySeconds: 30
-            periodSeconds: 3
-            timeoutSeconds: 10
-            successThreshold: 1
-            failureThreshold: 3
+          # readinessProbe:
+          #   exec:
+          #     command:
+          #       - sh
+          #       - -c
+          #       - |
+          #         if ! ps aux | grep '[p]hp-fpm: master process' >/dev/null; then
+          #           exit 1
+          #         else
+          #           exit 0
+          #         fi
+          #   initialDelaySeconds: 30
+          #   periodSeconds: 3
+          #   timeoutSeconds: 10
+          #   successThreshold: 1
+          #   failureThreshold: 3
 {{- end }}
         - name: nginx
           image: {{ .Values.nginx.image.repository }}
