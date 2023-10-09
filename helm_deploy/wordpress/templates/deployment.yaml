@@ -52,16 +52,16 @@ spec:
             - secretRef:
                 name: hale-wp-secrets-{{ .Release.Revision }}
 {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
-          livenessProbe:
-            httpGet:
-              port: 443
-              path: /hale-wpms-2020
-              scheme: HTTPS
-              host: {{ .Values.domain }}
-            initialDelaySeconds: 120
-            periodSeconds: 30
-            timeoutSeconds: 5
-            failureThreshold: 3
+          # livenessProbe:
+          #   httpGet:
+          #     port: 443
+          #     path: /hale-wpms-2020
+          #     scheme: HTTPS
+          #     host: {{ .Values.domain }}
+          #   initialDelaySeconds: 120
+          #   periodSeconds: 30
+          #   timeoutSeconds: 5
+          #   failureThreshold: 3
           # readinessProbe:
           #   exec:
           #     command:
@@ -88,22 +88,22 @@ spec:
             - name: wordpress-volume-file-mount
               mountPath: /var/www/html
 {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
-          readinessProbe:
-            exec:
-              command:
-                - sh
-                - -c
-                - |
-                  if curl --silent --fail http://localhost:8080 >/dev/null; then
-                    exit 0
-                  else
-                    exit 1
-                  fi
-            initialDelaySeconds: 35
-            periodSeconds: 5
-            timeoutSeconds: 10
-            successThreshold: 1
-            failureThreshold: 3
+          # readinessProbe:
+          #   exec:
+          #     command:
+          #       - sh
+          #       - -c
+          #       - |
+          #         if curl --silent --fail http://localhost:8080 >/dev/null; then
+          #           exit 0
+          #         else
+          #           exit 1
+          #         fi
+          #   initialDelaySeconds: 35
+          #   periodSeconds: 5
+          #   timeoutSeconds: 10
+          #   successThreshold: 1
+          #   failureThreshold: 3
 {{- end }}
       volumes:
         - name: wordpress-volume-file-mount
