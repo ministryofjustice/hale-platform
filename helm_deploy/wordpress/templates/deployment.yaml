@@ -62,18 +62,18 @@ spec:
             periodSeconds: 30
             timeoutSeconds: 5
             failureThreshold: 3
-            readinessProbe:
-              exec:
-                command:
-                - /bin/sh
-                - -c
-                - |
-                  if [ -f /var/www/html/wp-load.php ] && ps aux | grep -q "[p]hp-fpm"
-                  then
-                    exit 0
-                  else
-                    exit 1
-                  fi
+          readinessProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - |
+                if [ -f /var/www/html/wp-load.php ] && ps aux | grep -q "[p]hp-fpm"
+                then
+                  exit 0
+                else
+                  exit 1
+                fi
             initialDelaySeconds: 30
             periodSeconds: 3
             timeoutSeconds: 10
