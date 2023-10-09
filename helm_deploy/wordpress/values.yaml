@@ -25,7 +25,7 @@ wp:
       demo: 2
 
 hpa:
-  enabled: false
+  enabled: true
 
 cron:
   feedparser:
