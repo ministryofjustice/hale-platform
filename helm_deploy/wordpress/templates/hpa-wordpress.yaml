@@ -13,7 +13,7 @@ spec:
   minReplicas: 3
   maxReplicas: 12
   {{- else if eq .Values.configmap.envtype "staging" }}
-  minReplicas: 12
+  minReplicas: 2
   maxReplicas: 12
   {{- else if eq .Values.configmap.envtype "demo" }}
   minReplicas: 2

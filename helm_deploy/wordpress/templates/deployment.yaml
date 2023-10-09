@@ -55,13 +55,14 @@ spec:
           livenessProbe:
             httpGet:
               port: 443
-              path: /hale-wpms-2020
+              path: /wp-admin/install.php
               scheme: HTTPS
-              host: {{ .Values.domain }}
+              # host: {{ .Values.domain }}
             initialDelaySeconds: 120
-            periodSeconds: 30
+            periodSeconds: 10
             timeoutSeconds: 5
-            failureThreshold: 3
+            failureThreshold: 6
+            successThreshold: 1
           readinessProbe:
             exec:
               command:
