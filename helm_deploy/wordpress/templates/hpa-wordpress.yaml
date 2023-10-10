@@ -11,10 +11,10 @@ spec:
     name: wordpress
   {{- if eq .Values.configmap.envtype "prod" }}
   minReplicas: 3
-  maxReplicas: 8
+  maxReplicas: 4
   {{- else if eq .Values.configmap.envtype "staging" }}
-  minReplicas: 12
-  maxReplicas: 12
+  minReplicas: 2
+  maxReplicas: 3
   {{- else if eq .Values.configmap.envtype "demo" }}
   minReplicas: 2
   maxReplicas: 3
