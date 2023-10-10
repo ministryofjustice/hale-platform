@@ -53,11 +53,16 @@ spec:
                 name: hale-wp-secrets-{{ .Release.Revision }}
 {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
           livenessProbe:
-            httpGet:
-              port: 443
-              path: /wp-admin/install.php
-              scheme: HTTPS
-              # host: {{ .Values.domain }}
+            exec:
+              command:
+              - sh
+              - -c
+              - |
+                if [ -f /var/www/html/wp-load.php ]; then
+                  exit 0
+                else
+                  exit 1
+                fi
             initialDelaySeconds: 120
             periodSeconds: 10
             timeoutSeconds: 5
