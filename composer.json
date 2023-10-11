@@ -40,6 +40,7 @@
         "ministryofjustice/lawcom": "dev-main",
         "ministryofjustice/justicejobs": "dev-main",
         "ministryofjustice/hale-dash": "dev-main",
+        "ministryofjustice/hale-components": "dev-main",
         "wpackagist-plugin/wordpress-seo": "*",
         "wpackagist-plugin/footnotes-made-easy": "*",
         "wpackagist-plugin/simple-301-redirects": "*",
@@ -73,6 +74,7 @@
                 "type:wordpress-muplugin",
                 "ministryofjustice/wp-user-roles",
                 "ministryofjustice/wp-gov-uk-notify",
+                "ministryofjustice/hale-components",
                 "ministryofjustice/wp-s3-uploads"
             ],
             "wordpress/wp-content/plugins/{$name}/": ["type:wordpress-plugin"],
