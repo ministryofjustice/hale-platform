@@ -77,6 +77,12 @@ spec:
   - hosts:
     - www.lawcom.gov.uk
     secretName: lawcom-www-cert
+  - hosts:
+    - jobs.justice.gov.uk
+    secretName: justicejobs-cert
+  - hosts:
+    - www.jobs.justice.gov.uk
+    secretName: justicejobs-www-cert
     {{- end }}
   rules:
   - host: {{ .Values.domain }}
@@ -261,6 +267,26 @@ spec:
             port:
               number: 8080
   - host: www.lawcom.gov.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: jobs.justice.gov.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: www.jobs.justice.gov.uk
     http:
       paths:
       - path: /
