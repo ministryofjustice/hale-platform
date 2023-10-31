@@ -34,7 +34,7 @@ services:
       VIRTUAL_PORT: 443
 
   mariadb:
-    image: mariadb:10.7.1-focal
+    image: mariadb:11.1.2-jammy
     container_name: mariadb
     ports:
       - 3306:3306
