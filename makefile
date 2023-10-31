@@ -2,13 +2,14 @@
 
 # Run site using Docker.
 run:
+	dory up
 	docker-compose up -d
 	chmod +x bin/upload.sh
 	./bin/upload.sh
 
-# Shutdown site using Docker.
+# Shutdown site using Docker. Run twice bc of Docker network bug
 down:
-	docker-compose down
+	docker-compose down && docker-compose down
 
 # Build all images on local machine
 # and remove any previous WP installations.
