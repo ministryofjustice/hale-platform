@@ -65,7 +65,7 @@
         "wpackagist-plugin/wp-analytify":"*",
         "wpackagist-plugin/wp-force-login": "*",
         "wpackagist-plugin/wps-hide-login": "*",
-"        relevanssi/relevanssi-premium": "*",
+        "relevanssi/relevanssi-premium": "*",
         "ministryofjustice/wp-moj-components": "dev-hale-platform",
         "ministryofjustice/wp-user-roles": "*",
         "ministryofjustice/cookie-compliance-for-wordpress": "*",
