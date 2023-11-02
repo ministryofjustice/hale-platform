@@ -26,6 +26,10 @@
         },
         {
             "type": "composer",
+            "url": "https://connect.advancedcustomfields.com"
+        },
+        {
+            "type": "composer",
             "url": "https://wp-languages.github.io"
         }
     ],
@@ -34,6 +38,7 @@
         "composer/installers": "^v1.7.0",
         "vlucas/phpdotenv": "^3.0.0",
         "oscarotero/env": "^1.1.0",
+        "wpengine/advanced-custom-fields-pro": "*",
         "ministryofjustice/wp-hale": "*",
         "ministryofjustice/hale-dash": "dev-main",
         "ministryofjustice/brookhouse": "dev-main",

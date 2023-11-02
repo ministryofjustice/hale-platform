@@ -21,6 +21,8 @@ jobs:
         ecr-repo: ${{ vars.DEV_ECR_REPOSITORY }} 
         cp-user: ${{ secrets.PACKAGIST_USER }}
         cp-password: ${{ secrets.PACKAGIST_PASSWORD }}
+        acf-user: ${{ secrets.ACF_USER }}
+        acf-password: ${{ secrets.ACF_PASSWORD }}
         kube-cluster: ${{ secrets.KUBE_CLUSTER }}
         kube-cert: ${{ secrets.KUBE_CERT }}
         kube-namespace: ${{ secrets.KUBE_NAMESPACE }}
