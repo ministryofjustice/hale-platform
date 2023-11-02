@@ -100,7 +100,7 @@ jobs:
             IMAGE_TAG: ${{ github.sha }}
         - name: Run Composer
           run: |
-            composer config http-basic.composer.wp.dsd.io ${{ secrets.cp-user }} ${{ secrets.cp-password }}
+            composer config http-basic.repo.packagist.com ${{ secrets.cp-user }} ${{ secrets.cp-password }}
             composer install --prefer-dist --no-progress
         - name: Run NPM
           run: |
