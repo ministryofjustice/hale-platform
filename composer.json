@@ -34,7 +34,7 @@
         "composer/installers": "^v1.7.0",
         "vlucas/phpdotenv": "^3.0.0",
         "oscarotero/env": "^1.1.0",
-        "ministryofjustice/wp-hale": "dev-translations",
+        "ministryofjustice/wp-hale": "*",
         "ministryofjustice/hale-dash": "dev-main",
         "ministryofjustice/brookhouse": "dev-main",
         "ministryofjustice/lawcom": "dev-main",
