@@ -105,7 +105,7 @@ jobs:
         - name: Run Composer
           run: |
             composer config http-basic.repo.packagist.com ${{ secrets.cp-user }} ${{ secrets.cp-password }}
-            composer config connect.advancedcustomfields.com ${{ secrets.acf-user }} ${{ secrets.acf-password }}
+            composer config http-basic.connect.advancedcustomfields.com ${{ secrets.acf-user }} ${{ secrets.acf-password }}
             composer install --prefer-dist --no-progress
         - name: Run NPM
           run: |
