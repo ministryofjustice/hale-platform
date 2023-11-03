@@ -43,7 +43,17 @@ while true; do
             echo -e '# Run NPM'
             echo -e '######################\n'
             npm install --prefix ./wordpress/wp-content/themes/hale
-            npm run build --prefix ./wordpress/wp-content/themes/hale
+            npm run production --if-present --prefix ./wordpress/wp-content/themes/hale
+            npm install --prefix ./wordpress/wp-content/themes/brookhouse
+            npm run production --if-present --prefix ./wordpress/wp-content/themes/brookhouse
+            npm install --prefix ./wordpress/wp-content/themes/lawcom
+            npm run production --if-present --prefix ./wordpress/wp-content/themes/lawcom
+            npm install --prefix ./wordpress/wp-content/themes/justicejobs
+            npm run production --if-present --prefix ./wordpress/wp-content/themes/justicejobs
+            npm install --prefix ./wordpress/wp-content/themes/hale-dash
+            npm run production --if-present --prefix ./wordpress/wp-content/themes/hale-dash
+            npm install --prefix ./wordpress/wp-content/themes/ppo
+            npm run production --if-present --prefix ./wordpress/wp-content/themes/ppo
 
             # Test Docker is running locally
             if ! docker info > /dev/null 2>&1; then
