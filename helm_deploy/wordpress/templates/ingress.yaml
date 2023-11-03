@@ -83,6 +83,12 @@ spec:
   - hosts:
     - www.jobs.justice.gov.uk
     secretName: justicejobs-www-cert
+  - hosts:
+    - ppo.gov.uk
+    secretName: ppo-cert
+  - hosts:
+    - www.ppo.gov.uk
+    secretName: ppo-www-cert
     {{- end }}
   rules:
   - host: {{ .Values.domain }}
@@ -287,6 +293,26 @@ spec:
             port:
               number: 8080
   - host: www.jobs.justice.gov.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: ppo.gov.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: www.ppo.gov.uk
     http:
       paths:
       - path: /
