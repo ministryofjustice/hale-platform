@@ -20,7 +20,7 @@ wp:
     # Default if HPA is not turned on
     replicaCount:
       prod: 3
-      staging: 3
+      staging: 2
       dev: 1
       demo: 2
 

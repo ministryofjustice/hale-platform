@@ -121,6 +121,8 @@ jobs:
             npm run production --if-present --prefix ./wordpress/wp-content/themes/justicejobs
             npm install --prefix ./wordpress/wp-content/themes/hale-dash
             npm run production --if-present --prefix ./wordpress/wp-content/themes/hale-dash
+            npm install --prefix ./wordpress/wp-content/themes/ppo
+            npm run production --if-present --prefix ./wordpress/wp-content/themes/ppo
         - name: Build and Push Wordpress Image
           run: |
             docker build --pull --no-cache --tag $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG --file wp.dockerfile .
