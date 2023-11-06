@@ -44,6 +44,8 @@
         "ministryofjustice/brookhouse": "dev-main",
         "ministryofjustice/lawcom": "dev-main",
         "ministryofjustice/justicejobs": "dev-main",
+        "ministryofjustice/ppo": "dev-main",
+        "ministryofjustice/hale-components": "dev-main",
         "ministryofjustice/hale-dash": "dev-main",
         "wpackagist-plugin/wordpress-seo": "*",
         "wpackagist-plugin/footnotes-made-easy": "*",
@@ -66,6 +68,7 @@
         "ministryofjustice/wp-gov-uk-notify": "*",
         "ministryofjustice/wp-s3-uploads": "dev-master",
         "ministryofjustice/feed-importer": "dev-main",
+        "relevanssi/relevanssi-premium": "*",
         "sentry/sdk": "^3.3"
     },
     "require-dev": {
