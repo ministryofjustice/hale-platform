@@ -78,7 +78,7 @@
         "ministryofjustice/cookie-compliance-for-wordpress": "*",
         "ministryofjustice/wp-moj-blocks": "*",
         "ministryofjustice/wp-gov-uk-notify": "*",
-        "ministryofjustice/wp-s3-uploads": "dev-master",
+        "ministryofjustice/wp-s3-uploads": "dev-main",
         "ministryofjustice/feed-importer": "dev-main",
         "relevanssi/relevanssi-premium": "*",
         "sentry/sdk": "^3.3"
