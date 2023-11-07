@@ -22,7 +22,11 @@
         },
         {
             "type": "composer",
-            "url": "https://composer.wp.dsd.io"
+            "url": "https://repo.packagist.com/mojwb/hale-platform"
+        },
+        {
+            "type": "composer",
+            "url": "https://connect.advancedcustomfields.com"
         },
         {
             "type": "composer",
@@ -34,11 +38,14 @@
         "composer/installers": "^v1.7.0",
         "vlucas/phpdotenv": "^3.0.0",
         "oscarotero/env": "^1.1.0",
-        "acf/advanced-custom-fields-pro": "*",
-        "ministryofjustice/wp-hale": "*",
+        "wpengine/advanced-custom-fields-pro": "*",
+        "ministryofjustice/hale": "*",
+        "ministryofjustice/hale-dash": "dev-main",
         "ministryofjustice/brookhouse": "dev-main",
         "ministryofjustice/lawcom": "dev-main",
         "ministryofjustice/justicejobs": "dev-main",
+        "ministryofjustice/ppo": "dev-main",
+        "ministryofjustice/hale-components": "dev-main",
         "ministryofjustice/hale-dash": "dev-main",
         "ministryofjustice/ppo": "dev-main",
         "ministryofjustice/hale-components": "dev-main",
@@ -66,14 +73,14 @@
         "wpackagist-plugin/wp-analytify":"*",
         "wpackagist-plugin/wp-force-login": "*",
         "wpackagist-plugin/wps-hide-login": "*",
-        "relevanssi/relevanssi-premium": "*",
         "ministryofjustice/wp-moj-components": "dev-hale-platform",
         "ministryofjustice/wp-user-roles": "*",
         "ministryofjustice/cookie-compliance-for-wordpress": "*",
         "ministryofjustice/wp-moj-blocks": "*",
         "ministryofjustice/wp-gov-uk-notify": "*",
-        "ministryofjustice/wp-s3-uploads": "dev-master",
+        "ministryofjustice/wp-s3-uploads": "dev-main",
         "ministryofjustice/feed-importer": "dev-main",
+        "relevanssi/relevanssi-premium": "*",
         "sentry/sdk": "^3.3"
     },
     "require-dev": {
@@ -89,7 +96,7 @@
                 "ministryofjustice/wp-s3-uploads"
             ],
             "wordpress/wp-content/plugins/{$name}/": ["type:wordpress-plugin"],
-            "wordpress/wp-content/themes/hale/": ["ministryofjustice/wp-hale"],
+            "wordpress/wp-content/themes/hale/": ["ministryofjustice/hale"],
             "wordpress/wp-content/themes/{$name}/": ["type:wordpress-theme"]
         },
         "wordpress-install-dir": "/var/www/html"

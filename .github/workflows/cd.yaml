@@ -19,8 +19,10 @@ jobs:
         ecr-role: ${{ secrets.DEV_ECR_ROLE_TO_ASSUME }}
         ecr-region: ${{ vars.DEV_ECR_REGION }}
         ecr-repo: ${{ vars.DEV_ECR_REPOSITORY }} 
-        cp-user: ${{ secrets.COMPOSER_USER }}
-        cp-password: ${{ secrets.COMPOSER_PASS }}
+        cp-user: ${{ secrets.PACKAGIST_USER }}
+        cp-password: ${{ secrets.PACKAGIST_PASSWORD }}
+        acf-user: ${{ secrets.ACF_USER }}
+        acf-password: ${{ secrets.ACF_PASSWORD }}
         kube-cluster: ${{ secrets.KUBE_CLUSTER }}
         kube-cert: ${{ secrets.KUBE_CERT }}
         kube-namespace: ${{ secrets.KUBE_NAMESPACE }}
@@ -56,6 +58,8 @@ jobs:
         ecr-repo: ${{ vars.DEMO_ECR_REPOSITORY }} 
         cp-user: ${{ secrets.COMPOSER_USER }}
         cp-password: ${{ secrets.COMPOSER_PASS }}
+        acf-user: ${{ secrets.ACF_USER }}
+        acf-password: ${{ secrets.ACF_PASSWORD }}
         kube-cluster: ${{ secrets.KUBE_CLUSTER }}
         kube-cert: ${{ secrets.KUBE_CERT }}
         kube-namespace: ${{ secrets.KUBE_NAMESPACE }}
@@ -91,6 +95,8 @@ jobs:
         ecr-repo: ${{ vars.STAGING_ECR_REPOSITORY }} 
         cp-user: ${{ secrets.COMPOSER_USER }}
         cp-password: ${{ secrets.COMPOSER_PASS }}
+        acf-user: ${{ secrets.ACF_USER }}
+        acf-password: ${{ secrets.ACF_PASSWORD }}
         kube-cluster: ${{ secrets.KUBE_CLUSTER }}
         kube-cert: ${{ secrets.KUBE_CERT }}
         kube-namespace: ${{ secrets.KUBE_NAMESPACE }}
@@ -127,6 +133,8 @@ jobs:
         ecr-repo: ${{ vars.PROD_ECR_REPOSITORY }} 
         cp-user: ${{ secrets.COMPOSER_USER }}
         cp-password: ${{ secrets.COMPOSER_PASS }}
+        acf-user: ${{ secrets.ACF_USER }}
+        acf-password: ${{ secrets.ACF_PASSWORD }}
         kube-cluster: ${{ secrets.KUBE_CLUSTER }}
         kube-cert: ${{ secrets.KUBE_CERT }}
         kube-namespace: ${{ secrets.KUBE_NAMESPACE }}
