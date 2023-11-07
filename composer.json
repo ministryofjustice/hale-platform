@@ -96,7 +96,7 @@
                 "ministryofjustice/wp-s3-uploads"
             ],
             "wordpress/wp-content/plugins/{$name}/": ["type:wordpress-plugin"],
-            "wordpress/wp-content/themes/hale/": ["ministryofjustice/wp-hale"],
+            "wordpress/wp-content/themes/hale/": ["ministryofjustice/hale"],
             "wordpress/wp-content/themes/{$name}/": ["type:wordpress-theme"]
         },
         "wordpress-install-dir": "/var/www/html"
