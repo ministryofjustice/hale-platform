@@ -1,5 +1,5 @@
 # Build app - WordPress Multisite
-FROM --platform=linux/amd64 wordpress:6.3.1-php8.2-fpm-alpine
+FROM --platform=linux/amd64 wordpress:6.4.0-php8.2-fpm-alpine
 
 # Add load.php into mu-plugins
 COPY opt/php/load.php /usr/src/wordpress/wp-content/mu-plugins/load.php
