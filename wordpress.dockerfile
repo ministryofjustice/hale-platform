@@ -1,5 +1,7 @@
 ####################################################
 # WordPress multisite image
+# Installs WordPress multisite, PHP and PHP-FPM to serve
+# files to NGINX
 # ##################################################
 
 # Build multisite
