@@ -94,14 +94,3 @@ services:
       - mariadb
     networks:
       - wordpress
-  wp:
-    build:
-      context: .
-      dockerfile: wp.dockerfile
-    container_name: wp
-    platform: linux/amd64
-    entrypoint: ['wp', '--allow-root']
-    volumes:
-      - ./wordpress:/var/www/html:delegated
-    networks:
-      - wordpress
