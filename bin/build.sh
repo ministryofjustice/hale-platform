@@ -26,6 +26,19 @@ while true; do
                 rm -rf $DIR
             fi
 
+            # Determine the path for the .env file and create file. Do not overwrite if .env exists.
+            ENV_FILE_PATH="$(pwd)/.env"
+
+            # Check if .env file already exists
+            if [ ! -f "$ENV_FILE_PATH" ]; then
+                # Create .env only if it doesn't exist
+                echo "# Add in custom variables you want to run in the Docker container locally" > "$ENV_FILE_PATH"
+                echo "Generated .env file at $ENV_FILE_PATH"
+            else
+                # .env file already exists
+                echo ".env file already exists at $ENV_FILE_PATH. Skipping creation."
+            fi
+
             # Install build dependancies
             echo -e '\n######################'
             echo -e '# Run Composer'

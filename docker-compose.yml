@@ -2,6 +2,7 @@ version: '3.9'
 
 networks:
   wordpress:
+      driver: bridge
 
 volumes:
   database:
@@ -9,11 +10,11 @@ volumes:
 
 services:
   nginx:
+    container_name: nginx
     platform: linux/arm64v8
     build:
       context: .
       dockerfile: nginx.local.dockerfile
-    container_name: nginx
     ports:
       - 8080:8080
       - 443:443
@@ -27,48 +28,41 @@ services:
       - mariadb
     networks:
       - wordpress
-    env_file:
-      - .env.local
     environment:
       VIRTUAL_HOST: hale.docker
       VIRTUAL_PORT: 443
 
   mariadb:
-    image: mariadb:11.1.2-jammy
     container_name: mariadb
+    image: mariadb:11.1.2-jammy
     ports:
       - 3306:3306
-    env_file:
-      - .env.local
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: wordpress
       MYSQL_USER: wordpress
       MYSQL_PASSWORD: wordpress
-      DB_NAME: wordpress
-      DB_USER: wordpress
-      DB_PASSWORD: wordpress
-      DB_HOST: mariadb:3306
-      VIRTUAL_PROTO: https
+      SERVICE_NAME: mariadb
+      SERVICE_TAGS: local
     volumes:
       - database:/var/lib/mysql
     networks:
       - wordpress
 
   wordpress:
-    depends_on:
-      - mariadb
+    container_name: wordpress
     platform: linux/amd64
     build:
       context: .
       dockerfile: wp.dockerfile
-    container_name: wordpress
     volumes:
       - ./wordpress:/var/www/html:delegated
+    depends_on:
+      - mariadb
     networks:
       - wordpress
     env_file:
-      - .env.local
+      - .env
     environment:
       WORDPRESS_DB_HOST: mariadb:3306
       WORDPRESS_DB_USER: wordpress
@@ -78,13 +72,17 @@ services:
       WORDPRESS_ADMIN_PASSWORD: wordpress
       WORDPRESS_ADMIN_EMAIL: "wordpress@hale.docker"
       WP_ENVIRONMENT_TYPE: local
+      S3_UPLOADS_USE_LOCAL: "true"
+      S3_UPLOADS_USE_INSTANCE_PROFILE: "false"
+      S3_UPLOADS_REGION: ""
+      S3_UPLOADS_BUCKET: ""
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin
     platform: linux/amd64
     ports:
-      - 3000:80
+      - 3000:80 # access at http://localhost:3000
     environment:
       PMA_HOST: mariadb
       PMA_PORT: 3306
