@@ -41,7 +41,7 @@ services:
     platform: linux/amd64
     build:
       context: .
-      dockerfile: wp.dockerfile
+      dockerfile: wordpress.dockerfile
     volumes:
       - ./wordpress:/var/www/html:delegated
     depends_on:

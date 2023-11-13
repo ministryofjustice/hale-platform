@@ -1,14 +1,31 @@
-# Build app - WordPress Multisite
+####################################################
+# WordPress multisite image
+# ##################################################
+
+# Build multisite
 FROM --platform=linux/amd64 wordpress:6.4.0-php8.2-fpm-alpine
 
-# Add load.php into mu-plugins
-COPY opt/php/load.php /usr/src/wordpress/wp-content/mu-plugins/load.php
+# Install additional Alpine packages
+RUN apk update && \
+    apk add less \
+            vim \
+            mysql \
+            mysql-client \
+            htop
 
-# Add conifg & error handling
+# Install wp-cli
+RUN curl -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
+    chmod +x /usr/local/bin/wp
+
+# Set permissions for wp-cli
+RUN addgroup -g 1001 wp \
+    && adduser -G wp -g wp -s /bin/sh -D wp \
+    && chown wp:wp /var/www/html
+
+# Add all supporting PHP files
+COPY opt/php/load.php /usr/src/wordpress/wp-content/mu-plugins/load.php
 COPY opt/php/application.php /usr/src/wordpress/wp-content/mu-plugins/application.php
 COPY opt/php/error-handling.php /usr/src/wordpress/error-handling.php
-
-# Set PHP-FPM settings
 COPY opt/php/www.conf /usr/local/etc/php-fpm.d/www.conf
 COPY opt/php/wp-cron-multisite.php /usr/src/wordpress/wp-cron-multisite.php
 
@@ -29,25 +46,14 @@ COPY /vendor /usr/src/wordpress/wp-content/vendor
 # Custom php.ini additions for dev, staging & prod are done via k8s manifest
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
-# Set permissions for wp-cli
-RUN addgroup -g 1001 wp && adduser -G wp -g wp -s /bin/sh -D wp && \
-    chown wp:wp /var/www/html
-
-# Install wp-cli
-RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
-    chmod +x wp-cli.phar && \
-    mv wp-cli.phar /usr/local/bin/wp
+# Create new user to run the container as non-root
+RUN adduser --disabled-password hale -u 1002 \
+    && chown -R hale:hale /var/www/html \
+    && chown hale:hale /usr/local/bin/docker-entrypoint.sh
 
 # Make multisite scripts executable
-RUN chmod +x /usr/local/bin/hale-entrypoint.sh && \
-    chmod +x /usr/local/bin/config.sh
-
-# Install additional Alpine packages
-RUN apk update && \
-    apk add less && \
-    apk add vim --no-cache && \
-    apk add mysql mysql-client && \
-    apk add htop
+RUN chmod +x /usr/local/bin/hale-entrypoint.sh \
+    && chmod +x /usr/local/bin/config.sh
 
 # Create the uploads folder
 RUN mkdir -p /usr/src/wordpress/wp-content/uploads
@@ -56,11 +62,6 @@ RUN mkdir -p /usr/src/wordpress/wp-content/uploads
 # with custom entrypoint so we can launch WP multisite network
 ENTRYPOINT ["/usr/local/bin/hale-entrypoint.sh"]
 
-# Create new user to run container as non-root
-RUN adduser --disabled-password hale -u 1002 && \
-    chown -R hale:hale /var/www/html
-
-RUN chown hale:hale /usr/local/bin/docker-entrypoint.sh
-
-# Set container user 'root' to 'hale'
+# Set container user 'root' to 'hale'. Init is required by CP
+# instead of 'hale name'.
 USER 1002
