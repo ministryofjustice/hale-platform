@@ -44,6 +44,7 @@ services:
       dockerfile: wordpress.dockerfile
     volumes:
       - ./wordpress:/var/www/html:delegated
+      - ./opt/php/php.ini:/usr/local/etc/php/conf.d/php.ini
     depends_on:
       - mariadb
     env_file:
