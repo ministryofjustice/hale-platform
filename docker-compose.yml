@@ -79,13 +79,29 @@ services:
       WORDPRESS_ADMIN_EMAIL: "wordpress@hale.docker"
       WP_ENVIRONMENT_TYPE: local
 
-  #wp:
-  #build:
-  #   context: .
-  #   dockerfile: wp.dockerfile
-  # container_name: wp
-  # entrypoint: ['wp', '--allow-root']
-  #  volumes:
-  #   - ./wordpress:/var/www/html:delegated
-  # networks:
-  #    - wordpress
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    platform: linux/amd64
+    ports:
+      - 3000:80
+    environment:
+      PMA_HOST: mariadb
+      PMA_PORT: 3306
+      UPLOAD_LIMIT: 600M
+      MYSQL_ROOT_PASSWORD: root
+    depends_on:
+      - mariadb
+    networks:
+      - wordpress
+  wp:
+    build:
+      context: .
+      dockerfile: wp.dockerfile
+    container_name: wp
+    platform: linux/amd64
+    entrypoint: ['wp', '--allow-root']
+    volumes:
+      - ./wordpress:/var/www/html:delegated
+    networks:
+      - wordpress
