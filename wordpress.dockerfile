@@ -24,19 +24,18 @@ RUN addgroup -g 1001 wp \
     && adduser -G wp -g wp -s /bin/sh -D wp \
     && chown wp:wp /var/www/html
 
-# Add all supporting PHP files
+# Add PHP multsite supporting files
 COPY opt/php/load.php /usr/src/wordpress/wp-content/mu-plugins/load.php
 COPY opt/php/application.php /usr/src/wordpress/wp-content/mu-plugins/application.php
 COPY opt/php/error-handling.php /usr/src/wordpress/error-handling.php
 COPY opt/php/www.conf /usr/local/etc/php-fpm.d/www.conf
 COPY opt/php/wp-cron-multisite.php /usr/src/wordpress/wp-cron-multisite.php
 
-# Add WP multisite network scripts
+# Setup WordPress multisite and network
 COPY opt/scripts/hale-entrypoint.sh /usr/local/bin/
 COPY opt/scripts/config.sh /usr/local/bin/
 
 # Generated Composer and NPM compiled artifacts (plugins, themes, CSS, JS)
-# are copied into place at this stage of build.
 # The WP offical Docker image expects files to be in /usr/src/wordpress
 # but then will copy them over on launch of site to the /html directory.
 COPY /wordpress/wp-content/plugins /usr/src/wordpress/wp-content/plugins
@@ -64,6 +63,6 @@ RUN mkdir -p /usr/src/wordpress/wp-content/uploads
 # with custom entrypoint so we can launch WP multisite network
 ENTRYPOINT ["/usr/local/bin/hale-entrypoint.sh"]
 
-# Set container user 'root' to 'hale'. Init is required by CP
-# instead of 'hale name'.
+# Set container user 'root' to 'hale' that is set to 1002. Number is required
+# instead of using user name.
 USER 1002
