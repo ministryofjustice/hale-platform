@@ -35,6 +35,9 @@ wp core update-db --network --url="${SERVER_NAME}"
 # Setup Hale theme
 wp theme enable hale --network --url="${SERVER_NAME}"
 
+# Activate greater capabilities for Query Monitor plugin
+wp qm enable
+
 # Delete default installed core themes and plugins
 wp theme delete twentytwentyone twentytwentytwo
 wp plugin delete akismet hello
