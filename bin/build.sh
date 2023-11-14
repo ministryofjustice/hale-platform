@@ -67,6 +67,8 @@ while true; do
             npm run production --if-present --prefix ./wordpress/wp-content/themes/hale-dash
             npm install --prefix ./wordpress/wp-content/themes/ppo
             npm run production --if-present --prefix ./wordpress/wp-content/themes/ppo
+            npm install --prefix ./wordpress/wp-content/themes/sifocc
+            npm run production --if-present --prefix ./wordpress/wp-content/themes/sifocc
 
             # Test Docker is running locally
             if ! docker info > /dev/null 2>&1; then
