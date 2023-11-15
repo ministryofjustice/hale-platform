@@ -17,6 +17,7 @@ wp config set FORCE_SSL_ADMIN true --raw
 wp config set S3_UPLOADS_BUCKET "\$_SERVER['S3_UPLOADS_BUCKET']" --raw
 wp config set S3_UPLOADS_REGION "\$_SERVER['S3_UPLOADS_REGION']" --raw
 wp config set S3_UPLOADS_USE_INSTANCE_PROFILE "\$_SERVER['S3_UPLOADS_USE_INSTANCE_PROFILE']" --raw
+wp config set  QM_ENABLE_CAPS_PANEL true --raw
 
 #WP core install
 wp core multisite-install --title="Hale Multisite Platform" \
@@ -33,11 +34,12 @@ wp core update-db --network --url="${SERVER_NAME}"
 
 # Setup Hale theme
 wp theme enable hale --network --url="${SERVER_NAME}"
-#wp theme enable hale --activate --url="$SERVER_NAME"
 
-# Check plugins are activated
-#wp plugin --network activate advanced-custom-fields-pro --url="${SERVER_NAME}"
-#wp plugin --network activate wp-user-roles --url="${SERVER_NAME}"
-#wp plugin --network activate wp-moj-blocks --url="${SERVER_NAME}"
+# Activate greater capabilities for Query Monitor plugin
+wp qm enable
+
+# Delete default installed core themes and plugins
+wp theme delete twentytwentyone twentytwentytwo
+wp plugin delete akismet hello
 
 exec "$@"

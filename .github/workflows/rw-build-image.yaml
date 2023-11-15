@@ -67,7 +67,6 @@ on:
         required: true
 
 jobs:
-
   buildImage:
       name: Build Image and push to ECR
       runs-on: ubuntu-latest
@@ -86,7 +85,6 @@ jobs:
           with:
             role-to-assume: ${{ secrets.ecr-role }}
             aws-region: ${{ secrets.ecr-region }}
-
 
         # Login to container repository
         - name: Login to ECR
@@ -123,9 +121,11 @@ jobs:
             npm run production --if-present --prefix ./wordpress/wp-content/themes/hale-dash
             npm install --prefix ./wordpress/wp-content/themes/ppo
             npm run production --if-present --prefix ./wordpress/wp-content/themes/ppo
+            npm install --prefix ./wordpress/wp-content/themes/sifocc
+            npm run production --if-present --prefix ./wordpress/wp-content/themes/sifocc
         - name: Build and Push Wordpress Image
           run: |
-            docker build --pull --no-cache --tag $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG --file wp.dockerfile .
+            docker build --pull --no-cache --tag $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG --file wordpress.dockerfile .
             docker push $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG
           env:
             REGISTRY: ${{ steps.login-ecr.outputs.registry }}
