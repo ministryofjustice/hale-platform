@@ -63,6 +63,7 @@ services:
       S3_UPLOADS_REGION: ""
       S3_UPLOADS_BUCKET: ""
       SERVER_NAME: "hale.docker"
+      PHP_DSN: ""
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
