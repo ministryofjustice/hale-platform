@@ -19,6 +19,7 @@ wp config set S3_UPLOADS_REGION "\$_SERVER['S3_UPLOADS_REGION']" --raw
 wp config set S3_UPLOADS_USE_INSTANCE_PROFILE "\$_SERVER['S3_UPLOADS_USE_INSTANCE_PROFILE']" --raw
 wp config set QM_ENABLE_CAPS_PANEL true --raw
 wp config set WP_CACHE true --raw
+wp config set WP_SENTRY_PHP_DSN "\$_SERVER['PHP_DSN']" --raw
 
 #WP core install
 wp core multisite-install --title="Hale Multisite Platform" \
