@@ -63,7 +63,7 @@ services:
       S3_UPLOADS_REGION: ""
       S3_UPLOADS_BUCKET: ""
       SERVER_NAME: "hale.docker"
-      PHP_DSN: ""
+      PHP_DSN: "" # Sentry constant (not used locally)
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
