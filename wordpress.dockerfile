@@ -5,7 +5,7 @@
 # ##################################################
 
 # Build multisite
-FROM --platform=linux/amd64 wordpress:6.4.0-php8.2-fpm-alpine
+FROM --platform=linux/amd64 wordpress:6.4.1-php8.2-fpm-alpine
 
 # Install additional Alpine packages
 RUN apk update && \
