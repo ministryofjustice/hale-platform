@@ -13,6 +13,8 @@ on:
         required: true
       ecr-repo:
         required: true
+      sentry-dsn:
+        required: true
       cp-user:
         required: true
       cp-password:
@@ -175,6 +177,7 @@ jobs:
           --set alertSecrets.slackWebhookUrl=${{ secrets.alert-slack-webhook-url }} \
           --set configmap.servername=${{ secrets.kube-namespace }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set configmap.envtype=${{ vars.ENV_TYPE }} \
+          --set configmap.sentrydns=${{ vars.SENTRY_DNS }} \
           --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.kube-namespace }}-green \
           --set domain=${{ secrets.kube-namespace }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_nginx-${{ github.sha }} \
