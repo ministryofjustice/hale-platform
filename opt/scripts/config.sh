@@ -28,8 +28,8 @@ wp config set WP_SENTRY_BROWSER_ADMIN_ENABLED true --raw
 wp config set WP_SENTRY_BROWSER_LOGIN_ENABLED true --raw
 wp config set WP_SENTRY_BROWSER_FRONTEND_ENABLED true --raw
 wp config set WP_SENTRY_BROWSER_TRACES_SAMPLE_RATE "0.3" --raw # sample ~30% of traffic
-wp config set WP_SENTRY_BROWSER_REPLAYS_SESSION_SAMPLE_RATE, "0.1" --raw
-wp config set WP_SENTRY_BROWSER_REPLAYS_ON_ERROR_SAMPLE_RATE, "1.0" --raw
+wp config set WP_SENTRY_BROWSER_REPLAYS_SESSION_SAMPLE_RATE "0.1" --raw
+wp config set WP_SENTRY_BROWSER_REPLAYS_ON_ERROR_SAMPLE_RATE "1.0" --raw
 
 #WP core install
 wp core multisite-install --title="Hale Multisite Platform" \
