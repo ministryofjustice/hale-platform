@@ -19,12 +19,17 @@ wp config set S3_UPLOADS_REGION "\$_SERVER['S3_UPLOADS_REGION']" --raw
 wp config set S3_UPLOADS_USE_INSTANCE_PROFILE "\$_SERVER['S3_UPLOADS_USE_INSTANCE_PROFILE']" --raw
 wp config set QM_ENABLE_CAPS_PANEL true --raw
 wp config set WP_CACHE true --raw
+
+# https://github.com/stayallive/wp-sentry/tree/v7.1.0#configuration
 wp config set WP_SENTRY_PHP_DSN "\$_SERVER['PHP_DSN']" --raw
 wp config set WP_SENTRY_BROWSER_DSN "\$_SERVER['PHP_DSN']" --raw
 wp config set WP_SENTRY_ENV "\$_SERVER['WP_ENVIRONMENT_TYPE']" --raw
 wp config set WP_SENTRY_BROWSER_ADMIN_ENABLED true --raw
 wp config set WP_SENTRY_BROWSER_LOGIN_ENABLED true --raw
 wp config set WP_SENTRY_BROWSER_FRONTEND_ENABLED true --raw
+wp config set WP_SENTRY_BROWSER_TRACES_SAMPLE_RATE "0.3" --raw # sample ~30% of traffic
+wp config set WP_SENTRY_BROWSER_REPLAYS_SESSION_SAMPLE_RATE, "0.1" --raw
+wp config set WP_SENTRY_BROWSER_REPLAYS_ON_ERROR_SAMPLE_RATE, "1.0" --raw
 
 #WP core install
 wp core multisite-install --title="Hale Multisite Platform" \
