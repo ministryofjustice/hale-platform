@@ -64,6 +64,7 @@ services:
       S3_UPLOADS_BUCKET: ""
       SERVER_NAME: "hale.docker"
       PHP_DSN: "" # Sentry constant (not used locally)
+      WP_SENTRY_ENV: ""
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
