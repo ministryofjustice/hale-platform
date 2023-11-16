@@ -19,6 +19,8 @@ jobs:
         ecr-role: ${{ secrets.DEV_ECR_ROLE_TO_ASSUME }}
         ecr-region: ${{ vars.DEV_ECR_REGION }}
         ecr-repo: ${{ vars.DEV_ECR_REPOSITORY }}
+        sentry-dsn: ${{ vars.PHP_DSN }}
+        env-type: ${{ vars.ENV_TYPE }}
         cp-user: ${{ secrets.PACKAGIST_USER }}
         cp-password: ${{ secrets.PACKAGIST_PASSWORD }}
         acf-user: ${{ secrets.ACF_USER }}
@@ -56,6 +58,8 @@ jobs:
         ecr-role: ${{ secrets.DEMO_ECR_ROLE_TO_ASSUME }}
         ecr-region: ${{ vars.DEMO_ECR_REGION }}
         ecr-repo: ${{ vars.DEMO_ECR_REPOSITORY }}
+        sentry-dsn: ${{ vars.PHP_DSN }}
+        env-type: ${{ vars.ENV_TYPE }}
         cp-user: ${{ secrets.PACKAGIST_USER }}
         cp-password: ${{ secrets.PACKAGIST_PASSWORD }}
         acf-user: ${{ secrets.ACF_USER }}
@@ -93,6 +97,8 @@ jobs:
         ecr-role: ${{ secrets.STAGING_ECR_ROLE_TO_ASSUME }}
         ecr-region: ${{ vars.STAGING_ECR_REGION }}
         ecr-repo: ${{ vars.STAGING_ECR_REPOSITORY }}
+        sentry-dsn: ${{ vars.PHP_DSN }}
+        env-type: ${{ vars.ENV_TYPE }}
         cp-user: ${{ secrets.PACKAGIST_USER }}
         cp-password: ${{ secrets.PACKAGIST_PASSWORD }}
         acf-user: ${{ secrets.ACF_USER }}
@@ -131,6 +137,8 @@ jobs:
         ecr-role: ${{ secrets.PROD_ECR_ROLE_TO_ASSUME }}
         ecr-region: ${{ vars.PROD_ECR_REGION }}
         ecr-repo: ${{ vars.PROD_ECR_REPOSITORY }}
+        sentry-dsn: ${{ vars.PHP_DSN }}
+        env-type: ${{ vars.ENV_TYPE }}
         cp-user: ${{ secrets.PACKAGIST_USER }}
         cp-password: ${{ secrets.PACKAGIST_PASSWORD }}
         acf-user: ${{ secrets.ACF_USER }}
