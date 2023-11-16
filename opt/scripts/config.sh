@@ -20,7 +20,11 @@ wp config set S3_UPLOADS_USE_INSTANCE_PROFILE "\$_SERVER['S3_UPLOADS_USE_INSTANC
 wp config set QM_ENABLE_CAPS_PANEL true --raw
 wp config set WP_CACHE true --raw
 wp config set WP_SENTRY_PHP_DSN "\$_SERVER['PHP_DSN']" --raw
+wp config set WP_SENTRY_BROWSER_DSN "\$_SERVER['PHP_DSN']" --raw
 wp config set WP_SENTRY_ENV "\$_SERVER['WP_ENVIRONMENT_TYPE']" --raw
+wp config set WP_SENTRY_BROWSER_ADMIN_ENABLED true --raw
+wp config set WP_SENTRY_BROWSER_LOGIN_ENABLED true --raw
+wp config set WP_SENTRY_BROWSER_FRONTEND_ENABLED true --raw
 
 #WP core install
 wp core multisite-install --title="Hale Multisite Platform" \
