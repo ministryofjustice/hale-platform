@@ -1,9 +1,17 @@
+# Directories
 /wordpress
+
+# Database files
+*.sql
+
+# Other
 .git
 .DS_Store
 .env
+.env.local
 auth.json
 
+# WordPress related
 # We can't ignore these as we need them when building the image
 !/wordpress/wp-content/plugins
 !/wordpress/wp-content/themes

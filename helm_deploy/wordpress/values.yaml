@@ -41,6 +41,7 @@ configmap:
   servername: ""
   envtype: ""
   s3useprofile: "true"
+  sentrydns: ""
 
 secrets:
   enabled: true

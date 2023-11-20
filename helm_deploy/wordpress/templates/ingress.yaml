@@ -71,6 +71,30 @@ spec:
   - hosts:
     - www.nationalpreventivemechanism.org.uk
     secretName: nationalpreventivemechanism-www-cert
+  - hosts:
+    - lawcom.gov.uk
+    secretName: lawcom-cert
+  - hosts:
+    - www.lawcom.gov.uk
+    secretName: lawcom-www-cert
+  - hosts:
+    - jobs.justice.gov.uk
+    secretName: justicejobs-cert
+  - hosts:
+    - www.jobs.justice.gov.uk
+    secretName: justicejobs-www-cert
+  - hosts:
+    - ppo.gov.uk
+    secretName: ppo-cert
+  - hosts:
+    - www.ppo.gov.uk
+    secretName: ppo-www-cert
+  - hosts:
+    - sifocc.org
+    secretName: sifocc-cert
+  - hosts:
+    - www.sifocc.org
+    secretName: sifocc-www-cert
     {{- end }}
   rules:
   - host: {{ .Values.domain }}
@@ -235,6 +259,86 @@ spec:
             port:
               number: 8080
   - host: www.nationalpreventivemechanism.org.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: lawcom.gov.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: www.lawcom.gov.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: jobs.justice.gov.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: www.jobs.justice.gov.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: ppo.gov.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: www.ppo.gov.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: sifocc.org
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: www.sifocc.org
     http:
       paths:
       - path: /

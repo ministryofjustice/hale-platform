@@ -13,9 +13,17 @@ on:
         required: true
       ecr-repo:
         required: true
+      sentry-dsn:
+        required: true
+      env-type:
+        required: true
       cp-user:
         required: true
       cp-password:
+        required: true
+      acf-user:
+        required: true
+      acf-password:
         required: true
       kube-cluster:
         required: true
@@ -63,7 +71,6 @@ on:
         required: true
 
 jobs:
-
   buildImage:
       name: Build Image and push to ECR
       runs-on: ubuntu-latest
@@ -83,7 +90,6 @@ jobs:
             role-to-assume: ${{ secrets.ecr-role }}
             aws-region: ${{ secrets.ecr-region }}
 
-
         # Login to container repository
         - name: Login to ECR
           uses: aws-actions/amazon-ecr-login@v1
@@ -100,12 +106,15 @@ jobs:
             IMAGE_TAG: ${{ github.sha }}
         - name: Run Composer
           run: |
-            composer config http-basic.composer.wp.dsd.io ${{ secrets.cp-user }} ${{ secrets.cp-password }}
+            composer config http-basic.repo.packagist.com ${{ secrets.cp-user }} ${{ secrets.cp-password }}
+            composer config http-basic.connect.advancedcustomfields.com ${{ secrets.acf-user }} ${{ secrets.acf-password }}
             composer install --prefer-dist --no-progress
         - name: Run NPM
           run: |
             npm install --prefix ./wordpress/wp-content/themes/hale
             npm run production --if-present --prefix ./wordpress/wp-content/themes/hale
+            npm install --prefix ./wordpress/wp-content/themes/hale-dash
+            npm run production --if-present --prefix ./wordpress/wp-content/themes/hale-dash
             npm install --prefix ./wordpress/wp-content/themes/brookhouse
             npm run production --if-present --prefix ./wordpress/wp-content/themes/brookhouse
             npm install --prefix ./wordpress/wp-content/themes/lawcom
@@ -114,9 +123,15 @@ jobs:
             npm run production --if-present --prefix ./wordpress/wp-content/themes/justicejobs
             npm install --prefix ./wordpress/wp-content/themes/hale-dash
             npm run production --if-present --prefix ./wordpress/wp-content/themes/hale-dash
+            npm install --prefix ./wordpress/wp-content/themes/ppo
+            npm run production --if-present --prefix ./wordpress/wp-content/themes/ppo
+            npm install --prefix ./wordpress/wp-content/themes/sifocc
+            npm run production --if-present --prefix ./wordpress/wp-content/themes/sifocc
+            npm install --prefix ./wordpress/wp-content/themes/imbmembers
+            npm run production --if-present --prefix ./wordpress/wp-content/themes/imbmembers
         - name: Build and Push Wordpress Image
           run: |
-            docker build --pull --no-cache --tag $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG --file wp.dockerfile .
+            docker build --pull --no-cache --tag $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG --file wordpress.dockerfile .
             docker push $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG
           env:
             REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -166,6 +181,7 @@ jobs:
           --set alertSecrets.slackWebhookUrl=${{ secrets.alert-slack-webhook-url }} \
           --set configmap.servername=${{ secrets.kube-namespace }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set configmap.envtype=${{ vars.ENV_TYPE }} \
+          --set configmap.sentrydns=${{ vars.PHP_DSN }} \
           --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.kube-namespace }}-green \
           --set domain=${{ secrets.kube-namespace }}.apps.live.cloud-platform.service.justice.gov.uk \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_nginx-${{ github.sha }} \

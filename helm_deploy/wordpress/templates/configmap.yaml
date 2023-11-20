@@ -7,3 +7,4 @@ data:
   SERVER_NAME: {{ .Values.domain }}
   ENV_TYPE: {{ .Values.configmap.envtype }}
   S3_UPLOADS_USE_INSTANCE_PROFILE: "true"
+  PHP_DSN: {{ .Values.configmap.sentrydns }}
