@@ -71,7 +71,6 @@
         "wpackagist-plugin/wp-accessibility":"2.0.1",
         "wpackagist-plugin/wp-nested-pages": "*",
         "wpackagist-plugin/breadcrumb-trail": "*",
-        "roots/soil": ">=3.9.0",
         "wpackagist-plugin/wp-analytify":"*",
         "wpackagist-plugin/wp-force-login": "*",
         "wpackagist-plugin/wps-hide-login": "*",
