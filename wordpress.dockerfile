@@ -7,13 +7,11 @@
 # Build multisite
 FROM --platform=linux/amd64 wordpress:6.4.1-php8.2-fpm-alpine
 
-# Install additional Alpine packages
+# Install additional Alpine packages & PHP modules
 RUN apk update && \
-    apk add less \
-            vim \
-            mysql \
-            mysql-client \
-            htop
+    apk add --no-cache $PHPIZE_DEPS less vim mysql mysql-client htop && \
+    pecl install excimer && \
+    docker-php-ext-enable excimer
 
 # Install wp-cli
 RUN curl -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
