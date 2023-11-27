@@ -95,6 +95,12 @@ spec:
   - hosts:
     - www.sifocc.org
     secretName: sifocc-www-cert
+  - hosts:
+    - layobservers.org
+    secretName: layobservers-cert
+  - hosts:
+    - www.layobservers.org
+    secretName: layobservers-www-cert
     {{- end }}
   rules:
   - host: {{ .Values.domain }}
@@ -339,6 +345,26 @@ spec:
             port:
               number: 8080
   - host: www.sifocc.org
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: layobservers.org
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: www.layobservers.org
     http:
       paths:
       - path: /
