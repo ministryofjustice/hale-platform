@@ -54,6 +54,9 @@ spec:
     - www.imb.org.uk
     secretName: imb-www-cert
   - hosts:
+    - my.imb.org.uk
+    secretName: my-imb-cert
+  - hosts:
     - brookhouseinquiry.org.uk
     secretName: brookhouse-cert
   - hosts:
