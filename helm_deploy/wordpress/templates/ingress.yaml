@@ -54,6 +54,9 @@ spec:
     - www.imb.org.uk
     secretName: imb-www-cert
   - hosts:
+    - my.imb.org.uk
+    secretName: my-imb-cert
+  - hosts:
     - brookhouseinquiry.org.uk
     secretName: brookhouse-cert
   - hosts:
@@ -205,6 +208,16 @@ spec:
             port:
               number: 8080
   - host: www.imb.org.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: my.imb.org.uk
     http:
       paths:
       - path: /
