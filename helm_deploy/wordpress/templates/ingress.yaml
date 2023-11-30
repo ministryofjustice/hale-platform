@@ -217,6 +217,16 @@ spec:
             name: wordpress
             port:
               number: 8080
+  - host: my.imb.org.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
   - host: brookhouseinquiry.org.uk
     http:
       paths:
