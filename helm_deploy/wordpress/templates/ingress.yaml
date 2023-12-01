@@ -104,6 +104,9 @@ spec:
   - hosts:
     - www.layobservers.org
     secretName: layobservers-www-cert
+  - hosts:
+    - members.layobservers.org
+    secretName: layobservers-members-cert
     {{- end }}
   rules:
   - host: {{ .Values.domain }}
@@ -378,6 +381,16 @@ spec:
             port:
               number: 8080
   - host: www.layobservers.org
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: members.layobservers.org
     http:
       paths:
       - path: /
