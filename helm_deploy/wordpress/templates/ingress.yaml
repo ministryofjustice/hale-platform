@@ -107,6 +107,15 @@ spec:
   - hosts:
     - members.layobservers.org
     secretName: layobservers-members-cert
+- hosts:
+    - victimandwitnessinformation.org.uk
+    secretName: victimandwitnessinformation-cert
+- hosts:
+    - www.victimandwitnessinformation.org.uk
+    secretName: victimandwitnessinformation-www-cert
+- hosts:
+    - victimscode.org.uk
+    secretName: victimscode-cert
     {{- end }}
   rules:
   - host: {{ .Values.domain }}
@@ -391,6 +400,36 @@ spec:
             port:
               number: 8080
   - host: members.layobservers.org
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: victimandwitnessinformation.org.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: www.victimandwitnessinformation.org.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: victimscode.org.uk
     http:
       paths:
       - path: /
