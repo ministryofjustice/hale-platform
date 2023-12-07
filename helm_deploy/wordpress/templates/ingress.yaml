@@ -110,13 +110,13 @@ spec:
   - hosts:
     - members.layobservers.org
     secretName: layobservers-members-cert
-- hosts:
+  - hosts:
     - victimandwitnessinformation.org.uk
     secretName: victimandwitnessinformation-cert
-- hosts:
+  - hosts:
     - www.victimandwitnessinformation.org.uk
     secretName: victimandwitnessinformation-www-cert
-- hosts:
+  - hosts:
     - victimscode.org.uk
     secretName: victimscode-cert
     {{- end }}
