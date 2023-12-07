@@ -17,6 +17,9 @@ metadata:
         auth_basic off;
         return 301 https://raw.githubusercontent.com/ministryofjustice/security-guidance/main/contact/vulnerability-disclosure-security.txt;
         }
+        if ($host = 'victimscode.org.uk') {
+          return 301 https://victimandwitnessinformation.org.uk/your-rights/as-a-victim;
+        }
 spec:
   ingressClassName: modsec
   tls:
