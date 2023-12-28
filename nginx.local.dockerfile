@@ -1,4 +1,4 @@
-FROM --platform=linux/arm64v8 arm64v8/nginx
+FROM --platform=linux/arm64v8 arm64v8/nginx:1.25.2
 
 RUN apt-get -y update
 RUN apt-get -y install vim
@@ -9,5 +9,5 @@ COPY opt/nginx/localwordpress.conf /etc/nginx/conf.d/
 
 RUN rm -r /etc/nginx/conf.d/default.conf
 
-EXPOSE 443 
+EXPOSE 443
 EXPOSE 8080
