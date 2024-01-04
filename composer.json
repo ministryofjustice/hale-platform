@@ -90,7 +90,6 @@
         "installer-paths": {
             "wordpress/wp-content/mu-plugins/{$name}/": [
                 "type:wordpress-muplugin",
-                "ministryofjustice/wp-user-roles",
                 "ministryofjustice/wp-gov-uk-notify",
                 "ministryofjustice/hale-components",
                 "ministryofjustice/wp-s3-uploads"
