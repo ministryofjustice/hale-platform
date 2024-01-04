@@ -75,8 +75,6 @@
         "wpackagist-plugin/wp-force-login": "*",
         "wpackagist-plugin/wps-hide-login": "*",
         "wpackagist-plugin/wp-sentry-integration": "*",
-        "ministryofjustice/wp-moj-components": "dev-hale-platform",
-        "ministryofjustice/wp-user-roles": "*",
         "ministryofjustice/cookie-compliance-for-wordpress": "*",
         "ministryofjustice/wp-moj-blocks": "*",
         "ministryofjustice/wp-gov-uk-notify": "*",
