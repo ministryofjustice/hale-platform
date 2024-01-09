@@ -17,6 +17,9 @@ metadata:
         auth_basic off;
         return 301 https://raw.githubusercontent.com/ministryofjustice/security-guidance/main/contact/vulnerability-disclosure-security.txt;
         }
+        if ($host = 'victimscode.org.uk') {
+          return 301 https://victimandwitnessinformation.org.uk/your-rights/as-a-victim;
+        }
 spec:
   ingressClassName: modsec
   tls:
@@ -53,6 +56,9 @@ spec:
   - hosts:
     - www.imb.org.uk
     secretName: imb-www-cert
+  - hosts:
+    - my.imb.org.uk
+    secretName: my-imb-cert
   - hosts:
     - brookhouseinquiry.org.uk
     secretName: brookhouse-cert
@@ -95,6 +101,24 @@ spec:
   - hosts:
     - www.sifocc.org
     secretName: sifocc-www-cert
+  - hosts:
+    - layobservers.org
+    secretName: layobservers-cert
+  - hosts:
+    - www.layobservers.org
+    secretName: layobservers-www-cert
+  - hosts:
+    - members.layobservers.org
+    secretName: layobservers-members-cert
+  - hosts:
+    - victimandwitnessinformation.org.uk
+    secretName: victimandwitnessinformation-cert
+  - hosts:
+    - www.victimandwitnessinformation.org.uk
+    secretName: victimandwitnessinformation-www-cert
+  - hosts:
+    - victimscode.org.uk
+    secretName: victimscode-cert
     {{- end }}
   rules:
   - host: {{ .Values.domain }}
@@ -199,6 +223,16 @@ spec:
             port:
               number: 8080
   - host: www.imb.org.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: my.imb.org.uk
     http:
       paths:
       - path: /
@@ -339,6 +373,66 @@ spec:
             port:
               number: 8080
   - host: www.sifocc.org
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: layobservers.org
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: www.layobservers.org
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: members.layobservers.org
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: victimandwitnessinformation.org.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: www.victimandwitnessinformation.org.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: victimscode.org.uk
     http:
       paths:
       - path: /
