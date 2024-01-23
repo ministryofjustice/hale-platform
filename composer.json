@@ -76,7 +76,7 @@
         "wpackagist-plugin/wps-hide-login": "*",
         "wpackagist-plugin/wp-sentry-integration": "*",
         "ministryofjustice/cookie-compliance-for-wordpress": "*",
-        "ministryofjustice/wp-moj-blocks": "dev-separator-block-colour-size-options",
+        "ministryofjustice/wp-moj-blocks": "dev-separator-length",
         "ministryofjustice/wp-gov-uk-notify": "*",
         "ministryofjustice/wp-s3-uploads": "dev-main",
         "ministryofjustice/feed-importer": "dev-main",
