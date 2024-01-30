@@ -81,21 +81,21 @@ jobs:
       steps:
         # Checkout GitHub repository
         - name: Checkout
-          uses: actions/checkout@v3
+          uses: actions/checkout@v4
 
         # Assume role in Cloud Platform
         - name: Config Credentials
-          uses: aws-actions/configure-aws-credentials@v2
+          uses: aws-actions/configure-aws-credentials@v4
           with:
             role-to-assume: ${{ secrets.ecr-role }}
             aws-region: ${{ secrets.ecr-region }}
 
         # Login to container repository
         - name: Login to ECR
-          uses: aws-actions/amazon-ecr-login@v1
+          uses: aws-actions/amazon-ecr-login@v2
           id: login-ecr
           with:
-            mask-password: true
+            mask-password: 'true'
         - name: Build and Push Nginx Image
           run: |
             docker build --pull --no-cache --tag $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG --file nginx.dockerfile .
@@ -145,7 +145,7 @@ jobs:
     environment: ${{inputs.environment}}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Authenticate to the cluster
         env:
           KUBE_CLUSTER: ${{ secrets.kube-cluster }}
