@@ -117,6 +117,9 @@ spec:
     - www.victimandwitnessinformation.org.uk
     secretName: victimandwitnessinformation-www-cert
   - hosts:
+    - cym.victimandwitnessinformation.org.uk
+    secretName: victimandwitnessinformation-cym-cert
+  - hosts:
     - victimscode.org.uk
     secretName: victimscode-cert
     {{- end }}
@@ -423,6 +426,16 @@ spec:
             port:
               number: 8080
   - host: www.victimandwitnessinformation.org.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: cym.victimandwitnessinformation.org.uk
     http:
       paths:
       - path: /
