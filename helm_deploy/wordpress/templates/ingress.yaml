@@ -20,6 +20,9 @@ metadata:
         if ($host = 'victimscode.org.uk') {
           return 301 https://victimandwitnessinformation.org.uk/your-rights/as-a-victim;
         }
+        if ($host = 'cym.victimscode.org.uk') {
+          return 301 https://cym.victimandwitnessinformation.org.uk/your-rights/as-a-victim;
+        }
 spec:
   ingressClassName: modsec
   tls:
@@ -122,6 +125,15 @@ spec:
   - hosts:
     - victimscode.org.uk
     secretName: victimscode-cert
+  - hosts:
+    - cym.victimscode.org.uk
+    secretName: victimscode-cym-cert
+  - hosts:
+    - omagh.independent-inquiry.uk
+    secretName: obi-cert
+  - hosts:
+    - www.omagh.independent-inquiry.uk
+    secretName: obi-www-cert
     {{- end }}
   rules:
   - host: {{ .Values.domain }}
@@ -446,6 +458,36 @@ spec:
             port:
               number: 8080
   - host: victimscode.org.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: cym.victimscode.org.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: omagh.independent-inquiry.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: www.omagh.independent-inquiry.uk
     http:
       paths:
       - path: /
