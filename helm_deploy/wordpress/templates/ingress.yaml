@@ -134,6 +134,12 @@ spec:
   - hosts:
     - www.omagh.independent-inquiry.uk
     secretName: obi-www-cert
+  - hosts:
+    - newfuturesnetwork.gov.uk
+    secretName: newfuturesnetwork-cert
+  - hosts:
+    - www.newfuturesnetwork.gov.uk
+    secretName: newfuturesnetwork-www-cert
     {{- end }}
   rules:
   - host: {{ .Values.domain }}
@@ -488,6 +494,26 @@ spec:
             port:
               number: 8080
   - host: www.omagh.independent-inquiry.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: newfuturesnetwork.gov.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: www.newfuturesnetwork.gov.uk
     http:
       paths:
       - path: /
