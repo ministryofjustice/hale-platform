@@ -4,7 +4,12 @@
     "license": "MIT",
     "description": "Hale multisite required packages",
     "authors": [],
-    "keywords": ["wordpress", "stack", "composer", "wp, multisite, php"],
+    "keywords": [
+        "wordpress",
+        "stack",
+        "composer",
+        "wp, multisite, php"
+    ],
     "support": {
         "issues": "https://github.com/ministryofjustice/hale-platform/issues"
     },
@@ -39,7 +44,7 @@
         "vlucas/phpdotenv": "^3.0.0",
         "oscarotero/env": "^1.1.0",
         "wpengine/advanced-custom-fields-pro": "*",
-        "ministryofjustice/hale": "dev-flex-cpt",
+        "ministryofjustice/hale": "*",
         "ministryofjustice/hale-dash": "dev-main",
         "ministryofjustice/brookhouse": "dev-main",
         "ministryofjustice/lawcom": "dev-main",
@@ -48,34 +53,34 @@
         "ministryofjustice/hale-components": "dev-main",
         "ministryofjustice/sifocc": "dev-main",
         "ministryofjustice/imbmembers": "dev-main",
-        "wpackagist-plugin/advanced-custom-fields-table-field":"1.3.20",
+        "wpackagist-plugin/advanced-custom-fields-table-field": "1.3.20",
         "wpackagist-plugin/advanced-responsive-video-embedder": "*",
-        "wpackagist-plugin/analytify-analytics-dashboard-widget":"*",
-        "wpackagist-plugin/classic-editor":"1.6.3",
+        "wpackagist-plugin/analytify-analytics-dashboard-widget": "*",
+        "wpackagist-plugin/classic-editor": "1.6.3",
         "wpackagist-plugin/cms-tree-page-view": "*",
         "wpackagist-plugin/custom-search-plugin": "*",
-        "wpackagist-plugin/duplicate-post":"4.5",
+        "wpackagist-plugin/duplicate-post": "4.5",
         "wpackagist-plugin/ewww-image-optimizer": "*",
         "wpackagist-plugin/expandable-menus": "*",
         "wpackagist-plugin/fitvids-for-wordpress": "*",
-        "wpackagist-plugin/footnotes-made-easy": "*",
         "wpackagist-plugin/option-tree": "*",
         "wpackagist-plugin/query-monitor": "*",
         "wpackagist-plugin/redirection": "*",
         "wpackagist-plugin/remove-category-url": "*",
-        "wpackagist-plugin/safe-svg":"*",
+        "wpackagist-plugin/safe-svg": "*",
         "wpackagist-plugin/simple-301-redirects": "*",
         "wpackagist-plugin/tao-schedule-update": "*",
         "wpackagist-plugin/unconfirmed": "*",
         "wpackagist-plugin/wordpress-seo": "*",
-        "wpackagist-plugin/wp-accessibility":"2.0.1",
+        "wpackagist-plugin/wp-accessibility": "2.0.1",
         "wpackagist-plugin/wp-nested-pages": "*",
         "wpackagist-plugin/breadcrumb-trail": "*",
-        "wpackagist-plugin/wp-analytify":"*",
+        "wpackagist-plugin/wp-analytify": "*",
         "wpackagist-plugin/wp-force-login": "*",
         "wpackagist-plugin/wps-hide-login": "*",
         "wpackagist-plugin/wp-sentry-integration": "*",
         "ministryofjustice/cookie-compliance-for-wordpress": "*",
+        "ministryofjustice/footnotes-made-easy": "*",
         "ministryofjustice/wp-moj-blocks": "*",
         "ministryofjustice/wp-gov-uk-notify": "*",
         "ministryofjustice/wp-s3-uploads": "dev-main",
@@ -94,14 +99,22 @@
                 "ministryofjustice/hale-components",
                 "ministryofjustice/wp-s3-uploads"
             ],
-            "wordpress/wp-content/plugins/{$name}/": ["type:wordpress-plugin"],
-            "wordpress/wp-content/themes/hale/": ["ministryofjustice/hale"],
-            "wordpress/wp-content/themes/{$name}/": ["type:wordpress-theme"]
+            "wordpress/wp-content/plugins/{$name}/": [
+                "type:wordpress-plugin"
+            ],
+            "wordpress/wp-content/themes/hale/": [
+                "ministryofjustice/hale"
+            ],
+            "wordpress/wp-content/themes/{$name}/": [
+                "type:wordpress-theme"
+            ]
         },
         "wordpress-install-dir": "/var/www/html"
     },
     "scripts": {
         "post-root-package-install": [],
-        "test": ["phpcs"]
+        "test": [
+            "phpcs"
+        ]
     }
 }
