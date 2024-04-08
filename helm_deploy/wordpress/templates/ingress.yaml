@@ -140,6 +140,12 @@ spec:
   - hosts:
     - www.newfuturesnetwork.gov.uk
     secretName: newfuturesnetwork-www-cert
+  - hosts:
+    - andrewmalkinson.independent-inquiry.uk
+    secretName: andrewmalkinson-cert
+  - hosts:
+    - www.andrewmalkinson.independent-inquiry.uk
+    secretName: andrewmalkinson-www-cert
     {{- end }}
   rules:
   - host: {{ .Values.domain }}
@@ -514,6 +520,26 @@ spec:
             port:
               number: 8080
   - host: www.newfuturesnetwork.gov.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: andrewmalkinson.independent-inquiry.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: www.andrewmalkinson.independent-inquiry.uk
     http:
       paths:
       - path: /
