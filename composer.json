@@ -79,7 +79,7 @@
         "wpackagist-plugin/wp-force-login": "*",
         "wpackagist-plugin/wps-hide-login": "*",
         "wpackagist-plugin/wp-sentry-integration": "*",
-        "ministryofjustice/cookie-compliance-for-wordpress": "dev-essential-cookie",
+        "ministryofjustice/cookie-compliance-for-wordpress": "dev-main",
         "ministryofjustice/footnotes-made-easy": "*",
         "ministryofjustice/wp-moj-blocks": "dev-main",
         "ministryofjustice/wp-gov-uk-notify": "*",
