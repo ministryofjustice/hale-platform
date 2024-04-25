@@ -146,6 +146,9 @@ spec:
   - hosts:
     - www.andrewmalkinson.independent-inquiry.uk
     secretName: andrewmalkinson-www-cert
+  - hosts:
+    - hmiprisons.justiceinspectorates.gov.uk
+    secretName: justiceinspectorates-hmiprisons-cert
     {{- end }}
   rules:
   - host: {{ .Values.domain }}
@@ -540,6 +543,16 @@ spec:
             port:
               number: 8080
   - host: www.andrewmalkinson.independent-inquiry.uk
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: wordpress
+            port:
+              number: 8080
+  - host: hmiprisons.justiceinspectorates.gov.uk
     http:
       paths:
       - path: /
