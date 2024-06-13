@@ -1,4 +1,4 @@
-name: Hale Platform Deployment
+name: Manage environment secrets and variables
 
 on:
   workflow_dispatch:

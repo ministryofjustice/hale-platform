@@ -1,4 +1,4 @@
-name: Resuable Workflow - Build Image
+name: Build and Deploy WordPress
 
 on:
   workflow_call:
@@ -79,11 +79,9 @@ jobs:
         id-token: write # This is required for requesting the JWT
         contents: read  # This is required for actions/checkout
       steps:
-        # Checkout GitHub repository
         - name: Checkout
           uses: actions/checkout@v4
 
-        # Assume role in Cloud Platform
         - name: Config Credentials
           uses: aws-actions/configure-aws-credentials@v4
           with:
@@ -95,6 +93,7 @@ jobs:
           id: login-ecr
           with:
             mask-password: 'true'
+
         - name: Build and Push Nginx Image
           run: |
             docker build --pull --no-cache --tag $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG --file nginx.dockerfile .
