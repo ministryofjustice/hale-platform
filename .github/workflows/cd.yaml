@@ -94,8 +94,8 @@ jobs:
       with:
         environment: Staging
       secrets:
-        ecr-role: ${{ secrets.STAGING_ECR_ROLE_TO_ASSUME }}
-        ecr-region: ${{ vars.STAGING_ECR_REGION }}
+        ecr-role: ${{ secrets.ECR_ROLE_TO_ASSUME }}
+        ecr-region: ${{ vars.ECR_REGION }}
         ecr-repo: ${{ vars.STAGING_ECR_REPOSITORY }}
         sentry-dsn: ${{ vars.PHP_DSN }}
         env-type: ${{ vars.ENV_TYPE }}
