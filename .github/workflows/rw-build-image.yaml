@@ -107,8 +107,8 @@ jobs:
           uses: actions/cache@v4
           id: composer-cache
           with:
-            path: vendor
-            key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+            path: /vendor
+            key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
             restore-keys: |
               ${{ runner.os }}-composer-
 
