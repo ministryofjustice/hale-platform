@@ -18,7 +18,7 @@ jobs:
       secrets:
         ecr-role: ${{ secrets.DEV_ECR_ROLE_TO_ASSUME }}
         ecr-region: ${{ secrets.DEV_ECR_REGION }}
-        ecr-repo: ${{ secrets.DEV_ECR_REPOSITORY }}
+        ecr-repo: ${{ secrets.DEV_ECR_REPO }}
         sentry-dsn: ${{ vars.PHP_DSN }}
         env-type: ${{ vars.ENV_TYPE }}
         cp-user: ${{ secrets.PACKAGIST_USER }}
