@@ -105,13 +105,15 @@ jobs:
 
         - name: Cache Composer Dependencies
           uses: actions/cache@v4
+          id: composer-cache
           with:
-            path: ~/.composer/cache
+            path: vendor
             key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
             restore-keys: |
               ${{ runner.os }}-composer-
 
         - name: Run Composer
+          if: steps.composer-cache.outputs.cache-hit != 'true' # Skip if cache hit
           run: |
             composer config http-basic.repo.packagist.com ${{ secrets.cp-user }} ${{ secrets.cp-password }}
             composer config http-basic.connect.advancedcustomfields.com ${{ secrets.acf-user }} ${{ secrets.acf-password }}
