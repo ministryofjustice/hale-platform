@@ -147,16 +147,15 @@ jobs:
         - name: Cache Docker layers for WordPress
           uses: actions/cache@v4
           with:
-            path: /tmp/.buildx-cache
+            path: /tmp/.buildx-cache-wordpress
             key: ${{ runner.os }}-buildx-wordpress-${{ github.sha }}
             restore-keys: |
               ${{ runner.os }}-buildx-wordpress-
 
-        - name: Build and Push WordPress Image
+      - name: Build and Push WordPress Image
           run: |
             docker buildx create --use
-            docker buildx build --cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache --pull --tag $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG --file wordpress.dockerfile .
-            docker push $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG
+            docker buildx build --cache-from=type=local,src=/tmp/.buildx-cache-wordpress --cache-to=type=local,dest=/tmp/.buildx-cache-wordpress --pull --push --tag $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG --file wordpress.dockerfile .
           env:
             REGISTRY: ${{ steps.login-ecr.outputs.registry }}
             REPOSITORY: ${{ secrets.ecr-repo }}
