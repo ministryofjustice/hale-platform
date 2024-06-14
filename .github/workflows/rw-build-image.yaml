@@ -108,7 +108,13 @@ jobs:
       - name: Build and Push Nginx Image
         run: |
           docker buildx create --use
-          docker buildx build --cache-from=type=local,src=/tmp/.buildx-cache-nginx --cache-to=type=local,dest=/tmp/.buildx-cache-nginx --pull --push --tag $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG --file nginx.dockerfile .
+          docker buildx build \
+            --cache-from=type=local,src=/tmp/.buildx-cache-nginx \
+            --cache-to=type=local,dest=/tmp/.buildx-cache-nginx \
+            --pull \
+            --push \
+            --tag $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG \
+            --file nginx.dockerfile .
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: ${{ secrets.ecr-repo }}
@@ -155,7 +161,13 @@ jobs:
       - name: Build and Push WordPress Image
         run: |
           docker buildx create --use
-          docker buildx build --cache-from=type=local,src=/tmp/.buildx-cache-wordpress --cache-to=type=local,dest=/tmp/.buildx-cache-wordpress --pull --push --tag $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG --file wordpress.dockerfile .
+          docker buildx build \
+            --cache-from=type=local,src=/tmp/.buildx-cache-wordpress \
+            --cache-to=type=local,dest=/tmp/.buildx-cache-wordpress \
+            --pull \
+            --push \
+            --tag $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG \
+            --file wordpress.dockerfile .
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: ${{ secrets.ecr-repo }}
