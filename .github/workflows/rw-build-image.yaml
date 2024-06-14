@@ -1,4 +1,4 @@
-name: Resuable Workflow - Build Image
+name: Build and Deploy WordPress
 
 on:
   workflow_call:
@@ -79,23 +79,21 @@ jobs:
         id-token: write # This is required for requesting the JWT
         contents: read  # This is required for actions/checkout
       steps:
-        # Checkout GitHub repository
         - name: Checkout
           uses: actions/checkout@v4
 
-        # Assume role in Cloud Platform
         - name: Config Credentials
           uses: aws-actions/configure-aws-credentials@v4
           with:
             role-to-assume: ${{ secrets.ecr-role }}
             aws-region: ${{ secrets.ecr-region }}
 
-        # Login to container repository
         - name: Login to ECR
           uses: aws-actions/amazon-ecr-login@v2
           id: login-ecr
           with:
             mask-password: 'true'
+
         - name: Build and Push Nginx Image
           run: |
             docker build --pull --no-cache --tag $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG --file nginx.dockerfile .
@@ -103,32 +101,46 @@ jobs:
           env:
             REGISTRY: ${{ steps.login-ecr.outputs.registry }}
             REPOSITORY: ${{ secrets.ecr-repo }}
-            IMAGE_TAG: ${{ github.sha }}
+            IMAGE_TAG: ${{ github.sha }}\
+
+        - name: Cache Composer Dependencies
+          uses: actions/cache@v3
+          with:
+            path: ~/.composer/cache
+            key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+            restore-keys: |
+              ${{ runner.os }}-composer-
+
         - name: Run Composer
           run: |
             composer config http-basic.repo.packagist.com ${{ secrets.cp-user }} ${{ secrets.cp-password }}
             composer config http-basic.connect.advancedcustomfields.com ${{ secrets.acf-user }} ${{ secrets.acf-password }}
             composer install --prefer-dist --no-progress
+
+        - name: Cache NPM Dependencies
+          uses: actions/cache@v3
+          with:
+            path: |
+              ~/.npm
+              wordpress/wp-content/themes/hale/node_modules
+              wordpress/wp-content/themes/hale-dash/node_modules
+              wordpress/wp-content/themes/brookhouse/node_modules
+              wordpress/wp-content/themes/lawcom/node_modules
+              wordpress/wp-content/themes/justicejobs/node_modules
+              wordpress/wp-content/themes/ppo/node_modules
+              wordpress/wp-content/themes/sifocc/node_modules
+              wordpress/wp-content/themes/imbmembers/node_modules
+            key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+            restore-keys: |
+              ${{ runner.os }}-node-
+
         - name: Run NPM
           run: |
-            npm install --prefix ./wordpress/wp-content/themes/hale
-            npm run production --if-present --prefix ./wordpress/wp-content/themes/hale
-            npm install --prefix ./wordpress/wp-content/themes/hale-dash
-            npm run production --if-present --prefix ./wordpress/wp-content/themes/hale-dash
-            npm install --prefix ./wordpress/wp-content/themes/brookhouse
-            npm run production --if-present --prefix ./wordpress/wp-content/themes/brookhouse
-            npm install --prefix ./wordpress/wp-content/themes/lawcom
-            npm run production --if-present --prefix ./wordpress/wp-content/themes/lawcom
-            npm install --prefix ./wordpress/wp-content/themes/justicejobs
-            npm run production --if-present --prefix ./wordpress/wp-content/themes/justicejobs
-            npm install --prefix ./wordpress/wp-content/themes/hale-dash
-            npm run production --if-present --prefix ./wordpress/wp-content/themes/hale-dash
-            npm install --prefix ./wordpress/wp-content/themes/ppo
-            npm run production --if-present --prefix ./wordpress/wp-content/themes/ppo
-            npm install --prefix ./wordpress/wp-content/themes/sifocc
-            npm run production --if-present --prefix ./wordpress/wp-content/themes/sifocc
-            npm install --prefix ./wordpress/wp-content/themes/imbmembers
-            npm run production --if-present --prefix ./wordpress/wp-content/themes/imbmembers
+            for theme in hale hale-dash brookhouse lawcom justicejobs ppo sifocc imbmembers; do
+              npm install --prefix ./wordpress/wp-content/themes/$theme
+              npm run production --if-present --prefix ./wordpress/wp-content/themes/$theme
+            done
+
         - name: Build and Push Wordpress Image
           run: |
             docker build --pull --no-cache --tag $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG --file wordpress.dockerfile .
@@ -146,6 +158,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Authenticate to the cluster
         env:
           KUBE_CLUSTER: ${{ secrets.kube-cluster }}
@@ -155,6 +168,7 @@ jobs:
           kubectl config set-credentials deploy-user --token=${{ secrets.kube-token }}
           kubectl config set-context ${KUBE_CLUSTER} --cluster=${KUBE_CLUSTER} --user=deploy-user --namespace=${{ secrets.kube-namespace }}
           kubectl config use-context ${KUBE_CLUSTER}
+
       - name: Apply Helm chart
         run: |
           helm upgrade wordpress helm_deploy/wordpress \
