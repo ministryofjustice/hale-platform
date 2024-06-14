@@ -104,7 +104,7 @@ jobs:
             IMAGE_TAG: ${{ github.sha }}
 
         - name: Cache Composer Dependencies
-          uses: actions/cache@v3
+          uses: actions/cache@v4
           with:
             path: ~/.composer/cache
             key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
@@ -118,7 +118,7 @@ jobs:
             composer install --prefer-dist --no-progress
 
         - name: Cache NPM Dependencies
-          uses: actions/cache@v3
+          uses: actions/cache@v4
           with:
             path: |
               ~/.npm
