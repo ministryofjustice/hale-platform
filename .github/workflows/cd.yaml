@@ -18,7 +18,7 @@ jobs:
       secrets:
         ecr-role: ${{ secrets.DEV_ECR_ROLE_TO_ASSUME }}
         ecr-region: ${{ secrets.DEV_ECR_REGION }}
-        ecr-repo: ${{ secrets.DEV_ECR_REPOSITORY }}
+        ecr-repo: ${{ secrets.DEV_ECR_REPO }}
         sentry-dsn: ${{ vars.PHP_DSN }}
         env-type: ${{ vars.ENV_TYPE }}
         cp-user: ${{ secrets.PACKAGIST_USER }}
@@ -57,7 +57,7 @@ jobs:
       secrets:
         ecr-role: ${{ secrets.DEMO_ECR_ROLE_TO_ASSUME }}
         ecr-region: ${{ secrets.DEMO_ECR_REGION }}
-        ecr-repo: ${{ secrets.DEMO_ECR_REPOSITORY }}
+        ecr-repo: ${{ secrets.DEMO_ECR_REPO }}
         sentry-dsn: ${{ vars.PHP_DSN }}
         env-type: ${{ vars.ENV_TYPE }}
         cp-user: ${{ secrets.PACKAGIST_USER }}
@@ -136,7 +136,7 @@ jobs:
       secrets:
         ecr-role: ${{ secrets.PROD_ECR_ROLE_TO_ASSUME }}
         ecr-region: ${{ secrets.PROD_ECR_REGION }}
-        ecr-repo: ${{ secrets.PROD_ECR_REPOSITORY }}
+        ecr-repo: ${{ secrets.PROD_ECR_REPO }}
         sentry-dsn: ${{ vars.PHP_DSN }}
         env-type: ${{ vars.ENV_TYPE }}
         cp-user: ${{ secrets.PACKAGIST_USER }}
