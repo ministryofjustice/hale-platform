@@ -96,7 +96,7 @@ jobs:
       secrets:
         ecr-role: ${{ secrets.STAGING_ECR_ROLE_TO_ASSUME }}
         ecr-region: ${{ secrets.STAGING_ECR_REGION }}
-        ecr-repo: ${{ secrets.STAGING_ECR_REPO }}
+        ecr-repo: ${{ vars.STAGING_ECR_REPO }}
         sentry-dsn: ${{ vars.PHP_DSN }}
         env-type: ${{ vars.ENV_TYPE }}
         cp-user: ${{ secrets.PACKAGIST_USER }}
