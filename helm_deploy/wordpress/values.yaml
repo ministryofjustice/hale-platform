@@ -83,6 +83,8 @@ ingress:
       certName: ppo-cert
     - name: www.ppo.gov.uk
       certName: ppo-www-cert
+    - name: archive.ppo.gov.uk
+      certName: ppo-archive-cert
     - name: sifocc.org
       certName: sifocc-cert
     - name: www.sifocc.org
