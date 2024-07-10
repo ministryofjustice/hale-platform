@@ -46,7 +46,7 @@
         "wpengine/advanced-custom-fields-pro": "*",
         "ministryofjustice/hale": "*",
         "ministryofjustice/hale-dash": "*",
-        "ministryofjustice/hale-showcase": "*",
+        "ministryofjustice/hale-showcase": "1.1.10",
         "ministryofjustice/brookhouse": "dev-main",
         "ministryofjustice/lawcom": "dev-main",
         "ministryofjustice/justicejobs": "dev-main",
