@@ -6,7 +6,7 @@
 
 # Build multisite
 # Latest images at https://hub.docker.com/_/wordpress
-FROM --platform=linux/amd64 wordpress:6.5.4-php8.3-fpm-alpine
+FROM --platform=linux/amd64 wordpress:6.5.5-php8.3-fpm-alpine
 
 # Install additional Alpine packages
 RUN apk update && \

@@ -1,8 +1,6 @@
-[![Hale Platform Deployment](https://github.com/ministryofjustice/hale-platform/actions/workflows/cd.yaml/badge.svg?branch=main)](https://github.com/ministryofjustice/hale-platform/actions/workflows/cd.yaml)
-
 # Hale Platform
 
-This repository provides all the code required to run an instance of WordPress multisite in kubernetes. It uses the [WordPress official Alpine image](https://hub.docker.com/_/wordpress), and is modified to launch a multisite network. It uses PHP dependency manager Composer to pull in all the themes and plugins used by the multisite.
+This repository provides all the code required to run an instance of WordPress multisite in kubernetes. It uses the [WordPress official Alpine image](https://hub.docker.com/_/wordpress), and is modified to launch a multisite network. It uses PHP dependency manager Composer to pull in all the themes and plugins used by the multisite
 
 For further technical details around the architecture, visit our wiki [overview](https://github.com/ministryofjustice/hale-platform/wiki).
 
