@@ -151,7 +151,6 @@ secrets:
     avatureFeedUserName: ""
     avatureFeedUserPassword: ""
 
-
 alertSecrets:
   enabled: true
   slackWebhookUrl: ""
