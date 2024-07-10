@@ -1,4 +1,4 @@
-name: Manage environment secrets and variables
+name: Deployment
 
 on:
   workflow_dispatch:
@@ -47,6 +47,8 @@ jobs:
         s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
         s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}
         alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
+        avature-feed-username: ${{ secrets.AVATURE_FEED_USERNAME }}
+        avature-feed-password: ${{ secrets.AVATURE_FEED_PASSWORD }}
 
   deployDemo:
       name: Deploy to Demo Environment
@@ -86,6 +88,8 @@ jobs:
         s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
         s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}
         alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
+        avature-feed-username: ${{ secrets.AVATURE_FEED_USERNAME }}
+        avature-feed-password: ${{ secrets.AVATURE_FEED_PASSWORD }}
 
   deployStaging:
       name: Deploy to Staging Environment
@@ -125,6 +129,8 @@ jobs:
         s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
         s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}
         alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
+        avature-feed-username: ${{ secrets.AVATURE_FEED_USERNAME }}
+        avature-feed-password: ${{ secrets.AVATURE_FEED_PASSWORD }}
 
   deployProd:
       name: Deploy to Production Environment
@@ -165,3 +171,5 @@ jobs:
         s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
         s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}
         alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
+        avature-feed-username: ${{ secrets.AVATURE_FEED_USERNAME }}
+        avature-feed-password: ${{ secrets.AVATURE_FEED_PASSWORD }}

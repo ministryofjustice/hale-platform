@@ -83,6 +83,8 @@ ingress:
       certName: ppo-cert
     - name: www.ppo.gov.uk
       certName: ppo-www-cert
+    - name: archive.ppo.gov.uk
+      certName: ppo-archive-cert
     - name: sifocc.org
       certName: sifocc-cert
     - name: www.sifocc.org
@@ -117,6 +119,8 @@ ingress:
       certName: andrewmalkinson-www-cert
     - name: hmiprisons.justiceinspectorates.gov.uk
       certName: justiceinspectorates-hmiprisons-cert
+    - name: showcase.websitebuilder.service.justice.gov.uk
+      certName: websitebuilder-showcase-cert
 
 configmap:
   servername: ""
@@ -143,6 +147,9 @@ secrets:
   wpsecureauthsalt: ""
   s3uploadsbucket: ""
   s3uploadsregion: ""
+  feedparser:
+    avatureFeedUserName: ""
+    avatureFeedUserPassword: ""
 
 alertSecrets:
   enabled: true

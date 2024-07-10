@@ -20,5 +20,7 @@ spec:
                   name: hale-wp-config-{{ .Release.Revision }}
               - secretRef:
                   name: hale-wp-secrets-{{ .Release.Revision }}
+              - secretRef:
+                  name: feed-parser-secrets-{{ .Release.Revision }}
           restartPolicy: OnFailure
 {{- end }}
