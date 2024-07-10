@@ -147,6 +147,10 @@ secrets:
   wpsecureauthsalt: ""
   s3uploadsbucket: ""
   s3uploadsregion: ""
+  feedparser:
+    avatureFeedUserName: ""
+    avatureFeedUserPassword: ""
+
 
 alertSecrets:
   enabled: true
