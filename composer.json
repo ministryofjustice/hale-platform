@@ -84,7 +84,7 @@
         "ministryofjustice/wp-moj-blocks": "*",
         "ministryofjustice/wp-gov-uk-notify": "*",
         "ministryofjustice/wp-s3-uploads": "dev-main",
-        "ministryofjustice/feed-importer": "*",
+        "ministryofjustice/feed-importer": "dev-avature",
         "relevanssi/relevanssi-premium": "*",
         "sentry/sdk": "^3.3"
     },
