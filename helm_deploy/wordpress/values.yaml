@@ -53,6 +53,8 @@ ingress:
       certName: ccrc-www-cert
     - name: icrir.independent-inquiry.uk
       certName: icrir-cert
+    - name: intranet.icrir.independent-inquiry.uk
+      certName: icrir-intranet-cert
     - name: imb.org.uk
       certName: imb-cert
     - name: www.imb.org.uk
