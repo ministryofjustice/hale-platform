@@ -22,6 +22,18 @@ metadata:
       if ($host = 'cym.victimscode.org.uk') {
         return 301 https://cym.victimandwitnessinformation.org.uk/your-rights/as-a-victim;
       }
+      if ($host = 'seewhatsontheinside.com') {
+        return 301 https://newfuturesnetwork.gov.uk;
+      }
+      if ($host = 'www.seewhatsontheinside.com') {
+        return 301 https://newfuturesnetwork.gov.uk;
+      }
+      if ($host = 'seewhatsontheinside.co.uk') {
+        return 301 https://newfuturesnetwork.gov.uk;
+      }
+      if ($host = 'www.seewhatsontheinside.co.uk') {
+        return 301 https://newfuturesnetwork.gov.uk;
+      }
 spec:
   ingressClassName: modsec
   tls:
