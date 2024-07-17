@@ -123,6 +123,14 @@ ingress:
       certName: justiceinspectorates-hmiprisons-cert
     - name: showcase.websitebuilder.service.justice.gov.uk
       certName: websitebuilder-showcase-cert
+    - name: seewhatsontheinside.com
+      certName: swoti-cert
+    - name: www.seewhatsontheinside.com
+      certName: swoti-www-cert
+    - name: seewhatsontheinside.co.uk
+      certName: swoti-uk-cert
+    - name: www.seewhatsontheinside.co.uk
+      certName: swoti-uk-www-cert
 
 configmap:
   servername: ""
