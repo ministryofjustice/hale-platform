@@ -82,7 +82,7 @@
         "wpackagist-plugin/wp-sentry-integration": "*",
         "ministryofjustice/cookie-compliance-for-wordpress": "3.4.13",
         "ministryofjustice/footnotes-made-easy": "*",
-        "ministryofjustice/wp-moj-blocks": "3.10.5",
+        "ministryofjustice/wp-moj-blocks": "3.11.0",
         "ministryofjustice/wp-gov-uk-notify": "*",
         "ministryofjustice/wp-s3-uploads": "dev-main",
         "ministryofjustice/feed-importer": "1.1.0",
