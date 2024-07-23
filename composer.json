@@ -44,7 +44,7 @@
         "vlucas/phpdotenv": "^3.0.0",
         "oscarotero/env": "^1.1.0",
         "wpengine/advanced-custom-fields-pro": "*",
-        "ministryofjustice/hale": "4.9.7",
+        "ministryofjustice/hale": "dev-post-tag-fix",
         "ministryofjustice/hale-dash": "*",
         "ministryofjustice/hale-showcase": "1.1.10",
         "ministryofjustice/brookhouse": "dev-main",
@@ -85,7 +85,7 @@
         "ministryofjustice/wp-moj-blocks": "3.10.5",
         "ministryofjustice/wp-gov-uk-notify": "*",
         "ministryofjustice/wp-s3-uploads": "dev-main",
-        "ministryofjustice/feed-importer": "dev-avature",
+        "ministryofjustice/feed-importer": "*",
         "relevanssi/relevanssi-premium": "*",
         "sentry/sdk": "^3.3"
     },
