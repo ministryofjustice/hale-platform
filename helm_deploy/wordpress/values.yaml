@@ -121,6 +121,10 @@ ingress:
       certName: andrewmalkinson-www-cert
     - name: hmiprisons.justiceinspectorates.gov.uk
       certName: justiceinspectorates-hmiprisons-cert
+    - name: websitebuilder.service.justice.gov.uk
+      certName: websitebuilder-cert
+    - name: www.websitebuilder.service.justice.gov.uk
+      certName: websitebuilder-www-cert
     - name: showcase.websitebuilder.service.justice.gov.uk
       certName: websitebuilder-showcase-cert
     - name: seewhatsontheinside.com
