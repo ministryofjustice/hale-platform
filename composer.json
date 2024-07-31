@@ -44,7 +44,7 @@
         "vlucas/phpdotenv": "^3.0.0",
         "oscarotero/env": "^1.1.0",
         "wpengine/advanced-custom-fields-pro": "*",
-        "ministryofjustice/hale": "dev-post-tag-fix",
+        "ministryofjustice/hale": "*",
         "ministryofjustice/hale-dash": "*",
         "ministryofjustice/hale-showcase": "1.1.10",
         "ministryofjustice/brookhouse": "dev-main",
