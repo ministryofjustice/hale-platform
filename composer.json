@@ -81,6 +81,7 @@
         "wpackagist-plugin/wps-hide-login": "*",
         "wpackagist-plugin/wp-sentry-integration": "*",
         "wpackagist-plugin/limit-login-attempts-reloaded": "*",
+        "wpackagist-plugin/melapress-login-security": "*",
         "ministryofjustice/cookie-compliance-for-wordpress": "3.4.13",
         "ministryofjustice/footnotes-made-easy": "*",
         "ministryofjustice/wp-moj-blocks": "3.11.1",
