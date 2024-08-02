@@ -80,6 +80,8 @@
         "wpackagist-plugin/wp-force-login": "*",
         "wpackagist-plugin/wps-hide-login": "*",
         "wpackagist-plugin/wp-sentry-integration": "*",
+        "wpackagist-plugin/melapress-login-security": "*",
+        "wpackagist-plugin/wp-2fa": "*",
         "ministryofjustice/cookie-compliance-for-wordpress": "3.4.13",
         "ministryofjustice/footnotes-made-easy": "*",
         "ministryofjustice/wp-moj-blocks": "3.11.1",
