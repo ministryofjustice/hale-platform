@@ -11,3 +11,4 @@ uploads/
 media/
 !helm_deploy/wordpress/
 bin/certs/
+reports/
