@@ -45,7 +45,7 @@
         "ministryofjustice/feed-importer": "1.1.0",
         "ministryofjustice/footnotes-made-easy": "^3.0",
         "ministryofjustice/hale": "4.10.0",
-        "ministryofjustice/hale-components": "*",
+        "ministryofjustice/hale-components": "1.3.1",
         "ministryofjustice/hale-dash": "1.1.1",
         "ministryofjustice/hale-showcase": "1.1.10",
         "ministryofjustice/imbmembers": "dev-main",
