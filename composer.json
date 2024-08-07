@@ -45,7 +45,7 @@
         "oscarotero/env": "^1.1.0",
         "wpengine/advanced-custom-fields-pro": "*",
         "ministryofjustice/hale": "*",
-        "ministryofjustice/hale-dash": "1.1.3",
+        "ministryofjustice/hale-dash": "dev-main",
         "ministryofjustice/hale-showcase": "1.1.10",
         "ministryofjustice/brookhouse": "dev-main",
         "ministryofjustice/lawcom": "dev-main",
