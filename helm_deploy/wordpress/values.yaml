@@ -53,6 +53,8 @@ ingress:
       certName: ccrc-www-cert
     - name: icrir.independent-inquiry.uk
       certName: icrir-cert
+    - name: intranet.icrir.independent-inquiry.uk
+      certName: icrir-intranet-cert
     - name: imb.org.uk
       certName: imb-cert
     - name: www.imb.org.uk
@@ -119,8 +121,20 @@ ingress:
       certName: andrewmalkinson-www-cert
     - name: hmiprisons.justiceinspectorates.gov.uk
       certName: justiceinspectorates-hmiprisons-cert
+    - name: websitebuilder.service.justice.gov.uk
+      certName: websitebuilder-cert
+    - name: www.websitebuilder.service.justice.gov.uk
+      certName: websitebuilder-www-cert
     - name: showcase.websitebuilder.service.justice.gov.uk
       certName: websitebuilder-showcase-cert
+    - name: seewhatsontheinside.com
+      certName: swoti-cert
+    - name: www.seewhatsontheinside.com
+      certName: swoti-www-cert
+    - name: seewhatsontheinside.co.uk
+      certName: swoti-uk-cert
+    - name: www.seewhatsontheinside.co.uk
+      certName: swoti-uk-www-cert
 
 configmap:
   servername: ""

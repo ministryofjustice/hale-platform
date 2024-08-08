@@ -10,13 +10,9 @@ run:
 
 # Shutdown site using Docker
 down:
-	docker-compose down
+	docker-compose down --remove-orphans
 
 # Build all images on local machine
-# and remove any previous WP installations.
-# Without this docker build doesn't
-# overwrite already exiting folder and therefore
-# doesn't update when bumping WP version for example.
 build:
 	chmod +x bin/build.sh && \
 	./bin/build.sh

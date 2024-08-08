@@ -10,7 +10,14 @@ metadata:
     nginx.ingress.kubernetes.io/modsecurity-snippet: |
       SecRuleEngine On
       SecDefaultAction "phase:2,pass,log,tag:github_team=hale-platform"
-      SecRuleRemoveById 949110
+      SecRuleRemoveById 941100
+      SecRuleRemoveById 941160
+      SecRuleRemoveById 941180
+      SecRuleRemoveById 942230
+      SecRuleRemoveById 933210
+      SecRuleRemoveById 932130
+      SecRuleRemoveById 941140
+      SecRuleRemoveById 941300
     nginx.ingress.kubernetes.io/server-snippet: |
       location = /.well-known/security.txt {
         auth_basic off;
@@ -21,6 +28,18 @@ metadata:
       }
       if ($host = 'cym.victimscode.org.uk') {
         return 301 https://cym.victimandwitnessinformation.org.uk/your-rights/as-a-victim;
+      }
+      if ($host = 'seewhatsontheinside.com') {
+        return 301 https://newfuturesnetwork.gov.uk;
+      }
+      if ($host = 'www.seewhatsontheinside.com') {
+        return 301 https://newfuturesnetwork.gov.uk;
+      }
+      if ($host = 'seewhatsontheinside.co.uk') {
+        return 301 https://newfuturesnetwork.gov.uk;
+      }
+      if ($host = 'www.seewhatsontheinside.co.uk') {
+        return 301 https://newfuturesnetwork.gov.uk;
       }
 spec:
   ingressClassName: modsec
