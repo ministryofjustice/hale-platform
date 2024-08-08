@@ -18,6 +18,10 @@ metadata:
       SecRuleRemoveById 932130
       SecRuleRemoveById 941140
       SecRuleRemoveById 941300
+      SecRuleRemoveById 921110
+    {{- if eq .Values.configmap.envtype "staging" }}
+      SecRule REMOTE_ADDR "@ipMatch 81.137.198.207/32" "phase:2,id:200000001,nolog,allow"
+    {{- end }}
     nginx.ingress.kubernetes.io/server-snippet: |
       location = /.well-known/security.txt {
         auth_basic off;
