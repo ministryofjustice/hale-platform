@@ -34,8 +34,7 @@ metadata:
         ctl:ruleRemoveById=921110"
     {{- if eq .Values.configmap.envtype "staging" }}
       # Allowlist red team IP 08/08/24
-      SecRule REMOTE_ADDR "@ipMatch 81.137.198.207/32" "phase:2,id:200000001,nolog,allow"
-    {{- end }}
+      SecRule REMOTE_ADDR "@ipMatch 81.137.198.207,82.69.80.147/32" "phase:2,id:200000001,nolog,allow"    {{- end }}
     nginx.ingress.kubernetes.io/server-snippet: |
       location = /.well-known/security.txt {
         auth_basic off;
