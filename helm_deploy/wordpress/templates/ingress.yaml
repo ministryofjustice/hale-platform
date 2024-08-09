@@ -23,6 +23,7 @@ metadata:
         pass,\
         nolog,\
         ctl:ruleRemoveById=941100,\
+        ctl:ruleRemoveById=941130,\
         ctl:ruleRemoveById=941160,\
         ctl:ruleRemoveById=941180,\
         ctl:ruleRemoveById=942230,\
