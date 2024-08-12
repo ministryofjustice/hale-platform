@@ -41,7 +41,7 @@
     "require": {
         "composer/installers": "^v1.7.0",
         "ministryofjustice/brookhouse": "dev-main",
-        "ministryofjustice/cookie-compliance-for-wordpress": "3.4.13",
+        "ministryofjustice/cookie-compliance-for-wordpress": "3.4.14",
         "ministryofjustice/feed-importer": "1.1.0",
         "ministryofjustice/footnotes-made-easy": "^2.0",
         "ministryofjustice/hale": "4.10.5",
