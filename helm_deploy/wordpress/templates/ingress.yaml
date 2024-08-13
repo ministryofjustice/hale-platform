@@ -78,6 +78,11 @@ spec:
     secretName: {{ .certName }}
   {{- end }}
 {{- end }}
+{{- if eq .Values.configmap.envtype "dev" }}
+  - hosts:
+    - dev.websitebuilder.service.justice.gov.uk
+    secretName: websitebuilder-dev
+{{- end }}
   rules:
     - host: {{ .Values.domain }}
       http:
@@ -102,5 +107,18 @@ spec:
                 port:
                   number: 8080
     {{- end }}
+    
+  {{- end }}
+  {{- if eq .Values.configmap.envtype "dev" }}
+    - host: dev.websitebuilder.service.justice.gov.uk
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: wordpress
+                port:
+                  number: 8080
   {{- end }}
 {{- end }}
