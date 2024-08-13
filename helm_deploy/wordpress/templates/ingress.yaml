@@ -81,7 +81,7 @@ spec:
 {{- if eq .Values.configmap.envtype "dev" }}
   - hosts:
     - dev.websitebuilder.service.justice.gov.uk
-    secretName: websitebuilder-dev
+    secretName: websitebuilder-dev-cert
 {{- end }}
   rules:
     - host: {{ .Values.domain }}
