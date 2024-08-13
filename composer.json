@@ -44,7 +44,7 @@
         "ministryofjustice/cookie-compliance-for-wordpress": "3.4.14",
         "ministryofjustice/feed-importer": "1.1.0",
         "ministryofjustice/footnotes-made-easy": "^2.0",
-        "ministryofjustice/hale": "4.10.5",
+        "ministryofjustice/hale": "dev-new-hale-dashboard-feature-demo-test",
         "ministryofjustice/hale-components": "1.3.1",
         "ministryofjustice/hale-dash": "1.1.5",
         "ministryofjustice/hale-showcase": "1.1.10",
