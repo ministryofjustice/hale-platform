@@ -20,6 +20,7 @@ jobs:
         ecr-region: ${{ secrets.DEV_ECR_REGION }}
         ecr-repo: ${{ secrets.DEV_ECR_REPO }}
         sentry-dsn: ${{ vars.PHP_DSN }}
+        domain: ${{ vars.DOMAIN }}
         env-type: ${{ vars.ENV_TYPE }}
         cp-user: ${{ secrets.PACKAGIST_USER }}
         cp-password: ${{ secrets.PACKAGIST_PASSWORD }}
