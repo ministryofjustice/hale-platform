@@ -35,7 +35,7 @@ metadata:
         ctl:ruleRemoveById=941180,\
         ctl:ruleRemoveById=941300,\
         ctl:ruleRemoveById=941310,\
-        ctl:ruleRemoveById=942230"
+        ctl:ruleRemoveById=942230" 
     nginx.ingress.kubernetes.io/server-snippet: |
       location = /.well-known/security.txt {
         auth_basic off;
