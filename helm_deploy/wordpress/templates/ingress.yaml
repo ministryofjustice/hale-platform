@@ -22,23 +22,20 @@ metadata:
         phase:2,\
         pass,\
         nolog,\
-        ctl:ruleRemoveById=941100,\
-        ctl:ruleRemoveById=941130,\
-        ctl:ruleRemoveById=941160,\
-        ctl:ruleRemoveById=941180,\
-        ctl:ruleRemoveById=942230,\
+        ctl:ruleRemoveById=921110,\
+        ctl:ruleRemoveById=932100,\
+        ctl:ruleRemoveById=932105,\
+        ctl:ruleRemoveById=932130,\
         ctl:ruleRemoveById=933210,\
         ctl:ruleRemoveById=933160,\
-        ctl:ruleRemoveById=932100,\
-        ctl:ruleRemoveById=932130,\
+        ctl:ruleRemoveById=941100,\
+        ctl:ruleRemoveById=941130,\
         ctl:ruleRemoveById=941140,\
-        ctl:ruleRemoveById=932105,\
+        ctl:ruleRemoveById=941160,\
+        ctl:ruleRemoveById=941180,\
         ctl:ruleRemoveById=941300,\
-        ctl:ruleRemoveById=921110"
-    {{- if eq .Values.configmap.envtype "staging" }}
-      # Allowlist red team IP 08/08/24
-      SecRule REMOTE_ADDR "@ipMatch 81.137.198.207,82.69.80.147/32" "phase:2,id:200000001,nolog,allow"
-    {{- end }}
+        ctl:ruleRemoveById=941310,\
+        ctl:ruleRemoveById=942230"
     nginx.ingress.kubernetes.io/server-snippet: |
       location = /.well-known/security.txt {
         auth_basic off;
