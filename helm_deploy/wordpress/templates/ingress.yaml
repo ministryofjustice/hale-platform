@@ -41,7 +41,7 @@ metadata:
         auth_basic off;
         return 301 https://raw.githubusercontent.com/ministryofjustice/security-guidance/main/contact/vulnerability-disclosure-security.txt;
       }
-      location /bold-test {
+      location /bold {
         if ($host = 'hale-platform-prod.apps.live.cloud-platform.service.justice.gov.uk') {
           return 301 https://bold.websitebuilder.service.justice.gov.uk;
         }
