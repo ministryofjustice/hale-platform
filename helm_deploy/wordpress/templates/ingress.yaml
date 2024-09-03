@@ -18,7 +18,7 @@ metadata:
         tag:environment=hale-platform-{{ .Values.configmap.envtype }}"
       # Limit ModSecurity excemptions to only the options page - these rules were breaking the hale components plugin
       SecRule REQUEST_URI "@contains /wp-admin/options.php" \
-        "id:1000,\
+        "id:1001,\
         phase:2,\
         pass,\
         nolog,\
