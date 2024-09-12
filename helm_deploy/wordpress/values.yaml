@@ -139,6 +139,11 @@ ingress:
       certName: swoti-uk-cert
     - name: www.seewhatsontheinside.co.uk
       certName: swoti-uk-www-cert
+    - name: advance-into-justice.service.justice.gov.uk
+      certName: advance-into-justice-cert
+    - name: www.advance-into-justice.service.justice.gov.uk
+      certName: advance-into-justice-www-cert
+
 
 configmap:
   servername: ""
