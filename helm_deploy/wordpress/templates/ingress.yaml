@@ -55,7 +55,7 @@ metadata:
         nolog,\
         ctl:ruleRemoveById=941100"
       # Limit ModSecurity excemptions to the wp-admin/nav-menus.php endpoint
-      SecRule REQUEST_URI "@contains /wp-admin/nav-menus.php?" \
+      SecRule REQUEST_URI "@contains /wp-admin/nav-menus.php" \
         "id:1003,\
         phase:2,\
         pass,\
