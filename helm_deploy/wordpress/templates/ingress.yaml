@@ -75,6 +75,12 @@ metadata:
       if ($host = 'www.seewhatsontheinside.co.uk') {
         return 301 https://newfuturesnetwork.gov.uk;
       }
+      if ($host = 'advance-into-justice.service.justice.gov.uk') {
+        return 301 https://prisonandprobationjobs.gov.uk/roles-at-hmpps/jobs-for-veterans;
+      }
+      if ($host = 'www.advance-into-justice.service.justice.gov.uk') {
+        return 301 https://prisonandprobationjobs.gov.uk/roles-at-hmpps/jobs-for-veterans;
+      }
 spec:
   ingressClassName: modsec
   tls:
