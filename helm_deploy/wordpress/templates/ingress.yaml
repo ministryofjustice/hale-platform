@@ -8,15 +8,76 @@ metadata:
     external-dns.alpha.kubernetes.io/aws-weight: "100"
     nginx.ingress.kubernetes.io/enable-modsecurity: "true"
     nginx.ingress.kubernetes.io/modsecurity-snippet: |
-        SecRuleEngine On
-        SecDefaultAction "phase:2,pass,log,tag:github_team=hale-platform"
-        SecRuleRemoveById 949110
+      # Apply specific WAF rules
+      SecRuleEngine On
+      SecDefaultAction 
+        "phase:2,\
+        pass,\
+        log,\
+        tag:github_team=hale-platform,\
+        tag:environment=hale-platform-{{ .Values.configmap.envtype }}"
+      # Limit ModSecurity excemptions to only the options page - these rules were breaking the hale components plugin
+      SecRule REQUEST_URI "@contains /wp-admin/options.php" \
+        "id:1001,\
+        phase:2,\
+        pass,\
+        nolog,\
+         ctl:ruleRemoveById=921130,\
+         ctl:ruleRemoveById=941100,\
+         ctl:ruleRemoveById=941140,\
+         ctl:ruleRemoveById=941160
+      # Limit ModSecurity excemptions to only the WP API
+      SecRule REQUEST_URI "@contains /wp-json/" \
+        "id:1000,\
+        phase:2,\
+        pass,\
+        nolog,\
+        ctl:ruleRemoveById=921110,\
+        ctl:ruleRemoveById=932100,\
+        ctl:ruleRemoveById=932105,\
+        ctl:ruleRemoveById=932110,\
+        ctl:ruleRemoveById=932130,\
+        ctl:ruleRemoveById=933210,\
+        ctl:ruleRemoveById=933160,\
+        ctl:ruleRemoveById=941100,\
+        ctl:ruleRemoveById=941110,\
+        ctl:ruleRemoveById=941130,\
+        ctl:ruleRemoveById=941140,\
+        ctl:ruleRemoveById=941160,\
+        ctl:ruleRemoveById=941180,\
+        ctl:ruleRemoveById=941300,\
+        ctl:ruleRemoveById=941310,\
+        ctl:ruleRemoveById=942230,\
+        ctl:ruleRemoveById=942320"  
+      # Limit ModSecurity excemptions to the wp-admin/post.php endpoint
+      SecRule REQUEST_URI "@contains /wp-admin/post.php" \
+        "id:1002,\
+        phase:2,\
+        pass,\
+        nolog,\
+        ctl:ruleRemoveById=941100,\
+        ctl:ruleRemoveById=941160"
+      # Limit ModSecurity excemptions to the wp-admin/nav-menus.php endpoint
+      SecRule REQUEST_URI "@contains /wp-admin/nav-menus.php" \
+        "id:1003,\
+        phase:2,\
+        pass,\
+        nolog,\
+        ctl:ruleRemoveById=921110"
+      # Limit ModSecurity excemptions to the wp-admin/admin-ajax.php endpoint
+      SecRule REQUEST_URI "@contains /wp-admin/admin-ajax.php" \
+        "id:1004,\
+        phase:2,\
+        pass,\
+        nolog,\
+        ctl:ruleRemoveById=941100,\
+        ctl:ruleRemoveById=941160"
     nginx.ingress.kubernetes.io/server-snippet: |
       location = /.well-known/security.txt {
         auth_basic off;
         return 301 https://raw.githubusercontent.com/ministryofjustice/security-guidance/main/contact/vulnerability-disclosure-security.txt;
       }
-      location /bold-test {
+      location /bold {
         if ($host = 'hale-platform-prod.apps.live.cloud-platform.service.justice.gov.uk') {
           return 301 https://bold.websitebuilder.service.justice.gov.uk;
         }
@@ -38,6 +99,12 @@ metadata:
       }
       if ($host = 'www.seewhatsontheinside.co.uk') {
         return 301 https://newfuturesnetwork.gov.uk;
+      }
+      if ($host = 'advance-into-justice.service.justice.gov.uk') {
+        return 301 https://prisonandprobationjobs.gov.uk/roles-at-hmpps/jobs-for-veterans;
+      }
+      if ($host = 'www.advance-into-justice.service.justice.gov.uk') {
+        return 301 https://prisonandprobationjobs.gov.uk/roles-at-hmpps/jobs-for-veterans;
       }
 spec:
   ingressClassName: modsec
