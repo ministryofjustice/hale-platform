@@ -143,6 +143,14 @@ ingress:
       certName: advance-into-justice-cert
     - name: www.advance-into-justice.service.justice.gov.uk
       certName: advance-into-justice-www-cert
+    - name: iapondeathsincustody.org
+      certName: iapdc-cert
+    - name: www.iapondeathsincustody.org
+      certName: iapdc-www-cert
+    - name: legalaidlearning.justice.gov.uk
+      certName: legalaidlearning-cert
+    - name: www.legalaidlearning.justice.gov.uk
+      certName: legalaidlearning-www-cert  
 
 
 configmap:
