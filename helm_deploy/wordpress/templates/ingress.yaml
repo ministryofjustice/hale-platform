@@ -72,6 +72,9 @@ metadata:
         nolog,\
         ctl:ruleRemoveById=941100,\
         ctl:ruleRemoveById=941160"
+    {{- if eq .Values.configmap.envtype "staging" }}
+      SecRule REMOTE_ADDR "@ipMatch 80.195.27.199/32" "phase:2,id:200000001,nolog,allow"
+    {{- end }}
     nginx.ingress.kubernetes.io/server-snippet: |
       location = /.well-known/security.txt {
         auth_basic off;
