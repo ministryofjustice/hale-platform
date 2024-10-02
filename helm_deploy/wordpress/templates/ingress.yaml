@@ -111,17 +111,13 @@ spec:
   tls:
   - hosts:
     - {{ .Values.domain }}
+    secretName: websitebuilder-{{ .Values.configmap.envtype }}-cert
 {{- if eq .Values.configmap.envtype "prod" }}
   {{- range .Values.ingress.hosts }}
   - hosts:
     - {{ .name }}
     secretName: {{ .certName }}
   {{- end }}
-{{- end }}
-{{- if eq .Values.configmap.envtype "dev" }}
-  - hosts:
-    - dev.websitebuilder.service.justice.gov.uk
-    secretName: websitebuilder-dev-cert
 {{- end }}
   rules:
     - host: {{ .Values.domain }}
