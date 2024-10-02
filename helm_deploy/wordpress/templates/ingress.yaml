@@ -114,6 +114,7 @@ spec:
   tls:
   - hosts:
     - {{ .Values.domain }}
+    secretName: websitebuilder-{{ .Values.configmap.envtype }}-cert
 {{- if eq .Values.configmap.envtype "prod" }}
   {{- range .Values.ingress.hosts }}
   - hosts:
