@@ -4,13 +4,13 @@
 
 # Run site using Docker.
 run:
-	docker-compose up -d
+	docker compose up -d
 	chmod +x bin/upload.sh
 	./bin/upload.sh
 
 # Shutdown site using Docker
 down:
-	docker-compose down --remove-orphans
+	docker compose down --remove-orphans
 
 # Build all images on local machine
 build:
