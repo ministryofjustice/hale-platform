@@ -25,7 +25,7 @@ metadata:
          ctl:ruleRemoveById=932130
       # Limit ModSecurity excemptions to only the options page - these rules were breaking the hale components plugin
       SecRule REQUEST_URI "@contains /wp-admin/options.php" \
-        "id:1001,\
+        "id:1002,\
         phase:2,\
         pass,\
         nolog,\
@@ -35,7 +35,7 @@ metadata:
          ctl:ruleRemoveById=941160
       # Limit ModSecurity excemptions to only the WP API
       SecRule REQUEST_URI "@contains /wp-json/" \
-        "id:1000,\
+        "id:1003,\
         phase:2,\
         pass,\
         nolog,\
@@ -58,7 +58,7 @@ metadata:
         ctl:ruleRemoveById=942320"  
       # Limit ModSecurity excemptions to the wp-admin/post.php endpoint
       SecRule REQUEST_URI "@contains /wp-admin/post.php" \
-        "id:1002,\
+        "id:1004,\
         phase:2,\
         pass,\
         nolog,\
@@ -66,14 +66,14 @@ metadata:
         ctl:ruleRemoveById=941160"
       # Limit ModSecurity excemptions to the wp-admin/nav-menus.php endpoint
       SecRule REQUEST_URI "@contains /wp-admin/nav-menus.php" \
-        "id:1003,\
+        "id:1005,\
         phase:2,\
         pass,\
         nolog,\
         ctl:ruleRemoveById=921110"
       # Limit ModSecurity excemptions to the wp-admin/admin-ajax.php endpoint
       SecRule REQUEST_URI "@contains /wp-admin/admin-ajax.php" \
-        "id:1004,\
+        "id:1006,\
         phase:2,\
         pass,\
         nolog,\
