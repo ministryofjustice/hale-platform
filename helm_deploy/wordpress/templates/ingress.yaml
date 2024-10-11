@@ -116,6 +116,12 @@ metadata:
       if ($host = 'www.advance-into-justice.service.justice.gov.uk') {
         return 301 https://prisonandprobationjobs.gov.uk/roles-at-hmpps/jobs-for-veterans;
       }
+      if ($host = 'iapdeathsincustody.independent.gov.uk') {
+        return 301 https://iapondeathsincustody.org;
+      }
+      if ($host = 'www.iapdeathsincustody.independent.gov.uk') {
+        return 301 https://iapondeathsincustody.org;
+      }
 spec:
   ingressClassName: modsec
   tls:
