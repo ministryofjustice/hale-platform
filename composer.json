@@ -41,7 +41,7 @@
     "require": {
         "composer/installers": "^v1.7.0",
         "ministryofjustice/brookhouse": "dev-main",
-        "ministryofjustice/cookie-compliance-for-wordpress": "3.4.14",
+        "ministryofjustice/cookie-compliance-for-wordpress": "3.4.15",
         "ministryofjustice/feed-importer": "1.1.0",
         "ministryofjustice/footnotes-made-easy": "^2.0",
         "ministryofjustice/hale": "4.15.4",
@@ -54,7 +54,7 @@
         "ministryofjustice/ppo": "dev-main",
         "ministryofjustice/sifocc": "dev-main",
         "ministryofjustice/wp-gov-uk-notify": "*",
-        "ministryofjustice/wp-moj-blocks": "3.12.1",
+        "ministryofjustice/wp-moj-blocks": "3.12.2",
         "ministryofjustice/wp-s3-uploads": "dev-main",
         "oscarotero/env": "^1.0",
         "php": ">=7.4",
