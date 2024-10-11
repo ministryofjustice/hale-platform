@@ -147,6 +147,10 @@ ingress:
       certName: iapdc-cert
     - name: www.iapondeathsincustody.org
       certName: iapdc-www-cert
+    - name: iapdeathsincustody.independent.gov.uk
+      certName: iapdci-cert
+    - name: www.iapdeathsincustody.independent.gov.uk
+      certName: iapdci-www-cert
     - name: legalaidlearning.justice.gov.uk
       certName: legalaidlearning-cert
     - name: www.legalaidlearning.justice.gov.uk
