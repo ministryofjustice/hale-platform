@@ -119,6 +119,14 @@ ingress:
       certName: andrewmalkinson-cert
     - name: www.andrewmalkinson.independent-inquiry.uk
       certName: andrewmalkinson-www-cert
+    - name: cjji.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-cjji-cert
+    - name: www.cjji.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-cjji-www-cert
+    - name: hmcpsi.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-hmcpsi-cert
+    - name: www.hmcpsi.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-hmcpsi-www-cert
     - name: hmiprisons.justiceinspectorates.gov.uk
       certName: justiceinspectorates-hmiprisons-cert
     - name: intranet.hmiprisons.justiceinspectorates.gov.uk
