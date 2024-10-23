@@ -23,6 +23,7 @@ metadata:
         pass,\
         nolog,\
          ctl:ruleRemoveById=932130,\
+         ctl:ruleRemoveById=932130,\
          ctl:ruleRemoveById=941180
       # Limit ModSecurity excemptions to only the options page - these rules were breaking the hale components plugin
       SecRule REQUEST_URI "@contains /wp-admin/options.php" \
