@@ -22,7 +22,7 @@ metadata:
         phase:2,\
         pass,\
         nolog,\
-         ctl:ruleRemoveById=932130,\
+         ctl:ruleRemoveById=932110,\
          ctl:ruleRemoveById=932130,\
          ctl:ruleRemoveById=941180
       # Limit ModSecurity excemptions to only the options page - these rules were breaking the hale components plugin
