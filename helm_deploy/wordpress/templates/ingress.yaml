@@ -126,6 +126,12 @@ metadata:
       if ($host = 'www.iapondeathsincustody.org') {
         return 301 https://iapdeathsincustody.independent.gov.uk;
       }
+      if ($host = 'brookhouseinquiry.org.uk') {
+        return 301 https://webarchive.nationalarchives.gov.uk/ukgwa/20241002135959/https://brookhouseinquiry.org.uk/;
+      }
+      if ($host = 'www.brookhouseinquiry.org.uk') {
+        return 301 https://webarchive.nationalarchives.gov.uk/ukgwa/20241002135959/https://brookhouseinquiry.org.uk/;
+      }
 spec:
   ingressClassName: modsec
   tls:
