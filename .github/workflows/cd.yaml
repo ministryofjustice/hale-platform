@@ -20,7 +20,7 @@ jobs:
         ecr-region: ${{ secrets.DEV_ECR_REGION }}
         ecr-repo: ${{ secrets.DEV_ECR_REPO }}
         sentry-dsn: ${{ vars.PHP_DSN }}
-        domain: ${{ vars.DOMAIN }}
+        domain: 'dev.websitebuilder.service.justice.gov.uk'
         env-type: ${{ vars.ENV_TYPE }}
         cp-user: ${{ secrets.PACKAGIST_USER }}
         cp-password: ${{ secrets.PACKAGIST_PASSWORD }}
@@ -50,7 +50,6 @@ jobs:
         alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
         avature-feed-username: ${{ secrets.AVATURE_FEED_USERNAME }}
         avature-feed-password: ${{ secrets.AVATURE_FEED_PASSWORD }}
-        domain: 'dev.websitebuilder.service.justice.gov.uk'
 
   deployDemo:
       name: Deploy to Demo Environment
@@ -63,7 +62,7 @@ jobs:
         ecr-region: ${{ secrets.DEMO_ECR_REGION }}
         ecr-repo: ${{ secrets.DEMO_ECR_REPO }}
         sentry-dsn: ${{ vars.PHP_DSN }}
-        domain: ${{ vars.DOMAIN }}
+        domain: 'demo.websitebuilder.service.justice.gov.uk'
         env-type: ${{ vars.ENV_TYPE }}
         cp-user: ${{ secrets.PACKAGIST_USER }}
         cp-password: ${{ secrets.PACKAGIST_PASSWORD }}
@@ -93,7 +92,6 @@ jobs:
         alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
         avature-feed-username: ${{ secrets.AVATURE_FEED_USERNAME }}
         avature-feed-password: ${{ secrets.AVATURE_FEED_PASSWORD }}
-        domain: 'demo.websitebuilder.service.justice.gov.uk'
 
   deployStaging:
       name: Deploy to Staging Environment
@@ -106,7 +104,7 @@ jobs:
         ecr-region: ${{ secrets.STAGING_ECR_REGION }}
         ecr-repo: ${{ secrets.STAGING_ECR_REPO }}
         sentry-dsn: ${{ vars.PHP_DSN }}
-        domain: ${{ vars.DOMAIN }}
+        domain: 'staging.websitebuilder.service.justice.gov.uk'
         env-type: ${{ vars.ENV_TYPE }}
         cp-user: ${{ secrets.PACKAGIST_USER }}
         cp-password: ${{ secrets.PACKAGIST_PASSWORD }}
@@ -136,7 +134,6 @@ jobs:
         alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
         avature-feed-username: ${{ secrets.AVATURE_FEED_USERNAME }}
         avature-feed-password: ${{ secrets.AVATURE_FEED_PASSWORD }}
-        domain: 'staging.websitebuilder.service.justice.gov.uk'
 
   deployProd:
       name: Deploy to Production Environment
@@ -150,7 +147,7 @@ jobs:
         ecr-region: ${{ secrets.PROD_ECR_REGION }}
         ecr-repo: ${{ secrets.PROD_ECR_REPO }}
         sentry-dsn: ${{ vars.PHP_DSN }}
-        domain: ${{ vars.DOMAIN }}
+        domain: 'websitebuilder.service.justice.gov.uk'
         env-type: ${{ vars.ENV_TYPE }}
         cp-user: ${{ secrets.PACKAGIST_USER }}
         cp-password: ${{ secrets.PACKAGIST_PASSWORD }}
@@ -180,4 +177,3 @@ jobs:
         alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
         avature-feed-username: ${{ secrets.AVATURE_FEED_USERNAME }}
         avature-feed-password: ${{ secrets.AVATURE_FEED_PASSWORD }}
-        domain: 'websitebuilder.service.justice.gov.uk'

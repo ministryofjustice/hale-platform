@@ -75,8 +75,6 @@ on:
         required: true
       avature-feed-password:
         required: true
-      domain:
-        required: true
 
 jobs:
   buildImage:
