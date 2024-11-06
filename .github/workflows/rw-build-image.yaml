@@ -138,7 +138,6 @@ jobs:
             wordpress/wp-content/themes/hale/node_modules
             wordpress/wp-content/themes/hale-dash/node_modules
             wordpress/wp-content/themes/hale-showcase/node_modules
-            wordpress/wp-content/themes/brookhouse/node_modules
             wordpress/wp-content/themes/lawcom/node_modules
             wordpress/wp-content/themes/justicejobs/node_modules
             wordpress/wp-content/themes/ppo/node_modules
