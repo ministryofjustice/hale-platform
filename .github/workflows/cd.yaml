@@ -20,7 +20,7 @@ jobs:
         ecr-region: ${{ secrets.DEV_ECR_REGION }}
         ecr-repo: ${{ secrets.DEV_ECR_REPO }}
         sentry-dsn: ${{ vars.PHP_DSN }}
-        domain: ${{ vars.DOMAIN }}
+        domain: 'dev.websitebuilder.service.justice.gov.uk'
         env-type: ${{ vars.ENV_TYPE }}
         cp-user: ${{ secrets.PACKAGIST_USER }}
         cp-password: ${{ secrets.PACKAGIST_PASSWORD }}
@@ -62,7 +62,7 @@ jobs:
         ecr-region: ${{ secrets.DEMO_ECR_REGION }}
         ecr-repo: ${{ secrets.DEMO_ECR_REPO }}
         sentry-dsn: ${{ vars.PHP_DSN }}
-        domain: ${{ vars.DOMAIN }}
+        domain: 'demo.websitebuilder.service.justice.gov.uk'
         env-type: ${{ vars.ENV_TYPE }}
         cp-user: ${{ secrets.PACKAGIST_USER }}
         cp-password: ${{ secrets.PACKAGIST_PASSWORD }}
@@ -104,7 +104,7 @@ jobs:
         ecr-region: ${{ secrets.STAGING_ECR_REGION }}
         ecr-repo: ${{ secrets.STAGING_ECR_REPO }}
         sentry-dsn: ${{ vars.PHP_DSN }}
-        domain: ${{ vars.DOMAIN }}
+        domain: 'staging.websitebuilder.service.justice.gov.uk'
         env-type: ${{ vars.ENV_TYPE }}
         cp-user: ${{ secrets.PACKAGIST_USER }}
         cp-password: ${{ secrets.PACKAGIST_PASSWORD }}
@@ -147,7 +147,7 @@ jobs:
         ecr-region: ${{ secrets.PROD_ECR_REGION }}
         ecr-repo: ${{ secrets.PROD_ECR_REPO }}
         sentry-dsn: ${{ vars.PHP_DSN }}
-        domain: ${{ vars.DOMAIN }}
+        domain: 'websitebuilder.service.justice.gov.uk'
         env-type: ${{ vars.ENV_TYPE }}
         cp-user: ${{ secrets.PACKAGIST_USER }}
         cp-password: ${{ secrets.PACKAGIST_PASSWORD }}
