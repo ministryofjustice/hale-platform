@@ -1,12 +1,16 @@
-# Default values for wordpress.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+## Default values for WordPress Multisite installation.
+## This is a YAML-formatted file.
+## Declare variables to be passed into your templates.
 
-# Empty strings mean value is overwritten and populated when run by GitAction
-# during deployment
+## Empty strings mean value is overwritten and populated when run by GitAction
+## during deployment
 
+## @param root domain
+##
 domain: ""
 
+## @param NGINX config
+##
 nginx:
   image:
     repository: ""
@@ -43,7 +47,8 @@ nginx:
         cpu: "100m"
         memory: "200Mi"
 
-
+## @param Wordpress specific paramaters
+##
 wp:
   image:
     repository: ""
@@ -87,13 +92,19 @@ wp:
         cpu: "500m"
         memory: "1500Mi"
 
+## @param Horizontal Pod Autoscaler
+##
 hpa:
   enabled: true
 
+## @param Turn on/off cron tasks
+##
 cron:
   feedparser:
     enabled: true
 
+## @param Manage traffic/domains via NGINX ingress
+##
 ingress:
   enabled: true
   metadata:
@@ -227,13 +238,16 @@ ingress:
     - name: www.legalaidlearning.justice.gov.uk
       certName: legalaidlearning-www-cert  
 
-
+## @param Non-secret env variables
+##
 configmap:
   servername: ""
   envtype: ""
   s3useprofile: "true"
   sentrydns: ""
 
+## @param secrets passed in via GitActions
+##
 secrets:
   enabled: true
   wpdbuser: ""
@@ -257,6 +271,8 @@ secrets:
     avatureFeedUserName: ""
     avatureFeedUserPassword: ""
 
+## @param Toggle alerts on/off
+##
 alertSecrets:
   enabled: true
   slackWebhookUrl: ""
