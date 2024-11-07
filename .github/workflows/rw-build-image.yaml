@@ -15,6 +15,8 @@ on:
         required: true
       sentry-dsn:
         required: true
+      domain:
+        required: true
       env-type:
         required: true
       cp-user:
@@ -138,7 +140,6 @@ jobs:
             wordpress/wp-content/themes/hale/node_modules
             wordpress/wp-content/themes/hale-dash/node_modules
             wordpress/wp-content/themes/hale-showcase/node_modules
-            wordpress/wp-content/themes/brookhouse/node_modules
             wordpress/wp-content/themes/lawcom/node_modules
             wordpress/wp-content/themes/justicejobs/node_modules
             wordpress/wp-content/themes/ppo/node_modules
@@ -150,7 +151,7 @@ jobs:
 
       - name: Run NPM
         run: |
-          for theme in hale hale-dash hale-showcase brookhouse lawcom justicejobs ppo sifocc imbmembers; do
+          for theme in hale hale-dash hale-showcase lawcom justicejobs ppo sifocc imbmembers; do
             npm install --prefix ./wordpress/wp-content/themes/$theme
             npm run production --if-present --prefix ./wordpress/wp-content/themes/$theme
           done
@@ -226,6 +227,6 @@ jobs:
           --set configmap.envtype=${{ vars.ENV_TYPE }} \
           --set configmap.sentrydns=${{ vars.PHP_DSN }} \
           --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.kube-namespace }}-green \
-          --set domain=${{ vars.ENV_TYPE }}.websitebuilder.service.justice.gov.uk \
+          --set domain=${{ secrets.domain }} \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_nginx-${{ github.sha }} \
           --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_wordpress-${{ github.sha }}
