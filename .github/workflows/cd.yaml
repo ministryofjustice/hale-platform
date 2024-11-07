@@ -105,7 +105,6 @@ jobs:
         ecr-repo: ${{ secrets.STAGING_ECR_REPO }}
         domain: 'staging.websitebuilder.service.justice.gov.uk'        
         sentry-dsn: ${{ vars.PHP_DSN }}
-        domain: 'staging.websitebuilder.service.justice.gov.uk'
         env-type: ${{ vars.ENV_TYPE }}
         cp-user: ${{ secrets.PACKAGIST_USER }}
         cp-password: ${{ secrets.PACKAGIST_PASSWORD }}
