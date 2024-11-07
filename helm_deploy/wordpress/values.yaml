@@ -15,26 +15,26 @@ nginx:
   # Apply pod level resource allocation
   resources:
     dev:
-      requests:
-        cpu: "100m"
-        memory: "200Mi"
       limits:
-        cpu: "200m"
-        memory: "400Mi" 
+        cpu: "300m"
+        memory: "200Mi" 
+      requests:
+        cpu: "50m"
+        memory: "100Mi"
     demo:
-      requests:
-        cpu: "100m"
-        memory: "200Mi"
       limits:
-        cpu: "200m"
-        memory: "400Mi" 
+        cpu: "300m"
+        memory: "150Mi"
+      requests:
+        cpu: "50m"
+        memory: "100Mi"
     staging:
-      requests:
-        cpu: "100m"
-        memory: "200Mi"
       limits:
-        cpu: "200m"
-        memory: "400Mi" 
+        cpu: "300m"
+        memory: "150Mi"
+      requests:
+        cpu: "50m"
+        memory: "150Mi"
     prod:
       requests:
         cpu: "100m"
@@ -58,26 +58,26 @@ wp:
   # Apply pod level resource allocation
   resources:
     dev:
-      requests:
-        cpu: "300m"
-        memory: "1000Mi"
       limits:
-        cpu: "800m"
-        memory: "1600Mi"
+        cpu: "700m"
+        memory: "1800Mi"
+      requests:
+        cpu: "150m"
+        memory: "1500Mi"
     demo:
-      requests:
-        cpu: "300m"
-        memory: "1000Mi"
       limits:
-        cpu: "800m"
-        memory: "1600Mi"
+        cpu: "700m"
+        memory: "1800Mi"
+      requests:
+        cpu: "150m"
+        memory: "1500Mi"
     staging:
-      requests:
-        cpu: "300m"
-        memory: "1000Mi"
       limits:
-        cpu: "800m"
-        memory: "1600Mi"
+        cpu: "700m"
+        memory: "1800Mi"
+      requests:
+        cpu: "150m"
+        memory: "1500Mi"
     prod:
       requests:
         cpu: "500m"
