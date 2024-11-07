@@ -36,12 +36,13 @@ nginx:
         cpu: "50m"
         memory: "150Mi"
     prod:
+      limits:
+        cpu: "500m"
+        memory: "500Mi"
       requests:
         cpu: "100m"
-        memory: "300Mi"
-      limits:
-        cpu: "200m"
-        memory: "500Mi"
+        memory: "200Mi"
+
 
 wp:
   image:
@@ -79,12 +80,12 @@ wp:
         cpu: "150m"
         memory: "1500Mi"
     prod:
+      limits:
+        cpu: "1500m"
+        memory: "3500Mi"
       requests:
         cpu: "500m"
         memory: "1500Mi"
-      limits:
-        cpu: "1000m"
-        memory: "2500Mi"
 
 hpa:
   enabled: true
