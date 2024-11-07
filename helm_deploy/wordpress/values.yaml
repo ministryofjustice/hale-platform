@@ -11,6 +11,37 @@ nginx:
   image:
     repository: ""
     imagePullPolicy: Always
+  
+  # Apply pod level resource allocation
+  resources:
+    dev:
+      limits:
+        cpu: "300m"
+        memory: "200Mi" 
+      requests:
+        cpu: "50m"
+        memory: "100Mi"
+    demo:
+      limits:
+        cpu: "300m"
+        memory: "150Mi"
+      requests:
+        cpu: "50m"
+        memory: "100Mi"
+    staging:
+      limits:
+        cpu: "300m"
+        memory: "150Mi"
+      requests:
+        cpu: "50m"
+        memory: "150Mi"
+    prod:
+      requests:
+        cpu: "100m"
+        memory: "300Mi"
+      limits:
+        cpu: "200m"
+        memory: "500Mi"
 
 wp:
   image:
@@ -23,6 +54,37 @@ wp:
       staging: 2
       dev: 1
       demo: 2
+  
+  # Apply pod level resource allocation
+  resources:
+    dev:
+      limits:
+        cpu: "700m"
+        memory: "1800Mi"
+      requests:
+        cpu: "150m"
+        memory: "1500Mi"
+    demo:
+      limits:
+        cpu: "700m"
+        memory: "1800Mi"
+      requests:
+        cpu: "150m"
+        memory: "1500Mi"
+    staging:
+      limits:
+        cpu: "700m"
+        memory: "1800Mi"
+      requests:
+        cpu: "150m"
+        memory: "1500Mi"
+    prod:
+      requests:
+        cpu: "500m"
+        memory: "1500Mi"
+      limits:
+        cpu: "1000m"
+        memory: "2500Mi"
 
 hpa:
   enabled: true
@@ -119,6 +181,14 @@ ingress:
       certName: andrewmalkinson-cert
     - name: www.andrewmalkinson.independent-inquiry.uk
       certName: andrewmalkinson-www-cert
+    - name: cjji.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-cjji-cert
+    - name: www.cjji.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-cjji-www-cert
+    - name: hmcpsi.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-hmcpsi-cert
+    - name: www.hmcpsi.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-hmcpsi-www-cert
     - name: hmiprisons.justiceinspectorates.gov.uk
       certName: justiceinspectorates-hmiprisons-cert
     - name: intranet.hmiprisons.justiceinspectorates.gov.uk
@@ -147,6 +217,10 @@ ingress:
       certName: iapdc-cert
     - name: www.iapondeathsincustody.org
       certName: iapdc-www-cert
+    - name: iapdeathsincustody.independent.gov.uk
+      certName: iapdci-cert
+    - name: www.iapdeathsincustody.independent.gov.uk
+      certName: iapdci-www-cert
     - name: legalaidlearning.justice.gov.uk
       certName: legalaidlearning-cert
     - name: www.legalaidlearning.justice.gov.uk

@@ -58,8 +58,6 @@ while true; do
             echo -e '######################\n'
             npm install --prefix ./wordpress/wp-content/themes/hale
             npm run production --if-present --prefix ./wordpress/wp-content/themes/hale
-            npm install --prefix ./wordpress/wp-content/themes/brookhouse
-            npm run production --if-present --prefix ./wordpress/wp-content/themes/brookhouse
             npm install --prefix ./wordpress/wp-content/themes/lawcom
             npm run production --if-present --prefix ./wordpress/wp-content/themes/lawcom
             npm install --prefix ./wordpress/wp-content/themes/justicejobs

@@ -103,6 +103,7 @@ jobs:
         ecr-role: ${{ secrets.STAGING_ECR_ROLE_TO_ASSUME }}
         ecr-region: ${{ secrets.STAGING_ECR_REGION }}
         ecr-repo: ${{ secrets.STAGING_ECR_REPO }}
+        domain: 'staging.websitebuilder.service.justice.gov.uk'        
         sentry-dsn: ${{ vars.PHP_DSN }}
         domain: 'staging.websitebuilder.service.justice.gov.uk'
         env-type: ${{ vars.ENV_TYPE }}
