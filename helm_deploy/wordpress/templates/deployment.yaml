@@ -38,11 +38,11 @@ spec:
           name: wordpress
           resources:
             requests:
-              cpu: {{ .Values.wp.resources.(.Values.configmap.envtype).requests.cpu }}
-              memory: {{ .Values.wp.resources.(.Values.configmap.envtype).requests.memory }}
+              cpu: {{ index .Values.wp.resources .Values.configmap.envtype "requests" "cpu" }}
+              memory: {{ index .Values.wp.resources .Values.configmap.envtype "requests" "memory" }}
             limits:
-              cpu: {{ .Values.wp.resources.(.Values.configmap.envtype).limits.cpu }}
-              memory: {{ .Values.wp.resources.(.Values.configmap.envtype).limits.memory }}
+              cpu: {{ index .Values.wp.resources .Values.configmap.envtype "requests" "cpu" }}
+              memory: {{ index .Values.wp.resources .Values.configmap.envtype "requests" "memory" }}
           env:
             - name: PHP_INI_SCAN_DIR
               value: :/usr/local/etc/php/conf.custom
@@ -82,11 +82,11 @@ spec:
           imagePullPolicy: {{ .Values.nginx.image.imagePullPolicy }}
           resources:
             requests:
-              cpu: {{ .Values.nginx.resources.(.Values.configmap.envtype).requests.cpu }}
-              memory: {{ .Values.nginx.resources.(.Values.configmap.envtype).requests.memory }}
+              cpu: {{ index .Values.nginx.resources .Values.configmap.envtype "requests" "cpu" }}
+              memory: {{ index .Values.nginx.resources .Values.configmap.envtype "requests" "memory" }}
             limits:
-              cpu: {{ .Values.nginx.resources.(.Values.configmap.envtype).limits.cpu }}
-              memory: {{ .Values.nginx.resources.(.Values.configmap.envtype).limits.memory }}
+              cpu: {{ index .Values.nginx.resources .Values.configmap.envtype "requests" "cpu" }}
+              memory: {{ index .Values.nginx.resources .Values.configmap.envtype "requests" "memory" }}
           ports:
             - containerPort: 8080
           volumeMounts:
