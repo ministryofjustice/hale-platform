@@ -60,3 +60,15 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{- define "wp.replicaCount" -}}
+{{- if eq .Values.configmap.envtype "staging" -}}
+  {{ .Values.wp.image.replicaCount.staging }}
+{{- else if eq .Values.configmap.envtype "dev" -}}
+  {{ .Values.wp.image.replicaCount.dev }}
+{{- else if eq .Values.configmap.envtype "demo" -}}
+  {{ .Values.wp.image.replicaCount.demo }}
+{{- else -}}
+  {{ .Values.wp.image.replicaCount.prod }}
+{{- end -}}
+{{- end }}
