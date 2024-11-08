@@ -1,18 +1,22 @@
-# Default values for wordpress.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+## Default values for WordPress Multisite installation.
+## This is a YAML-formatted file.
+## Declare variables to be passed into your templates.
 
-# Empty strings mean value is overwritten and populated when run by GitAction
-# during deployment
+## Empty strings mean value is overwritten and populated when run by GitAction
+## during deployment
 
+## @param root domain
+##
 domain: ""
 
+## @param NGINX config
+##
 nginx:
   image:
     repository: ""
     imagePullPolicy: Always
   
-  # Apply pod level resource allocation
+  # Apply container level resource allocation
   resources:
     dev:
       limits:
@@ -36,26 +40,21 @@ nginx:
         cpu: "50m"
         memory: "150Mi"
     prod:
+      limits:
+        cpu: "500m"
+        memory: "500Mi"
       requests:
         cpu: "100m"
-        memory: "300Mi"
-      limits:
-        cpu: "200m"
-        memory: "500Mi"
+        memory: "200Mi"
 
+## @param Wordpress specific paramaters
+##
 wp:
   image:
     repository: ""
     imagePullPolicy: Always
-
-    # Default if HPA is not turned on
-    replicaCount:
-      prod: 3
-      staging: 2
-      dev: 1
-      demo: 2
   
-  # Apply pod level resource allocation
+  # Apply container level resource allocation
   resources:
     dev:
       limits:
@@ -79,20 +78,35 @@ wp:
         cpu: "150m"
         memory: "1500Mi"
     prod:
+      limits:
+        cpu: "1500m"
+        memory: "3500Mi"
       requests:
         cpu: "500m"
         memory: "1500Mi"
-      limits:
-        cpu: "1000m"
-        memory: "2500Mi"
 
+## @param Horizontal Pod Autoscaler
+##
 hpa:
   enabled: true
 
+## @param Manage replica count
+## Default settings when HPA is not turned on
+##
+replicaCount:
+  prod: 3
+  staging: 2
+  dev: 1
+  demo: 2
+
+## @param Turn on/off cron tasks
+##
 cron:
   feedparser:
     enabled: true
 
+## @param Manage traffic/domains via NGINX ingress
+##
 ingress:
   enabled: true
   metadata:
@@ -226,13 +240,16 @@ ingress:
     - name: www.legalaidlearning.justice.gov.uk
       certName: legalaidlearning-www-cert  
 
-
+## @param Non-secret env variables
+##
 configmap:
   servername: ""
   envtype: ""
   s3useprofile: "true"
   sentrydns: ""
 
+## @param secrets passed in via GitActions
+##
 secrets:
   enabled: true
   wpdbuser: ""
@@ -256,6 +273,8 @@ secrets:
     avatureFeedUserName: ""
     avatureFeedUserPassword: ""
 
+## @param Toggle alerts on/off
+##
 alertSecrets:
   enabled: true
   slackWebhookUrl: ""
