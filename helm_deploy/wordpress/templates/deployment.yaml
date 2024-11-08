@@ -80,13 +80,8 @@ spec:
               cpu: {{ index .Values.nginx.resources .Values.configmap.envtype "requests" "cpu" }}
               memory: {{ index .Values.nginx.resources .Values.configmap.envtype "requests" "memory" }}
             limits:
-<<<<<<< HEAD
-              cpu: {{ index .Values.nginx.resources .Values.configmap.envtype "requests" "cpu" }}
-              memory: {{ index .Values.nginx.resources .Values.configmap.envtype "requests" "memory" }}
-=======
               cpu: {{ index .Values.nginx.resources .Values.configmap.envtype "limits" "cpu" }}
               memory: {{ index .Values.nginx.resources .Values.configmap.envtype "limits" "memory" }}
->>>>>>> memory-allocation
           ports:
             - containerPort: 8080
           volumeMounts:
