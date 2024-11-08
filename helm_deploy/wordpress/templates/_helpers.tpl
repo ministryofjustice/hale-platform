@@ -63,12 +63,12 @@ Create the name of the service account to use
 
 {{- define "wp.replicaCount" -}}
 {{- if eq .Values.configmap.envtype "staging" -}}
-  {{ .Values.wp.image.replicaCount.staging }}
+  {{ .Values.replicaCount.staging }}
 {{- else if eq .Values.configmap.envtype "dev" -}}
-  {{ .Values.wp.image.replicaCount.dev }}
+  {{ .Values.replicaCount.dev }}
 {{- else if eq .Values.configmap.envtype "demo" -}}
-  {{ .Values.wp.image.replicaCount.demo }}
+  {{ .Values.replicaCount.demo }}
 {{- else -}}
-  {{ .Values.wp.image.replicaCount.prod }}
+  {{ .Values.replicaCount.prod }}
 {{- end -}}
 {{- end }}

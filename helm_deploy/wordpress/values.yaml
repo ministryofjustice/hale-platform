@@ -16,7 +16,7 @@ nginx:
     repository: ""
     imagePullPolicy: Always
   
-  # Apply pod level resource allocation
+  # Apply container level resource allocation
   resources:
     dev:
       limits:
@@ -53,15 +53,8 @@ wp:
   image:
     repository: ""
     imagePullPolicy: Always
-
-    # Default if HPA is not turned on
-    replicaCount:
-      prod: 3
-      staging: 2
-      dev: 1
-      demo: 2
   
-  # Apply pod level resource allocation
+  # Apply container level resource allocation
   resources:
     dev:
       limits:
@@ -96,6 +89,15 @@ wp:
 ##
 hpa:
   enabled: true
+
+## @param Manage replica count
+## Default settings when HPA is not turned on
+##
+replicaCount:
+  prod: 3
+  staging: 2
+  dev: 1
+  demo: 2
 
 ## @param Turn on/off cron tasks
 ##
