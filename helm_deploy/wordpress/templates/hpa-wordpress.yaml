@@ -9,19 +9,8 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: wordpress
-  {{- if eq .Values.configmap.envtype "prod" }}
-  minReplicas: 4
-  maxReplicas: 5
-  {{- else if eq .Values.configmap.envtype "staging" }}
-  minReplicas: 2
-  maxReplicas: 3
-  {{- else if eq .Values.configmap.envtype "demo" }}
-  minReplicas: 2
-  maxReplicas: 3
-  {{- else }}
-  minReplicas: 1
-  maxReplicas: 1
-  {{- end }}
+    spec:
+      {{ include "replicaSettings" . }}
   metrics:
   - type: Resource
     resource:
