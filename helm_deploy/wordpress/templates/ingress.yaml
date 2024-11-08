@@ -85,7 +85,7 @@ metadata:
         ctl:ruleRemoveById=941160"
       # Modsec Testing
       SecRule REQUEST_HEADERS:Cookie "@contains WAF_CONFIG={{ .Values.secrets.wafconfig }}" \
-        "id:1004,\
+        "id:1007,\
         phase:2,\
         pass,\
         nolog,\
