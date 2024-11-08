@@ -72,6 +72,13 @@ metadata:
         nolog,\
         ctl:ruleRemoveById=941100,\
         ctl:ruleRemoveById=941160"
+      # Modsec Testing
+      SecRule REQUEST_HEADERS:Cookie "@contains WAF_CONFIG={{ .Values.secrets.wafconfig }}" \
+        "id:1004,\
+        phase:2,\
+        pass,\
+        nolog,\
+        ctl:ruleRemoveById=949110"
     {{- if eq .Values.configmap.envtype "staging" }}
       SecRule REMOTE_ADDR "@ipMatch 80.195.27.199/32" "phase:2,id:200000001,nolog,allow"
     {{- end }}

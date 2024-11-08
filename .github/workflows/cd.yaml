@@ -50,6 +50,7 @@ jobs:
         alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
         avature-feed-username: ${{ secrets.AVATURE_FEED_USERNAME }}
         avature-feed-password: ${{ secrets.AVATURE_FEED_PASSWORD }}
+        waf-config: ${{ secrets.WAF_CONFIG}}
 
   deployDemo:
       name: Deploy to Demo Environment
@@ -92,6 +93,7 @@ jobs:
         alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
         avature-feed-username: ${{ secrets.AVATURE_FEED_USERNAME }}
         avature-feed-password: ${{ secrets.AVATURE_FEED_PASSWORD }}
+        waf-config: ${{ secrets.WAF_CONFIG}}
 
   deployStaging:
       name: Deploy to Staging Environment
@@ -134,6 +136,7 @@ jobs:
         alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
         avature-feed-username: ${{ secrets.AVATURE_FEED_USERNAME }}
         avature-feed-password: ${{ secrets.AVATURE_FEED_PASSWORD }}
+        waf-config: ${{ secrets.WAF_CONFIG}}
 
   deployProd:
       name: Deploy to Production Environment
@@ -177,3 +180,4 @@ jobs:
         alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
         avature-feed-username: ${{ secrets.AVATURE_FEED_USERNAME }}
         avature-feed-password: ${{ secrets.AVATURE_FEED_PASSWORD }}
+        waf-config: ${{ secrets.WAF_CONFIG}}
