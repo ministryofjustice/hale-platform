@@ -89,6 +89,19 @@ wp:
 ##
 hpa:
   enabled: true
+  replicaCount:
+    prod:
+      min: 4
+      max: 5
+    staging:
+      min: 2
+      max: 3
+    demo:
+      min: 2
+      max: 3
+    dev:
+      min: 1
+      max: 1
 
 ## @param Manage replica count
 ## Default settings when HPA is not turned on
