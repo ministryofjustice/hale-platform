@@ -9,8 +9,8 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: wordpress
-  minReplicas: {{ .Values.replicaSettings.min }}
-  maxReplicas: {{ .Values.replicaSettings.max }}
+    spec:
+      {{ include "replicaSettings" . }}
   metrics:
     - type: Resource
       resource:
