@@ -156,7 +156,10 @@ secrets:
 alertSecrets:
   enabled: true
   slackWebhookUrl: ""
+<<<<<<< HEAD
   
+=======
+>>>>>>> memory-allocation
 
 ## @param Manage traffic/domains via NGINX ingress
 ##
@@ -291,4 +294,4 @@ ingress:
     - name: legalaidlearning.justice.gov.uk
       certName: legalaidlearning-cert
     - name: www.legalaidlearning.justice.gov.uk
-      certName: legalaidlearning-www-cert
+      certName: legalaidlearning-www-cert  
