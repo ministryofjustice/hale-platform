@@ -20,29 +20,29 @@ nginx:
   resources:
     dev:
       limits:
-        cpu: "300m"
-        memory: "200Mi" 
+        cpu: "200m"
+        memory: "400Mi"
       requests:
-        cpu: "50m"
-        memory: "100Mi"
+        cpu: "40m"
+        memory: "50Mi"
     demo:
       limits:
-        cpu: "300m"
-        memory: "150Mi"
+        cpu: "200m"
+        memory: "400Mi"
       requests:
-        cpu: "50m"
-        memory: "100Mi"
+        cpu: "40m"
+        memory: "50Mi"
     staging:
       limits:
-        cpu: "300m"
-        memory: "150Mi"
+        cpu: "200m"
+        memory: "400Mi"
       requests:
-        cpu: "50m"
-        memory: "150Mi"
+        cpu: "40m"
+        memory: "50Mi"
     prod:
       limits:
-        cpu: "500m"
-        memory: "500Mi"
+        cpu: "1000m"
+        memory: "3000Mi"
       requests:
         cpu: "100m"
         memory: "200Mi"
@@ -58,32 +58,32 @@ wp:
   resources:
     dev:
       limits:
-        cpu: "700m"
-        memory: "1800Mi"
+        cpu: "1000m"
+        memory: "2000Mi"
       requests:
-        cpu: "150m"
-        memory: "1500Mi"
+        cpu: "100m"
+        memory: "600Mi"
     demo:
       limits:
-        cpu: "700m"
-        memory: "1800Mi"
+        cpu: "1000m"
+        memory: "2000Mi"
       requests:
-        cpu: "150m"
-        memory: "1500Mi"
+        cpu: "100m"
+        memory: "600Mi"
     staging:
       limits:
-        cpu: "700m"
-        memory: "1800Mi"
+        cpu: "1000m"
+        memory: "2000Mi"
       requests:
-        cpu: "150m"
-        memory: "1500Mi"
+        cpu: "100m"
+        memory: "600Mi"
     prod:
       limits:
-        cpu: "1500m"
-        memory: "3500Mi"
+        cpu: "1000m"
+        memory: "3000Mi"
       requests:
         cpu: "500m"
-        memory: "1500Mi"
+        memory: "1800Mi"
 
 ## @param Horizontal Pod Autoscaler
 ##
