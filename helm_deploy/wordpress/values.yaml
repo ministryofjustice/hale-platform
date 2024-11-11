@@ -20,22 +20,22 @@ nginx:
   resources:
     dev:
       limits:
-        cpu: "200m"
-        memory: "400Mi"
+        cpu: "1000m"
+        memory: "2000Mi"
       requests:
         cpu: "40m"
         memory: "50Mi"
     demo:
       limits:
-        cpu: "200m"
-        memory: "400Mi"
+        cpu: "1000m"
+        memory: "2000Mi"
       requests:
         cpu: "40m"
         memory: "50Mi"
     staging:
       limits:
-        cpu: "200m"
-        memory: "400Mi"
+        cpu: "1000m"
+        memory: "2000Mi"
       requests:
         cpu: "40m"
         memory: "50Mi"
