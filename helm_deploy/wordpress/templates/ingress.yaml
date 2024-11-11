@@ -8,6 +8,14 @@ metadata:
     external-dns.alpha.kubernetes.io/aws-weight: "100"
     nginx.ingress.kubernetes.io/enable-modsecurity: "true"
     nginx.ingress.kubernetes.io/modsecurity-snippet: |
+      # Default WAF rules
+      SecRuleEngine On
+      SecDefaultAction 
+        "phase:2,\
+        pass,\
+        log,\
+        tag:github_team=hale-platform,\
+        tag:environment=hale-platform-{{ .Values.configmap.envtype }}"
       # Set WAF Config for Authenticated Users
       SecRule REQUEST_HEADERS:Cookie "@contains WAF_CONFIG={{ .Values.secrets.wafconfig }}"
         "id:1001,\
@@ -16,14 +24,6 @@ metadata:
         tag:github_team=hale-platform,\
         tag:environment=hale-platform-{{ .Values.configmap.envtype }}-auth,\
         ctl:ruleEngine=DetectionOnly"
-      # Set WAF Config for Unauthenticated Users
-      SecRule REQUEST_HEADERS:Cookie "!@contains WAF_CONFIG={{ .Values.secrets.wafconfig }}"
-        "id:1002,\
-        phase:2,\
-        allow,\
-        tag:github_team=hale-platform,\
-        tag:environment=hale-platform-{{ .Values.configmap.envtype }}-no-auth,\
-        ctl:ruleEngine=On"
     {{- if eq .Values.configmap.envtype "staging" }}
       SecRule REMOTE_ADDR "@ipMatch 80.195.27.199/32" "phase:2,id:200000001,nolog,allow"
     {{- end }}
