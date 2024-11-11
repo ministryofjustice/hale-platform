@@ -6,16 +6,16 @@ metadata:
   labels:
     app: wordpress
 spec:
-  replicas: {{ include "wp.replicaCount" . }}
   selector:
     matchLabels:
       app: wordpress
       tier: frontend-c
+  replicas: {{ include "wp.replicaCount" . }}
   strategy:
-    type: RollingUpdate
+    type: {{ .Values.updateStrategy.type }}
     rollingUpdate:
-      maxSurge: 100%
-      maxUnavailable: 50%
+      maxSurge: {{ .Values.updateStrategy.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ .Values.updateStrategy.rollingUpdate.maxUnavailable }}
   template:
     metadata:
       labels:
@@ -24,7 +24,6 @@ spec:
     spec:
       terminationGracePeriodSeconds: 35
       serviceAccountName: hale-platform-{{ .Values.configmap.envtype }}-service
-
       containers:
         - name: wordpress
           image: {{ .Values.wp.image.repository }}
@@ -40,7 +39,7 @@ spec:
             - name: PHP_INI_SCAN_DIR
               value: :/usr/local/etc/php/conf.custom
           ports:
-            - containerPort: 9000
+            - containerPort: {{ .Values.wp.image.ports.containerPort }}
           volumeMounts:
             - name: wordpress-volume-file-mount
               mountPath: /var/www/html
@@ -51,7 +50,6 @@ spec:
                 name: hale-wp-config-{{ .Release.Revision }}
             - secretRef:
                 name: hale-wp-secrets-{{ .Release.Revision }}
-
           {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
           readinessProbe:
             exec:
@@ -71,7 +69,6 @@ spec:
             successThreshold: 1
             failureThreshold: 3
           {{- end }}
-        
         - name: nginx
           image: {{ .Values.nginx.image.repository }}
           imagePullPolicy: {{ .Values.nginx.image.imagePullPolicy }}
@@ -83,11 +80,10 @@ spec:
               cpu: {{ index .Values.nginx.resources .Values.configmap.envtype "requests" "cpu" }}
               memory: {{ index .Values.nginx.resources .Values.configmap.envtype "requests" "memory" }}
           ports:
-            - containerPort: 8080
+            - containerPort: {{ .Values.nginx.image.ports.containerPort }}
           volumeMounts:
             - name: wordpress-volume-file-mount
               mountPath: /var/www/html
-              
           {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
           readinessProbe:
             exec:
@@ -106,7 +102,6 @@ spec:
             successThreshold: 1
             failureThreshold: 3
           {{- end }}
-        
       volumes:
         - name: wordpress-volume-file-mount
           emptyDir: {}
