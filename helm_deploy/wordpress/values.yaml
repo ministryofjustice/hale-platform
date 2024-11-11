@@ -86,9 +86,12 @@ wp:
         memory: "1800Mi"
 
 ## WordPress Autoscaling configuration
-## ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+## ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/y
+## Set min/max thresholds in number of pods run based on CPU can memory
 autoscaling:
   enabled: true
+  targetCPU: 75
+  targetMemory: 65
   replicaCount:
     prod:
       min: 4
