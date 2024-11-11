@@ -108,11 +108,7 @@ hpa:
 ##
 replicaCount:
   prod: 4
-<<<<<<< HEAD
-  staging: 2
-=======
   staging: 3
->>>>>>> memory-allocation
   dev: 1
   demo: 2
 
