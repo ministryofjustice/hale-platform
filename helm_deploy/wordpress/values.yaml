@@ -156,10 +156,6 @@ secrets:
 alertSecrets:
   enabled: true
   slackWebhookUrl: ""
-<<<<<<< HEAD
-  
-=======
->>>>>>> memory-allocation
 
 ## @param Manage traffic/domains via NGINX ingress
 ##
