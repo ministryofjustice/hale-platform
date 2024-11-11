@@ -6,15 +6,7 @@ metadata:
   labels:
     app: wordpress
 spec:
-  {{- if eq .Values.configmap.envtype "staging" }}
-  replicas: {{ .Values.wp.image.replicaCount.staging }}
-  {{ else if eq .Values.configmap.envtype "dev" }}
-  replicas: {{ .Values.wp.image.replicaCount.dev }}
-  {{ else if eq .Values.configmap.envtype "demo" }}
-  replicas: {{ .Values.wp.image.replicaCount.demo }}
-  {{ else }}
-  replicas: {{ .Values.wp.image.replicaCount.prod }}
-  {{- end }}
+  replicas: {{ include "wp.replicaCount" . }}
   selector:
     matchLabels:
       app: wordpress
@@ -32,17 +24,18 @@ spec:
     spec:
       terminationGracePeriodSeconds: 35
       serviceAccountName: hale-platform-{{ .Values.configmap.envtype }}-service
+
       containers:
-        - image: {{ .Values.wp.image.repository }}
+        - name: wordpress
+          image: {{ .Values.wp.image.repository }}
           imagePullPolicy: {{ .Values.wp.image.imagePullPolicy }}
-          name: wordpress
           resources:
             requests:
               cpu: {{ index .Values.wp.resources .Values.configmap.envtype "requests" "cpu" }}
               memory: {{ index .Values.wp.resources .Values.configmap.envtype "requests" "memory" }}
             limits:
-              cpu: {{ index .Values.wp.resources .Values.configmap.envtype "requests" "cpu" }}
-              memory: {{ index .Values.wp.resources .Values.configmap.envtype "requests" "memory" }}
+              cpu: {{ index .Values.wp.resources .Values.configmap.envtype "limits" "cpu" }}
+              memory: {{ index .Values.wp.resources .Values.configmap.envtype "limits" "memory" }}
           env:
             - name: PHP_INI_SCAN_DIR
               value: :/usr/local/etc/php/conf.custom
@@ -58,25 +51,27 @@ spec:
                 name: hale-wp-config-{{ .Release.Revision }}
             - secretRef:
                 name: hale-wp-secrets-{{ .Release.Revision }}
-{{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
+
+          {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
           readinessProbe:
             exec:
               command:
-              - /bin/sh
-              - -c
-              - |
-                if [ -f /var/www/html/wp-load.php ] && ps aux | grep -q "[p]hp-fpm"
-                then
-                  exit 0
-                else
-                  exit 1
-                fi
+                - /bin/sh
+                - -c
+                - |
+                  if [ -f /var/www/html/wp-load.php ] && ps aux | grep -q "[p]hp-fpm"
+                  then
+                    exit 0
+                  else
+                    exit 1
+                  fi
             initialDelaySeconds: 30
             periodSeconds: 3
             timeoutSeconds: 10
             successThreshold: 1
             failureThreshold: 3
-{{- end }}
+          {{- end }}
+        
         - name: nginx
           image: {{ .Values.nginx.image.repository }}
           imagePullPolicy: {{ .Values.nginx.image.imagePullPolicy }}
@@ -85,14 +80,15 @@ spec:
               cpu: {{ index .Values.nginx.resources .Values.configmap.envtype "requests" "cpu" }}
               memory: {{ index .Values.nginx.resources .Values.configmap.envtype "requests" "memory" }}
             limits:
-              cpu: {{ index .Values.nginx.resources .Values.configmap.envtype "requests" "cpu" }}
-              memory: {{ index .Values.nginx.resources .Values.configmap.envtype "requests" "memory" }}
+              cpu: {{ index .Values.nginx.resources .Values.configmap.envtype "limits" "cpu" }}
+              memory: {{ index .Values.nginx.resources .Values.configmap.envtype "limits" "memory" }}
           ports:
             - containerPort: 8080
           volumeMounts:
             - name: wordpress-volume-file-mount
               mountPath: /var/www/html
-{{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
+              
+          {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
           readinessProbe:
             exec:
               command:
@@ -109,7 +105,8 @@ spec:
             timeoutSeconds: 10
             successThreshold: 1
             failureThreshold: 3
-{{- end }}
+          {{- end }}
+        
       volumes:
         - name: wordpress-volume-file-mount
           emptyDir: {}
