@@ -19,4 +19,12 @@ spec:
             args:
             - curl
             - {{ .Values.domain }}/wp-cron-multisite.php
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
           restartPolicy: OnFailure
