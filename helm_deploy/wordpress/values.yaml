@@ -92,7 +92,7 @@ hpa:
   replicaCount:
     prod:
       min: 4
-      max: 5
+      max: 6
     staging:
       min: 2
       max: 3
@@ -107,8 +107,8 @@ hpa:
 ## Default settings when HPA is not turned on
 ##
 replicaCount:
-  prod: 3
-  staging: 2
+  prod: 4
+  staging: 3
   dev: 1
   demo: 2
 
