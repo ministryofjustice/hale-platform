@@ -85,9 +85,9 @@ wp:
         cpu: "500m"
         memory: "1800Mi"
 
-## @param Horizontal Pod Autoscaler
-##
-hpa:
+## WordPress Autoscaling configuration
+## ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+autoscaling:
   enabled: true
   replicaCount:
     prod:
