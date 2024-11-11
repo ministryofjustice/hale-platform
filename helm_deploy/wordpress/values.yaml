@@ -88,7 +88,7 @@ wp:
 ## @param Horizontal Pod Autoscaler
 ##
 hpa:
-  enabled: false
+  enabled: true
   replicaCount:
     prod:
       min: 4
@@ -110,7 +110,7 @@ replicaCount:
   prod: 4
   staging: 2
   dev: 1
-  demo: 3
+  demo: 2
 
 ## @param Turn on/off cron tasks
 ##
