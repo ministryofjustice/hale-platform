@@ -74,7 +74,7 @@ Create the name of the service account to use
 {{- end }}
 
 {{- define "replicaSettings" -}}
-  minReplicas: {{ index .Values.hpa.replicaCount .Values.configmap.envtype "min" | default 1 }}
-  maxReplicas: {{ index .Values.hpa.replicaCount .Values.configmap.envtype "max" | default 1 }}
+  minReplicas: {{ index .Values.autoscaling.replicaCount .Values.configmap.envtype "min" | default 1 }}
+  maxReplicas: {{ index .Values.autoscaling.replicaCount .Values.configmap.envtype "max" | default 1 }}
 {{- end }}
 
