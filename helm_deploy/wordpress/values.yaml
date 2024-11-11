@@ -118,6 +118,45 @@ cron:
   feedparser:
     enabled: true
 
+## @param Non-secret env variables
+##
+configmap:
+  servername: ""
+  envtype: ""
+  s3useprofile: "true"
+  sentrydns: ""
+
+## @param secrets passed in via GitActions
+##
+secrets:
+  enabled: true
+  wpdbuser: ""
+  wpdbhost: ""
+  wpdbname: ""
+  wpdbpassword: ""
+  wpadminemail: ""
+  wpadminuser: ""
+  wpadminpassword: ""
+  wpauthkey: ""
+  wpauthsalt: ""
+  wploggedinkey: ""
+  wploggedinsalt: ""
+  wpnoncekey: ""
+  wpnoncesalt: ""
+  wpsecureauthkey: ""
+  wpsecureauthsalt: ""
+  s3uploadsbucket: ""
+  s3uploadsregion: ""
+  feedparser:
+    avatureFeedUserName: ""
+    avatureFeedUserPassword: ""
+
+## @param Toggle alerts on/off
+##
+alertSecrets:
+  enabled: true
+  slackWebhookUrl: ""
+
 ## @param Manage traffic/domains via NGINX ingress
 ##
 ingress:
@@ -252,43 +291,3 @@ ingress:
       certName: legalaidlearning-cert
     - name: www.legalaidlearning.justice.gov.uk
       certName: legalaidlearning-www-cert  
-
-## @param Non-secret env variables
-##
-configmap:
-  servername: ""
-  envtype: ""
-  s3useprofile: "true"
-  sentrydns: ""
-
-## @param secrets passed in via GitActions
-##
-secrets:
-  enabled: true
-  wpdbuser: ""
-  wpdbhost: ""
-  wpdbname: ""
-  wpdbpassword: ""
-  wpadminemail: ""
-  wpadminuser: ""
-  wpadminpassword: ""
-  wpauthkey: ""
-  wpauthsalt: ""
-  wploggedinkey: ""
-  wploggedinsalt: ""
-  wpnoncekey: ""
-  wpnoncesalt: ""
-  wpsecureauthkey: ""
-  wpsecureauthsalt: ""
-  s3uploadsbucket: ""
-  s3uploadsregion: ""
-  feedparser:
-    avatureFeedUserName: ""
-    avatureFeedUserPassword: ""
-
-## @param Toggle alerts on/off
-##
-alertSecrets:
-  enabled: true
-  slackWebhookUrl: ""
-  
