@@ -92,7 +92,7 @@ hpa:
   replicaCount:
     prod:
       min: 4
-      max: 5
+      max: 6
     staging:
       min: 2
       max: 3
@@ -108,7 +108,11 @@ hpa:
 ##
 replicaCount:
   prod: 4
+<<<<<<< HEAD
   staging: 2
+=======
+  staging: 3
+>>>>>>> memory-allocation
   dev: 1
   demo: 2
 
