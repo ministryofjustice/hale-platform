@@ -15,6 +15,8 @@ nginx:
   image:
     repository: ""
     imagePullPolicy: Always
+    ports:
+      containerPort: 8080
   
   # Apply container level resource allocation
   resources:
@@ -53,6 +55,8 @@ wp:
   image:
     repository: ""
     imagePullPolicy: Always
+    ports:
+      containerPort: 9000
   
   # Apply container level resource allocation
   resources:
@@ -114,6 +118,12 @@ replicaCount:
   staging: 3
   dev: 1
   demo: 2
+
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 25%
+    maxUnavailable: 25%
 
 ## @param Turn on/off cron tasks
 ##
