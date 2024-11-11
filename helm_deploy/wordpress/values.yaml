@@ -130,6 +130,8 @@ updateStrategy:
 cron:
   feedparser:
     enabled: true
+  wpK8sCron:
+    enabled: true
 
 ## @param Non-secret env variables
 ##

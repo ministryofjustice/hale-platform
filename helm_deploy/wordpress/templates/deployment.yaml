@@ -69,6 +69,14 @@ spec:
             successThreshold: 1
             failureThreshold: 3
           {{- end }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
         - name: nginx
           image: {{ .Values.nginx.image.repository }}
           imagePullPolicy: {{ .Values.nginx.image.imagePullPolicy }}
@@ -102,9 +110,18 @@ spec:
             successThreshold: 1
             failureThreshold: 3
           {{- end }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
       volumes:
         - name: wordpress-volume-file-mount
           emptyDir: {}
         - name: hale-php-config
           configMap:
             name: hale-php-config-{{ .Release.Revision }}
+            
