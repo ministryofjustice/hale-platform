@@ -9,13 +9,19 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: wordpress
-    spec:
-      {{ include "replicaSettings" . }}
+  minReplicas: {{ .Values.replicaSettings.min }}
+  maxReplicas: {{ .Values.replicaSettings.max }}
   metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 95
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 80
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
 {{- end }}
