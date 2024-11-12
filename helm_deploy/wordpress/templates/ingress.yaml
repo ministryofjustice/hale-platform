@@ -8,7 +8,7 @@ metadata:
     external-dns.alpha.kubernetes.io/aws-weight: "100"
     nginx.ingress.kubernetes.io/enable-modsecurity: "true"
     nginx.ingress.kubernetes.io/modsecurity-snippet: |
-      # Apply specific WAF rules
+      # Default WAF rules
       SecRuleEngine On
       SecDefaultAction 
         "phase:2,\
@@ -16,73 +16,14 @@ metadata:
         log,\
         tag:github_team=hale-platform,\
         tag:environment=hale-platform-{{ .Values.configmap.envtype }}"
-      # Limit ModSecurity excemptions to only the options page - these rules were breaking the hale components plugin
-      SecRule REQUEST_URI "@contains /wp-admin/" \
+      # Set WAF Config for Authenticated Users
+      SecRule REQUEST_HEADERS:Cookie "@contains WAF_CONFIG={{ .Values.secrets.wafconfig }}"
         "id:1001,\
         phase:2,\
-        pass,\
-        nolog,\
-         ctl:ruleRemoveById=932110,\
-         ctl:ruleRemoveById=932130,\
-         ctl:ruleRemoveById=941180
-      # Limit ModSecurity excemptions to only the options page - these rules were breaking the hale components plugin
-      SecRule REQUEST_URI "@contains /wp-admin/options.php" \
-        "id:1002,\
-        phase:2,\
-        pass,\
-        nolog,\
-         ctl:ruleRemoveById=921130,\
-         ctl:ruleRemoveById=941100,\
-         ctl:ruleRemoveById=941140,\
-         ctl:ruleRemoveById=941160
-      # Limit ModSecurity excemptions to only the WP API
-      SecRule REQUEST_URI "@contains /wp-json/" \
-        "id:1003,\
-        phase:2,\
-        pass,\
-        nolog,\
-        ctl:ruleRemoveById=921110,\
-        ctl:ruleRemoveById=932100,\
-        ctl:ruleRemoveById=932105,\
-        ctl:ruleRemoveById=932110,\
-        ctl:ruleRemoveById=932130,\
-        ctl:ruleRemoveById=933210,\
-        ctl:ruleRemoveById=933160,\
-        ctl:ruleRemoveById=941100,\
-        ctl:ruleRemoveById=941110,\
-        ctl:ruleRemoveById=941130,\
-        ctl:ruleRemoveById=941140,\
-        ctl:ruleRemoveById=941160,\
-        ctl:ruleRemoveById=941180,\
-        ctl:ruleRemoveById=941300,\
-        ctl:ruleRemoveById=941310,\
-        ctl:ruleRemoveById=942230,\
-        ctl:ruleRemoveById=942320"  
-      # Limit ModSecurity excemptions to the wp-admin/post.php endpoint
-      SecRule REQUEST_URI "@contains /wp-admin/post.php" \
-        "id:1004,\
-        phase:2,\
-        pass,\
-        nolog,\
-        ctl:ruleRemoveById=921110,\
-        ctl:ruleRemoveById=941100,\
-        ctl:ruleRemoveById=941160"
-      # Limit ModSecurity excemptions to the wp-admin/nav-menus.php endpoint
-      SecRule REQUEST_URI "@contains /wp-admin/nav-menus.php" \
-        "id:1005,\
-        phase:2,\
-        pass,\
-        nolog,\
-        ctl:ruleRemoveById=921110"
-      # Limit ModSecurity excemptions to the wp-admin/admin-ajax.php endpoint
-      SecRule REQUEST_URI "@contains /wp-admin/admin-ajax.php" \
-        "id:1006,\
-        phase:2,\
-        pass,\
-        nolog,\
-        ctl:ruleRemoveById=921110,\
-        ctl:ruleRemoveById=941100,\
-        ctl:ruleRemoveById=941160"
+        allow,\
+        tag:github_team=hale-platform,\
+        tag:environment=hale-platform-{{ .Values.configmap.envtype }}-auth,\
+        ctl:ruleEngine=DetectionOnly"
     {{- if eq .Values.configmap.envtype "staging" }}
       SecRule REMOTE_ADDR "@ipMatch 80.195.27.199/32" "phase:2,id:200000001,nolog,allow"
     {{- end }}
