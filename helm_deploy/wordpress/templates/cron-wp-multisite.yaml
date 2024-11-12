@@ -1,4 +1,4 @@
-{- if .Values.cron.wpK8sCron.enabled }}
+{{- if .Values.cron.wpK8sCron.enabled }}
 apiVersion: batch/v1
 kind: CronJob
 metadata:
