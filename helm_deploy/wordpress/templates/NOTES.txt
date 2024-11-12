@@ -1,5 +1,12 @@
-Thank you for installing {{ .Chart.Name }}.
+Thank you for installing {{ .Chart.Name }}!
 
-Your release is named {{ .Release.Name }} and is available to view at
+           .       .       .      *        .        .       .
+              .        *        .        '       .
+        *    .      🌍      +        '        .        *
+              '       .      '        *       +      .
+    🌌       .        .        ☄️          .      *       .
+      .        *       .      🚀      *       .      .
+                   .         🌑      +       .        '      .
+       *       .       +        '        .        *       .
 
-{{ .Values.domain }}
+Your deployment is now orbiting in the cosmos ✨ 🚀 🌌
