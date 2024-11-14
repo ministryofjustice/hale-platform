@@ -1,7 +1,8 @@
+{{- if .Values.cron.wpK8sCron.enabled }}
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: wp-cron
+  name: wp-k8s-cron
   namespace: hale-platform-{{ .Values.configmap.envtype }}
 spec:
   schedule: "* * * * *"
@@ -13,10 +14,19 @@ spec:
       template:
         spec:
           containers:
-          - name: nginx-cron-curl
+          - name: wp-k8s-cron
             image: {{ .Values.nginx.image.repository }}
             imagePullPolicy: IfNotPresent
             args:
             - curl
             - {{ .Values.domain }}/wp-cron-multisite.php
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
           restartPolicy: OnFailure
+{{- end }}

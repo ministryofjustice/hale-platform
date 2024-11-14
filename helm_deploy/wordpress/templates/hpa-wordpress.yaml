@@ -1,4 +1,4 @@
-{{- if .Values.hpa.enabled }}
+{{- if .Values.autoscaling.enabled }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -9,24 +9,18 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: wordpress
-  {{- if eq .Values.configmap.envtype "prod" }}
-  minReplicas: 4
-  maxReplicas: 5
-  {{- else if eq .Values.configmap.envtype "staging" }}
-  minReplicas: 2
-  maxReplicas: 3
-  {{- else if eq .Values.configmap.envtype "demo" }}
-  minReplicas: 2
-  maxReplicas: 3
-  {{- else }}
-  minReplicas: 1
-  maxReplicas: 1
-  {{- end }}
+  {{ include "replicaSettings" . }}
   metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 95
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.autoscaling.targetCPU }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.autoscaling.targetMemory }}
 {{- end }}

@@ -1,176 +1,150 @@
-# Default values for wordpress.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+## Default values for WordPress Multisite installation.
+## This is a YAML-formatted file.
+## Declare variables to be passed into your templates.
 
-# Empty strings mean value is overwritten and populated when run by GitAction
-# during deployment
+## Empty strings mean value is overwritten and populated when run by GitAction
+## during deployment
 
+## @param root domain
+##
 domain: ""
 
+## @param NGINX config
+##
 nginx:
   image:
     repository: ""
     imagePullPolicy: Always
+    ports:
+      containerPort: 8080
+  
+  # Apply container level resource allocation
+  resources:
+    dev:
+      limits:
+        cpu: "1000m"
+        memory: "2000Mi"
+      requests:
+        cpu: "40m"
+        memory: "50Mi"
+    demo:
+      limits:
+        cpu: "1000m"
+        memory: "2000Mi"
+      requests:
+        cpu: "40m"
+        memory: "50Mi"
+    staging:
+      limits:
+        cpu: "1000m"
+        memory: "2000Mi"
+      requests:
+        cpu: "40m"
+        memory: "50Mi"
+    prod:
+      limits:
+        cpu: "1000m"
+        memory: "3000Mi"
+      requests:
+        cpu: "100m"
+        memory: "200Mi"
 
+## @param Wordpress specific paramaters
+##
 wp:
   image:
     repository: ""
     imagePullPolicy: Always
+    ports:
+      containerPort: 9000
+  
+  # Apply container level resource allocation
+  resources:
+    dev:
+      limits:
+        cpu: "1000m"
+        memory: "2000Mi"
+      requests:
+        cpu: "100m"
+        memory: "600Mi"
+    demo:
+      limits:
+        cpu: "1000m"
+        memory: "2000Mi"
+      requests:
+        cpu: "100m"
+        memory: "600Mi"
+    staging:
+      limits:
+        cpu: "1000m"
+        memory: "2000Mi"
+      requests:
+        cpu: "100m"
+        memory: "600Mi"
+    prod:
+      limits:
+        cpu: "1000m"
+        memory: "3000Mi"
+      requests:
+        cpu: "500m"
+        memory: "1800Mi"
 
-    # Default if HPA is not turned on
-    replicaCount:
-      prod: 3
-      staging: 2
-      dev: 1
-      demo: 2
-
-hpa:
+## WordPress Autoscaling configuration
+## ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/y
+## Set min/max thresholds in number of pods run based on CPU can memory
+autoscaling:
   enabled: true
+  targetCPU: 75
+  targetMemory: 65
+  replicaCount:
+    prod:
+      min: 3
+      max: 6
+    staging:
+      min: 2
+      max: 3
+    demo:
+      min: 2
+      max: 3
+    dev:
+      min: 1
+      max: 1
 
+## @param Manage replica count
+## Default settings when HPA is not turned on
+##
+replicaCount:
+  prod: 4
+  staging: 3
+  dev: 1
+  demo: 2
+
+## @param Deploymemt strategy config
+##
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 25%
+    maxUnavailable: 25%
+
+## @param Turn on/off cron tasks
+##
 cron:
   feedparser:
     enabled: true
+  wpK8sCron:
+    enabled: true
 
-ingress:
-  enabled: true
-  metadata:
-    annotations:
-      setidentifier: ""
-  hosts:
-    - name: magistrates.judiciary.uk
-      certName: magistrates-cert
-    - name: victimscommissioner.org.uk
-      certName: victimscommissioner-cert
-    - name: www.victimscommissioner.org.uk
-      certName: victimscommissioner-www-cert
-    - name: publicdefenderservice.org.uk
-      certName: publicdefenderservice-cert
-    - name: www.publicdefenderservice.org.uk
-      certName: publicdefenderservice-www-cert
-    - name: ccrc.gov.uk
-      certName: ccrc-cert
-    - name: www.ccrc.gov.uk
-      certName: ccrc-www-cert
-    - name: icrir.independent-inquiry.uk
-      certName: icrir-cert
-    - name: intranet.icrir.independent-inquiry.uk
-      certName: icrir-intranet-cert
-    - name: imb.org.uk
-      certName: imb-cert
-    - name: www.imb.org.uk
-      certName: imb-www-cert
-    - name: my.imb.org.uk
-      certName: my-imb-cert
-    - name: brookhouseinquiry.org.uk
-      certName: brookhouse-cert
-    - name: www.brookhouseinquiry.org.uk
-      certName: brookhouse-www-cert
-    - name: prisonandprobationjobs.gov.uk
-      certName: ppj-cert
-    - name: www.prisonandprobationjobs.gov.uk
-      certName: ppj-www-cert
-    - name: nationalpreventivemechanism.org.uk
-      certName: nationalpreventivemechanism-cert
-    - name: www.nationalpreventivemechanism.org.uk
-      certName: nationalpreventivemechanism-www-cert
-    - name: lawcom.gov.uk
-      certName: lawcom-cert
-    - name: www.lawcom.gov.uk
-      certName: lawcom-www-cert
-    - name: jobs.justice.gov.uk
-      certName: justicejobs-cert
-    - name: www.jobs.justice.gov.uk
-      certName: justicejobs-www-cert
-    - name: ppo.gov.uk
-      certName: ppo-cert
-    - name: www.ppo.gov.uk
-      certName: ppo-www-cert
-    - name: archive.ppo.gov.uk
-      certName: ppo-archive-cert
-    - name: sifocc.org
-      certName: sifocc-cert
-    - name: www.sifocc.org
-      certName: sifocc-www-cert
-    - name: layobservers.org
-      certName: layobservers-cert
-    - name: www.layobservers.org
-      certName: layobservers-www-cert
-    - name: members.layobservers.org
-      certName: layobservers-members-cert
-    - name: victimandwitnessinformation.org.uk
-      certName: victimandwitnessinformation-cert
-    - name: www.victimandwitnessinformation.org.uk
-      certName: victimandwitnessinformation-www-cert
-    - name: cym.victimandwitnessinformation.org.uk
-      certName: victimandwitnessinformation-cym-cert
-    - name: victimscode.org.uk
-      certName: victimscode-cert
-    - name: cym.victimscode.org.uk
-      certName: victimscode-cym-cert
-    - name: omagh.independent-inquiry.uk
-      certName: obi-cert
-    - name: www.omagh.independent-inquiry.uk
-      certName: obi-www-cert
-    - name: newfuturesnetwork.gov.uk
-      certName: newfuturesnetwork-cert
-    - name: www.newfuturesnetwork.gov.uk
-      certName: newfuturesnetwork-www-cert
-    - name: andrewmalkinson.independent-inquiry.uk
-      certName: andrewmalkinson-cert
-    - name: www.andrewmalkinson.independent-inquiry.uk
-      certName: andrewmalkinson-www-cert
-    - name: cjji.justiceinspectorates.gov.uk
-      certName: justiceinspectorates-cjji-cert
-    - name: www.cjji.justiceinspectorates.gov.uk
-      certName: justiceinspectorates-cjji-www-cert
-    - name: hmcpsi.justiceinspectorates.gov.uk
-      certName: justiceinspectorates-hmcpsi-cert
-    - name: www.hmcpsi.justiceinspectorates.gov.uk
-      certName: justiceinspectorates-hmcpsi-www-cert
-    - name: hmiprisons.justiceinspectorates.gov.uk
-      certName: justiceinspectorates-hmiprisons-cert
-    - name: intranet.hmiprisons.justiceinspectorates.gov.uk
-      certName: justiceinspectorates-hmiprisons-intranet-cert
-    - name: websitebuilder.service.justice.gov.uk
-      certName: websitebuilder-cert
-    - name: www.websitebuilder.service.justice.gov.uk
-      certName: websitebuilder-www-cert
-    - name: showcase.websitebuilder.service.justice.gov.uk
-      certName: websitebuilder-showcase-cert
-    - name: bold.websitebuilder.service.justice.gov.uk
-      certName: websitebuilder-bold-cert
-    - name: seewhatsontheinside.com
-      certName: swoti-cert
-    - name: www.seewhatsontheinside.com
-      certName: swoti-www-cert
-    - name: seewhatsontheinside.co.uk
-      certName: swoti-uk-cert
-    - name: www.seewhatsontheinside.co.uk
-      certName: swoti-uk-www-cert
-    - name: advance-into-justice.service.justice.gov.uk
-      certName: advance-into-justice-cert
-    - name: www.advance-into-justice.service.justice.gov.uk
-      certName: advance-into-justice-www-cert
-    - name: iapondeathsincustody.org
-      certName: iapdc-cert
-    - name: www.iapondeathsincustody.org
-      certName: iapdc-www-cert
-    - name: iapdeathsincustody.independent.gov.uk
-      certName: iapdci-cert
-    - name: www.iapdeathsincustody.independent.gov.uk
-      certName: iapdci-www-cert
-    - name: legalaidlearning.justice.gov.uk
-      certName: legalaidlearning-cert
-    - name: www.legalaidlearning.justice.gov.uk
-      certName: legalaidlearning-www-cert  
-
-
+## @param Non-secret env variables
+##
 configmap:
   servername: ""
   envtype: ""
   s3useprofile: "true"
   sentrydns: ""
 
+## @param secrets passed in via GitActions
+##
 secrets:
   enabled: true
   wpdbuser: ""
@@ -194,7 +168,139 @@ secrets:
     avatureFeedUserName: ""
     avatureFeedUserPassword: ""
 
+## @param Toggle alerts on/off
+##
 alertSecrets:
   enabled: true
   slackWebhookUrl: ""
-  
+
+## @param Manage traffic/domains via NGINX ingress
+##
+ingress:
+  enabled: true
+  metadata:
+    annotations:
+      setidentifier: ""
+  hosts:
+    - name: advance-into-justice.service.justice.gov.uk
+      certName: advance-into-justice-cert
+    - name: andrewmalkinson.independent-inquiry.uk
+      certName: andrewmalkinson-cert
+    - name: archive.ppo.gov.uk
+      certName: ppo-archive-cert
+    - name: bold.websitebuilder.service.justice.gov.uk
+      certName: websitebuilder-bold-cert
+    - name: brookhouseinquiry.org.uk
+      certName: brookhouse-cert
+    - name: ccrc.gov.uk
+      certName: ccrc-cert
+    - name: cjji.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-cjji-cert
+    - name: cym.victimandwitnessinformation.org.uk
+      certName: victimandwitnessinformation-cym-cert
+    - name: hmcpsi.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-hmcpsi-cert
+    - name: hmiprisons.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-hmiprisons-cert
+    - name: icrir.independent-inquiry.uk
+      certName: icrir-cert
+    - name: imb.org.uk
+      certName: imb-cert
+    - name: intranet.hmiprisons.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-hmiprisons-intranet-cert
+    - name: intranet.icrir.independent-inquiry.uk
+      certName: icrir-intranet-cert
+    - name: iapondeathsincustody.org
+      certName: iapdc-cert
+    - name: iapdeathsincustody.independent.gov.uk
+      certName: iapdci-cert
+    - name: jobs.justice.gov.uk
+      certName: justicejobs-cert
+    - name: lawcom.gov.uk
+      certName: lawcom-cert
+    - name: layobservers.org
+      certName: layobservers-cert
+    - name: legalaidlearning.justice.gov.uk
+      certName: legalaidlearning-cert
+    - name: magistrates.judiciary.uk
+      certName: magistrates-cert
+    - name: members.layobservers.org
+      certName: layobservers-members-cert
+    - name: my.imb.org.uk
+      certName: my-imb-cert
+    - name: nationalpreventivemechanism.org.uk
+      certName: nationalpreventivemechanism-cert
+    - name: newfuturesnetwork.gov.uk
+      certName: newfuturesnetwork-cert
+    - name: omagh.independent-inquiry.uk
+      certName: obi-cert
+    - name: ppo.gov.uk
+      certName: ppo-cert
+    - name: prisonandprobationjobs.gov.uk
+      certName: ppj-cert
+    - name: publicdefenderservice.org.uk
+      certName: publicdefenderservice-cert
+    - name: seewhatsontheinside.com
+      certName: swoti-cert
+    - name: seewhatsontheinside.co.uk
+      certName: swoti-uk-cert
+    - name: sifocc.org
+      certName: sifocc-cert
+    - name: victimandwitnessinformation.org.uk
+      certName: victimandwitnessinformation-cert
+    - name: victimscode.org.uk
+      certName: victimscode-cert
+    - name: websitebuilder.service.justice.gov.uk
+      certName: websitebuilder-cert
+
+    # www entries
+    - name: www.advance-into-justice.service.justice.gov.uk
+      certName: advance-into-justice-www-cert
+    - name: www.andrewmalkinson.independent-inquiry.uk
+      certName: andrewmalkinson-www-cert
+    - name: www.brookhouseinquiry.org.uk
+      certName: brookhouse-www-cert
+    - name: www.ccrc.gov.uk
+      certName: ccrc-www-cert
+    - name: www.cjji.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-cjji-www-cert
+    - name: www.hmcpsi.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-hmcpsi-www-cert
+    - name: www.hmiprisons.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-hmiprisons-www-cert
+    - name: www.iapondeathsincustody.org
+      certName: iapdc-www-cert
+    - name: www.iapdeathsincustody.independent.gov.uk
+      certName: iapdci-www-cert
+    - name: www.jobs.justice.gov.uk
+      certName: justicejobs-www-cert
+    - name: www.lawcom.gov.uk
+      certName: lawcom-www-cert
+    - name: www.layobservers.org
+      certName: layobservers-www-cert
+    - name: www.legalaidlearning.justice.gov.uk
+      certName: legalaidlearning-www-cert
+    - name: www.newfuturesnetwork.gov.uk
+      certName: newfuturesnetwork-www-cert
+    - name: www.omagh.independent-inquiry.uk
+      certName: obi-www-cert
+    - name: www.ppo.gov.uk
+      certName: ppo-www-cert
+    - name: www.prisonandprobationjobs.gov.uk
+      certName: ppj-www-cert
+    - name: www.publicdefenderservice.org.uk
+      certName: publicdefenderservice-www-cert
+    - name: www.seewhatsontheinside.com
+      certName: swoti-www-cert
+    - name: www.seewhatsontheinside.co.uk
+      certName: swoti-uk-www-cert
+    - name: www.sifocc.org
+      certName: sifocc-www-cert
+    - name: www.victimandwitnessinformation.org.uk
+      certName: victimandwitnessinformation-www-cert
+    - name: www.victimscommissioner.org.uk
+      certName: victimscommissioner-www-cert
+    - name: www.victimscode.org.uk
+      certName: victimscode-www-cert
+    - name: www.websitebuilder.service.justice.gov.uk
+      certName: websitebuilder-www-cert

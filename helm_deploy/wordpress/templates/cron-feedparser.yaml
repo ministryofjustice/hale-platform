@@ -22,5 +22,13 @@ spec:
                   name: hale-wp-secrets-{{ .Release.Revision }}
               - secretRef:
                   name: feed-parser-secrets-{{ .Release.Revision }}
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
           restartPolicy: OnFailure
 {{- end }}
