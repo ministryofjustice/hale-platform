@@ -244,10 +244,14 @@ ingress:
       certName: swoti-cert
     - name: seewhatsontheinside.co.uk
       certName: swoti-uk-cert
+    - name: showcase.websitebuilder.service.justice.gov.uk
+      certName: websitebuilder-showcase-cert
     - name: sifocc.org
       certName: sifocc-cert
     - name: victimandwitnessinformation.org.uk
       certName: victimandwitnessinformation-cert
+    - name: victimscommissioner.org.uk
+      certName: victimscommissioner-cert
     - name: victimscode.org.uk
       certName: victimscode-cert
     - name: websitebuilder.service.justice.gov.uk
