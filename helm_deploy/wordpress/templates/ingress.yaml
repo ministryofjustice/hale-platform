@@ -24,6 +24,7 @@ metadata:
         nolog,\
          ctl:ruleRemoveById=932110,\
          ctl:ruleRemoveById=932130,\
+         ctl:ruleRemoveById=933210,\
          ctl:ruleRemoveById=941180,\
          ctl:ruleRemoveById=921110
       # Limit ModSecurity excemptions to only the options page - these rules were breaking the hale components plugin
