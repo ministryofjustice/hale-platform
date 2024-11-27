@@ -21,6 +21,7 @@ metadata:
         "id:1001,\
         phase:2,\
         allow,\
+        nolog,\
         tag:github_team=hale-platform,\
         tag:environment=hale-platform-{{ .Values.configmap.envtype }}-auth,\
         ctl:ruleEngine=DetectionOnly"
