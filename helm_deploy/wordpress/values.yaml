@@ -274,7 +274,7 @@ ingress:
       certName: justiceinspectorates-hmcpsi-www-cert
     - name: www.hmiprisons.justiceinspectorates.gov.uk
       certName: justiceinspectorates-hmiprisons-www-cert
-    - name: hmppsinsights.service.justice.gov.uk
+    - name: www.hmppsinsights.service.justice.gov.uk
       certName: hmppsinsights-www-cert
     - name: www.iapondeathsincustody.org
       certName: iapdc-www-cert
