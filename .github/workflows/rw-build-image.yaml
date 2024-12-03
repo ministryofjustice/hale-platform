@@ -75,6 +75,8 @@ on:
         required: true
       avature-feed-password:
         required: true
+      wb-config:
+        required: true
 
 jobs:
   buildImage:
@@ -223,6 +225,7 @@ jobs:
           --set secrets.s3uploadsregion=${{ secrets.s3-uploads-region }} \
           --set secrets.feedparser.avatureFeedUserName=${{ secrets.avature-feed-username }} \
           --set secrets.feedparser.avatureFeedPassword=${{ secrets.avature-feed-password }} \
+          --set secrets.wbconfig=${{ secrets.wb-config}} \
           --set alertSecrets.slackWebhookUrl=${{ secrets.alert-slack-webhook-url }} \
           --set configmap.envtype=${{ vars.ENV_TYPE }} \
           --set configmap.sentrydns=${{ vars.PHP_DSN }} \

@@ -164,6 +164,7 @@ secrets:
   wpsecureauthsalt: ""
   s3uploadsbucket: ""
   s3uploadsregion: ""
+  wbconfig: ""
   feedparser:
     avatureFeedUserName: ""
     avatureFeedUserPassword: ""
