@@ -25,9 +25,30 @@ metadata:
         tag:github_team=hale-platform,\
         tag:environment=hale-platform-{{ .Values.configmap.envtype }}-auth,\
         ctl:ruleEngine=DetectionOnly"
-    {{- if eq .Values.configmap.envtype "staging" }}
-      SecRule REMOTE_ADDR "@ipMatch 80.195.27.199/32" "phase:2,id:200000001,nolog,allow"
-    {{- end }}
+      # WordPress User enumeration blocking author query string
+      SecRule ARGS:author "@rx ^([0-9]+|{num:[0-9]+)$" 
+        "id:1002,\
+        phase:2,\
+        t:none,\
+        deny,\
+        status:444,\
+        msg:'Blocking Author Enumeration Query String'"
+      # WordPress User Enumeration author page pretty link
+      SecRule REQUEST_URI "@streq /author/" 
+        "id:1003,\
+        phase:2,\
+        t:none,\
+        deny,\
+        status:444,\
+        msg:'Blocking Author Enumeration Pretty Link'"
+      # WordPress REST API User Enumeration
+      SecRule REQUEST_URI "@streq /wp-json/wp/v2/users" 
+        "id:1004,\
+        phase:2,\
+        t:none,\
+        deny,\
+        status:444,\
+        msg:'Blocking REST API User Enumeration'"
     nginx.ingress.kubernetes.io/server-snippet: |
       location = /.well-known/security.txt {
         auth_basic off;
