@@ -43,7 +43,7 @@
         "ministryofjustice/cookie-compliance-for-wordpress": "3.4.15",
         "ministryofjustice/feed-importer": "1.1.0",
         "ministryofjustice/hale": "4.16.2",
-        "ministryofjustice/hale-components": "dev-add-waf-cookie-function",
+        "ministryofjustice/hale-components": "1.4.0",
         "ministryofjustice/hale-dash": "1.1.7",
         "ministryofjustice/hale-showcase": "1.1.10",
         "ministryofjustice/imbmembers": "dev-main",
