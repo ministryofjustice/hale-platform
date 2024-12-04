@@ -25,9 +25,6 @@ metadata:
         tag:github_team=hale-platform,\
         tag:environment=hale-platform-{{ .Values.configmap.envtype }}-auth,\
         ctl:ruleEngine=DetectionOnly"
-    {{- if eq .Values.configmap.envtype "staging" }}
-      SecRule REMOTE_ADDR "@ipMatch 80.195.27.199/32" "phase:2,id:200000001,nolog,allow"
-    {{- end }}
     nginx.ingress.kubernetes.io/server-snippet: |
       location = /.well-known/security.txt {
         auth_basic off;
