@@ -16,30 +16,6 @@ metadata:
         log,\
         tag:github_team=hale-platform,\
         tag:environment=hale-platform-{{ .Values.configmap.envtype }}"
-      # WordPress User enumeration blocking author query string
-      SecRule ARGS:author "@rx ^([0-9]+|{num:[0-9]+)$" 
-        "id:1001,\
-        phase:2,\
-        t:none,\
-        deny,\
-        status:444,\
-        msg:Blocking Author Enumeration Query String"
-      # WordPress User Enumeration author page pretty link
-      SecRule REQUEST_URI "@streq /author/" 
-        "id:1002,\
-        phase:2,\
-        t:none,\
-        deny,\
-        status:444,\
-        msg:Blocking Author Enumeration Pretty Link"
-      # WordPress REST API User Enumeration
-      SecRule REQUEST_URI "@streq /wp-json/wp/v2/users" 
-        "id:1003,\
-        phase:2,\
-        t:none,\
-        deny,\
-        status:444,\
-        msg:Blocking REST API User Enumeration"
       # Set WAF Config for Authenticated Users
       SecRule REQUEST_HEADERS:Cookie "@contains WB_CONFIG={{ .Values.secrets.wbconfig }}"
         "id:1004,\
@@ -94,6 +70,15 @@ metadata:
       }
       if ($host = 'www.brookhouseinquiry.org.uk') {
         return 301 https://webarchive.nationalarchives.gov.uk/ukgwa/20241002135959/https://brookhouseinquiry.org.uk/;
+      }
+      if ($args ~* "^author=([0-9]+|{num:[0-9]+)") {
+        return 444;
+      }
+      if ($request_uri ~ "/author/") {
+        return 444;
+      }
+      if ($request_uri ~ "/wp-json/wp/v2/users") {
+          return 444;
       }
 spec:
   ingressClassName: modsec
