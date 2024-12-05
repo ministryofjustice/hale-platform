@@ -71,15 +71,6 @@ metadata:
       if ($host = 'www.brookhouseinquiry.org.uk') {
         return 301 https://webarchive.nationalarchives.gov.uk/ukgwa/20241002135959/https://brookhouseinquiry.org.uk/;
       }
-      if ($args ~* "^author=([0-9]+|{num:[0-9]+)") {
-        return 444;
-      }
-      if ($request_uri ~ "/author/") {
-        return 444;
-      }
-      if ($request_uri ~ "/wp-json/wp/v2/users") {
-          return 444;
-      }
 spec:
   ingressClassName: modsec
   tls:
