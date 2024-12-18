@@ -143,7 +143,6 @@ jobs:
             wordpress/wp-content/themes/hale-dash/node_modules
             wordpress/wp-content/themes/hale-showcase/node_modules
             wordpress/wp-content/themes/lawcom/node_modules
-            wordpress/wp-content/themes/justicejobs/node_modules
             wordpress/wp-content/themes/ppo/node_modules
             wordpress/wp-content/themes/sifocc/node_modules
             wordpress/wp-content/themes/imbmembers/node_modules
@@ -153,7 +152,7 @@ jobs:
 
       - name: Run NPM
         run: |
-          for theme in hale hale-dash hale-showcase lawcom justicejobs ppo sifocc imbmembers; do
+          for theme in hale hale-dash hale-showcase lawcom ppo sifocc imbmembers; do
             npm install --prefix ./wordpress/wp-content/themes/$theme
             npm run production --if-present --prefix ./wordpress/wp-content/themes/$theme
           done
