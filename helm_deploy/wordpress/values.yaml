@@ -217,8 +217,6 @@ ingress:
       certName: iapdc-cert
     - name: iapdeathsincustody.independent.gov.uk
       certName: iapdci-cert
-    - name: jobs.justice.gov.uk
-      certName: justicejobs-cert
     - name: lawcom.gov.uk
       certName: lawcom-cert
     - name: layobservers.org
@@ -281,8 +279,6 @@ ingress:
       certName: iapdc-www-cert
     - name: www.iapdeathsincustody.independent.gov.uk
       certName: iapdci-www-cert
-    - name: www.jobs.justice.gov.uk
-      certName: justicejobs-www-cert
     - name: www.lawcom.gov.uk
       certName: lawcom-www-cert
     - name: www.layobservers.org
