@@ -66,8 +66,6 @@ while true; do
             npm run production --if-present --prefix ./wordpress/wp-content/themes/hale-showcase
             npm install --prefix ./wordpress/wp-content/themes/ppo
             npm run production --if-present --prefix ./wordpress/wp-content/themes/ppo
-            npm install --prefix ./wordpress/wp-content/themes/sifocc
-            npm run production --if-present --prefix ./wordpress/wp-content/themes/sifocc
             npm install --prefix ./wordpress/wp-content/themes/imbmembers
             npm run production --if-present --prefix ./wordpress/wp-content/themes/imbmembers
 
