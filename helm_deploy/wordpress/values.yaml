@@ -199,6 +199,8 @@ ingress:
       certName: justiceinspectorates-cjji-cert
     - name: cym.victimandwitnessinformation.org.uk
       certName: victimandwitnessinformation-cym-cert
+    - name: cym.victimscode.org.uk
+      certName: victimscode-cym-cert
     - name: hmcpsi.justiceinspectorates.gov.uk
       certName: justiceinspectorates-hmcpsi-cert
     - name: hmiprisons.justiceinspectorates.gov.uk
