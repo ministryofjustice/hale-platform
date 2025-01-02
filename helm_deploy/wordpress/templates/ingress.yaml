@@ -10,7 +10,7 @@ metadata:
     nginx.ingress.kubernetes.io/modsecurity-snippet: |
       nginx.ingress.kubernetes.io/enable-modsecurity: "true"
       nginx.ingress.kubernetes.io/modsecurity-snippet: |
-        SecAction "phase:1, ctl:requestBodyNoFilesLimit=52428800"
+        SecAction "phase:1, ctl:requestBodyLimit=52428800"
       
         # Enable ModSecurity WAF
         SecRuleEngine On
