@@ -24,6 +24,7 @@ metadata:
         nolog,\
         tag:github_team=hale-platform,\
         tag:environment=hale-platform-{{ .Values.configmap.envtype }}-auth,\
+        ctl:requestBodyLimit=52428800,\
         ctl:ruleEngine=DetectionOnly"
     nginx.ingress.kubernetes.io/server-snippet: |
       location = /.well-known/security.txt {
