@@ -8,29 +8,25 @@ metadata:
     external-dns.alpha.kubernetes.io/aws-weight: "100"
     nginx.ingress.kubernetes.io/enable-modsecurity: "true"
     nginx.ingress.kubernetes.io/modsecurity-snippet: |
-      nginx.ingress.kubernetes.io/enable-modsecurity: "true"
-      nginx.ingress.kubernetes.io/modsecurity-snippet: |
-        # Enable ModSecurity WAF
-        SecRuleEngine On
-      
-        # Default action for all rules
-        SecDefaultAction \
-          "phase:2, \
-          pass, \
-          log, \
-          tag:github_team=hale-platform, \
-          tag:environment=hale-platform-{{ .Values.configmap.envtype }}"
-      
-        # Set WAF config for Authenticated Users
-        SecRule REQUEST_HEADERS:Cookie "@contains WB_CONFIG={{ .Values.secrets.wbconfig }}" \
-          "id:1004, \
-          phase:2, \
-          allow, \
-          nolog, \
-          tag:github_team=hale-platform, \
-          tag:environment=hale-platform-{{ .Values.configmap.envtype }}-auth, \
-          ctl:ruleEngine=DetectionOnly"
-
+      SecAction "phase:1, ctl:requestBodyNoFilesLimit=52428800"
+      # Enable ModSecurity WAF
+      SecRuleEngine On
+      # Default action for all rules
+      SecDefaultAction \
+        "phase:2, \
+        pass, \
+        log, \
+        tag:github_team=hale-platform, \
+        tag:environment=hale-platform-{{ .Values.configmap.envtype }}"
+      # Set WAF config for Authenticated Users
+      SecRule REQUEST_HEADERS:Cookie "@contains WB_CONFIG={{ .Values.secrets.wbconfig }}" \
+        "id:1004, \
+        phase:2, \
+        allow, \
+        nolog, \
+        tag:github_team=hale-platform, \
+        tag:environment=hale-platform-{{ .Values.configmap.envtype }}-auth, \
+        ctl:ruleEngine=DetectionOnly"
     nginx.ingress.kubernetes.io/server-snippet: |
       location = /.well-known/security.txt {
         auth_basic off;
