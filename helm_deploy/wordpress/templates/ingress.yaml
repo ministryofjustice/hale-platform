@@ -19,7 +19,7 @@ metadata:
       # Set WAF Config for Authenticated Users
       SecRule REQUEST_HEADERS:Cookie "@contains WB_CONFIG={{ .Values.secrets.wbconfig }}"
         "id:1001,\
-        phase:2,\
+        phase:1,\
         allow,\
         nolog,\
         tag:github_team=hale-platform,\
