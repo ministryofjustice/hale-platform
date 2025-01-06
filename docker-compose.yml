@@ -22,8 +22,8 @@ services:
 
   mariadb:
     container_name: mariadb
-#    image: mariadb:10.7.1-focal
-    image: mariadb:11.1.2-jammy
+    image: mariadb:10.11
+#    image: mariadb:11.1.2-jammy
     ports:
       - 3306:3306
     environment:

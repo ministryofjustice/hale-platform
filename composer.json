@@ -51,7 +51,7 @@
         "ministryofjustice/ppo": "dev-main",
         "ministryofjustice/wp-gov-uk-notify": "*",
         "ministryofjustice/wp-moj-blocks": "3.14.0",
-        "ministryofjustice/wp-s3-uploads": "dev-main",
+        "ministryofjustice/wp-s3-uploads": "1.0.0",
         "oscarotero/env": "^1.0",
         "php": ">=7.4",
         "relevanssi/relevanssi-premium": "*",
