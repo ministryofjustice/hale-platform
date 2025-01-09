@@ -66,6 +66,7 @@
         "wpackagist-plugin/advanced-responsive-video-embedder": "^10.0",
         "wpackagist-plugin/breadcrumb-trail": "^1.0",
         "wpackagist-plugin/classic-editor": "^1.0",
+        "wpackagist-plugin/cookiebot":"^4.3.12",
         "wpackagist-plugin/duplicate-post": "^4.0",
         "wpackagist-plugin/ewww-image-optimizer": "^7.0",
         "wpackagist-plugin/expandable-menus": "^2.0",
