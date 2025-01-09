@@ -12,8 +12,7 @@ FROM --platform=linux/amd64 wordpress:6.7.1-php8.3-fpm-alpine
 RUN apk update && \
     apk add less \
     vim \
-    mysql \
-    mysql-client \
+    mariadb-client \
     htop
 
 # Install wp-cli

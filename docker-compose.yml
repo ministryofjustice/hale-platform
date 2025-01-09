@@ -1,7 +1,7 @@
 services:
   nginx:
     container_name: nginx
-    platform: linux/arm64v8
+    platform: linux/arm64
     build:
       context: .
       dockerfile: nginx.local.dockerfile
@@ -22,6 +22,7 @@ services:
 
   mariadb:
     container_name: mariadb
+    platform: linux/arm64
     image: mariadb:10.11
     ports:
       - 3306:3306
@@ -38,7 +39,7 @@ services:
 
   wordpress:
     container_name: wordpress
-    platform: linux/amd64
+    platform: linux/arm64
     build:
       context: .
       dockerfile: wordpress.dockerfile
@@ -66,20 +67,7 @@ services:
       PHP_DSN: "" # Sentry constant (not used locally)
       WP_SENTRY_ENV: ""
 
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: phpmyadmin
-    platform: linux/amd64
-    ports:
-      - 3000:80 # access at http://localhost:3000
-    environment:
-      PMA_HOST: mariadb
-      PMA_PORT: 3306
-      UPLOAD_LIMIT: 600M
-      MYSQL_ROOT_PASSWORD: root  # login root/root
-    depends_on:
-      - mariadb
-
 volumes:
   database:
     driver: local
+
