@@ -131,7 +131,7 @@ updateStrategy:
 ##
 cron:
   feedparser:
-    enabled: true
+    enabled: false
   wpK8sCron:
     enabled: true
 
@@ -165,9 +165,6 @@ secrets:
   s3uploadsbucket: ""
   s3uploadsregion: ""
   wbconfig: ""
-  feedparser:
-    avatureFeedUserName: ""
-    avatureFeedUserPassword: ""
 
 ## @param Toggle alerts on/off
 ##
