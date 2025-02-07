@@ -281,6 +281,8 @@ ingress:
       certName: iapdc-www-cert
     - name: www.iapdeathsincustody.independent.gov.uk
       certName: iapdci-www-cert
+    - name: www.imb.org.uk
+      certName: imb-www-cert
     - name: www.lawcom.gov.uk
       certName: lawcom-www-cert
     - name: www.layobservers.org
