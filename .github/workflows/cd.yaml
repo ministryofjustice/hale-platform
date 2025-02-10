@@ -48,8 +48,6 @@ jobs:
         s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
         s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}
         alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
-        avature-feed-username: ${{ secrets.AVATURE_FEED_USERNAME }}
-        avature-feed-password: ${{ secrets.AVATURE_FEED_PASSWORD }}
         wb-config: ${{ secrets.WB_CONFIG}}
 
   deployDemo:
@@ -91,8 +89,6 @@ jobs:
         s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
         s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}
         alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
-        avature-feed-username: ${{ secrets.AVATURE_FEED_USERNAME }}
-        avature-feed-password: ${{ secrets.AVATURE_FEED_PASSWORD }}
         wb-config: ${{ secrets.WB_CONFIG}}
 
   deployStaging:
@@ -134,8 +130,6 @@ jobs:
         s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
         s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}
         alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
-        avature-feed-username: ${{ secrets.AVATURE_FEED_USERNAME }}
-        avature-feed-password: ${{ secrets.AVATURE_FEED_PASSWORD }}
         wb-config: ${{ secrets.WB_CONFIG}}
 
   deployProd:
@@ -178,6 +172,4 @@ jobs:
         s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
         s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}
         alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
-        avature-feed-username: ${{ secrets.AVATURE_FEED_USERNAME }}
-        avature-feed-password: ${{ secrets.AVATURE_FEED_PASSWORD }}
         wb-config: ${{ secrets.WB_CONFIG}}
