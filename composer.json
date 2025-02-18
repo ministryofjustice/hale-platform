@@ -48,6 +48,7 @@
         "ministryofjustice/imbmembers": "dev-main",
         "ministryofjustice/lawcom": "dev-main",
         "ministryofjustice/ppo": "dev-main",
+        "ministryofjustice/worm": "1.0.0",
         "ministryofjustice/wp-gov-uk-notify": "*",
         "ministryofjustice/wp-moj-blocks": "3.14.0",
         "ministryofjustice/wp-s3-uploads": "1.0.0",
