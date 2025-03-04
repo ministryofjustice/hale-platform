@@ -290,6 +290,8 @@ ingress:
       certName: layobservers-www-cert
     - name: www.legalaidlearning.justice.gov.uk
       certName: legalaidlearning-www-cert
+    - name: www.nationalpreventivemechanism.org.uk
+      certName: nationalpreventivemechanism-www-cert
     - name: www.newfuturesnetwork.gov.uk
       certName: newfuturesnetwork-www-cert
     - name: www.omagh.independent-inquiry.uk
