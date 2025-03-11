@@ -79,7 +79,7 @@ while true; do
             echo -e '\n######################'
             echo -e '# Run Docker Build'
             echo -e '######################\n'
-            docker-compose build --no-cache
+            docker compose build --no-cache
 
             break;;
         [Nn]* )
