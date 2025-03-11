@@ -206,6 +206,8 @@ ingress:
       certName: justiceinspectorates-hmcpsi-cert
     - name: hmiprisons.justiceinspectorates.gov.uk
       certName: justiceinspectorates-hmiprisons-cert
+    - name: hmiprobation.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-hmiprobation-cert
     - name: hmppsinsights.service.justice.gov.uk
       certName: hmppsinsights-cert
     - name: icrir.independent-inquiry.uk
@@ -276,6 +278,8 @@ ingress:
       certName: justiceinspectorates-hmcpsi-www-cert
     - name: www.hmiprisons.justiceinspectorates.gov.uk
       certName: justiceinspectorates-hmiprisons-www-cert
+    - name: www.hmiprobation.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-hmiprobation-www-cert
     - name: www.hmppsinsights.service.justice.gov.uk
       certName: hmppsinsights-www-cert
     - name: www.iapondeathsincustody.org
