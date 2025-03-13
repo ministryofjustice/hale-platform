@@ -194,6 +194,8 @@ ingress:
       certName: ccrc-cert
     - name: cjji.justiceinspectorates.gov.uk
       certName: justiceinspectorates-cjji-cert
+    - name: cjsm.justice.gov.uk
+      certName: cjsm-cert
     - name: cym.victimandwitnessinformation.org.uk
       certName: victimandwitnessinformation-cym-cert
     - name: cym.victimscode.org.uk
@@ -274,6 +276,8 @@ ingress:
       certName: ccrc-www-cert
     - name: www.cjji.justiceinspectorates.gov.uk
       certName: justiceinspectorates-cjji-www-cert
+    - name: www.cjsm.justice.gov.uk
+      certName: cjsm-www-cert
     - name: www.hmcpsi.justiceinspectorates.gov.uk
       certName: justiceinspectorates-hmcpsi-www-cert
     - name: www.hmiprisons.justiceinspectorates.gov.uk
