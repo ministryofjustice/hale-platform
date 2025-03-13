@@ -41,7 +41,7 @@
     "require": {
         "composer/installers": "^v1.7.0",
         "ministryofjustice/cookie-compliance-for-wordpress": "3.5.0",
-        "ministryofjustice/hale": "4.21.6",
+        "ministryofjustice/hale": "4.21.7",
         "ministryofjustice/hale-components": "1.5.0",
         "ministryofjustice/hale-dash": "1.1.7",
         "ministryofjustice/hale-showcase": "1.1.10",
@@ -49,7 +49,7 @@
         "ministryofjustice/lawcom": "dev-main",
         "ministryofjustice/ppo": "dev-main",
         "ministryofjustice/wp-gov-uk-notify": "*",
-        "ministryofjustice/wp-moj-blocks": "3.15.0",
+        "ministryofjustice/wp-moj-blocks": "3.15.1",
         "ministryofjustice/wp-s3-uploads": "1.0.0",
         "oscarotero/env": "^1.0",
         "php": ">=7.4",
