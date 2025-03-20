@@ -82,7 +82,8 @@
         "wpackagist-plugin/wp-force-login": "^5.0",
         "wpackagist-plugin/wp-nested-pages": "^3.0",
         "wpackagist-plugin/wp-sentry-integration": "^8.0",
-        "wpackagist-plugin/wps-hide-login": "^1.0"
+        "wpackagist-plugin/wps-hide-login": "^1.0",
+        "auth0/wordpress": "^5.2.1"
     },
     "require-dev": {
         "squizlabs/php_codesniffer": "^3.0"
