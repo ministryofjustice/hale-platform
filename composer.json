@@ -40,9 +40,9 @@
     ],
     "require": {
         "composer/installers": "^v1.7.0",
-        "ministryofjustice/cookie-compliance": "dev-main",
+        "ministryofjustice/cookie-compliance": "dev-content-styling",
         "ministryofjustice/cookie-compliance-for-wordpress": "dev-main",
-        "ministryofjustice/hale": "dev-blog-icon",
+        "ministryofjustice/hale": "dev-main",
         "ministryofjustice/hale-components": "dev-main",
         "ministryofjustice/hale-dash": "dev-main",
         "ministryofjustice/hale-showcase": "dev-main",
