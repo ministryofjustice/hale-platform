@@ -240,6 +240,8 @@ ingress:
       certName: nationalpreventivemechanism-cert
     - name: newfuturesnetwork.gov.uk
       certName: newfuturesnetwork-cert
+    - name: nottingham.independent-inquiry.uk
+      certName: nottingham-cert
     - name: omagh.independent-inquiry.uk
       certName: obi-cert
     - name: ppo.gov.uk
@@ -302,6 +304,8 @@ ingress:
       certName: nationalpreventivemechanism-www-cert
     - name: www.newfuturesnetwork.gov.uk
       certName: newfuturesnetwork-www-cert
+    - name: www.nottingham.independent-inquiry.uk
+      certName: nottingham-www-cert
     - name: www.omagh.independent-inquiry.uk
       certName: obi-www-cert
     - name: www.ppo.gov.uk
