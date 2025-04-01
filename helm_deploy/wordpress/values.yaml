@@ -224,6 +224,8 @@ ingress:
       certName: iapdc-cert
     - name: iapdeathsincustody.independent.gov.uk
       certName: iapdci-cert
+    - name: justiceinspectorates.gov.uk 
+      certName: justiceinspectorates-cert
     - name: lawcom.gov.uk
       certName: lawcom-cert
     - name: layobservers.org
@@ -294,6 +296,8 @@ ingress:
       certName: iapdci-www-cert
     - name: www.imb.org.uk
       certName: imb-www-cert
+    - name: www.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-www-cert
     - name: www.lawcom.gov.uk
       certName: lawcom-www-cert
     - name: www.layobservers.org
