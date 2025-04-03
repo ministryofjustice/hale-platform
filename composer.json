@@ -78,7 +78,7 @@
         "wpackagist-plugin/unconfirmed": "^1.0",
         "wpackagist-plugin/wordpress-seo": "^23.0",
         "wpackagist-plugin/wp-2fa": "^2.0",
-        "wpackagist-plugin/wp-accessibility": "^2.0",
+        "wpackagist-plugin/wp-accessibility": "2.1.15",
         "wpackagist-plugin/wp-force-login": "^5.0",
         "wpackagist-plugin/wp-nested-pages": "^3.0",
         "wpackagist-plugin/wp-sentry-integration": "^8.0",
