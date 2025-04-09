@@ -242,6 +242,8 @@ ingress:
       certName: nationalpreventivemechanism-cert
     - name: newfuturesnetwork.gov.uk
       certName: newfuturesnetwork-cert
+    - name: niofficialhistory.org.uk
+      certName: niofficialhistory-cert
     - name: nottingham.independent-inquiry.uk
       certName: nottingham-cert
     - name: omagh.independent-inquiry.uk
@@ -308,6 +310,8 @@ ingress:
       certName: nationalpreventivemechanism-www-cert
     - name: www.newfuturesnetwork.gov.uk
       certName: newfuturesnetwork-www-cert
+    - name: www.niofficialhistory.org.uk
+      certName: niofficialhistory-www-cert
     - name: www.nottingham.independent-inquiry.uk
       certName: nottingham-www-cert
     - name: www.omagh.independent-inquiry.uk
