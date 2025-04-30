@@ -59,6 +59,7 @@
         "vlucas/phpdotenv": "^3.0",
         "wpengine/advanced-custom-fields-pro": "^6.0",
         "wpackagist-plugin/advanced-responsive-video-embedder": "^10.0",
+        "wpackagist-plugin/auth0":"4.6.2",
         "wpackagist-plugin/breadcrumb-trail": "^1.0",
         "wpackagist-plugin/classic-editor": "^1.0",
         "wpackagist-plugin/duplicate-post": "^4.0",
