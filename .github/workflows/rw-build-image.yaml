@@ -96,7 +96,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
         id: login-ecr
         with:
-          mask-password: 'true'
+          mask-password: "true"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -138,16 +138,14 @@ jobs:
             wordpress/wp-content/themes/hale/node_modules
             wordpress/wp-content/themes/hale-dash/node_modules
             wordpress/wp-content/themes/hale-showcase/node_modules
-            wordpress/wp-content/themes/lawcom/node_modules
             wordpress/wp-content/themes/ppo/node_modules
-            wordpress/wp-content/themes/imbmembers/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
       - name: Run NPM
         run: |
-          for theme in hale hale-dash hale-showcase lawcom ppo imbmembers; do
+          for theme in hale hale-dash hale-showcase ppo; do
             npm install --prefix ./wordpress/wp-content/themes/$theme
             npm run production --if-present --prefix ./wordpress/wp-content/themes/$theme
           done
