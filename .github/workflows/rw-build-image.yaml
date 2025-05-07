@@ -27,6 +27,8 @@ on:
         required: true
       acf-password:
         required: true
+      acf-token:
+        required: true
       kube-cluster:
         required: true
       kube-cert:
@@ -215,7 +217,8 @@ jobs:
           --set secrets.wpsecureauthsalt=${{ secrets.wp-secure-auth-salt-file }} \
           --set secrets.s3uploadsbucket=${{ secrets.s3-uploads-bucket }} \
           --set secrets.s3uploadsregion=${{ secrets.s3-uploads-region }} \
-          --set secrets.wbconfig=${{ secrets.wb-config}} \
+          --set secrets.wbconfig=${{ secrets.wb-config }} \
+          --set secrets.acftoken=${{ secrets.acf-token }} \
           --set alertSecrets.slackWebhookUrl=${{ secrets.alert-slack-webhook-url }} \
           --set configmap.envtype=${{ vars.ENV_TYPE }} \
           --set configmap.sentrydns=${{ vars.PHP_DSN }} \
