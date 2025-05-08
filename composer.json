@@ -41,7 +41,7 @@
     "require": {
         "composer/installers": "^v1.7.0",
         "ministryofjustice/cookie-compliance-for-wordpress": "dev-main",
-        "ministryofjustice/hale": "dev-main",
+        "ministryofjustice/hale": "dev-cpt-breadcrumb",
         "ministryofjustice/hale-components": "dev-main",
         "ministryofjustice/hale-dash": "dev-main",
         "ministryofjustice/hale-showcase": "dev-main",
