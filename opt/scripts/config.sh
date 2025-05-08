@@ -19,6 +19,7 @@ wp config set S3_UPLOADS_REGION "\$_SERVER['S3_UPLOADS_REGION']" --raw
 wp config set S3_UPLOADS_USE_INSTANCE_PROFILE "\$_SERVER['S3_UPLOADS_USE_INSTANCE_PROFILE']" --raw
 wp config set QM_ENABLE_CAPS_PANEL true --raw
 wp config set WP_CACHE true --raw
+wp config set ACF_PRO_LICENSE "\$_SERVER['ACF_PRO_LICENSE']" --raw
 
 # https://github.com/stayallive/wp-sentry/tree/v7.1.0#configuration
 wp config set WP_SENTRY_PHP_DSN "\$_SERVER['PHP_DSN']" --raw
@@ -54,3 +55,4 @@ wp theme delete twentytwentyone twentytwentytwo
 wp plugin delete akismet hello
 
 exec "$@"
+
