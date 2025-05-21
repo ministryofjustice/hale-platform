@@ -27,6 +27,8 @@ on:
         required: true
       acf-password:
         required: true
+      acf-token:
+        required: true
       kube-cluster:
         required: true
       kube-cert:
@@ -71,10 +73,6 @@ on:
         required: true
       alert-slack-webhook-url:
         required: true
-      avature-feed-username:
-        required: true
-      avature-feed-password:
-        required: true
       wb-config:
         required: true
 
@@ -100,7 +98,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
         id: login-ecr
         with:
-          mask-password: 'true'
+          mask-password: "true"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -142,18 +140,14 @@ jobs:
             wordpress/wp-content/themes/hale/node_modules
             wordpress/wp-content/themes/hale-dash/node_modules
             wordpress/wp-content/themes/hale-showcase/node_modules
-            wordpress/wp-content/themes/lawcom/node_modules
-            wordpress/wp-content/themes/justicejobs/node_modules
             wordpress/wp-content/themes/ppo/node_modules
-            wordpress/wp-content/themes/sifocc/node_modules
-            wordpress/wp-content/themes/imbmembers/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
       - name: Run NPM
         run: |
-          for theme in hale hale-dash hale-showcase lawcom justicejobs ppo sifocc imbmembers; do
+          for theme in hale hale-dash hale-showcase ppo; do
             npm install --prefix ./wordpress/wp-content/themes/$theme
             npm run production --if-present --prefix ./wordpress/wp-content/themes/$theme
           done
@@ -223,9 +217,8 @@ jobs:
           --set secrets.wpsecureauthsalt=${{ secrets.wp-secure-auth-salt-file }} \
           --set secrets.s3uploadsbucket=${{ secrets.s3-uploads-bucket }} \
           --set secrets.s3uploadsregion=${{ secrets.s3-uploads-region }} \
-          --set secrets.feedparser.avatureFeedUserName=${{ secrets.avature-feed-username }} \
-          --set secrets.feedparser.avatureFeedPassword=${{ secrets.avature-feed-password }} \
-          --set secrets.wbconfig=${{ secrets.wb-config}} \
+          --set secrets.wbconfig=${{ secrets.wb-config }} \
+          --set secrets.acftoken=${{ secrets.acf-token }} \
           --set alertSecrets.slackWebhookUrl=${{ secrets.alert-slack-webhook-url }} \
           --set configmap.envtype=${{ vars.ENV_TYPE }} \
           --set configmap.sentrydns=${{ vars.PHP_DSN }} \
@@ -233,3 +226,4 @@ jobs:
           --set domain=${{ secrets.domain }} \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_nginx-${{ github.sha }} \
           --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_wordpress-${{ github.sha }}
+

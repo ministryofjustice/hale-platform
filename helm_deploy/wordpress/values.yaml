@@ -17,7 +17,7 @@ nginx:
     imagePullPolicy: Always
     ports:
       containerPort: 8080
-  
+
   # Apply container level resource allocation
   resources:
     dev:
@@ -57,7 +57,7 @@ wp:
     imagePullPolicy: Always
     ports:
       containerPort: 9000
-  
+
   # Apply container level resource allocation
   resources:
     dev:
@@ -131,7 +131,7 @@ updateStrategy:
 ##
 cron:
   feedparser:
-    enabled: true
+    enabled: false
   wpK8sCron:
     enabled: true
 
@@ -164,9 +164,8 @@ secrets:
   wpsecureauthsalt: ""
   s3uploadsbucket: ""
   s3uploadsregion: ""
-  feedparser:
-    avatureFeedUserName: ""
-    avatureFeedUserPassword: ""
+  wbconfig: ""
+  acftoken: ""
 
 ## @param Toggle alerts on/off
 ##
@@ -196,12 +195,24 @@ ingress:
       certName: ccrc-cert
     - name: cjji.justiceinspectorates.gov.uk
       certName: justiceinspectorates-cjji-cert
+    - name: cjsm.justice.gov.uk
+      certName: cjsm-cert
     - name: cym.victimandwitnessinformation.org.uk
       certName: victimandwitnessinformation-cym-cert
+    - name: cym.victimscode.org.uk
+      certName: victimscode-cym-cert
+    - name: dashboard.websitebuilder.service.justice.gov.uk
+      certName: websitebuilder-dashboard-cert
+    - name: developers.websitebuilder.service.justice.gov.uk
+      certName: websitebuilder-developers-cert
     - name: hmcpsi.justiceinspectorates.gov.uk
       certName: justiceinspectorates-hmcpsi-cert
     - name: hmiprisons.justiceinspectorates.gov.uk
       certName: justiceinspectorates-hmiprisons-cert
+    - name: hmiprobation.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-hmiprobation-cert
+    - name: hmppsinsights.service.justice.gov.uk
+      certName: hmppsinsights-cert
     - name: icrir.independent-inquiry.uk
       certName: icrir-cert
     - name: imb.org.uk
@@ -214,8 +225,8 @@ ingress:
       certName: iapdc-cert
     - name: iapdeathsincustody.independent.gov.uk
       certName: iapdci-cert
-    - name: jobs.justice.gov.uk
-      certName: justicejobs-cert
+    - name: justiceinspectorates.gov.uk
+      certName: justiceinspectorates-cert
     - name: lawcom.gov.uk
       certName: lawcom-cert
     - name: layobservers.org
@@ -232,6 +243,10 @@ ingress:
       certName: nationalpreventivemechanism-cert
     - name: newfuturesnetwork.gov.uk
       certName: newfuturesnetwork-cert
+    - name: niofficialhistory.org.uk
+      certName: niofficialhistory-cert
+    - name: nottingham.independent-inquiry.uk
+      certName: nottingham-cert
     - name: omagh.independent-inquiry.uk
       certName: obi-cert
     - name: ppo.gov.uk
@@ -268,24 +283,38 @@ ingress:
       certName: ccrc-www-cert
     - name: www.cjji.justiceinspectorates.gov.uk
       certName: justiceinspectorates-cjji-www-cert
+    - name: www.cjsm.justice.gov.uk
+      certName: cjsm-www-cert
     - name: www.hmcpsi.justiceinspectorates.gov.uk
       certName: justiceinspectorates-hmcpsi-www-cert
     - name: www.hmiprisons.justiceinspectorates.gov.uk
       certName: justiceinspectorates-hmiprisons-www-cert
+    - name: www.hmiprobation.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-hmiprobation-www-cert
+    - name: www.hmppsinsights.service.justice.gov.uk
+      certName: hmppsinsights-www-cert
     - name: www.iapondeathsincustody.org
       certName: iapdc-www-cert
     - name: www.iapdeathsincustody.independent.gov.uk
       certName: iapdci-www-cert
-    - name: www.jobs.justice.gov.uk
-      certName: justicejobs-www-cert
+    - name: www.imb.org.uk
+      certName: imb-www-cert
+    - name: www.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-www-cert
     - name: www.lawcom.gov.uk
       certName: lawcom-www-cert
     - name: www.layobservers.org
       certName: layobservers-www-cert
     - name: www.legalaidlearning.justice.gov.uk
       certName: legalaidlearning-www-cert
+    - name: www.nationalpreventivemechanism.org.uk
+      certName: nationalpreventivemechanism-www-cert
     - name: www.newfuturesnetwork.gov.uk
       certName: newfuturesnetwork-www-cert
+    - name: www.niofficialhistory.org.uk
+      certName: niofficialhistory-www-cert
+    - name: www.nottingham.independent-inquiry.uk
+      certName: nottingham-www-cert
     - name: www.omagh.independent-inquiry.uk
       certName: obi-www-cert
     - name: www.ppo.gov.uk

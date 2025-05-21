@@ -8,23 +8,22 @@ metadata:
     external-dns.alpha.kubernetes.io/aws-weight: "100"
     nginx.ingress.kubernetes.io/enable-modsecurity: "true"
     nginx.ingress.kubernetes.io/modsecurity-snippet: |
-      # Enable ModSecurity WAF
+      # Default WAF rules
       SecRuleEngine On
-      # Default action for all rules
-      SecDefaultAction \
-        "phase:2, \
-        pass, \
-        log, \
-        tag:github_team=hale-platform, \
-        tag:environment=hale-platform-{{ .Values.configmap.envtype }}"
-      # Set WAF config for Authenticated Users
-      SecRule REQUEST_HEADERS:Cookie "@contains WB_CONFIG={{ .Values.secrets.wbconfig }}" \
-        "id:1004, \
-        phase:2, \
-        allow, \
-        nolog, \
-        tag:github_team=hale-platform, \
-        tag:environment=hale-platform-{{ .Values.configmap.envtype }}-auth, \
+      SecDefaultAction 
+        "phase:2,\
+        pass,\
+        log,\
+        tag:github_team=hale-platform,\
+        tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }}"
+      # Set WAF Config for Authenticated Users
+      SecRule REQUEST_HEADERS:Cookie "@contains WB_CONFIG={{ .Values.secrets.wbconfig }}"
+        "id:1001,\
+        phase:1,\
+        allow,\
+        nolog,\
+        tag:github_team=hale-platform,\
+        tag:environment=hale-platform-{{ .Values.configmap.envtype }}-auth,\
         ctl:ruleEngine=DetectionOnly"
     nginx.ingress.kubernetes.io/server-snippet: |
       location = /.well-known/security.txt {
@@ -73,7 +72,7 @@ metadata:
         return 301 https://webarchive.nationalarchives.gov.uk/ukgwa/20241002135959/https://brookhouseinquiry.org.uk/;
       }
 spec:
-  ingressClassName: modsec-non-prod
+  ingressClassName: modsec
   tls:
 {{- if not (eq .Values.configmap.envtype "prod") }}
   - hosts:
@@ -113,3 +112,4 @@ spec:
     {{- end }}
   {{- end }}
 {{- end }}
+

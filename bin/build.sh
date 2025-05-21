@@ -58,22 +58,14 @@ while true; do
             echo -e '######################\n'
             npm install --prefix ./wordpress/wp-content/themes/hale
             npm run production --if-present --prefix ./wordpress/wp-content/themes/hale
-            npm install --prefix ./wordpress/wp-content/themes/lawcom
-            npm run production --if-present --prefix ./wordpress/wp-content/themes/lawcom
-            npm install --prefix ./wordpress/wp-content/themes/justicejobs
-            npm run production --if-present --prefix ./wordpress/wp-content/themes/justicejobs
             npm install --prefix ./wordpress/wp-content/themes/hale-dash
             npm run production --if-present --prefix ./wordpress/wp-content/themes/hale-dash
             npm install --prefix ./wordpress/wp-content/themes/hale-showcase
             npm run production --if-present --prefix ./wordpress/wp-content/themes/hale-showcase
             npm install --prefix ./wordpress/wp-content/themes/ppo
             npm run production --if-present --prefix ./wordpress/wp-content/themes/ppo
-            npm install --prefix ./wordpress/wp-content/themes/sifocc
-            npm run production --if-present --prefix ./wordpress/wp-content/themes/sifocc
-            npm install --prefix ./wordpress/wp-content/themes/imbmembers
-            npm run production --if-present --prefix ./wordpress/wp-content/themes/imbmembers
 
-            # Test Docker is running locally
+			# Test Docker is running locally
             if ! docker info > /dev/null 2>&1; then
             echo -e "Oops, where is Docker? Start Docker and try again.\n"
             exit 1
@@ -83,7 +75,7 @@ while true; do
             echo -e '\n######################'
             echo -e '# Run Docker Build'
             echo -e '######################\n'
-            docker-compose build --no-cache
+            docker compose build --no-cache
 
             break;;
         [Nn]* )
@@ -91,3 +83,4 @@ while true; do
         * ) echo "Please answer yes or no.";;
     esac
 done
+

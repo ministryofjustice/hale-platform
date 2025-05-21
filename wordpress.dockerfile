@@ -6,14 +6,13 @@
 
 # Build multisite
 # Latest images at https://hub.docker.com/_/wordpress
-FROM --platform=linux/amd64 wordpress:6.7.0-php8.3-fpm-alpine
+FROM --platform=linux/amd64 wordpress:6.8.1-php8.3-fpm-alpine
 
 # Install additional Alpine packages
 RUN apk update && \
     apk add less \
     vim \
-    mysql \
-    mysql-client \
+    mariadb-client \
     htop
 
 # Install wp-cli
@@ -67,3 +66,4 @@ ENTRYPOINT ["/usr/local/bin/hale-entrypoint.sh"]
 # Set container user 'root' to 'hale' that is set to 1002. Number is required
 # instead of using user name.
 USER 1002
+
