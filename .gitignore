@@ -5,6 +5,7 @@ mysql
 *.sql
 auth.json
 composer.lock
+package-lock.json
 vendor/
 wordpress/
 uploads/
@@ -12,3 +13,4 @@ media/
 !helm_deploy/wordpress/
 bin/certs/
 reports/
+
