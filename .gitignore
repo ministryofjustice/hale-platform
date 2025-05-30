@@ -13,4 +13,5 @@ media/
 !helm_deploy/wordpress/
 bin/certs/
 reports/
+node_modules/
 
