@@ -12,3 +12,7 @@ media/
 !helm_deploy/wordpress/
 bin/certs/
 reports/
+node_modules/
+test-results/
+playwright-report/
+package-lock.js

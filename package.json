@@ -1,0 +1,36 @@
+{
+  "name": "wordpress-playwright-tests",
+  "version": "1.0.0",
+  "description": "Playwright tests for WordPress application",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:hale": "playwright test tests/hale/",
+    "test:report": "playwright show-report"
+  },
+  "keywords": [
+    "playwright",
+    "testing",
+    "wordpress"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.53.0"
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ministryofjustice/hale-platform.git"
+  },
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ministryofjustice/hale-platform/issues"
+  },
+  "homepage": "https://github.com/ministryofjustice/hale-platform#readme"
+}
