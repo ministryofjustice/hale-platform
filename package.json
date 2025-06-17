@@ -9,7 +9,11 @@
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug",
     "test:hale": "playwright test tests/hale/",
-    "test:report": "playwright show-report"
+    "test:report": "playwright show-report",
+    "test:browserstack": "playwright test --config=playwright-browserstack.config.js",
+    "test:browserstack:mobile": "playwright test --config=playwright-browserstack.config.js --project=iphone-13 --project=samsung-galaxy-s22",
+    "test:browserstack:desktop": "playwright test --config=playwright-browserstack.config.js --project=chrome-latest --project=firefox-latest --project=safari-latest",
+    "test:browserstack:legacy": "playwright test --config=playwright-browserstack.config.js --project=chrome-legacy"
   },
   "keywords": [
     "playwright",
@@ -19,18 +23,10 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@playwright/test": "^1.53.0"
-  },
-  "directories": {
-    "test": "tests"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ministryofjustice/hale-platform.git"
-  },
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/ministryofjustice/hale-platform/issues"
-  },
-  "homepage": "https://github.com/ministryofjustice/hale-platform#readme"
+    "@playwright/test": "^1.40.0",
+    "browserstack-local": "^1.5.6",
+    "dotenv": "^16.3.1"
+  }
 }
+
+

@@ -74,8 +74,9 @@ bin/certs/
 # REPORTS & LOGS
 # =============================================================================
 
-# Generated reports
+# Generated reports and logs
 reports/
+local.log
 
 # =============================================================================
 # DATABASE
