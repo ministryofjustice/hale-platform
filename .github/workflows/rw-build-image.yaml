@@ -141,13 +141,14 @@ jobs:
             wordpress/wp-content/themes/hale-dash/node_modules
             wordpress/wp-content/themes/hale-showcase/node_modules
             wordpress/wp-content/themes/ppo/node_modules
+            wordpress/wp-content/themes/govwind/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
       - name: Run NPM
         run: |
-          for theme in hale hale-dash hale-showcase ppo; do
+          for theme in hale hale-dash hale-showcase ppo govwind; do
             npm install --prefix ./wordpress/wp-content/themes/$theme
             npm run production --if-present --prefix ./wordpress/wp-content/themes/$theme
           done
