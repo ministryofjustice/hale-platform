@@ -1,0 +1,27 @@
+{
+  "name": "wordpress-multisite-playwright",
+  "version": "1.0.0",
+  "description": "End-to-end tests for a WordPress Multisite setup using Playwright",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    "codegen": "playwright codegen",
+    "lint": "eslint tests --ext .ts,.js",
+    "install:playwright": "npx playwright install"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.0",
+    "eslint": "^8.0.0"
+  },
+  "keywords": [
+    "playwright",
+    "wordpress",
+    "e2e",
+    "multisite",
+    "browserstack"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
