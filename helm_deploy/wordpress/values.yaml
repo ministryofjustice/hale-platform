@@ -205,6 +205,8 @@ ingress:
       certName: websitebuilder-dashboard-cert
     - name: developers.websitebuilder.service.justice.gov.uk
       certName: websitebuilder-developers-cert
+    - name: finucane.independent-inquiry.uk
+      certName: finucane-cert
     - name: hmcpsi.justiceinspectorates.gov.uk
       certName: justiceinspectorates-hmcpsi-cert
     - name: hmiprisons.justiceinspectorates.gov.uk
@@ -285,6 +287,8 @@ ingress:
       certName: justiceinspectorates-cjji-www-cert
     - name: www.cjsm.justice.gov.uk
       certName: cjsm-www-cert
+    - name: www.finucane.independent-inquiry.uk
+      certName: finucane-www-cert
     - name: www.hmcpsi.justiceinspectorates.gov.uk
       certName: justiceinspectorates-hmcpsi-www-cert
     - name: www.hmiprisons.justiceinspectorates.gov.uk
