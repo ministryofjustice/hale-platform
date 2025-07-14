@@ -14,4 +14,4 @@ More information about our deployment process, is available in our [Deployment](
 
 ## Deploy locally on a Mac using Docker
 
-To run this WordPress instance locally, follow our guidance on [local development](https://github.com/ministryofjustice/hale-platform/wiki/Local-development).
+To run this WordPress instance locally, follow our guidance on [local development](https://github.com/ministryofjustice/hale-platform/wiki/Local-development)..
