@@ -1,0 +1,158 @@
+<testsuites id="" name="" tests="18" failures="18" skipped="0" errors="0" time="5.145992000000001">
+<testsuite name="hale/main.spec.js" timestamp="2025-06-17T14:38:10.360Z" hostname="chrome-latest" tests="3" failures="3" skipped="0" time="0.004" errors="0">
+<testcase name="Ministry of Justice Website Builder › homepage has correct title" classname="hale/main.spec.js" time="0.002">
+<failure message="main.spec.js:4:3 homepage has correct title" type="FAILURE">
+<![CDATA[  [chrome-latest] › hale/main.spec.js:4:3 › Ministry of Justice Website Builder › homepage has correct title 
+
+    Error: browserType.connect: Target page, context or browser has been closed
+]]>
+</failure>
+</testcase>
+<testcase name="Ministry of Justice Website Builder › homepage has header" classname="hale/main.spec.js" time="0.001">
+<failure message="main.spec.js:11:3 homepage has header" type="FAILURE">
+<![CDATA[  [chrome-latest] › hale/main.spec.js:11:3 › Ministry of Justice Website Builder › homepage has header 
+
+    Error: browserType.connect: Target page, context or browser has been closed
+]]>
+</failure>
+</testcase>
+<testcase name="Ministry of Justice Website Builder › homepage has footer" classname="hale/main.spec.js" time="0.001">
+<failure message="main.spec.js:18:3 homepage has footer" type="FAILURE">
+<![CDATA[  [chrome-latest] › hale/main.spec.js:18:3 › Ministry of Justice Website Builder › homepage has footer 
+
+    Error: browserType.connect: Target page, context or browser has been closed
+]]>
+</failure>
+</testcase>
+</testsuite>
+<testsuite name="hale/main.spec.js" timestamp="2025-06-17T14:38:10.360Z" hostname="firefox-latest" tests="3" failures="3" skipped="0" time="0.003" errors="0">
+<testcase name="Ministry of Justice Website Builder › homepage has correct title" classname="hale/main.spec.js" time="0.001">
+<failure message="main.spec.js:4:3 homepage has correct title" type="FAILURE">
+<![CDATA[  [firefox-latest] › hale/main.spec.js:4:3 › Ministry of Justice Website Builder › homepage has correct title 
+
+    Error: browserType.connect: Target page, context or browser has been closed
+]]>
+</failure>
+</testcase>
+<testcase name="Ministry of Justice Website Builder › homepage has header" classname="hale/main.spec.js" time="0.001">
+<failure message="main.spec.js:11:3 homepage has header" type="FAILURE">
+<![CDATA[  [firefox-latest] › hale/main.spec.js:11:3 › Ministry of Justice Website Builder › homepage has header 
+
+    Error: browserType.connect: Target page, context or browser has been closed
+]]>
+</failure>
+</testcase>
+<testcase name="Ministry of Justice Website Builder › homepage has footer" classname="hale/main.spec.js" time="0.001">
+<failure message="main.spec.js:18:3 homepage has footer" type="FAILURE">
+<![CDATA[  [firefox-latest] › hale/main.spec.js:18:3 › Ministry of Justice Website Builder › homepage has footer 
+
+    Error: browserType.connect: Target page, context or browser has been closed
+]]>
+</failure>
+</testcase>
+</testsuite>
+<testsuite name="hale/main.spec.js" timestamp="2025-06-17T14:38:10.360Z" hostname="safari-latest" tests="3" failures="3" skipped="0" time="0.003" errors="0">
+<testcase name="Ministry of Justice Website Builder › homepage has correct title" classname="hale/main.spec.js" time="0.001">
+<failure message="main.spec.js:4:3 homepage has correct title" type="FAILURE">
+<![CDATA[  [safari-latest] › hale/main.spec.js:4:3 › Ministry of Justice Website Builder › homepage has correct title 
+
+    Error: browserType.connect: Target page, context or browser has been closed
+]]>
+</failure>
+</testcase>
+<testcase name="Ministry of Justice Website Builder › homepage has header" classname="hale/main.spec.js" time="0.001">
+<failure message="main.spec.js:11:3 homepage has header" type="FAILURE">
+<![CDATA[  [safari-latest] › hale/main.spec.js:11:3 › Ministry of Justice Website Builder › homepage has header 
+
+    Error: browserType.connect: Target page, context or browser has been closed
+]]>
+</failure>
+</testcase>
+<testcase name="Ministry of Justice Website Builder › homepage has footer" classname="hale/main.spec.js" time="0.001">
+<failure message="main.spec.js:18:3 homepage has footer" type="FAILURE">
+<![CDATA[  [safari-latest] › hale/main.spec.js:18:3 › Ministry of Justice Website Builder › homepage has footer 
+
+    Error: browserType.connect: Target page, context or browser has been closed
+]]>
+</failure>
+</testcase>
+</testsuite>
+<testsuite name="hale/main.spec.js" timestamp="2025-06-17T14:38:10.360Z" hostname="iphone-13" tests="3" failures="3" skipped="0" time="0.004" errors="0">
+<testcase name="Ministry of Justice Website Builder › homepage has correct title" classname="hale/main.spec.js" time="0.001">
+<failure message="main.spec.js:4:3 homepage has correct title" type="FAILURE">
+<![CDATA[  [iphone-13] › hale/main.spec.js:4:3 › Ministry of Justice Website Builder › homepage has correct title 
+
+    Error: browserType.connect: Target page, context or browser has been closed
+]]>
+</failure>
+</testcase>
+<testcase name="Ministry of Justice Website Builder › homepage has header" classname="hale/main.spec.js" time="0.002">
+<failure message="main.spec.js:11:3 homepage has header" type="FAILURE">
+<![CDATA[  [iphone-13] › hale/main.spec.js:11:3 › Ministry of Justice Website Builder › homepage has header ─
+
+    Error: browserType.connect: Target page, context or browser has been closed
+]]>
+</failure>
+</testcase>
+<testcase name="Ministry of Justice Website Builder › homepage has footer" classname="hale/main.spec.js" time="0.001">
+<failure message="main.spec.js:18:3 homepage has footer" type="FAILURE">
+<![CDATA[  [iphone-13] › hale/main.spec.js:18:3 › Ministry of Justice Website Builder › homepage has footer ─
+
+    Error: browserType.connect: Target page, context or browser has been closed
+]]>
+</failure>
+</testcase>
+</testsuite>
+<testsuite name="hale/main.spec.js" timestamp="2025-06-17T14:38:10.360Z" hostname="samsung-galaxy-s22" tests="3" failures="3" skipped="0" time="0.003" errors="0">
+<testcase name="Ministry of Justice Website Builder › homepage has correct title" classname="hale/main.spec.js" time="0.001">
+<failure message="main.spec.js:4:3 homepage has correct title" type="FAILURE">
+<![CDATA[  [samsung-galaxy-s22] › hale/main.spec.js:4:3 › Ministry of Justice Website Builder › homepage has correct title 
+
+    Error: browserType.connect: Target page, context or browser has been closed
+]]>
+</failure>
+</testcase>
+<testcase name="Ministry of Justice Website Builder › homepage has header" classname="hale/main.spec.js" time="0.001">
+<failure message="main.spec.js:11:3 homepage has header" type="FAILURE">
+<![CDATA[  [samsung-galaxy-s22] › hale/main.spec.js:11:3 › Ministry of Justice Website Builder › homepage has header 
+
+    Error: browserType.connect: Target page, context or browser has been closed
+]]>
+</failure>
+</testcase>
+<testcase name="Ministry of Justice Website Builder › homepage has footer" classname="hale/main.spec.js" time="0.001">
+<failure message="main.spec.js:18:3 homepage has footer" type="FAILURE">
+<![CDATA[  [samsung-galaxy-s22] › hale/main.spec.js:18:3 › Ministry of Justice Website Builder › homepage has footer 
+
+    Error: browserType.connect: Target page, context or browser has been closed
+]]>
+</failure>
+</testcase>
+</testsuite>
+<testsuite name="hale/main.spec.js" timestamp="2025-06-17T14:38:10.360Z" hostname="chrome-legacy" tests="3" failures="3" skipped="0" time="0.003" errors="0">
+<testcase name="Ministry of Justice Website Builder › homepage has correct title" classname="hale/main.spec.js" time="0.001">
+<failure message="main.spec.js:4:3 homepage has correct title" type="FAILURE">
+<![CDATA[  [chrome-legacy] › hale/main.spec.js:4:3 › Ministry of Justice Website Builder › homepage has correct title 
+
+    Error: browserType.connect: Target page, context or browser has been closed
+]]>
+</failure>
+</testcase>
+<testcase name="Ministry of Justice Website Builder › homepage has header" classname="hale/main.spec.js" time="0.001">
+<failure message="main.spec.js:11:3 homepage has header" type="FAILURE">
+<![CDATA[  [chrome-legacy] › hale/main.spec.js:11:3 › Ministry of Justice Website Builder › homepage has header 
+
+    Error: browserType.connect: Target page, context or browser has been closed
+]]>
+</failure>
+</testcase>
+<testcase name="Ministry of Justice Website Builder › homepage has footer" classname="hale/main.spec.js" time="0.001">
+<failure message="main.spec.js:18:3 homepage has footer" type="FAILURE">
+<![CDATA[  [chrome-legacy] › hale/main.spec.js:18:3 › Ministry of Justice Website Builder › homepage has footer 
+
+    Error: browserType.connect: Target page, context or browser has been closed
+]]>
+</failure>
+</testcase>
+</testsuite>
+</testsuites>
