@@ -16,7 +16,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `⛈️ **Direct merges from \`${context.payload.pull_request.head.ref}\` to \`main\` are not allowed.**\n\nPlease:\n- Create a feature branch from \`main\` for your changes\n- Or use the staging branch workflow\n\nThis PR will be automatically blocked until resolved.`
+              body: `⛈️ **Direct merges from \`${context.payload.pull_request.head.ref}\` to \`main\` are not allowed.**\n\nPlease:\n- Create a feature branch from \`demo\` or \`dev\` for your changes\n- Or use the staging branch workflow\n\nThis PR will be automatically blocked until resolved.`
             })
       
       - name: Block dev and demo branches
