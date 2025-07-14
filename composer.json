@@ -49,7 +49,7 @@
     "ministryofjustice/govwind": "dev-main",
     "ministryofjustice/ppo": "dev-main",
     "ministryofjustice/wp-gov-uk-notify": "*",
-    "ministryofjustice/wp-moj-blocks": "*",
+    "ministryofjustice/wp-moj-blocks": "dev-bad-practices",
     "ministryofjustice/wp-s3-uploads": "1.0.0",
     "oscarotero/env": "^1.0",
     "php": ">=7.4",
