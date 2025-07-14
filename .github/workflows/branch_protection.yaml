@@ -1,0 +1,31 @@
+name: Branch Protection
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  check-source-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment on PR for blocked branches
+        if: github.head_ref == 'demo' || github.head_ref == 'dev'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `⛈️ **Direct merges from \`${context.payload.pull_request.head.ref}\` to \`main\` are not allowed.**\n\nPlease:\n- Create a feature branch from \`demo\` or \`dev\` for your changes\n- Or use the staging branch workflow\n\nThis PR will be automatically blocked until resolved.`
+            })
+      
+      - name: Block dev and demo branches
+        if: github.head_ref == 'demo' || github.head_ref == 'dev'
+        run: |
+          echo "⛈️ Direct merges from dev and demo branches to main are not allowed"
+          echo "Please create a feature branch from main or use staging branch"
+          exit 1
+      
+      - name: Allow merge
+        if: github.head_ref != 'demo' && github.head_ref != 'dev'
+        run: echo "✨ Branch merge is allowed"
