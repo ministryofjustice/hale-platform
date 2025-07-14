@@ -1,4 +1,3 @@
-# .github/workflows/branch-protection.yml
 name: Branch Protection
 on:
   pull_request:
@@ -14,6 +13,18 @@ jobs:
           echo "❌ Direct merges from dev and demo branches to main are not allowed"
           echo "Please create a feature branch from main or use staging branch"
           exit 1
+      
+      - name: Comment on PR for blocked branches
+        if: github.head_ref == 'dev' || github.head_ref == 'demo'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `❌ **Direct merges from \`${context.payload.pull_request.head.ref}\` to \`main\` are not allowed.**\n\nPlease:\n- Create a feature branch from \`main\` for your changes\n- Or use the staging branch workflow\n\nThis PR will be automatically blocked until resolved.`
+            })
       
       - name: Allow merge
         if: github.head_ref != 'dev' && github.head_ref != 'demo'
