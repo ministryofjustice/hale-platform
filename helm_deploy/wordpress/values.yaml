@@ -301,6 +301,8 @@ ingress:
       certName: iapdc-www-cert
     - name: www.iapdeathsincustody.independent.gov.uk
       certName: iapdci-www-cert
+    - name: www.icrir.independent-inquiry.uk
+      certName: icrir-www-cert
     - name: www.imb.org.uk
       certName: imb-www-cert
     - name: www.justiceinspectorates.gov.uk
