@@ -7,6 +7,7 @@ on:
       - "main"
       - "dev"
       - "demo"
+      - "fse"
 jobs:
   deployDev:
     name: Deploy to Development Environment
@@ -52,7 +53,9 @@ jobs:
 
   deployDemo:
     name: Deploy to Demo Environment
-    if: github.event.ref == 'refs/heads/demo'
+    if: |
+      github.event.ref == 'refs/heads/demo' ||
+      github.event.ref == 'refs/heads/fse'
     uses: ./.github/workflows/rw-build-image.yaml
     with:
       environment: Demonstration
