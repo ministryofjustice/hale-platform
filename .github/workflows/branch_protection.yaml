@@ -28,4 +28,4 @@ jobs:
       
       - name: Allow merge
         if: github.head_ref != 'demo' && github.head_ref != 'dev'
-        run: echo "✨ Branch merge is allowed"
+        run: echo "✨Branch merge is allowed"
