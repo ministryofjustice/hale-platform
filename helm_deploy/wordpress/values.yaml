@@ -219,6 +219,8 @@ ingress:
       certName: icrir-cert
     - name: imb.org.uk
       certName: imb-cert
+    - name: independentpublicadvocate.org.uk
+      certName: ipa-cert
     - name: intranet.hmiprisons.justiceinspectorates.gov.uk
       certName: justiceinspectorates-hmiprisons-intranet-cert
     - name: intranet.icrir.independent-inquiry.uk
@@ -305,6 +307,8 @@ ingress:
       certName: icrir-www-cert
     - name: www.imb.org.uk
       certName: imb-www-cert
+    - name: www.independentpublicadvocate.org.uk
+      certName: ipa-www-cert
     - name: www.justiceinspectorates.gov.uk
       certName: justiceinspectorates-www-cert
     - name: www.lawcom.gov.uk
