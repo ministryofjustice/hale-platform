@@ -1,5 +1,6 @@
 # Directories
 /wordpress
+/squarepants
 
 # Database files
 *.sql
