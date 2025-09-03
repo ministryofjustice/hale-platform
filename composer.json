@@ -72,6 +72,7 @@
     "wpackagist-plugin/wordpress-seo": "^25.0",
     "wpackagist-plugin/wp-force-login": "^5.0",
     "wpackagist-plugin/wp-sentry-integration": "^8.0",
+    "visual-web-optimizer": "*",
     "wpackagist-plugin/wps-hide-login": "^1.0"
   },
   "require-dev": {
