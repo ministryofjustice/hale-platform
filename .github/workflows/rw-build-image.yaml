@@ -72,7 +72,7 @@ on:
       s3-uploads-region:
         required: true
       s3-uploads-bucket-url:
-        required: true
+        required: false
       alert-slack-webhook-url:
         required: true
       wb-config:
