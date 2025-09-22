@@ -253,6 +253,8 @@ ingress:
       certName: nottingham-cert
     - name: omagh.independent-inquiry.uk
       certName: obi-cert
+    - name: pecs-contract-guide.service.justice.gov.uk
+      certName: pecs-cert
     - name: ppo.gov.uk
       certName: ppo-cert
     - name: prisonandprobationjobs.gov.uk
@@ -327,6 +329,8 @@ ingress:
       certName: nottingham-www-cert
     - name: www.omagh.independent-inquiry.uk
       certName: obi-www-cert
+    - name: www.pecs-contract-guide.service.justice.gov.uk
+      certName: pecs-www-cert
     - name: www.ppo.gov.uk
       certName: ppo-www-cert
     - name: www.prisonandprobationjobs.gov.uk
