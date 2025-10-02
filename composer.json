@@ -46,7 +46,7 @@
     "ministryofjustice/hale-components": "1.8.0",
     "ministryofjustice/hale-dash": "1.1.8",
     "ministryofjustice/hale-showcase": "1.1.10",
-    "ministryofjustice/govwind": "dev-button-styles-4312",
+    "ministryofjustice/govwind": "*",
     "ministryofjustice/ppo": "dev-main",
     "ministryofjustice/wp-gov-uk-notify": "*",
     "ministryofjustice/wp-moj-blocks": "3.17.0",
