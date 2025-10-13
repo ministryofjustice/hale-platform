@@ -48,7 +48,7 @@
     "ministryofjustice/hale-showcase": "1.1.10",
     "ministryofjustice/ppo": "dev-main",
     "ministryofjustice/wp-gov-uk-notify": "*",
-    "ministryofjustice/wp-moj-blocks": "dev-reveal",
+    "ministryofjustice/wp-moj-blocks": "*",
     "ministryofjustice/wp-s3-uploads": "1.0.0",
     "oscarotero/env": "^1.0",
     "php": ">=7.4",
