@@ -71,6 +71,8 @@ on:
         required: true
       s3-uploads-region:
         required: true
+      s3-uploads-bucket_url:
+        required: false
       alert-slack-webhook-url:
         required: true
       wb-config:
@@ -216,6 +218,7 @@ jobs:
           --set secrets.wpsecureauthkey=${{ secrets.wp-secure-auth-key-file }} \
           --set secrets.wpsecureauthsalt=${{ secrets.wp-secure-auth-salt-file }} \
           --set secrets.s3uploadsbucket=${{ secrets.s3-uploads-bucket }} \
+          --set secrets.s3uploadsbucketurl=${{ secrets.s3-uploads-bucket_url }} \
           --set secrets.s3uploadsregion=${{ secrets.s3-uploads-region }} \
           --set secrets.wbconfig=${{ secrets.wb-config }} \
           --set secrets.acftoken=${{ secrets.acf-token }} \
