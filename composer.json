@@ -48,6 +48,7 @@
     "ministryofjustice/hale-showcase": "1.1.10",
     "ministryofjustice/govwind": "dev-main",
     "ministryofjustice/ppo": "dev-main",
+    "ministryofjustice/website-builder-buddy": "dev-main",
     "ministryofjustice/wp-gov-uk-notify": "*",
     "ministryofjustice/website-builder-blocks": "1.0.1",
     "ministryofjustice/wp-moj-blocks": "3.17.0",
