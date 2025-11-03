@@ -64,6 +64,7 @@
     "wpackagist-plugin/ewww-image-optimizer": "^8.0",
     "wpackagist-plugin/limit-login-attempts-reloaded": " ^2.26.0",
     "wpackagist-plugin/option-tree": "^2.0",
+    "wpackagist-plugin/microsoft-clarity":"^0.10.8",
     "wpackagist-plugin/query-monitor": "^3.0",
     "wpackagist-plugin/redirection": "^5.0",
     "wpackagist-plugin/remove-category-url": "^1.0",
