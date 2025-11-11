@@ -16,6 +16,7 @@ wp config set AUTOMATIC_UPDATER_DISABLED true --raw
 wp config set FORCE_SSL_ADMIN true --raw
 wp config set S3_UPLOADS_BUCKET "\$_SERVER['S3_UPLOADS_BUCKET']" --raw
 wp config set S3_UPLOADS_REGION "\$_SERVER['S3_UPLOADS_REGION']" --raw
+wp config set S3_UPLOADS_BUCKET_URL "\$_SERVER['S3_UPLOADS_BUCKET_URL']" --raw
 wp config set S3_UPLOADS_USE_INSTANCE_PROFILE "\$_SERVER['S3_UPLOADS_USE_INSTANCE_PROFILE']" --raw
 wp config set QM_ENABLE_CAPS_PANEL true --raw
 wp config set WP_CACHE true --raw
