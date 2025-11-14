@@ -66,6 +66,8 @@ services:
       SERVER_NAME: "hale.docker"
       PHP_DSN: "" # Sentry constant (not used locally)
       WP_SENTRY_ENV: ""
+      S3_UPLOADS_BUCKET_URL: ""
+      ACF_PRO_LICENSE: ""
 
 volumes:
   database:
