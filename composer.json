@@ -40,7 +40,7 @@
   ],
   "require": {
     "composer/installers": "^v1.7.0",
-    "ministryofjustice/cookie-compliance": "1.0.2",
+    "ministryofjustice/cookie-compliance": "dev-table-width",
     "ministryofjustice/cookie-compliance-for-wordpress": "3.5.0",
     "ministryofjustice/hale": "dev-main",
     "ministryofjustice/hale-components": "1.8.0",
