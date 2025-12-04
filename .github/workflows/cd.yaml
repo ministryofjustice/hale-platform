@@ -71,6 +71,8 @@ jobs:
       acf-user: ${{ secrets.ACF_USER }}
       acf-password: ${{ secrets.ACF_PASSWORD }}
       acf-token: ${{ secrets.ACF_PRO_LICENSE }}
+      relevanssi-user: ${{ secrets.RELEVANSSI_USER }}
+      relevanssi-password: ${{ secrets.RELEVANSSI_PASSWORD }}
       kube-cluster: ${{ secrets.KUBE_CLUSTER }}
       kube-cert: ${{ secrets.KUBE_CERT }}
       kube-namespace: ${{ secrets.KUBE_NAMESPACE }}
@@ -114,6 +116,8 @@ jobs:
       acf-user: ${{ secrets.ACF_USER }}
       acf-password: ${{ secrets.ACF_PASSWORD }}
       acf-token: ${{ secrets.ACF_PRO_LICENSE }}
+      relevanssi-user: ${{ secrets.RELEVANSSI_USER }}
+      relevanssi-password: ${{ secrets.RELEVANSSI_PASSWORD }}
       kube-cluster: ${{ secrets.KUBE_CLUSTER }}
       kube-cert: ${{ secrets.KUBE_CERT }}
       kube-namespace: ${{ secrets.KUBE_NAMESPACE }}
@@ -162,6 +166,8 @@ jobs:
       kube-cert: ${{ secrets.KUBE_CERT }}
       kube-namespace: ${{ secrets.KUBE_NAMESPACE }}
       kube-token: ${{ secrets.KUBE_TOKEN }}
+      relevanssi-user: ${{ secrets.RELEVANSSI_USER }}
+      relevanssi-password: ${{ secrets.RELEVANSSI_PASSWORD }}
       wp-db-user: ${{ secrets.WORDPRESS_DB_USER }}
       wp-db-host: ${{ secrets.WORDPRESS_DB_HOST }}
       wp-db-name: ${{ secrets.WORDPRESS_DB_NAME }}
