@@ -26,6 +26,8 @@ jobs:
       acf-user: ${{ secrets.ACF_USER }}
       acf-password: ${{ secrets.ACF_PASSWORD }}
       acf-token: ${{ secrets.ACF_PRO_LICENSE }}
+      relevanssi-user: ${{ secrets.RELEVANSSI_USER }}
+      relevanssi-password: ${{ secrets.RELEVANSSI_PASSWORD }}
       kube-cluster: ${{ secrets.KUBE_CLUSTER }}
       kube-cert: ${{ secrets.KUBE_CERT }}
       kube-namespace: ${{ secrets.KUBE_NAMESPACE }}
