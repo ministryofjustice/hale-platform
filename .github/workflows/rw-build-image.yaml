@@ -29,6 +29,10 @@ on:
         required: true
       acf-token:
         required: true
+      relevanssi-user:
+        required: true
+      relevanssi-password:
+        required: true
       kube-cluster:
         required: true
       kube-cert:
@@ -72,7 +76,7 @@ on:
       s3-uploads-region:
         required: true
       s3-uploads-bucket-url:
-        required: false
+        required: true
       alert-slack-webhook-url:
         required: true
       wb-config:
@@ -130,8 +134,8 @@ jobs:
 
       - name: Run Composer
         run: |
-          composer config http-basic.repo.packagist.com ${{ secrets.cp-user }} ${{ secrets.cp-password }}
           composer config http-basic.connect.advancedcustomfields.com ${{ secrets.acf-user }} ${{ secrets.acf-password }}
+          composer config http-basic.relevanssi.com ${{ secrets.relevanssi-user }} ${{ secrets.relevanssi-password }}
           composer install --prefer-dist --no-progress
 
       - name: Cache NPM Dependencies

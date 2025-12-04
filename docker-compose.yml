@@ -45,7 +45,7 @@ services:
       dockerfile: wordpress.dockerfile
     volumes:
       - ./wordpress:/var/www/html:delegated
-      - ./opt/php/php.ini:/usr/local/etc/php/conf.d/php.ini
+      - ./opt/php/php-local.ini:/usr/local/etc/php/conf.d/zz-local.ini
     depends_on:
       - mariadb
     env_file:
@@ -66,6 +66,8 @@ services:
       SERVER_NAME: "hale.docker"
       PHP_DSN: "" # Sentry constant (not used locally)
       WP_SENTRY_ENV: ""
+      S3_UPLOADS_BUCKET_URL: ""
+      ACF_PRO_LICENSE: ""
 
 volumes:
   database:

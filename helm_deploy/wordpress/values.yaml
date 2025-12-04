@@ -163,6 +163,7 @@ secrets:
   wpsecureauthkey: ""
   wpsecureauthsalt: ""
   s3uploadsbucket: ""
+  s3uploadsbucketurl: ""
   s3uploadsregion: ""
   s3uploadsbucketurl: ""
   wbconfig: ""
@@ -220,6 +221,8 @@ ingress:
       certName: icrir-cert
     - name: imb.org.uk
       certName: imb-cert
+    - name: independentpublicadvocate.org.uk
+      certName: ipa-cert
     - name: intranet.hmiprisons.justiceinspectorates.gov.uk
       certName: justiceinspectorates-hmiprisons-intranet-cert
     - name: intranet.icrir.independent-inquiry.uk
@@ -252,6 +255,8 @@ ingress:
       certName: nottingham-cert
     - name: omagh.independent-inquiry.uk
       certName: obi-cert
+    - name: pecs-contract-guide.service.justice.gov.uk
+      certName: pecs-cert
     - name: ppo.gov.uk
       certName: ppo-cert
     - name: prisonandprobationjobs.gov.uk
@@ -302,8 +307,12 @@ ingress:
       certName: iapdc-www-cert
     - name: www.iapdeathsincustody.independent.gov.uk
       certName: iapdci-www-cert
+    - name: www.icrir.independent-inquiry.uk
+      certName: icrir-www-cert
     - name: www.imb.org.uk
       certName: imb-www-cert
+    - name: www.independentpublicadvocate.org.uk
+      certName: ipa-www-cert
     - name: www.justiceinspectorates.gov.uk
       certName: justiceinspectorates-www-cert
     - name: www.lawcom.gov.uk
@@ -322,6 +331,8 @@ ingress:
       certName: nottingham-www-cert
     - name: www.omagh.independent-inquiry.uk
       certName: obi-www-cert
+    - name: www.pecs-contract-guide.service.justice.gov.uk
+      certName: pecs-www-cert
     - name: www.ppo.gov.uk
       certName: ppo-www-cert
     - name: www.prisonandprobationjobs.gov.uk
