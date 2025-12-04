@@ -132,12 +132,9 @@ jobs:
           REPOSITORY: ${{ secrets.ecr-repo }}
           IMAGE_TAG: ${{ github.sha }}
 
-      - name: Configure Composer for GitHub
-        run: |
-          composer config http-basic.github.com x-access-token ${{ secrets.GITHUB_TOKEN }}
-
       - name: Run Composer
         run: |
+          composer config http-basic.github.com x-access-token ${{ secrets.GITHUB_TOKEN }}
           composer config http-basic.connect.advancedcustomfields.com ${{ secrets.acf-user }} ${{ secrets.acf-password }}
           composer config http-basic.relevanssi.com ${{ secrets.relevanssi-user }} ${{ secrets.relevanssi-password }}
           composer install --prefer-dist --no-progress

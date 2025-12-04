@@ -65,7 +65,7 @@
         "type": "wordpress-plugin",
         "dist": {
           "type": "zip",
-          "url": "https://www.relevanssi.com/update/get_version.php?version=2.20.3"
+          "url": "https://relevanssi.com/update/get_version.php?version=2.20.3"
         }
       }
     },
