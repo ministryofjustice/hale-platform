@@ -144,11 +144,13 @@ jobs:
         with:
           php-version: 8.4
 
-      - name: Run Composer
+      - name: Run Composer and generate vendor packages
         run: |
-          composer config http-basic.github.com x-access-token ${{ secrets.GITHUB_TOKEN }}
-          composer config http-basic.connect.advancedcustomfields.com ${{ secrets.acf-user }} ${{ secrets.acf-password }}
-          composer config http-basic.relevanssi.com ${{ secrets.relevanssi-user }} ${{ secrets.relevanssi-password }}
+          if ! composer config --global --list | grep -q 'github.com'; then
+            composer config --global http-basic.github.com x-access-token ${{ secrets.GITHUB_TOKEN }}
+          fi
+          composer config --global http-basic.connect.advancedcustomfields.com ${{ secrets.acf-user }} ${{ secrets.acf-password }}
+          composer config --global http-basic.relevanssi.com ${{ secrets.relevanssi-user }} ${{ secrets.relevanssi-password }}
           composer install --prefer-dist --no-progress --no-interaction --optimize-autoloader
 
       - name: Cache NPM Dependencies
