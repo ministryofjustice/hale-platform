@@ -9,7 +9,7 @@ on:
       - "demo"
 jobs:
   deployDev:
-    name: Deploy to Development Environment
+    name: Deploy to Development Env
     if: github.event.ref == 'refs/heads/dev'
     uses: ./.github/workflows/rw-build-image.yaml
     with:
