@@ -13,15 +13,9 @@ on:
         required: true
       ecr-repo:
         required: true
-      sentry-dsn:
-        required: true
       domain:
         required: true
       env-type:
-        required: true
-      cp-user:
-        required: true
-      cp-password:
         required: true
       acf-user:
         required: true
@@ -234,3 +228,4 @@ jobs:
           --set domain=${{ secrets.domain }} \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_nginx-${{ github.sha }} \
           --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_wordpress-${{ github.sha }}
+
