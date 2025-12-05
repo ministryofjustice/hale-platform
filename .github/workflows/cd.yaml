@@ -8,78 +8,92 @@ on:
       - "dev"
       - "demo"
 
+# ============================================================
+# Define common secrets 
+# ============================================================
+x-common-secrets: &common-secrets
+  sentry-dsn: ${{ vars.PHP_DSN }}
+  env-type: ${{ vars.ENV_TYPE }}
+  acf-user: ${{ secrets.ACF_USER }}
+  acf-password: ${{ secrets.ACF_PASSWORD }}
+  acf-token: ${{ secrets.ACF_PRO_LICENSE }}
+  relevanssi-user: ${{ secrets.RELEVANSSI_USER }}
+  relevanssi-password: ${{ secrets.RELEVANSSI_PASSWORD }}
+  kube-cluster: ${{ secrets.KUBE_CLUSTER }}
+  kube-cert: ${{ secrets.KUBE_CERT }}
+  kube-namespace: ${{ secrets.KUBE_NAMESPACE }}
+  kube-token: ${{ secrets.KUBE_TOKEN }}
+  wp-db-user: ${{ secrets.WORDPRESS_DB_USER }}
+  wp-db-host: ${{ secrets.WORDPRESS_DB_HOST }}
+  wp-db-name: ${{ secrets.WORDPRESS_DB_NAME }}
+  wp-db-password: ${{ secrets.WORDPRESS_DB_PASSWORD }}
+  wp-admin-email: ${{ secrets.WORDPRESS_ADMIN_EMAIL }}
+  wp-admin-user: ${{ secrets.WORDPRESS_ADMIN_USER }}
+  wp-admin-password: ${{ secrets.WORDPRESS_ADMIN_PASSWORD }}
+  wp-auth-key-file: ${{ secrets.WORDPRESS_AUTH_KEY_FILE }}
+  wp-auth-salt-file: ${{ secrets.WORDPRESS_AUTH_SALT_FILE }}
+  wp-loggedin-key-file: ${{ secrets.WORDPRESS_LOGGED_IN_KEY_FILE }}
+  wp-loggedin-salt-file: ${{ secrets.WORDPRESS_LOGGED_IN_SALT_FILE }}
+  wp-nonce-key-file: ${{ secrets.WORDPRESS_NONCE_KEY_FILE }}
+  wp-nonce-salt-file: ${{ secrets.WORDPRESS_NONCE_SALT_FILE }}
+  wp-secure-auth-key-file: ${{ secrets.WORDPRESS_SECURE_AUTH_KEY_FILE }}
+  wp-secure-auth-salt-file: ${{ secrets.WORDPRESS_SECURE_AUTH_SALT_FILE }}
+  s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
+  s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}
+  s3-uploads-bucket-url: ${{ secrets.S3_UPLOADS_BUCKET_URL }}
+  alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
+  wb-config: ${{ secrets.WB_CONFIG }}
+
+# ============================================================
+# Jobs per environment
+# ============================================================
 jobs:
-  deploy:
-    name: Deploy to Environment
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        env:
-          - name: Development
-            branch: dev
-            domain: dev.websitebuilder.service.justice.gov.uk
-            ecr-role: DEV_ECR_ROLE_TO_ASSUME
-            ecr-region: DEV_ECR_REGION
-            ecr-repo: DEV_ECR_REPO
-          - name: Demonstration
-            branch: demo
-            domain: demo.websitebuilder.service.justice.gov.uk
-            ecr-role: DEMO_ECR_ROLE_TO_ASSUME
-            ecr-region: DEMO_ECR_REGION
-            ecr-repo: DEMO_ECR_REPO
-          - name: Staging
-            branch: main
-            domain: staging.websitebuilder.service.justice.gov.uk
-            ecr-role: STAGING_ECR_ROLE_TO_ASSUME
-            ecr-region: STAGING_ECR_REGION
-            ecr-repo: STAGING_ECR_REPO
-          - name: Production
-            branch: main
-            domain: websitebuilder.service.justice.gov.uk
-            ecr-role: PROD_ECR_ROLE_TO_ASSUME
-            ecr-region: PROD_ECR_REGION
-            ecr-repo: PROD_ECR_REPO
-
-    if: github.ref == 'refs/heads/' + matrix.env.branch
-    environment: ${{ matrix.env.name }}
-
+  deployDev:
+    if: github.ref == 'refs/heads/dev'
+    name: Deploy to Development Environment
     uses: ./.github/workflows/rw-build-image.yaml
     with:
-      environment: ${{ matrix.env.name }}
-      ecr-role: ${{ secrets[matrix.env.ecr-role] }}
-      ecr-region: ${{ secrets[matrix.env.ecr-region] }}
-      ecr-repo: ${{ secrets[matrix.env.ecr-repo] }}
-      domain: ${{ matrix.env.domain }}
-      sentry-dsn: ${{ vars.PHP_DSN }}
-      env-type: ${{ vars.ENV_TYPE }}
-      acf-user: ${{ secrets.ACF_USER }}
-      acf-password: ${{ secrets.ACF_PASSWORD }}
-      acf-token: ${{ secrets.ACF_PRO_LICENSE }}
-      relevanssi-user: ${{ secrets.RELEVANSSI_USER }}
-      relevanssi-password: ${{ secrets.RELEVANSSI_PASSWORD }}
-      kube-cluster: ${{ secrets.KUBE_CLUSTER }}
-      kube-cert: ${{ secrets.KUBE_CERT }}
-      kube-namespace: ${{ secrets.KUBE_NAMESPACE }}
-      kube-token: ${{ secrets.KUBE_TOKEN }}
-      wp-db-user: ${{ secrets.WORDPRESS_DB_USER }}
-      wp-db-host: ${{ secrets.WORDPRESS_DB_HOST }}
-      wp-db-name: ${{ secrets.WORDPRESS_DB_NAME }}
-      wp-db-password: ${{ secrets.WORDPRESS_DB_PASSWORD }}
-      wp-admin-email: ${{ secrets.WORDPRESS_ADMIN_EMAIL }}
-      wp-admin-user: ${{ secrets.WORDPRESS_ADMIN_USER }}
-      wp-admin-password: ${{ secrets.WORDPRESS_ADMIN_PASSWORD }}
-      wp-auth-key-file: ${{ secrets.WORDPRESS_AUTH_KEY_FILE }}
-      wp-auth-salt-file: ${{ secrets.WORDPRESS_AUTH_SALT_FILE }}
-      wp-loggedin-key-file: ${{ secrets.WORDPRESS_LOGGED_IN_KEY_FILE }}
-      wp-loggedin-salt-file: ${{ secrets.WORDPRESS_LOGGED_IN_SALT_FILE }}
-      wp-nonce-key-file: ${{ secrets.WORDPRESS_NONCE_KEY_FILE }}
-      wp-nonce-salt-file: ${{ secrets.WORDPRESS_NONCE_SALT_FILE }}
-      wp-secure-auth-key-file: ${{ secrets.WORDPRESS_SECURE_AUTH_KEY_FILE }}
-      wp-secure-auth-salt-file: ${{ secrets.WORDPRESS_SECURE_AUTH_SALT_FILE }}
-      s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
-      s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}
-      s3-uploads-bucket-url: ${{ secrets.S3_UPLOADS_BUCKET_URL }}
-      alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
-      wb-config: ${{ secrets.WB_CONFIG }}
+      environment: Development
+      domain: "dev.websitebuilder.service.justice.gov.uk"
+      ecr-role: ${{ secrets.DEV_ECR_ROLE_TO_ASSUME }}
+      ecr-region: ${{ secrets.DEV_ECR_REGION }}
+      ecr-repo: ${{ secrets.DEV_ECR_REPO }}
+      <<: *common-secrets
+
+  deployDemo:
+    if: github.ref == 'refs/heads/demo'
+    name: Deploy to Demo Environment
+    uses: ./.github/workflows/rw-build-image.yaml
+    with:
+      environment: Demonstration
+      domain: "demo.websitebuilder.service.justice.gov.uk"
+      ecr-role: ${{ secrets.DEMO_ECR_ROLE_TO_ASSUME }}
+      ecr-region: ${{ secrets.DEMO_ECR_REGION }}
+      ecr-repo: ${{ secrets.DEMO_ECR_REPO }}
+      <<: *common-secrets
+
+  deployStaging:
+    if: github.ref == 'refs/heads/main'
+    name: Deploy to Staging Environment
+    uses: ./.github/workflows/rw-build-image.yaml
+    with:
+      environment: Staging
+      domain: "staging.websitebuilder.service.justice.gov.uk"
+      ecr-role: ${{ secrets.STAGING_ECR_ROLE_TO_ASSUME }}
+      ecr-region: ${{ secrets.STAGING_ECR_REGION }}
+      ecr-repo: ${{ secrets.STAGING_ECR_REPO }}
+      <<: *common-secrets
+
+  deployProd:
+    if: github.ref == 'refs/heads/main'
+    needs: deployStaging
+    name: Deploy to Production Environment
+    uses: ./.github/workflows/rw-build-image.yaml
+    with:
+      environment: Production
+      domain: "websitebuilder.service.justice.gov.uk"
+      ecr-role: ${{ secrets.PROD_ECR_ROLE_TO_ASSUME }}
+      ecr-region: ${{ secrets.PROD_ECR_REGION }}
+      ecr-repo: ${{ secrets.PROD_ECR_REPO }}
+      <<: *common-secrets
 
