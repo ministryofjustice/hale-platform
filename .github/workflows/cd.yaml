@@ -9,91 +9,178 @@ on:
       - "demo"
 
 # ============================================================
-# Define common secrets 
-# ============================================================
-x-common-secrets: &common-secrets
-  sentry-dsn: ${{ vars.PHP_DSN }}
-  env-type: ${{ vars.ENV_TYPE }}
-  acf-user: ${{ secrets.ACF_USER }}
-  acf-password: ${{ secrets.ACF_PASSWORD }}
-  acf-token: ${{ secrets.ACF_PRO_LICENSE }}
-  relevanssi-user: ${{ secrets.RELEVANSSI_USER }}
-  relevanssi-password: ${{ secrets.RELEVANSSI_PASSWORD }}
-  kube-cluster: ${{ secrets.KUBE_CLUSTER }}
-  kube-cert: ${{ secrets.KUBE_CERT }}
-  kube-namespace: ${{ secrets.KUBE_NAMESPACE }}
-  kube-token: ${{ secrets.KUBE_TOKEN }}
-  wp-db-user: ${{ secrets.WORDPRESS_DB_USER }}
-  wp-db-host: ${{ secrets.WORDPRESS_DB_HOST }}
-  wp-db-name: ${{ secrets.WORDPRESS_DB_NAME }}
-  wp-db-password: ${{ secrets.WORDPRESS_DB_PASSWORD }}
-  wp-admin-email: ${{ secrets.WORDPRESS_ADMIN_EMAIL }}
-  wp-admin-user: ${{ secrets.WORDPRESS_ADMIN_USER }}
-  wp-admin-password: ${{ secrets.WORDPRESS_ADMIN_PASSWORD }}
-  wp-auth-key-file: ${{ secrets.WORDPRESS_AUTH_KEY_FILE }}
-  wp-auth-salt-file: ${{ secrets.WORDPRESS_AUTH_SALT_FILE }}
-  wp-loggedin-key-file: ${{ secrets.WORDPRESS_LOGGED_IN_KEY_FILE }}
-  wp-loggedin-salt-file: ${{ secrets.WORDPRESS_LOGGED_IN_SALT_FILE }}
-  wp-nonce-key-file: ${{ secrets.WORDPRESS_NONCE_KEY_FILE }}
-  wp-nonce-salt-file: ${{ secrets.WORDPRESS_NONCE_SALT_FILE }}
-  wp-secure-auth-key-file: ${{ secrets.WORDPRESS_SECURE_AUTH_KEY_FILE }}
-  wp-secure-auth-salt-file: ${{ secrets.WORDPRESS_SECURE_AUTH_SALT_FILE }}
-  s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
-  s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}
-  s3-uploads-bucket-url: ${{ secrets.S3_UPLOADS_BUCKET_URL }}
-  alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
-  wb-config: ${{ secrets.WB_CONFIG }}
-
-# ============================================================
-# Jobs per environment
+# Deployment jobs
 # ============================================================
 jobs:
   deployDev:
-    if: github.ref == 'refs/heads/dev'
-    name: Deploy to Development Environment
+    name: Dev deployment
+    if: github.event.ref == 'refs/heads/dev'
     uses: ./.github/workflows/rw-build-image.yaml
     with:
       environment: Development
-      domain: "dev.websitebuilder.service.justice.gov.uk"
+    secrets:
       ecr-role: ${{ secrets.DEV_ECR_ROLE_TO_ASSUME }}
       ecr-region: ${{ secrets.DEV_ECR_REGION }}
       ecr-repo: ${{ secrets.DEV_ECR_REPO }}
-      <<: *common-secrets
+      sentry-dsn: ${{ vars.PHP_DSN }}
+      domain: "dev.websitebuilder.service.justice.gov.uk"
+      env-type: ${{ vars.ENV_TYPE }}
+      acf-user: ${{ secrets.ACF_USER }}
+      acf-password: ${{ secrets.ACF_PASSWORD }}
+      acf-token: ${{ secrets.ACF_PRO_LICENSE }}
+      relevanssi-user: ${{ secrets.RELEVANSSI_USER }}
+      relevanssi-password: ${{ secrets.RELEVANSSI_PASSWORD }}
+      kube-cluster: ${{ secrets.KUBE_CLUSTER }}
+      kube-cert: ${{ secrets.KUBE_CERT }}
+      kube-namespace: ${{ secrets.KUBE_NAMESPACE }}
+      kube-token: ${{ secrets.KUBE_TOKEN }}
+      wp-db-user: ${{ secrets.WORDPRESS_DB_USER }}
+      wp-db-host: ${{ secrets.WORDPRESS_DB_HOST }}
+      wp-db-name: ${{ secrets.WORDPRESS_DB_NAME }}
+      wp-db-password: ${{ secrets.WORDPRESS_DB_PASSWORD }}
+      wp-admin-email: ${{ secrets.WORDPRESS_ADMIN_EMAIL }}
+      wp-admin-user: ${{ secrets.WORDPRESS_ADMIN_USER }}
+      wp-admin-password: ${{ secrets.WORDPRESS_ADMIN_PASSWORD }}
+      wp-auth-key-file: ${{ secrets.WORDPRESS_AUTH_KEY_FILE }}
+      wp-auth-salt-file: ${{ secrets.WORDPRESS_AUTH_SALT_FILE }}
+      wp-loggedin-key-file: ${{ secrets.WORDPRESS_LOGGED_IN_KEY_FILE }}
+      wp-loggedin-salt-file: ${{ secrets.WORDPRESS_LOGGED_IN_SALT_FILE }}
+      wp-nonce-key-file: ${{ secrets.WORDPRESS_NONCE_KEY_FILE }}
+      wp-nonce-salt-file: ${{ secrets.WORDPRESS_NONCE_SALT_FILE }}
+      wp-secure-auth-key-file: ${{ secrets.WORDPRESS_SECURE_AUTH_KEY_FILE }}
+      wp-secure-auth-salt-file: ${{ secrets.WORDPRESS_SECURE_AUTH_SALT_FILE }}
+      s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
+      s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}
+      s3-uploads-bucket-url: ${{ secrets.S3_UPLOADS_BUCKET_URL }}
+      alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
+      wb-config: ${{ secrets.WB_CONFIG}}
 
   deployDemo:
-    if: github.ref == 'refs/heads/demo'
-    name: Deploy to Demo Environment
+    name: Demo deployment
+    if: github.event.ref == 'refs/heads/demo'
     uses: ./.github/workflows/rw-build-image.yaml
     with:
       environment: Demonstration
-      domain: "demo.websitebuilder.service.justice.gov.uk"
+    secrets:
       ecr-role: ${{ secrets.DEMO_ECR_ROLE_TO_ASSUME }}
       ecr-region: ${{ secrets.DEMO_ECR_REGION }}
       ecr-repo: ${{ secrets.DEMO_ECR_REPO }}
-      <<: *common-secrets
+      sentry-dsn: ${{ vars.PHP_DSN }}
+      domain: "demo.websitebuilder.service.justice.gov.uk"
+      env-type: ${{ vars.ENV_TYPE }}
+      acf-user: ${{ secrets.ACF_USER }}
+      acf-password: ${{ secrets.ACF_PASSWORD }}
+      acf-token: ${{ secrets.ACF_PRO_LICENSE }}
+      relevanssi-user: ${{ secrets.RELEVANSSI_USER }}
+      relevanssi-password: ${{ secrets.RELEVANSSI_PASSWORD }}
+      kube-cluster: ${{ secrets.KUBE_CLUSTER }}
+      kube-cert: ${{ secrets.KUBE_CERT }}
+      kube-namespace: ${{ secrets.KUBE_NAMESPACE }}
+      kube-token: ${{ secrets.KUBE_TOKEN }}
+      wp-db-user: ${{ secrets.WORDPRESS_DB_USER }}
+      wp-db-host: ${{ secrets.WORDPRESS_DB_HOST }}
+      wp-db-name: ${{ secrets.WORDPRESS_DB_NAME }}
+      wp-db-password: ${{ secrets.WORDPRESS_DB_PASSWORD }}
+      wp-admin-email: ${{ secrets.WORDPRESS_ADMIN_EMAIL }}
+      wp-admin-user: ${{ secrets.WORDPRESS_ADMIN_USER }}
+      wp-admin-password: ${{ secrets.WORDPRESS_ADMIN_PASSWORD }}
+      wp-auth-key-file: ${{ secrets.WORDPRESS_AUTH_KEY_FILE }}
+      wp-auth-salt-file: ${{ secrets.WORDPRESS_AUTH_SALT_FILE }}
+      wp-loggedin-key-file: ${{ secrets.WORDPRESS_LOGGED_IN_KEY_FILE }}
+      wp-loggedin-salt-file: ${{ secrets.WORDPRESS_LOGGED_IN_SALT_FILE }}
+      wp-nonce-key-file: ${{ secrets.WORDPRESS_NONCE_KEY_FILE }}
+      wp-nonce-salt-file: ${{ secrets.WORDPRESS_NONCE_SALT_FILE }}
+      wp-secure-auth-key-file: ${{ secrets.WORDPRESS_SECURE_AUTH_KEY_FILE }}
+      wp-secure-auth-salt-file: ${{ secrets.WORDPRESS_SECURE_AUTH_SALT_FILE }}
+      s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
+      s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}
+      s3-uploads-bucket-url: ${{ secrets.S3_UPLOADS_BUCKET_URL }}
+      alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
+      wb-config: ${{ secrets.WB_CONFIG}}
 
   deployStaging:
-    if: github.ref == 'refs/heads/main'
-    name: Deploy to Staging Environment
+    name: Staging deployment
+    if: github.event.ref == 'refs/heads/main'
     uses: ./.github/workflows/rw-build-image.yaml
     with:
       environment: Staging
-      domain: "staging.websitebuilder.service.justice.gov.uk"
+    secrets:
       ecr-role: ${{ secrets.STAGING_ECR_ROLE_TO_ASSUME }}
       ecr-region: ${{ secrets.STAGING_ECR_REGION }}
       ecr-repo: ${{ secrets.STAGING_ECR_REPO }}
-      <<: *common-secrets
+      domain: "staging.websitebuilder.service.justice.gov.uk"
+      sentry-dsn: ${{ vars.PHP_DSN }}
+      env-type: ${{ vars.ENV_TYPE }}
+      acf-user: ${{ secrets.ACF_USER }}
+      acf-password: ${{ secrets.ACF_PASSWORD }}
+      acf-token: ${{ secrets.ACF_PRO_LICENSE }}
+      relevanssi-user: ${{ secrets.RELEVANSSI_USER }}
+      relevanssi-password: ${{ secrets.RELEVANSSI_PASSWORD }}
+      kube-cluster: ${{ secrets.KUBE_CLUSTER }}
+      kube-cert: ${{ secrets.KUBE_CERT }}
+      kube-namespace: ${{ secrets.KUBE_NAMESPACE }}
+      kube-token: ${{ secrets.KUBE_TOKEN }}
+      wp-db-user: ${{ secrets.WORDPRESS_DB_USER }}
+      wp-db-host: ${{ secrets.WORDPRESS_DB_HOST }}
+      wp-db-name: ${{ secrets.WORDPRESS_DB_NAME }}
+      wp-db-password: ${{ secrets.WORDPRESS_DB_PASSWORD }}
+      wp-admin-email: ${{ secrets.WORDPRESS_ADMIN_EMAIL }}
+      wp-admin-user: ${{ secrets.WORDPRESS_ADMIN_USER }}
+      wp-admin-password: ${{ secrets.WORDPRESS_ADMIN_PASSWORD }}
+      wp-auth-key-file: ${{ secrets.WORDPRESS_AUTH_KEY_FILE }}
+      wp-auth-salt-file: ${{ secrets.WORDPRESS_AUTH_SALT_FILE }}
+      wp-loggedin-key-file: ${{ secrets.WORDPRESS_LOGGED_IN_KEY_FILE }}
+      wp-loggedin-salt-file: ${{ secrets.WORDPRESS_LOGGED_IN_SALT_FILE }}
+      wp-nonce-key-file: ${{ secrets.WORDPRESS_NONCE_KEY_FILE }}
+      wp-nonce-salt-file: ${{ secrets.WORDPRESS_NONCE_SALT_FILE }}
+      wp-secure-auth-key-file: ${{ secrets.WORDPRESS_SECURE_AUTH_KEY_FILE }}
+      wp-secure-auth-salt-file: ${{ secrets.WORDPRESS_SECURE_AUTH_SALT_FILE }}
+      s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
+      s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}
+      s3-uploads-bucket-url: ${{ secrets.S3_UPLOADS_BUCKET_URL }}
+      alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
+      wb-config: ${{ secrets.WB_CONFIG}}
 
   deployProd:
-    if: github.ref == 'refs/heads/main'
+    name: Prod deployment
     needs: deployStaging
-    name: Deploy to Production Environment
+    if: github.event.ref == 'refs/heads/main'
     uses: ./.github/workflows/rw-build-image.yaml
     with:
       environment: Production
-      domain: "websitebuilder.service.justice.gov.uk"
+    secrets:
       ecr-role: ${{ secrets.PROD_ECR_ROLE_TO_ASSUME }}
       ecr-region: ${{ secrets.PROD_ECR_REGION }}
       ecr-repo: ${{ secrets.PROD_ECR_REPO }}
-      <<: *common-secrets
-
+      sentry-dsn: ${{ vars.PHP_DSN }}
+      domain: "websitebuilder.service.justice.gov.uk"
+      env-type: ${{ vars.ENV_TYPE }}
+      acf-user: ${{ secrets.ACF_USER }}
+      acf-password: ${{ secrets.ACF_PASSWORD }}
+      acf-token: ${{ secrets.ACF_PRO_LICENSE }}
+      kube-cluster: ${{ secrets.KUBE_CLUSTER }}
+      kube-cert: ${{ secrets.KUBE_CERT }}
+      kube-namespace: ${{ secrets.KUBE_NAMESPACE }}
+      kube-token: ${{ secrets.KUBE_TOKEN }}
+      relevanssi-user: ${{ secrets.RELEVANSSI_USER }}
+      relevanssi-password: ${{ secrets.RELEVANSSI_PASSWORD }}
+      wp-db-user: ${{ secrets.WORDPRESS_DB_USER }}
+      wp-db-host: ${{ secrets.WORDPRESS_DB_HOST }}
+      wp-db-name: ${{ secrets.WORDPRESS_DB_NAME }}
+      wp-db-password: ${{ secrets.WORDPRESS_DB_PASSWORD }}
+      wp-admin-email: ${{ secrets.WORDPRESS_ADMIN_EMAIL }}
+      wp-admin-user: ${{ secrets.WORDPRESS_ADMIN_USER }}
+      wp-admin-password: ${{ secrets.WORDPRESS_ADMIN_PASSWORD }}
+      wp-auth-key-file: ${{ secrets.WORDPRESS_AUTH_KEY_FILE }}
+      wp-auth-salt-file: ${{ secrets.WORDPRESS_AUTH_SALT_FILE }}
+      wp-loggedin-key-file: ${{ secrets.WORDPRESS_LOGGED_IN_KEY_FILE }}
+      wp-loggedin-salt-file: ${{ secrets.WORDPRESS_LOGGED_IN_SALT_FILE }}
+      wp-nonce-key-file: ${{ secrets.WORDPRESS_NONCE_KEY_FILE }}
+      wp-nonce-salt-file: ${{ secrets.WORDPRESS_NONCE_SALT_FILE }}
+      wp-secure-auth-key-file: ${{ secrets.WORDPRESS_SECURE_AUTH_KEY_FILE }}
+      wp-secure-auth-salt-file: ${{ secrets.WORDPRESS_SECURE_AUTH_SALT_FILE }}
+      s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
+      s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}
+      s3-uploads-bucket-url: ${{ secrets.S3_UPLOADS_BUCKET_URL }}
+      alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
+      wb-config: ${{ secrets.WB_CONFIG}}
