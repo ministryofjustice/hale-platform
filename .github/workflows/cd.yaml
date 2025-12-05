@@ -64,8 +64,6 @@ jobs:
       sentry-dsn: ${{ vars.PHP_DSN }}
       domain: "demo.websitebuilder.service.justice.gov.uk"
       env-type: ${{ vars.ENV_TYPE }}
-      cp-user: ${{ secrets.PACKAGIST_USER }}
-      cp-password: ${{ secrets.PACKAGIST_PASSWORD }}
       acf-user: ${{ secrets.ACF_USER }}
       acf-password: ${{ secrets.ACF_PASSWORD }}
       acf-token: ${{ secrets.ACF_PRO_LICENSE }}
