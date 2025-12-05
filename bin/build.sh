@@ -43,7 +43,6 @@ while true; do
             echo -e '\n######################'
             echo -e '# Run Composer'
             echo -e '######################\n'
-            echo -e "Make sure you are authenticated to Private Packagist.\n"
             rm composer.lock
             composer install --no-cache
 
