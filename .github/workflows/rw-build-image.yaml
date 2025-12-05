@@ -13,15 +13,11 @@ on:
         required: true
       ecr-repo:
         required: true
-      sentry-dsn:
+      sentry-dsn: 
         required: true
       domain:
         required: true
       env-type:
-        required: true
-      cp-user:
-        required: true
-      cp-password:
         required: true
       acf-user:
         required: true
@@ -132,11 +128,30 @@ jobs:
           REPOSITORY: ${{ secrets.ecr-repo }}
           IMAGE_TAG: ${{ github.sha }}
 
-      - name: Run Composer
+      - name: Prepare Composer cache
+        run: mkdir -p ~/.composer/cache
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Set PHP min version
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+
+      - name: Run Composer and generate vendor packages
         run: |
-          composer config http-basic.connect.advancedcustomfields.com ${{ secrets.acf-user }} ${{ secrets.acf-password }}
-          composer config http-basic.relevanssi.com ${{ secrets.relevanssi-user }} ${{ secrets.relevanssi-password }}
-          composer install --prefer-dist --no-progress
+          if ! composer config --global --list | grep -q 'github.com'; then
+            composer config --global http-basic.github.com x-access-token ${{ secrets.GITHUB_TOKEN }}
+          fi
+          composer config --global http-basic.connect.advancedcustomfields.com ${{ secrets.acf-user }} ${{ secrets.acf-password }}
+          composer config --global http-basic.relevanssi.com ${{ secrets.relevanssi-user }} ${{ secrets.relevanssi-password }}
+          composer install --prefer-dist --no-progress --no-interaction --optimize-autoloader
 
       - name: Cache NPM Dependencies
         uses: actions/cache@v4
@@ -151,12 +166,20 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Run NPM
+      - name: Run NPM (parallel builds)
         run: |
           for theme in hale hale-dash hale-showcase ppo; do
-            npm install --prefix ./wordpress/wp-content/themes/$theme
-            npm run production --if-present --prefix ./wordpress/wp-content/themes/$theme
+            (
+              cd ./wordpress/wp-content/themes/$theme
+              if [ -f package-lock.json ]; then
+                npm ci --prefer-offline --no-audit
+              else
+                npm install --prefer-offline --no-audit
+              fi
+              npm run production --if-present
+            ) &
           done
+          wait
 
       - name: Cache Docker layers for WordPress
         uses: actions/cache@v4

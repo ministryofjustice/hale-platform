@@ -65,7 +65,7 @@
         "type": "wordpress-plugin",
         "dist": {
           "type": "zip",
-          "url": "https://www.relevanssi.com/update/get_version.php?version=2.20.3"
+          "url": "https://relevanssi.com/update/get_version.php?version=2.20.3"
         }
       }
     },
@@ -108,6 +108,7 @@
     "wpackagist-plugin/ewww-image-optimizer": "^8.0",
     "wpackagist-plugin/limit-login-attempts-reloaded": "^2.26.0",
     "wpackagist-plugin/option-tree": "^2.0",
+    "wpackagist-plugin/microsoft-clarity": "^0.10.8",
     "wpackagist-plugin/query-monitor": "^3.0",
     "wpackagist-plugin/redirection": "^5.0",
     "wpackagist-plugin/remove-category-url": "^1.0",
@@ -117,6 +118,7 @@
     "wpackagist-plugin/wordpress-seo": "^25.0",
     "wpackagist-plugin/wp-force-login": "^5.0",
     "wpackagist-plugin/wp-sentry-integration": "^8.0",
+    "wpackagist-plugin/visual-web-optimizer": "*",
     "wpackagist-plugin/wps-hide-login": "^1.0"
   },
   "require-dev": {
