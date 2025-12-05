@@ -126,12 +126,20 @@ jobs:
           REPOSITORY: ${{ secrets.ecr-repo }}
           IMAGE_TAG: ${{ github.sha }}
 
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
       - name: Run Composer
         run: |
           composer config http-basic.github.com x-access-token ${{ secrets.GITHUB_TOKEN }}
           composer config http-basic.connect.advancedcustomfields.com ${{ secrets.acf-user }} ${{ secrets.acf-password }}
           composer config http-basic.relevanssi.com ${{ secrets.relevanssi-user }} ${{ secrets.relevanssi-password }}
-          composer install --prefer-dist --no-progress
+          composer install --prefer-dist --no-progress --no-interaction --optimize-autoloader
 
       - name: Cache NPM Dependencies
         uses: actions/cache@v4
