@@ -21,8 +21,6 @@ jobs:
       sentry-dsn: ${{ vars.PHP_DSN }}
       domain: "dev.websitebuilder.service.justice.gov.uk"
       env-type: ${{ vars.ENV_TYPE }}
-      cp-user: ${{ secrets.PACKAGIST_USER }}
-      cp-password: ${{ secrets.PACKAGIST_PASSWORD }}
       acf-user: ${{ secrets.ACF_USER }}
       acf-password: ${{ secrets.ACF_PASSWORD }}
       acf-token: ${{ secrets.ACF_PRO_LICENSE }}
@@ -111,8 +109,6 @@ jobs:
       domain: "staging.websitebuilder.service.justice.gov.uk"
       sentry-dsn: ${{ vars.PHP_DSN }}
       env-type: ${{ vars.ENV_TYPE }}
-      cp-user: ${{ secrets.PACKAGIST_USER }}
-      cp-password: ${{ secrets.PACKAGIST_PASSWORD }}
       acf-user: ${{ secrets.ACF_USER }}
       acf-password: ${{ secrets.ACF_PASSWORD }}
       acf-token: ${{ secrets.ACF_PRO_LICENSE }}
@@ -157,8 +153,6 @@ jobs:
       sentry-dsn: ${{ vars.PHP_DSN }}
       domain: "websitebuilder.service.justice.gov.uk"
       env-type: ${{ vars.ENV_TYPE }}
-      cp-user: ${{ secrets.PACKAGIST_USER }}
-      cp-password: ${{ secrets.PACKAGIST_PASSWORD }}
       acf-user: ${{ secrets.ACF_USER }}
       acf-password: ${{ secrets.ACF_PASSWORD }}
       acf-token: ${{ secrets.ACF_PRO_LICENSE }}

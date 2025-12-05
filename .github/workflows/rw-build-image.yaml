@@ -13,6 +13,8 @@ on:
         required: true
       ecr-repo:
         required: true
+      sentry-dsn: 
+        required: true
       domain:
         required: true
       env-type:
