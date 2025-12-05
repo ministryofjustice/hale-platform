@@ -107,6 +107,7 @@ jobs:
 
       # Restore all caches in parallel
       - name: Restore Docker cache for Nginx
+        id: restore-nginx-cache
         uses: actions/cache/restore@v4
         with:
           path: /tmp/.buildx-cache-nginx
@@ -115,6 +116,7 @@ jobs:
             ${{ runner.os }}-buildx-nginx-
 
       - name: Restore Docker cache for WordPress
+        id: restore-wordpress-cache
         uses: actions/cache/restore@v4
         with:
           path: /tmp/.buildx-cache-wordpress
@@ -123,6 +125,7 @@ jobs:
             ${{ runner.os }}-buildx-wordpress-
 
       - name: Restore Composer cache
+        id: restore-composer-cache
         uses: actions/cache/restore@v4
         with:
           path: ~/.composer/cache
@@ -131,6 +134,7 @@ jobs:
             ${{ runner.os }}-composer-
 
       - name: Restore NPM cache
+        id: restore-npm-cache
         uses: actions/cache/restore@v4
         with:
           path: |
@@ -143,19 +147,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      # Build Nginx and WordPress in parallel
-      - name: Build Nginx Image (background)
-        run: |
-          docker buildx create --use --name nginx-builder
-          docker buildx build \
-            --cache-from=type=local,src=/tmp/.buildx-cache-nginx \
-            --cache-to=type=local,dest=/tmp/.buildx-cache-nginx-new \
-            --pull \
-            --load \
-            --tag nginx-temp:${{ github.sha }} \
-            --file nginx.dockerfile . &
-          echo $! > /tmp/nginx-build.pid
-
       - name: Set PHP version
         uses: shivammathur/setup-php@v2
         with:
@@ -164,10 +155,21 @@ jobs:
           tools: composer:v2
 
       - name: Run Composer
+        env:
+          COMPOSER_AUTH: |
+            {
+              "http-basic": {
+                "connect.advancedcustomfields.com": {
+                  "username": "${{ secrets.acf-user }}",
+                  "password": "${{ secrets.acf-password }}"
+                },
+                "relevanssi.com": {
+                  "username": "${{ secrets.relevanssi-user }}",
+                  "password": "${{ secrets.relevanssi-password }}"
+                }
+              }
+            }
         run: |
-          composer config http-basic.github.com x-access-token ${{ secrets.GITHUB_TOKEN }}
-          composer config http-basic.connect.advancedcustomfields.com ${{ secrets.acf-user }} ${{ secrets.acf-password }}
-          composer config http-basic.relevanssi.com ${{ secrets.relevanssi-user }} ${{ secrets.relevanssi-password }}
           composer install --prefer-dist --no-progress --no-interaction --optimize-autoloader --no-dev
 
       - name: Run NPM (parallel builds)
@@ -175,19 +177,26 @@ jobs:
           for theme in hale hale-dash hale-showcase ppo; do
             (
               cd ./wordpress/wp-content/themes/$theme
-              npm ci --prefer-offline --no-audit
+              if [ -f package-lock.json ]; then
+                npm ci --prefer-offline --no-audit
+              else
+                npm install --prefer-offline --no-audit
+              fi
               npm run production --if-present
             ) &
           done
           wait
 
-      # Wait for Nginx build to complete and push
-      - name: Wait for Nginx build and push
+      - name: Build and Push Nginx Image
         run: |
-          wait $(cat /tmp/nginx-build.pid)
-          docker buildx create --use --name nginx-pusher
-          docker tag nginx-temp:${{ github.sha }} $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG
-          docker push $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG
+          docker buildx create --use --name nginx-builder
+          docker buildx build \
+            --cache-from=type=local,src=/tmp/.buildx-cache-nginx \
+            --cache-to=type=local,dest=/tmp/.buildx-cache-nginx-new,mode=max \
+            --pull \
+            --push \
+            --tag $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG \
+            --file nginx.dockerfile .
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: ${{ secrets.ecr-repo }}
@@ -198,7 +207,7 @@ jobs:
           docker buildx create --use --name wordpress-builder
           docker buildx build \
             --cache-from=type=local,src=/tmp/.buildx-cache-wordpress \
-            --cache-to=type=local,dest=/tmp/.buildx-cache-wordpress-new \
+            --cache-to=type=local,dest=/tmp/.buildx-cache-wordpress-new,mode=max \
             --pull \
             --push \
             --tag $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG \
@@ -208,31 +217,44 @@ jobs:
           REPOSITORY: ${{ secrets.ecr-repo }}
           IMAGE_TAG: ${{ github.sha }}
 
-      # Save all caches
+      # Move new caches to replace old ones to avoid unbounded cache growth
+      - name: Rotate Docker caches
+        if: always()
+        run: |
+          rm -rf /tmp/.buildx-cache-nginx
+          rm -rf /tmp/.buildx-cache-wordpress
+          if [ -d /tmp/.buildx-cache-nginx-new ]; then
+            mv /tmp/.buildx-cache-nginx-new /tmp/.buildx-cache-nginx
+          fi
+          if [ -d /tmp/.buildx-cache-wordpress-new ]; then
+            mv /tmp/.buildx-cache-wordpress-new /tmp/.buildx-cache-wordpress
+          fi
+
+      # Save all caches (only if this exact key doesn't exist yet)
       - name: Save Nginx Docker cache
         uses: actions/cache/save@v4
-        if: always()
+        if: always() && steps.restore-nginx-cache.outputs.cache-hit != 'true'
         with:
-          path: /tmp/.buildx-cache-nginx-new
+          path: /tmp/.buildx-cache-nginx
           key: ${{ runner.os }}-buildx-nginx-${{ github.sha }}
 
       - name: Save WordPress Docker cache
         uses: actions/cache/save@v4
-        if: always()
+        if: always() && steps.restore-wordpress-cache.outputs.cache-hit != 'true'
         with:
-          path: /tmp/.buildx-cache-wordpress-new
+          path: /tmp/.buildx-cache-wordpress
           key: ${{ runner.os }}-buildx-wordpress-${{ github.sha }}
 
       - name: Save Composer cache
         uses: actions/cache/save@v4
-        if: always()
+        if: always() && steps.restore-composer-cache.outputs.cache-hit != 'true'
         with:
           path: ~/.composer/cache
           key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
 
       - name: Save NPM cache
         uses: actions/cache/save@v4
-        if: always()
+        if: always() && steps.restore-npm-cache.outputs.cache-hit != 'true'
         with:
           path: |
             ~/.npm
