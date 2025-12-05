@@ -90,7 +90,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure AWS Credentials
+      - name: Config Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.ecr-role }}
@@ -105,21 +105,33 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Cache Docker layers
+      - name: Cache Docker layers for Nginx
         uses: actions/cache@v4
         with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          path: /tmp/.buildx-cache-nginx
+          key: ${{ runner.os }}-buildx-nginx-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-
+            ${{ runner.os }}-buildx-nginx-
 
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: 8.4
-          coverage: none
+      - name: Build and Push Nginx Image
+        run: |
+          docker buildx create --use
+          docker buildx build \
+            --cache-from=type=local,src=/tmp/.buildx-cache-nginx \
+            --cache-to=type=local,dest=/tmp/.buildx-cache-nginx \
+            --pull \
+            --push \
+            --tag $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG \
+            --file nginx.dockerfile .
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ secrets.ecr-repo }}
+          IMAGE_TAG: ${{ github.sha }}
 
-      - name: Cache Composer dependencies
+      - name: Prepare Composer cache
+        run: mkdir -p ~/.composer/cache
+
+      - name: Cache Composer packages
         uses: actions/cache@v4
         with:
           path: ~/.composer/cache
@@ -127,70 +139,79 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-composer-
 
-      - name: Install Composer dependencies
-        env:
-          COMPOSER_AUTH: '{"http-basic":{"connect.advancedcustomfields.com":{"username":"${{ secrets.acf-user }}","password":"${{ secrets.acf-password }}"},"relevanssi.com":{"username":"${{ secrets.relevanssi-user }}","password":"${{ secrets.relevanssi-password }}"}}}'
-        run: composer install --no-dev --optimize-autoloader --no-progress
+      - name: Set PHP min version
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
 
-      - name: Cache NPM dependencies
+      - name: Run Composer
+        run: |
+          composer config http-basic.github.com x-access-token ${{ secrets.GITHUB_TOKEN }}
+          composer config http-basic.connect.advancedcustomfields.com ${{ secrets.acf-user }} ${{ secrets.acf-password }}
+          composer config http-basic.relevanssi.com ${{ secrets.relevanssi-user }} ${{ secrets.relevanssi-password }}
+          composer install --prefer-dist --no-progress --no-interaction --optimize-autoloader
+
+      - name: Cache NPM Dependencies
         uses: actions/cache@v4
         with:
           path: |
             ~/.npm
-            wordpress/wp-content/themes/*/node_modules
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+            wordpress/wp-content/themes/hale/node_modules
+            wordpress/wp-content/themes/hale-dash/node_modules
+            wordpress/wp-content/themes/hale-showcase/node_modules
+            wordpress/wp-content/themes/ppo/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-
+            ${{ runner.os }}-node-
 
-      - name: Build themes (parallel)
+      - name: Run NPM (parallel builds)
         run: |
           for theme in hale hale-dash hale-showcase ppo; do
             (
-              cd wordpress/wp-content/themes/$theme
-              [ -f package-lock.json ] && npm ci || npm install
+              cd ./wordpress/wp-content/themes/$theme
+              if [ -f package-lock.json ]; then
+                npm ci --prefer-offline --no-audit
+              else
+                npm install --prefer-offline --no-audit
+              fi
               npm run production --if-present
             ) &
           done
           wait
 
-      - name: Build and push Docker images
+      - name: Cache Docker layers for WordPress
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache-wordpress
+          key: ${{ runner.os }}-buildx-wordpress-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-wordpress-
+
+      - name: Build and Push WordPress Image
+        run: |
+          docker buildx create --use
+          docker buildx build \
+            --cache-from=type=local,src=/tmp/.buildx-cache-wordpress \
+            --cache-to=type=local,dest=/tmp/.buildx-cache-wordpress \
+            --pull \
+            --push \
+            --tag $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG \
+            --file wordpress.dockerfile .
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: ${{ secrets.ecr-repo }}
           IMAGE_TAG: ${{ github.sha }}
-        run: |
-          # Build Nginx
-          docker buildx build \
-            --cache-from=type=local,src=/tmp/.buildx-cache \
-            --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max \
-            --push \
-            --tag $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG \
-            --file nginx.dockerfile .
-          
-          # Build WordPress
-          docker buildx build \
-            --cache-from=type=local,src=/tmp/.buildx-cache \
-            --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max \
-            --push \
-            --tag $REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG \
-            --file wordpress.dockerfile .
-          
-          # Rotate cache to prevent unlimited growth
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
   deployImage:
     name: Deploy to Environment
-    needs: buildImage
+    needs: [buildImage]
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          sparse-checkout: helm_deploy
 
-      - name: Configure Kubernetes
+      - name: Authenticate to the cluster
         env:
           KUBE_CLUSTER: ${{ secrets.kube-cluster }}
         run: |
@@ -200,36 +221,36 @@ jobs:
           kubectl config set-context ${KUBE_CLUSTER} --cluster=${KUBE_CLUSTER} --user=deploy-user --namespace=${{ secrets.kube-namespace }}
           kubectl config use-context ${KUBE_CLUSTER}
 
-      - name: Deploy with Helm
+      - name: Apply Helm chart
         run: |
           helm upgrade wordpress helm_deploy/wordpress \
-            --install \
-            --namespace ${{ secrets.kube-namespace }} \
-            --values helm_deploy/wordpress/values.yaml \
-            --set secrets.wpdbuser=${{ secrets.wp-db-user }} \
-            --set secrets.wpdbhost=${{ secrets.wp-db-host }} \
-            --set secrets.wpdbname=${{ secrets.wp-db-name }} \
-            --set secrets.wpdbpassword=${{ secrets.wp-db-password }} \
-            --set secrets.wpadminemail=${{ secrets.wp-admin-email }} \
-            --set secrets.wpadminuser=${{ secrets.wp-admin-user }} \
-            --set secrets.wpadminpassword=${{ secrets.wp-admin-password }} \
-            --set secrets.wpauthkey=${{ secrets.wp-auth-key-file }} \
-            --set secrets.wpauthsalt=${{ secrets.wp-auth-salt-file }} \
-            --set secrets.wploggedinkey=${{ secrets.wp-loggedin-key-file }} \
-            --set secrets.wploggedinsalt=${{ secrets.wp-loggedin-salt-file }} \
-            --set secrets.wpnoncekey=${{ secrets.wp-nonce-key-file }} \
-            --set secrets.wpnoncesalt=${{ secrets.wp-nonce-salt-file }} \
-            --set secrets.wpsecureauthkey=${{ secrets.wp-secure-auth-key-file }} \
-            --set secrets.wpsecureauthsalt=${{ secrets.wp-secure-auth-salt-file }} \
-            --set secrets.s3uploadsbucket=${{ secrets.s3-uploads-bucket }} \
-            --set secrets.s3uploadsregion=${{ secrets.s3-uploads-region }} \
-            --set secrets.s3uploadsbucketurl=${{ secrets.s3-uploads-bucket-url }} \
-            --set secrets.wbconfig=${{ secrets.wb-config }} \
-            --set secrets.acftoken=${{ secrets.acf-token }} \
-            --set alertSecrets.slackWebhookUrl=${{ secrets.alert-slack-webhook-url }} \
-            --set configmap.envtype=${{ vars.ENV_TYPE }} \
-            --set configmap.sentrydns=${{ vars.PHP_DSN }} \
-            --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.kube-namespace }}-green \
-            --set domain=${{ secrets.domain }} \
-            --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_nginx-${{ github.sha }} \
-            --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_wordpress-${{ github.sha }}
+          --install \
+          --namespace ${{ secrets.kube-namespace }} \
+          --values helm_deploy/wordpress/values.yaml \
+          --set secrets.wpdbuser=${{ secrets.wp-db-user }} \
+          --set secrets.wpdbhost=${{ secrets.wp-db-host }} \
+          --set secrets.wpdbname=${{ secrets.wp-db-name }} \
+          --set secrets.wpdbpassword=${{ secrets.wp-db-password }} \
+          --set secrets.wpadminemail=${{ secrets.wp-admin-email }} \
+          --set secrets.wpadminuser=${{ secrets.wp-admin-user }} \
+          --set secrets.wpadminpassword=${{ secrets.wp-admin-password }} \
+          --set secrets.wpauthkey=${{ secrets.wp-auth-key-file }} \
+          --set secrets.wpauthsalt=${{ secrets.wp-auth-salt-file }} \
+          --set secrets.wploggedinkey=${{ secrets.wp-loggedin-key-file }} \
+          --set secrets.wploggedinsalt=${{ secrets.wp-loggedin-salt-file }} \
+          --set secrets.wpnoncekey=${{ secrets.wp-nonce-key-file }} \
+          --set secrets.wpnoncesalt=${{ secrets.wp-nonce-salt-file }} \
+          --set secrets.wpsecureauthkey=${{ secrets.wp-secure-auth-key-file }} \
+          --set secrets.wpsecureauthsalt=${{ secrets.wp-secure-auth-salt-file }} \
+          --set secrets.s3uploadsbucket=${{ secrets.s3-uploads-bucket }} \
+          --set secrets.s3uploadsregion=${{ secrets.s3-uploads-region }} \
+          --set secrets.s3uploadsbucketurl=${{ secrets.s3-uploads-bucket-url }} \
+          --set secrets.wbconfig=${{ secrets.wb-config }} \
+          --set secrets.acftoken=${{ secrets.acf-token }} \
+          --set alertSecrets.slackWebhookUrl=${{ secrets.alert-slack-webhook-url }} \
+          --set configmap.envtype=${{ vars.ENV_TYPE }} \
+          --set configmap.sentrydns=${{ vars.PHP_DSN }} \
+          --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.kube-namespace }}-green \
+          --set domain=${{ secrets.domain }} \
+          --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_nginx-${{ github.sha }} \
+          --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_wordpress-${{ github.sha }}
