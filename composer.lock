@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b3577adae198140e3ccab6ed4791c412",
+    "content-hash": "2bae0b3d7e4607f70ac76482f9a49238",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -930,16 +930,16 @@
         },
         {
             "name": "ministryofjustice/cookie-compliance",
-            "version": "1.0.1",
+            "version": "1.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/cookie-compliance.git",
-                "reference": "38460ce283d9151a62e74cf9f615563c5a2092a5"
+                "reference": "d66de5cf23785c7c088502dcee811c36a9fcbaf7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/cookie-compliance/zipball/38460ce283d9151a62e74cf9f615563c5a2092a5",
-                "reference": "38460ce283d9151a62e74cf9f615563c5a2092a5",
+                "url": "https://api.github.com/repos/ministryofjustice/cookie-compliance/zipball/d66de5cf23785c7c088502dcee811c36a9fcbaf7",
+                "reference": "d66de5cf23785c7c088502dcee811c36a9fcbaf7",
                 "shasum": ""
             },
             "require": {
@@ -951,10 +951,10 @@
                 "wordpress"
             ],
             "support": {
-                "source": "https://github.com/ministryofjustice/cookie-compliance/tree/1.0.1",
+                "source": "https://github.com/ministryofjustice/cookie-compliance/tree/1.0.3",
                 "issues": "https://github.com/ministryofjustice/cookie-compliance/issues"
             },
-            "time": "2025-04-07T10:24:12+00:00"
+            "time": "2025-11-19T11:09:34+00:00"
         },
         {
             "name": "ministryofjustice/hale",
@@ -3282,15 +3282,15 @@
         },
         {
             "name": "wpackagist-plugin/query-monitor",
-            "version": "3.18.0",
+            "version": "3.20.0",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/query-monitor/",
-                "reference": "tags/3.18.0"
+                "reference": "tags/3.20.0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/query-monitor.3.18.0.zip"
+                "url": "https://downloads.wordpress.org/plugin/query-monitor.3.20.0.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
