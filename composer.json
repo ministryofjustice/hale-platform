@@ -89,7 +89,7 @@
   "require": {
     "composer/installers": "^v2.0",
     "ministryofjustice/cookie-compliance": "1.0.3",
-    "ministryofjustice/hale": "4.29.6",
+    "ministryofjustice/hale": "dev-footer-crown-logo-bug",
     "ministryofjustice/hale-components": "1.10.0",
     "ministryofjustice/hale-dash": "1.1.8",
     "ministryofjustice/hale-showcase": "1.1.10",
