@@ -42,7 +42,7 @@
     "composer/installers": "^v1.7.0",
     "ministryofjustice/cookie-compliance": "1.0.2",
     "ministryofjustice/cookie-compliance-for-wordpress": "3.5.0",
-    "ministryofjustice/hale": "4.28.0",
+    "ministryofjustice/hale": "dev-footer-crown-logo-bug",
     "ministryofjustice/hale-components": "1.8.0",
     "ministryofjustice/hale-dash": "1.1.8",
     "ministryofjustice/hale-showcase": "1.1.10",
