@@ -52,7 +52,7 @@
     "ministryofjustice/wp-s3-uploads": "2.0.0",
     "oscarotero/env": "^1.0",
     "php": ">=7.4",
-    "relevanssi/relevanssi-premium": "*",
+    "relevanssi/relevanssi-premium": "2.29.0",
     "sentry/sdk": "^3.3",
     "vlucas/phpdotenv": "^3.0",
     "wpengine/advanced-custom-fields-pro": "^6.0",
