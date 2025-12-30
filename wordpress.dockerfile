@@ -67,3 +67,4 @@ ENTRYPOINT ["/usr/local/bin/hale-entrypoint.sh"]
 # instead of using user name.
 USER 1002
 
+
