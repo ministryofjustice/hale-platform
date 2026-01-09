@@ -77,8 +77,6 @@ on:
         required: true
       wb-config:
         required: true
-      s3-uploads-bucket_url:
-        required: true
 
 jobs:
   buildImage:
