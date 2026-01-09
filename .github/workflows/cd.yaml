@@ -48,7 +48,6 @@ jobs:
       s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
       s3-uploads-bucket-url: ${{ secrets.S3_UPLOADS_BUCKET_URL }}
       s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}
-      s3-uploads-bucket-url: ${{ secrets.S3_UPLOADS_BUCKET_URL }}
       alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
       wb-config: ${{ secrets.WB_CONFIG}}
 
