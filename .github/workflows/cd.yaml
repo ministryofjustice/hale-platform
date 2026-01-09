@@ -91,11 +91,7 @@ jobs:
       wp-secure-auth-salt-file: ${{ secrets.WORDPRESS_SECURE_AUTH_SALT_FILE }}
       s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
       s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}
-<<<<<<< HEAD
       s3-uploads-bucket_url: ${{ secrets.S3_UPLOADS_BUCKET_URL }}
-=======
-      s3-uploads-bucket-url: ${{ secrets.S3_UPLOADS_BUCKET_URL }}
->>>>>>> main
       alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
       wb-config: ${{ secrets.WB_CONFIG}}
 
