@@ -40,19 +40,19 @@
   ],
   "require": {
     "composer/installers": "^v1.7.0",
-    "ministryofjustice/cookie-compliance": "1.0.2",
+    "ministryofjustice/cookie-compliance": "1.0.3",
     "ministryofjustice/cookie-compliance-for-wordpress": "3.5.0",
-    "ministryofjustice/hale": "dev-main",
-    "ministryofjustice/hale-components": "*",
+    "ministryofjustice/hale": "4.29.11",
+    "ministryofjustice/hale-components": "1.11.0",
     "ministryofjustice/hale-dash": "1.1.8",
     "ministryofjustice/hale-showcase": "1.1.10",
     "ministryofjustice/ppo": "dev-main",
     "ministryofjustice/wp-gov-uk-notify": "*",
-    "ministryofjustice/wp-moj-blocks": "*",
-    "ministryofjustice/wp-s3-uploads": "1.0.0",
+    "ministryofjustice/wp-moj-blocks": "3.19.3",
+    "ministryofjustice/wp-s3-uploads": "2.0.0",
     "oscarotero/env": "^1.0",
     "php": ">=7.4",
-    "relevanssi/relevanssi-premium": "*",
+    "relevanssi/relevanssi-premium": "2.29.0",
     "sentry/sdk": "^3.3",
     "vlucas/phpdotenv": "^3.0",
     "wpengine/advanced-custom-fields-pro": "^6.0",
@@ -102,4 +102,3 @@
     ]
   }
 }
-
