@@ -1,0 +1,85 @@
+{
+  "name": "wp/multisite",
+  "type": "project",
+  "license": "MIT",
+  "description": "Hale multisite required packages",
+  "authors": [],
+  "keywords": [
+    "wordpress",
+    "stack",
+    "composer",
+    "wp, multisite, php"
+  ],
+  "support": {
+    "issues": "https://github.com/ministryofjustice/hale-platform/issues"
+  },
+  "config": {
+    "allow-plugins": true,
+    "vendor-dir": "vendor-internal"
+  },
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://wpackagist.org"
+    },
+    {
+      "type": "composer",
+      "url": "https://packagist.org"
+    },
+    {
+      "type": "composer",
+      "url": "https://repo.packagist.com/mojwb/hale-platform"
+    },
+    {
+      "type": "composer",
+      "url": "https://wp-languages.github.io"
+    }
+  ],
+  "require": {
+    "composer/installers": "^v1.7.0",
+    "oscarotero/env": "^1.0",
+    "php": ">=7.4",
+    "sentry/sdk": "^3.3",
+    "vlucas/phpdotenv": "^3.0",
+    "ministryofjustice/cookie-compliance": "1.0.3",
+    "ministryofjustice/cookie-compliance-for-wordpress": "3.5.0",
+    "ministryofjustice/hale": "4.29.12",
+    "ministryofjustice/hale-components": "1.11.0",
+    "ministryofjustice/hale-dash": "1.1.8",
+    "ministryofjustice/hale-showcase": "1.1.10",
+    "ministryofjustice/ppo": "dev-main",
+    "ministryofjustice/wp-gov-uk-notify": "*",
+    "ministryofjustice/wp-moj-blocks": "3.19.3",
+    "ministryofjustice/wp-s3-uploads": "2.0.0"
+  },
+  "require-dev": {
+    "squizlabs/php_codesniffer": "^3.0"
+  },
+  "extra": {
+    "installer-paths": {
+      "composer-packages/wp-content/mu-plugins/{$name}/": [
+        "type:wordpress-muplugin",
+        "ministryofjustice/wp-gov-uk-notify",
+        "ministryofjustice/hale-components",
+        "ministryofjustice/wp-s3-uploads"
+      ],
+      "composer-packages/wp-content/plugins/{$name}/": [
+        "type:wordpress-plugin"
+      ],
+      "composer-packages/wp-content/themes/hale/": [
+        "ministryofjustice/hale"
+      ],
+      "composer-packages/wp-content/themes/{$name}/": [
+        "type:wordpress-theme"
+      ]
+    },
+    "wordpress-install-dir": "/var/www/html"
+  },
+  "scripts": {
+    "post-root-package-install": [],
+    "test": [
+      "phpcs"
+    ]
+  }
+}
+

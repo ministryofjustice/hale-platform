@@ -1,0 +1,96 @@
+{
+  "name": "wp/multisite",
+  "type": "project",
+  "license": "MIT",
+  "description": "Hale multisite required packages",
+  "authors": [],
+  "keywords": [
+    "wordpress",
+    "stack",
+    "composer",
+    "wp, multisite, php"
+  ],
+  "support": {
+    "issues": "https://github.com/ministryofjustice/hale-platform/issues"
+  },
+  "config": {
+    "allow-plugins": true,
+    "vendor-dir": "vendor-external"
+  },
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://wpackagist.org"
+    },
+    {
+      "type": "composer",
+      "url": "https://packagist.org"
+    },
+    {
+      "type": "composer",
+      "url": "https://repo.packagist.com/mojwb/hale-platform"
+    },
+    {
+      "type": "composer",
+      "url": "https://connect.advancedcustomfields.com"
+    },
+    {
+      "type": "composer",
+      "url": "https://wp-languages.github.io"
+    }
+  ],
+  "require": {
+    "composer/installers": "^v1.7.0",
+    "oscarotero/env": "^1.0",
+    "php": ">=7.4",
+    "relevanssi/relevanssi-premium": "2.29.0",
+    "sentry/sdk": "^3.3",
+    "vlucas/phpdotenv": "^3.0",
+    "wpengine/advanced-custom-fields-pro": "^6.0",
+    "wpackagist-plugin/auth0": "4.6.2",
+    "wpackagist-plugin/classic-editor": "^1.0",
+    "wpackagist-plugin/ewww-image-optimizer": "^8.0",
+    "wpackagist-plugin/limit-login-attempts-reloaded": " ^2.26.0",
+    "wpackagist-plugin/option-tree": "^2.0",
+    "wpackagist-plugin/query-monitor": "^3.0",
+    "wpackagist-plugin/redirection": "^5.0",
+    "wpackagist-plugin/remove-category-url": "^1.0",
+    "wpackagist-plugin/safe-svg": "^2.0",
+    "wpackagist-plugin/simple-301-redirects": "^2.0",
+    "wpackagist-plugin/unconfirmed": "^1.0",
+    "wpackagist-plugin/wordpress-seo": "^25.0",
+    "wpackagist-plugin/wp-force-login": "^5.0",
+    "wpackagist-plugin/wp-sentry-integration": "^8.0",
+    "wpackagist-plugin/wps-hide-login": "^1.0"
+  },
+  "require-dev": {
+    "squizlabs/php_codesniffer": "^3.0"
+  },
+  "extra": {
+    "installer-paths": {
+      "composer-packages/wp-content/mu-plugins/{$name}/": [
+        "type:wordpress-muplugin",
+        "ministryofjustice/wp-gov-uk-notify",
+        "ministryofjustice/hale-components",
+        "ministryofjustice/wp-s3-uploads"
+      ],
+      "composer-packages/wp-content/plugins/{$name}/": [
+        "type:wordpress-plugin"
+      ],
+      "composer-packages/wp-content/themes/hale/": [
+        "ministryofjustice/hale"
+      ],
+      "composer-packages/wp-content/themes/{$name}/": [
+        "type:wordpress-theme"
+      ]
+    },
+    "wordpress-install-dir": "/var/www/html"
+  },
+  "scripts": {
+    "post-root-package-install": [],
+    "test": [
+      "phpcs"
+    ]
+  }
+}
+

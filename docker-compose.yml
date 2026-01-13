@@ -45,6 +45,9 @@ services:
       dockerfile: wordpress.dockerfile
     volumes:
       - ./wordpress:/var/www/html:delegated
+      - ./composer-packages/wp-content/plugins:/var/www/html/test/mu-plugins:delegated
+      - ./composer-packages/wp-content/plugins:/var/www/html/test/plugins:delegated
+      - ./composer-packages/wp-content/themes:/var/www/html/wp-content/themes:delegated
       - ./opt/php/php-local.ini:/usr/local/etc/php/conf.d/zz-local.ini
     depends_on:
       - mariadb
