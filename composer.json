@@ -90,7 +90,7 @@
     "composer/installers": "^v2.0",
     "ministryofjustice/cookie-compliance": "1.0.3",
     "ministryofjustice/hale": "dev-footer-crown-logo-bug",
-    "ministryofjustice/hale-components": "dev-site-user-reports",
+    "ministryofjustice/hale-components": "dev-main",
     "ministryofjustice/hale-dash": "1.1.8",
     "ministryofjustice/hale-showcase": "1.1.10",
     "ministryofjustice/ppo": "dev-main",
