@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d019398a0b54c5915e17cc7c1524b5c9",
+    "content-hash": "7a585037d9e71ab7463c8ac82c849407",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -115,16 +115,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.366.2",
+            "version": "3.369.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "de3b25e2d86aa081814e198fe5cde4ef0ff7f879"
+                "reference": "7c62f41fb0460c3e5d5c1f70e93e726f1daa75f5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/de3b25e2d86aa081814e198fe5cde4ef0ff7f879",
-                "reference": "de3b25e2d86aa081814e198fe5cde4ef0ff7f879",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/7c62f41fb0460c3e5d5c1f70e93e726f1daa75f5",
+                "reference": "7c62f41fb0460c3e5d5c1f70e93e726f1daa75f5",
                 "shasum": ""
             },
             "require": {
@@ -138,7 +138,7 @@
                 "mtdowling/jmespath.php": "^2.8.0",
                 "php": ">=8.1",
                 "psr/http-message": "^1.0 || ^2.0",
-                "symfony/filesystem": "^v6.4.3 || ^v7.1.0 || ^v8.0.0"
+                "symfony/filesystem": "^v5.4.45 || ^v6.4.3 || ^v7.1.0 || ^v8.0.0"
             },
             "require-dev": {
                 "andrewsville/php-token-reflection": "^1.4",
@@ -206,9 +206,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.366.2"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.369.15"
             },
-            "time": "2025-12-05T19:09:22+00:00"
+            "time": "2026-01-16T19:18:57+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -812,16 +812,16 @@
         },
         {
             "name": "http-interop/http-factory-guzzle",
-            "version": "1.2.0",
+            "version": "1.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/http-interop/http-factory-guzzle.git",
-                "reference": "8f06e92b95405216b237521cc64c804dd44c4a81"
+                "reference": "c2c859ceb05c3f42e710b60555f4c35b6a4a3995"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/http-interop/http-factory-guzzle/zipball/8f06e92b95405216b237521cc64c804dd44c4a81",
-                "reference": "8f06e92b95405216b237521cc64c804dd44c4a81",
+                "url": "https://api.github.com/repos/http-interop/http-factory-guzzle/zipball/c2c859ceb05c3f42e710b60555f4c35b6a4a3995",
+                "reference": "c2c859ceb05c3f42e710b60555f4c35b6a4a3995",
                 "shasum": ""
             },
             "require": {
@@ -864,9 +864,9 @@
             ],
             "support": {
                 "issues": "https://github.com/http-interop/http-factory-guzzle/issues",
-                "source": "https://github.com/http-interop/http-factory-guzzle/tree/1.2.0"
+                "source": "https://github.com/http-interop/http-factory-guzzle/tree/1.2.1"
             },
-            "time": "2021-07-21T13:50:14+00:00"
+            "time": "2025-12-15T11:28:16+00:00"
         },
         {
             "name": "jean85/pretty-package-versions",
@@ -957,39 +957,62 @@
             "time": "2025-11-19T11:09:34+00:00"
         },
         {
-            "name": "ministryofjustice/hale",
-            "version": "4.29.6",
+            "name": "ministryofjustice/govwind",
+            "version": "dev-main",
             "source": {
                 "type": "git",
-                "url": "https://github.com/ministryofjustice/hale.git",
-                "reference": "033eb3f8c7305cc34cdb223944c7e3f2d6d8c186"
+                "url": "https://github.com/ministryofjustice/govwind.git",
+                "reference": "1b5995a36595e2db274e4d42cd9cad71fdb17368"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/033eb3f8c7305cc34cdb223944c7e3f2d6d8c186",
-                "reference": "033eb3f8c7305cc34cdb223944c7e3f2d6d8c186",
+                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/1b5995a36595e2db274e4d42cd9cad71fdb17368",
+                "reference": "1b5995a36595e2db274e4d42cd9cad71fdb17368",
+                "shasum": ""
+            },
+            "default-branch": true,
+            "type": "wordpress-theme",
+            "description": "Govwind theme",
+            "support": {
+                "source": "https://github.com/ministryofjustice/govwind/tree/main",
+                "issues": "https://github.com/ministryofjustice/govwind/issues"
+            },
+            "time": "2026-01-09T15:17:15+00:00"
+        },
+        {
+            "name": "ministryofjustice/hale",
+            "version": "4.30.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ministryofjustice/hale.git",
+                "reference": "1e139adbc5863eb4d437c631cbf4a5818e3e16ef"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/1e139adbc5863eb4d437c631cbf4a5818e3e16ef",
+                "reference": "1e139adbc5863eb4d437c631cbf4a5818e3e16ef",
                 "shasum": ""
             },
             "type": "wordpress-theme",
             "description": "Hale theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/hale/tree/4.29.6",
+                "source": "https://github.com/ministryofjustice/hale/tree/4.30.0",
                 "issues": "https://github.com/ministryofjustice/hale/issues"
             },
-            "time": "2025-11-13T13:07:45+00:00"
+            "time": "2026-01-19T17:18:51+00:00"
         },
         {
             "name": "ministryofjustice/hale-components",
-            "version": "1.10.0",
+            "version": "1.13.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale-components.git",
-                "reference": "20e176a1a69a5ec393ac7785ee9b0ccef19e6899"
+                "reference": "c5137b8c6bed821ac59feebd9e543ef2981b8d5f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/20e176a1a69a5ec393ac7785ee9b0ccef19e6899",
-                "reference": "20e176a1a69a5ec393ac7785ee9b0ccef19e6899",
+                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/c5137b8c6bed821ac59feebd9e543ef2981b8d5f",
+                "reference": "c5137b8c6bed821ac59feebd9e543ef2981b8d5f",
                 "shasum": ""
             },
             "require": {
@@ -1001,10 +1024,10 @@
                 "wordpress"
             ],
             "support": {
-                "source": "https://github.com/ministryofjustice/hale-components/tree/1.10.0",
+                "source": "https://github.com/ministryofjustice/hale-components/tree/1.13.0",
                 "issues": "https://github.com/ministryofjustice/hale-components/issues"
             },
-            "time": "2025-11-26T09:49:05+00:00"
+            "time": "2026-01-16T09:37:58+00:00"
         },
         {
             "name": "ministryofjustice/hale-dash",
@@ -1074,6 +1097,47 @@
             "time": "2025-06-11T07:52:18+00:00"
         },
         {
+            "name": "ministryofjustice/website-builder-blocks",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ministryofjustice/website-builder-blocks.git",
+                "reference": "ebaa3d4f02f271fb2febfaade5c0d7900aed48d1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/ebaa3d4f02f271fb2febfaade5c0d7900aed48d1",
+                "reference": "ebaa3d4f02f271fb2febfaade5c0d7900aed48d1",
+                "shasum": ""
+            },
+            "require-dev": {
+                "composer/composer": "*",
+                "squizlabs/php_codesniffer": "*"
+            },
+            "default-branch": true,
+            "type": "wordpress-plugin",
+            "scripts": {
+                "phpcs-config-set": [
+                    "phpcs --config-set ignore_warnings_on_exit 1"
+                ],
+                "phpcs": [
+                    "phpcs --extensions=php --ignore=*/vendor/* --standard=PSR12 ."
+                ],
+                "phpcbf": [
+                    "phpcbf --extensions=php --ignore=*/vendor/* --standard=PSR12 ."
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "WP plugin that adds addtional blocks.",
+            "support": {
+                "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/main",
+                "issues": "https://github.com/ministryofjustice/website-builder-blocks/issues"
+            },
+            "time": "2025-12-23T12:34:04+00:00"
+        },
+        {
             "name": "ministryofjustice/wp-gov-uk-notify",
             "version": "1.0.3",
             "source": {
@@ -1108,16 +1172,16 @@
         },
         {
             "name": "ministryofjustice/wp-moj-blocks",
-            "version": "3.19.3",
+            "version": "3.19.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-moj-blocks.git",
-                "reference": "2b7c67b692f67af20118975d046220731a3b3721"
+                "reference": "ec4658feb4a0436202601ef84d6601b1b363a89d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/wp-moj-blocks/zipball/2b7c67b692f67af20118975d046220731a3b3721",
-                "reference": "2b7c67b692f67af20118975d046220731a3b3721",
+                "url": "https://api.github.com/repos/ministryofjustice/wp-moj-blocks/zipball/ec4658feb4a0436202601ef84d6601b1b363a89d",
+                "reference": "ec4658feb4a0436202601ef84d6601b1b363a89d",
                 "shasum": ""
             },
             "require-dev": {
@@ -1141,10 +1205,10 @@
             ],
             "description": "WP plugin that adds addtional blocks.",
             "support": {
-                "source": "https://github.com/ministryofjustice/wp-moj-blocks/tree/3.19.3",
+                "source": "https://github.com/ministryofjustice/wp-moj-blocks/tree/3.19.4",
                 "issues": "https://github.com/ministryofjustice/wp-moj-blocks/issues"
             },
-            "time": "2025-10-06T12:57:01+00:00"
+            "time": "2026-01-12T16:39:18+00:00"
         },
         {
             "name": "ministryofjustice/wp-s3-uploads",
@@ -1743,16 +1807,16 @@
         },
         {
             "name": "phpoption/phpoption",
-            "version": "1.9.4",
+            "version": "1.9.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/schmittjoh/php-option.git",
-                "reference": "638a154f8d4ee6a5cfa96d6a34dfbe0cffa9566d"
+                "reference": "75365b91986c2405cf5e1e012c5595cd487a98be"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/schmittjoh/php-option/zipball/638a154f8d4ee6a5cfa96d6a34dfbe0cffa9566d",
-                "reference": "638a154f8d4ee6a5cfa96d6a34dfbe0cffa9566d",
+                "url": "https://api.github.com/repos/schmittjoh/php-option/zipball/75365b91986c2405cf5e1e012c5595cd487a98be",
+                "reference": "75365b91986c2405cf5e1e012c5595cd487a98be",
                 "shasum": ""
             },
             "require": {
@@ -1802,7 +1866,7 @@
             ],
             "support": {
                 "issues": "https://github.com/schmittjoh/php-option/issues",
-                "source": "https://github.com/schmittjoh/php-option/tree/1.9.4"
+                "source": "https://github.com/schmittjoh/php-option/tree/1.9.5"
             },
             "funding": [
                 {
@@ -1814,7 +1878,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-08-21T11:53:16+00:00"
+            "time": "2025-12-27T19:41:33+00:00"
         },
         {
             "name": "psr/container",
@@ -2125,10 +2189,10 @@
         },
         {
             "name": "relevanssi/relevanssi-premium",
-            "version": "2.20.3",
+            "version": "2.29.0",
             "dist": {
                 "type": "zip",
-                "url": "https://relevanssi.com/update/get_version.php?version=2.20.3"
+                "url": "https://relevanssi.com/update/get_version.php?version=2.29.0"
             },
             "type": "wordpress-plugin"
         },
@@ -2428,16 +2492,16 @@
         },
         {
             "name": "symfony/http-client",
-            "version": "v7.4.1",
+            "version": "v7.4.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-client.git",
-                "reference": "26cc224ea7103dda90e9694d9e139a389092d007"
+                "reference": "d01dfac1e0dc99f18da48b18101c23ce57929616"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-client/zipball/26cc224ea7103dda90e9694d9e139a389092d007",
-                "reference": "26cc224ea7103dda90e9694d9e139a389092d007",
+                "url": "https://api.github.com/repos/symfony/http-client/zipball/d01dfac1e0dc99f18da48b18101c23ce57929616",
+                "reference": "d01dfac1e0dc99f18da48b18101c23ce57929616",
                 "shasum": ""
             },
             "require": {
@@ -2505,7 +2569,7 @@
                 "http"
             ],
             "support": {
-                "source": "https://github.com/symfony/http-client/tree/v7.4.1"
+                "source": "https://github.com/symfony/http-client/tree/v7.4.3"
             },
             "funding": [
                 {
@@ -2525,7 +2589,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-12-04T21:12:57+00:00"
+            "time": "2025-12-23T14:50:43+00:00"
         },
         {
             "name": "symfony/http-client-contracts",
@@ -3227,34 +3291,16 @@
             "homepage": "https://wordpress.org/plugins/ewww-image-optimizer/"
         },
         {
-            "name": "wpackagist-plugin/limit-login-attempts-reloaded",
-            "version": "2.26.26",
-            "source": {
-                "type": "svn",
-                "url": "https://plugins.svn.wordpress.org/limit-login-attempts-reloaded/",
-                "reference": "tags/2.26.26"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/limit-login-attempts-reloaded.2.26.26.zip"
-            },
-            "require": {
-                "composer/installers": "^1.0 || ^2.0"
-            },
-            "type": "wordpress-plugin",
-            "homepage": "https://wordpress.org/plugins/limit-login-attempts-reloaded/"
-        },
-        {
             "name": "wpackagist-plugin/microsoft-clarity",
-            "version": "0.10.10",
+            "version": "0.10.15",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/microsoft-clarity/",
-                "reference": "tags/0.10.10"
+                "reference": "tags/0.10.15"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/microsoft-clarity.0.10.10.zip"
+                "url": "https://downloads.wordpress.org/plugin/microsoft-clarity.0.10.15.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -3282,15 +3328,15 @@
         },
         {
             "name": "wpackagist-plugin/query-monitor",
-            "version": "3.20.0",
+            "version": "3.20.2",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/query-monitor/",
-                "reference": "tags/3.20.0"
+                "reference": "tags/3.20.2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/query-monitor.3.20.0.zip"
+                "url": "https://downloads.wordpress.org/plugin/query-monitor.3.20.2.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -3299,34 +3345,16 @@
             "homepage": "https://wordpress.org/plugins/query-monitor/"
         },
         {
-            "name": "wpackagist-plugin/redirection",
-            "version": "5.5.2",
-            "source": {
-                "type": "svn",
-                "url": "https://plugins.svn.wordpress.org/redirection/",
-                "reference": "tags/5.5.2"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/redirection.5.5.2.zip"
-            },
-            "require": {
-                "composer/installers": "^1.0 || ^2.0"
-            },
-            "type": "wordpress-plugin",
-            "homepage": "https://wordpress.org/plugins/redirection/"
-        },
-        {
             "name": "wpackagist-plugin/remove-category-url",
-            "version": "1.2.0",
+            "version": "1.2.1",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/remove-category-url/",
-                "reference": "tags/1.2.0"
+                "reference": "tags/1.2.1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/remove-category-url.1.2.0.zip"
+                "url": "https://downloads.wordpress.org/plugin/remove-category-url.1.2.1.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -3389,24 +3417,6 @@
             "homepage": "https://wordpress.org/plugins/unconfirmed/"
         },
         {
-            "name": "wpackagist-plugin/visual-web-optimizer",
-            "version": "4.10",
-            "source": {
-                "type": "svn",
-                "url": "https://plugins.svn.wordpress.org/visual-web-optimizer/",
-                "reference": "tags/4.10"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/visual-web-optimizer.4.10.zip"
-            },
-            "require": {
-                "composer/installers": "^1.0 || ^2.0"
-            },
-            "type": "wordpress-plugin",
-            "homepage": "https://wordpress.org/plugins/visual-web-optimizer/"
-        },
-        {
             "name": "wpackagist-plugin/wordpress-seo",
             "version": "25.9",
             "source": {
@@ -3462,15 +3472,15 @@
         },
         {
             "name": "wpackagist-plugin/wps-hide-login",
-            "version": "1.9.17.2",
+            "version": "1.9.18",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/wps-hide-login/",
-                "reference": "tags/1.9.17.2"
+                "reference": "tags/1.9.18"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/wps-hide-login.1.9.17.2.zip"
+                "url": "https://downloads.wordpress.org/plugin/wps-hide-login.1.9.18.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -3480,10 +3490,10 @@
         },
         {
             "name": "wpengine/advanced-custom-fields-pro",
-            "version": "6.7.0",
+            "version": "6.7.0.2",
             "dist": {
                 "type": "zip",
-                "url": "https://connect.advancedcustomfields.com/v2/plugins/composer_download?s=composer&p=pro&t=6.7.0"
+                "url": "https://connect.advancedcustomfields.com/v2/plugins/composer_download?s=composer&p=pro&t=6.7.0.2"
             },
             "require": {
                 "composer/installers": "~1.0 || ~2.0"
@@ -3579,7 +3589,9 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "ministryofjustice/ppo": 20
+        "ministryofjustice/govwind": 20,
+        "ministryofjustice/ppo": 20,
+        "ministryofjustice/website-builder-blocks": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,
