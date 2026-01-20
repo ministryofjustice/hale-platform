@@ -169,7 +169,7 @@ jobs:
 
       - name: Run NPM (parallel builds)
         run: |
-          for theme in hale hale-dash hale-showcase ppo; do
+          for theme in hale hale-dash hale-showcase ppo govwind; do
             (
               cd ./wordpress/wp-content/themes/$theme
               if [ -f package-lock.json ]; then
