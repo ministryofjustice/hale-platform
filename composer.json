@@ -105,7 +105,7 @@
     "ministryofjustice/ppo": "dev-main",
     "ministryofjustice/website-builder-blocks": "dev-main",
     "ministryofjustice/wp-gov-uk-notify": "1.0.3",
-    "ministryofjustice/wp-moj-blocks": "3.19.4",
+    "ministryofjustice/wp-moj-blocks": "3.19.5",
     "ministryofjustice/wp-s3-uploads": "2.0.0",
     "oscarotero/env": "^1.0",
     "php": ">=8.0",
