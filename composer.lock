@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3258feaf4daa7bb0c75da411702b5777",
+    "content-hash": "f66053670931e2401c022689a7a63339",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -115,16 +115,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.369.19",
+            "version": "3.369.21",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "32fee3a25290186724ede9ca177d5090f7c5a837"
+                "reference": "7076af00534135cbbf6cc19eb2521124a3549f0d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/32fee3a25290186724ede9ca177d5090f7c5a837",
-                "reference": "32fee3a25290186724ede9ca177d5090f7c5a837",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/7076af00534135cbbf6cc19eb2521124a3549f0d",
+                "reference": "7076af00534135cbbf6cc19eb2521124a3549f0d",
                 "shasum": ""
             },
             "require": {
@@ -206,9 +206,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.369.19"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.369.21"
             },
-            "time": "2026-01-23T19:05:51+00:00"
+            "time": "2026-01-27T19:14:48+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -981,39 +981,26 @@
         },
         {
             "name": "ministryofjustice/hale",
-            "version": "4.30.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/ministryofjustice/hale.git",
-                "reference": "1e139adbc5863eb4d437c631cbf4a5818e3e16ef"
-            },
+            "version": "dev-main",
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/1e139adbc5863eb4d437c631cbf4a5818e3e16ef",
-                "reference": "1e139adbc5863eb4d437c631cbf4a5818e3e16ef",
-                "shasum": ""
+                "type": "path",
+                "url": "./dev/themes/hale",
+                "reference": "1e139adbc5863eb4d437c631cbf4a5818e3e16ef"
             },
             "type": "wordpress-theme",
             "description": "Hale theme",
-            "support": {
-                "source": "https://github.com/ministryofjustice/hale/tree/4.30.0",
-                "issues": "https://github.com/ministryofjustice/hale/issues"
-            },
-            "time": "2026-01-19T17:18:51+00:00"
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "ministryofjustice/hale-components",
-            "version": "1.13.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/ministryofjustice/hale-components.git",
-                "reference": "c5137b8c6bed821ac59feebd9e543ef2981b8d5f"
-            },
+            "version": "dev-main",
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/c5137b8c6bed821ac59feebd9e543ef2981b8d5f",
-                "reference": "c5137b8c6bed821ac59feebd9e543ef2981b8d5f",
-                "shasum": ""
+                "type": "path",
+                "url": "./dev/mu-plugins/hale-components",
+                "reference": "c5137b8c6bed821ac59feebd9e543ef2981b8d5f"
             },
             "require": {
                 "composer/installers": "~1.0 || ^2.0"
@@ -1023,11 +1010,10 @@
             "keywords": [
                 "wordpress"
             ],
-            "support": {
-                "source": "https://github.com/ministryofjustice/hale-components/tree/1.13.0",
-                "issues": "https://github.com/ministryofjustice/hale-components/issues"
-            },
-            "time": "2026-01-16T09:37:58+00:00"
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "ministryofjustice/hale-dash",
@@ -1098,23 +1084,22 @@
         },
         {
             "name": "ministryofjustice/website-builder-blocks",
-            "version": "dev-main",
+            "version": "1.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/website-builder-blocks.git",
-                "reference": "cfec2a3dda0296f75c5669ee00d07005a0c23249"
+                "reference": "2bb137cd30ad8de885adb285a186ee5801400a6f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/cfec2a3dda0296f75c5669ee00d07005a0c23249",
-                "reference": "cfec2a3dda0296f75c5669ee00d07005a0c23249",
+                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/2bb137cd30ad8de885adb285a186ee5801400a6f",
+                "reference": "2bb137cd30ad8de885adb285a186ee5801400a6f",
                 "shasum": ""
             },
             "require-dev": {
                 "composer/composer": "*",
                 "squizlabs/php_codesniffer": "*"
             },
-            "default-branch": true,
             "type": "wordpress-plugin",
             "scripts": {
                 "phpcs-config-set": [
@@ -1132,24 +1117,18 @@
             ],
             "description": "WP plugin that adds addtional blocks.",
             "support": {
-                "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/main",
+                "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/1.1.1",
                 "issues": "https://github.com/ministryofjustice/website-builder-blocks/issues"
             },
-            "time": "2026-01-26T12:15:13+00:00"
+            "time": "2025-10-17T14:37:22+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
-            "version": "1.0.3",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/ministryofjustice/wp-gov-uk-notify.git",
-                "reference": "b5571162667f9ddff07e00d95220d29ea319316f"
-            },
+            "version": "dev-main",
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/wp-gov-uk-notify/zipball/b5571162667f9ddff07e00d95220d29ea319316f",
-                "reference": "b5571162667f9ddff07e00d95220d29ea319316f",
-                "shasum": ""
+                "type": "path",
+                "url": "./dev/mu-plugins/wp-gov-uk-notify",
+                "reference": "b5571162667f9ddff07e00d95220d29ea319316f"
             },
             "require": {
                 "alphagov/notifications-php-client": "*",
@@ -1164,25 +1143,18 @@
                 }
             ],
             "description": "A WordPress plugin that configures Wordpress to send emails via the GOV.UK Notify Service",
-            "support": {
-                "source": "https://github.com/ministryofjustice/wp-gov-uk-notify/tree/1.0.3",
-                "issues": "https://github.com/ministryofjustice/wp-gov-uk-notify/issues"
-            },
-            "time": "2025-12-03T15:08:22+00:00"
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "ministryofjustice/wp-moj-blocks",
-            "version": "3.19.5",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/ministryofjustice/wp-moj-blocks.git",
-                "reference": "4ad6237ea9e67a480ebc8a5aa879173193943d47"
-            },
+            "version": "dev-main",
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/wp-moj-blocks/zipball/4ad6237ea9e67a480ebc8a5aa879173193943d47",
-                "reference": "4ad6237ea9e67a480ebc8a5aa879173193943d47",
-                "shasum": ""
+                "type": "path",
+                "url": "./dev/plugins/wp-moj-blocks",
+                "reference": "4ad6237ea9e67a480ebc8a5aa879173193943d47"
             },
             "require-dev": {
                 "composer/composer": "*",
@@ -1204,25 +1176,18 @@
                 "MIT"
             ],
             "description": "WP plugin that adds addtional blocks.",
-            "support": {
-                "source": "https://github.com/ministryofjustice/wp-moj-blocks/tree/3.19.5",
-                "issues": "https://github.com/ministryofjustice/wp-moj-blocks/issues"
-            },
-            "time": "2026-01-26T13:48:12+00:00"
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "ministryofjustice/wp-s3-uploads",
-            "version": "2.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/ministryofjustice/wp-s3-uploads.git",
-                "reference": "03cf4ccd0639110d44fd497e3ccba3f170d4bd29"
-            },
+            "version": "dev-main",
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/wp-s3-uploads/zipball/03cf4ccd0639110d44fd497e3ccba3f170d4bd29",
-                "reference": "03cf4ccd0639110d44fd497e3ccba3f170d4bd29",
-                "shasum": ""
+                "type": "path",
+                "url": "./dev/mu-plugins/wp-s3-uploads",
+                "reference": "006edea3561ae8e80d061483bbe799e3fe6b7d32"
             },
             "require": {
                 "aws/aws-sdk-php": "~3.18",
@@ -1251,7 +1216,10 @@
                 "issues": "https://github.com/humanmade/s3-uploads/issues",
                 "source": "https://github.com/humanmade/s3-uploads"
             },
-            "time": "2025-10-08T08:26:11+00:00"
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "mtdowling/jmespath.php",
@@ -3587,11 +3555,9 @@
         }
     ],
     "aliases": [],
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "stability-flags": {
-        "ministryofjustice/govwind": 20,
-        "ministryofjustice/ppo": 20,
-        "ministryofjustice/website-builder-blocks": 20
+        "ministryofjustice/hale": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

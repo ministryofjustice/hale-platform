@@ -42,9 +42,11 @@ services:
     platform: linux/arm64
     build:
       context: .
-      dockerfile: wordpress.dockerfile
+      dockerfile: wordpress.local.dockerfile
     volumes:
       - ./wordpress:/var/www/html:delegated
+      - ./dev:/mnt/dev:delegated
+      - ./opt/scripts:/opt/scripts:delegated
       - ./opt/php/php-local.ini:/usr/local/etc/php/conf.d/zz-local.ini
     depends_on:
       - mariadb
@@ -72,4 +74,3 @@ services:
 volumes:
   database:
     driver: local
-
