@@ -52,6 +52,7 @@ jobs:
       s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
       s3-uploads-bucket-url: ${{ secrets.S3_UPLOADS_BUCKET_URL }}
       s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}
+      s3-uploads-object-acl: ${{ secrets.S3_UPLOADS_OBJECT_ACL }}
       alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
       wb-config: ${{ secrets.WB_CONFIG}}
 
@@ -94,6 +95,7 @@ jobs:
       wp-secure-auth-salt-file: ${{ secrets.WORDPRESS_SECURE_AUTH_SALT_FILE }}
       s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
       s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}
+      s3-uploads-object-acl: ${{ secrets.S3_UPLOADS_OBJECT_ACL }}
       s3-uploads-bucket-url: ${{ secrets.S3_UPLOADS_BUCKET_URL }}
       alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
       wb-config: ${{ secrets.WB_CONFIG}}

@@ -73,6 +73,8 @@ on:
         required: true
       s3-uploads-bucket-url:
         required: true
+      s3-uploads-object-acl:
+        required: false
       alert-slack-webhook-url:
         required: true
       wb-config:
@@ -249,6 +251,7 @@ jobs:
           --set secrets.s3uploadsbucketurl=${{ secrets.s3-uploads-bucket_url }} \
           --set secrets.s3uploadsregion=${{ secrets.s3-uploads-region }} \
           --set secrets.s3uploadsbucketurl=${{ secrets.s3-uploads-bucket-url }} \
+          --set secrets.s3uploadsobjectacl=${{ secrets.s3-uploads-object-acl }} \
           --set secrets.wbconfig=${{ secrets.wb-config }} \
           --set secrets.acftoken=${{ secrets.acf-token }} \
           --set alertSecrets.slackWebhookUrl=${{ secrets.alert-slack-webhook-url }} \
