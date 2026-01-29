@@ -67,18 +67,6 @@ echo "[dev-links] === Plugins ==="
 link_if_exists "$DEV_ROOT/plugins/cookie-compliance" \
   "$WP_ROOT/plugins/cookie-compliance"
 
-link_if_exists "$DEV_ROOT/plugins/govwind" \
-  "$WP_ROOT/plugins/govwind"
-
-link_if_exists "$DEV_ROOT/plugins/hale-dash" \
-  "$WP_ROOT/plugins/hale-dash"
-
-link_if_exists "$DEV_ROOT/plugins/hale-showcase" \
-  "$WP_ROOT/plugins/hale-showcase"
-
-link_if_exists "$DEV_ROOT/plugins/ppo" \
-  "$WP_ROOT/plugins/ppo"
-
 link_if_exists "$DEV_ROOT/plugins/website-builder-blocks" \
   "$WP_ROOT/plugins/website-builder-blocks"
 
@@ -92,6 +80,18 @@ echo ""
 echo "[dev-links] === Themes ==="
 link_if_exists "$DEV_ROOT/themes/hale" \
   "$WP_ROOT/themes/hale"
+
+link_if_exists "$DEV_ROOT/themes/govwind" \
+    "$WP_ROOT/themes/govwind"
+
+link_if_exists "$DEV_ROOT/themes/hale-dash" \
+    "$WP_ROOT/themes/hale-dash"
+
+link_if_exists "$DEV_ROOT/themes/hale-showcase" \
+    "$WP_ROOT/themes/hale-showcase"
+
+link_if_exists "$DEV_ROOT/themes/ppo" \
+    "$WP_ROOT/themes/ppo"
 
 ####################
 # SUMMARY
