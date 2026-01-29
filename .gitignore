@@ -1,15 +1,52 @@
-mysql
+############################
+# Environment & secrets
+############################
 .env*
+auth.json
+
+############################
+# OS / Editor junk
+############################
 .DS_Store
 .idea
-*.sql
-auth.json
+
+############################
+# Dependency directories
+############################
 vendor/
+node_modules/
+
+############################
+# Database / generated data
+############################
+*.sql
+reports/
+
+############################
+# WordPress runtime content
+############################
 wordpress/
 uploads/
 media/
+
+# Allow Helm chart through
 !helm_deploy/wordpress/
+
+############################
+# Certificates (local/dev)
+############################
 bin/certs/
-reports/
-node_modules/
-dev/
+
+############################
+# Local-only WordPress dev overrides
+# (keep dirs, ignore contents)
+############################
+dev/mu-plugins/*
+dev/plugins/*
+dev/themes/*
+
+# Track empty directories
+!dev/mu-plugins/.gitkeep
+!dev/plugins/.gitkeep
+!dev/themes/.gitkeep
+
