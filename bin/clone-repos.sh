@@ -120,6 +120,3 @@ cd "$PROJECT_ROOT"
 
 echo "Done. All repositories cloned into dev/ folder."
 echo ""
-echo "Next steps:"
-echo "  1. Run your build script to set up the project"
-echo "  2. Symlinks will be created automatically to wordpress/wp-content/"
