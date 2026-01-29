@@ -10,6 +10,7 @@ services:
       - 443:443
     volumes:
       - ./wordpress:/var/www/html:delegated
+      - ./dev:/mnt/dev:delegated
       - ./opt/nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./opt/nginx/localwordpress.conf:/etc/nginx/conf.d/localwordpress.conf
       - ./bin/certs:/etc/nginx/certs/self-signed/
@@ -19,7 +20,6 @@ services:
     environment:
       VIRTUAL_HOST: hale.docker
       VIRTUAL_PORT: 443
-
   mariadb:
     container_name: mariadb
     platform: linux/arm64
@@ -36,15 +36,16 @@ services:
       VIRTUAL_HOST: mariadb.docker
     volumes:
       - database:/var/lib/mysql
-
   wordpress:
     container_name: wordpress
     platform: linux/arm64
     build:
       context: .
-      dockerfile: wordpress.dockerfile
+      dockerfile: wordpress.local.dockerfile
     volumes:
       - ./wordpress:/var/www/html:delegated
+      - ./dev:/mnt/dev:delegated
+      - ./opt/scripts:/opt/scripts:delegated
       - ./opt/php/php-local.ini:/usr/local/etc/php/conf.d/zz-local.ini
     depends_on:
       - mariadb
@@ -68,8 +69,6 @@ services:
       WP_SENTRY_ENV: ""
       S3_UPLOADS_BUCKET_URL: ""
       ACF_PRO_LICENSE: ""
-
 volumes:
   database:
     driver: local
-
