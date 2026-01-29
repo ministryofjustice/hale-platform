@@ -24,3 +24,10 @@ shell:
 # Remove all dangling <none> images
 none:
 	docker rmi $(docker images -f "dangling=true" -q)
+
+clone-repos:
+	bash bin/clone-repos.sh
+
+symlink:
+	docker exec wordpress /var/www/html/bin/link-dev-plugins.sh
+
