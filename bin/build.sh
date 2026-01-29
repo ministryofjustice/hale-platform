@@ -44,7 +44,7 @@ while true; do
             echo -e '# Run Composer'
             echo -e '######################\n'
             rm composer.lock
-            composer install --no-cache --no-interaction --prefer-dist
+            composer install -vvv
 
             # Test NPM is installed locally
             if ! command -v npm > /dev/null 2>&1; then
