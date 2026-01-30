@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7a585037d9e71ab7463c8ac82c849407",
+    "content-hash": "82d4ebbaba5c1381f727c3ea5fe6bbc9",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -115,16 +115,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.369.15",
+            "version": "3.369.23",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "7c62f41fb0460c3e5d5c1f70e93e726f1daa75f5"
+                "reference": "c45d13c95b188b6fc9f31c77083fad6e7dbc3efd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/7c62f41fb0460c3e5d5c1f70e93e726f1daa75f5",
-                "reference": "7c62f41fb0460c3e5d5c1f70e93e726f1daa75f5",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/c45d13c95b188b6fc9f31c77083fad6e7dbc3efd",
+                "reference": "c45d13c95b188b6fc9f31c77083fad6e7dbc3efd",
                 "shasum": ""
             },
             "require": {
@@ -206,9 +206,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.369.15"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.369.23"
             },
-            "time": "2026-01-16T19:18:57+00:00"
+            "time": "2026-01-29T19:15:41+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -958,26 +958,25 @@
         },
         {
             "name": "ministryofjustice/govwind",
-            "version": "dev-main",
+            "version": "dev-set-font-headings-4584",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/govwind.git",
-                "reference": "484fa4d6236584eaf71bbde462beea8b349d26b4"
+                "reference": "4f1333d230a96b13336c1027ce17d22edb71a994"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/484fa4d6236584eaf71bbde462beea8b349d26b4",
-                "reference": "484fa4d6236584eaf71bbde462beea8b349d26b4",
+                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/4f1333d230a96b13336c1027ce17d22edb71a994",
+                "reference": "4f1333d230a96b13336c1027ce17d22edb71a994",
                 "shasum": ""
             },
-            "default-branch": true,
             "type": "wordpress-theme",
             "description": "Govwind theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/govwind/tree/main",
+                "source": "https://github.com/ministryofjustice/govwind/tree/set-font-headings-4584",
                 "issues": "https://github.com/ministryofjustice/govwind/issues"
             },
-            "time": "2026-01-28T15:14:14+00:00"
+            "time": "2026-01-30T14:48:10+00:00"
         },
         {
             "name": "ministryofjustice/hale",
@@ -1102,12 +1101,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/website-builder-blocks.git",
-                "reference": "ebaa3d4f02f271fb2febfaade5c0d7900aed48d1"
+                "reference": "0b8f4133923b76ee77ffcaa43481f43db1255d9a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/ebaa3d4f02f271fb2febfaade5c0d7900aed48d1",
-                "reference": "ebaa3d4f02f271fb2febfaade5c0d7900aed48d1",
+                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/0b8f4133923b76ee77ffcaa43481f43db1255d9a",
+                "reference": "0b8f4133923b76ee77ffcaa43481f43db1255d9a",
                 "shasum": ""
             },
             "require-dev": {
@@ -1135,7 +1134,7 @@
                 "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/main",
                 "issues": "https://github.com/ministryofjustice/website-builder-blocks/issues"
             },
-            "time": "2025-12-23T12:34:04+00:00"
+            "time": "2026-01-29T13:24:24+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
@@ -2492,16 +2491,16 @@
         },
         {
             "name": "symfony/http-client",
-            "version": "v7.4.3",
+            "version": "v7.4.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-client.git",
-                "reference": "d01dfac1e0dc99f18da48b18101c23ce57929616"
+                "reference": "84bb634857a893cc146cceb467e31b3f02c5fe9f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-client/zipball/d01dfac1e0dc99f18da48b18101c23ce57929616",
-                "reference": "d01dfac1e0dc99f18da48b18101c23ce57929616",
+                "url": "https://api.github.com/repos/symfony/http-client/zipball/84bb634857a893cc146cceb467e31b3f02c5fe9f",
+                "reference": "84bb634857a893cc146cceb467e31b3f02c5fe9f",
                 "shasum": ""
             },
             "require": {
@@ -2569,7 +2568,7 @@
                 "http"
             ],
             "support": {
-                "source": "https://github.com/symfony/http-client/tree/v7.4.3"
+                "source": "https://github.com/symfony/http-client/tree/v7.4.5"
             },
             "funding": [
                 {
@@ -2589,7 +2588,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-12-23T14:50:43+00:00"
+            "time": "2026-01-27T16:16:02+00:00"
         },
         {
             "name": "symfony/http-client-contracts",

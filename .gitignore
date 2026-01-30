@@ -1,4 +1,5 @@
 mysql
+dev/
 .env*
 .DS_Store
 .idea
