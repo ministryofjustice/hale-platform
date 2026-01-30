@@ -12,7 +12,8 @@ RUN apk update && \
     apk add less \
     vim \
     mariadb-client \
-    htop
+    htop \
+    bash
 
 # Install wp-cli
 RUN curl -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \

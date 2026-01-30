@@ -52,18 +52,6 @@ while true; do
               exit 1
             fi
 
-            echo -e '\n######################'
-            echo -e '# Run NPM'
-            echo -e '######################\n'
-            npm install --prefix ./wordpress/wp-content/themes/hale
-            npm run production --if-present --prefix ./wordpress/wp-content/themes/hale
-            npm install --prefix ./wordpress/wp-content/themes/hale-dash
-            npm run production --if-present --prefix ./wordpress/wp-content/themes/hale-dash
-            npm install --prefix ./wordpress/wp-content/themes/hale-showcase
-            npm run production --if-present --prefix ./wordpress/wp-content/themes/hale-showcase
-            npm install --prefix ./wordpress/wp-content/themes/ppo
-            npm run production --if-present --prefix ./wordpress/wp-content/themes/ppo
-
 			# Test Docker is running locally
             if ! docker info > /dev/null 2>&1; then
             echo -e "Oops, where is Docker? Start Docker and try again.\n"
@@ -74,7 +62,7 @@ while true; do
             echo -e '\n######################'
             echo -e '# Run Docker Build'
             echo -e '######################\n'
-            docker compose build --no-cache
+            docker compose build
 
             break;;
         [Nn]* )
