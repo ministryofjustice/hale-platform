@@ -34,8 +34,6 @@ COPY opt/php/wp-cron-multisite.php /usr/src/wordpress/wp-cron-multisite.php
 # Setup WordPress multisite and network
 COPY opt/scripts/hale-entrypoint.sh /usr/local/bin/
 COPY opt/scripts/config.sh /usr/local/bin/
-# Note: link-dev-packages.sh will be available via volume mount at /opt/scripts/
-# No need to COPY it here since we mount ./opt:/opt:delegated in docker-compose
 
 # Generated Composer and NPM compiled artifacts (plugins, themes, CSS, JS)
 # The WP offical Docker image expects files to be in /usr/src/wordpress
