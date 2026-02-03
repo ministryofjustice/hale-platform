@@ -5,6 +5,8 @@ metadata:
   namespace: hale-platform-{{ .Values.configmap.envtype }}
 data:
   wordpress-custom.ini: |-
-    upload_max_filesize = 64M
-    post_max_size = 64M
-    php_admin_value[upload_max_filesize] = 64M
+    upload_max_filesize = 100M
+    post_max_size = 100M
+    max_execution_time = 300
+    max_input_time = 300
+    memory_limit = 256M
