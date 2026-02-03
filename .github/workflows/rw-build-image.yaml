@@ -160,6 +160,7 @@ jobs:
         with:
           path: |
             ~/.npm
+            wordpress/wp-content/themes/govwind/node_modules
             wordpress/wp-content/themes/hale/node_modules
             wordpress/wp-content/themes/hale-dash/node_modules
             wordpress/wp-content/themes/hale-showcase/node_modules
@@ -170,7 +171,7 @@ jobs:
 
       - name: Run NPM (parallel builds)
         run: |
-          for theme in hale hale-dash hale-showcase ppo; do
+          for theme in hale hale-dash hale-showcase ppo govwind; do
             (
               cd ./wordpress/wp-content/themes/$theme
               if [ -f package-lock.json ]; then
