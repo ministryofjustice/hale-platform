@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ec3592176df663663704b0e9c9c1b20f",
+    "content-hash": "053177003d79c7b0140a2d206255ae7f",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -1003,16 +1003,16 @@
         },
         {
             "name": "ministryofjustice/hale-components",
-            "version": "1.13.0",
+            "version": "dev-ssl-http-wb-cookie",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale-components.git",
-                "reference": "c5137b8c6bed821ac59feebd9e543ef2981b8d5f"
+                "reference": "2da557124825a037ebf4d10c48e82523a5767719"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/c5137b8c6bed821ac59feebd9e543ef2981b8d5f",
-                "reference": "c5137b8c6bed821ac59feebd9e543ef2981b8d5f",
+                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/2da557124825a037ebf4d10c48e82523a5767719",
+                "reference": "2da557124825a037ebf4d10c48e82523a5767719",
                 "shasum": ""
             },
             "require": {
@@ -1024,10 +1024,10 @@
                 "wordpress"
             ],
             "support": {
-                "source": "https://github.com/ministryofjustice/hale-components/tree/1.13.0",
+                "source": "https://github.com/ministryofjustice/hale-components/tree/ssl-http-wb-cookie",
                 "issues": "https://github.com/ministryofjustice/hale-components/issues"
             },
-            "time": "2026-01-16T09:37:58+00:00"
+            "time": "2026-02-04T09:36:52+00:00"
         },
         {
             "name": "ministryofjustice/hale-dash",
@@ -3590,6 +3590,7 @@
     "minimum-stability": "stable",
     "stability-flags": {
         "ministryofjustice/govwind": 20,
+        "ministryofjustice/hale-components": 20,
         "ministryofjustice/ppo": 20,
         "ministryofjustice/website-builder-blocks": 20
     },
@@ -3599,5 +3600,5 @@
         "php": ">=8.0"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
