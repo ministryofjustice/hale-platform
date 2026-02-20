@@ -11,12 +11,7 @@ metadata:
     nginx.ingress.kubernetes.io/modsecurity-snippet: |
       # Default WAF rules
       SecRuleEngine On
-      SecDefaultAction 
-        "phase:2,\
-        pass,\
-        log,\
-        tag:github_team=hale-platform,\
-        tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }}"
+      SecDefaultAction "phase:2,pass,log,tag:github_team=hale-platform,tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }}"
       # Restrict 400m uploads to wp-admin path only
       SecRule REQUEST_URI "!@beginsWith /wp-admin" \
         "id:1000,\
@@ -28,7 +23,7 @@ metadata:
         tag:github_team=hale-platform,\
         tag:environment=hale-platform-{{ .Values.configmap.envtype }},\
         chain"
-        SecRule REQUEST_HEADERS:Content-Length "@gt 62914560"
+      SecRule REQUEST_HEADERS:Content-Length "@gt 62914560"
       # Set WAF Config for Authenticated Users
       SecRule REQUEST_HEADERS:Cookie "@contains WB_CONFIG={{ .Values.secrets.wbconfig }}"
         "id:1001,\
