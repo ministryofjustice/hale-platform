@@ -6,7 +6,7 @@ metadata:
   annotations:
     external-dns.alpha.kubernetes.io/set-identifier: {{ .Values.ingress.metadata.annotations.setidentifier }}
     external-dns.alpha.kubernetes.io/aws-weight: "100"
-    nginx.ingress.kubernetes.io/proxy-body-size: "128m"
+    nginx.ingress.kubernetes.io/proxy-body-size: "400m"
     nginx.ingress.kubernetes.io/enable-modsecurity: "true"
     nginx.ingress.kubernetes.io/modsecurity-snippet: |
       # Default WAF rules
@@ -17,6 +17,18 @@ metadata:
         log,\
         tag:github_team=hale-platform,\
         tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }}"
+      # Restrict 400m uploads to wp-admin path only
+      SecRule REQUEST_URI "!@beginsWith /wp-admin" \
+        "id:1000,\
+        phase:2,\
+        deny,\
+        status:413,\
+        log,\
+        msg:'Large upload blocked outside admin',\
+        tag:github_team=hale-platform,\
+        tag:environment=hale-platform-{{ .Values.configmap.envtype }},\
+        chain"
+        SecRule REQUEST_HEADERS:Content-Length "@gt 62914560"
       # Set WAF Config for Authenticated Users
       SecRule REQUEST_HEADERS:Cookie "@contains WB_CONFIG={{ .Values.secrets.wbconfig }}"
         "id:1001,\
