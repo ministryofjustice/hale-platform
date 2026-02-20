@@ -98,7 +98,7 @@ autoscaling:
   targetMemory: 75
   replicaCount:
     prod:
-      min: 4
+      min: 5
       max: 8
     staging:
       min: 2
