@@ -164,6 +164,7 @@ secrets:
   wpsecureauthsalt: ""
   s3uploadsbucket: ""
   s3uploadsbucketurl: ""
+  s3uploadsobjectacl: ""
   s3uploadsregion: ""
   wbconfig: ""
   acftoken: ""

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ec3592176df663663704b0e9c9c1b20f",
+    "content-hash": "eb3bde537abc270fbc554376527e9b19",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -115,16 +115,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.369.27",
+            "version": "3.369.34",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "f844afab2a74eb3cf881970a9c31de460510eb74"
+                "reference": "5db21cd0e5c8a5b5344596649033acf861a5e117"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/f844afab2a74eb3cf881970a9c31de460510eb74",
-                "reference": "f844afab2a74eb3cf881970a9c31de460510eb74",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/5db21cd0e5c8a5b5344596649033acf861a5e117",
+                "reference": "5db21cd0e5c8a5b5344596649033acf861a5e117",
                 "shasum": ""
             },
             "require": {
@@ -206,9 +206,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.369.27"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.369.34"
             },
-            "time": "2026-02-04T19:07:08+00:00"
+            "time": "2026-02-13T19:09:12+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -962,12 +962,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/govwind.git",
-                "reference": "71a60606307075dcdfd9026acf9fc1ee03090e7b"
+                "reference": "607dd38ee83bafcf16409b622422872e26f16af2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/71a60606307075dcdfd9026acf9fc1ee03090e7b",
-                "reference": "71a60606307075dcdfd9026acf9fc1ee03090e7b",
+                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/607dd38ee83bafcf16409b622422872e26f16af2",
+                "reference": "607dd38ee83bafcf16409b622422872e26f16af2",
                 "shasum": ""
             },
             "default-branch": true,
@@ -977,42 +977,42 @@
                 "source": "https://github.com/ministryofjustice/govwind/tree/main",
                 "issues": "https://github.com/ministryofjustice/govwind/issues"
             },
-            "time": "2026-02-05T14:35:17+00:00"
+            "time": "2026-02-16T12:29:38+00:00"
         },
         {
             "name": "ministryofjustice/hale",
-            "version": "4.30.1",
+            "version": "4.31.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale.git",
-                "reference": "724929b8a8416cc78e3f081027267f4898b4d842"
+                "reference": "d91bbf2eb820c86c6a06831c4b3c822b440900ce"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/724929b8a8416cc78e3f081027267f4898b4d842",
-                "reference": "724929b8a8416cc78e3f081027267f4898b4d842",
+                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/d91bbf2eb820c86c6a06831c4b3c822b440900ce",
+                "reference": "d91bbf2eb820c86c6a06831c4b3c822b440900ce",
                 "shasum": ""
             },
             "type": "wordpress-theme",
             "description": "Hale theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/hale/tree/4.30.1",
+                "source": "https://github.com/ministryofjustice/hale/tree/4.31.0",
                 "issues": "https://github.com/ministryofjustice/hale/issues"
             },
-            "time": "2026-01-28T15:56:20+00:00"
+            "time": "2026-02-16T15:19:30+00:00"
         },
         {
             "name": "ministryofjustice/hale-components",
-            "version": "1.13.0",
+            "version": "1.14.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale-components.git",
-                "reference": "c5137b8c6bed821ac59feebd9e543ef2981b8d5f"
+                "reference": "9b813c8b31e9e24d80f6de806310be2536a4b221"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/c5137b8c6bed821ac59feebd9e543ef2981b8d5f",
-                "reference": "c5137b8c6bed821ac59feebd9e543ef2981b8d5f",
+                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/9b813c8b31e9e24d80f6de806310be2536a4b221",
+                "reference": "9b813c8b31e9e24d80f6de806310be2536a4b221",
                 "shasum": ""
             },
             "require": {
@@ -1024,10 +1024,10 @@
                 "wordpress"
             ],
             "support": {
-                "source": "https://github.com/ministryofjustice/hale-components/tree/1.13.0",
+                "source": "https://github.com/ministryofjustice/hale-components/tree/1.14.0",
                 "issues": "https://github.com/ministryofjustice/hale-components/issues"
             },
-            "time": "2026-01-16T09:37:58+00:00"
+            "time": "2026-02-04T14:03:01+00:00"
         },
         {
             "name": "ministryofjustice/hale-dash",
@@ -3274,15 +3274,15 @@
         },
         {
             "name": "wpackagist-plugin/ewww-image-optimizer",
-            "version": "8.3.1",
+            "version": "8.4.0",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/ewww-image-optimizer/",
-                "reference": "tags/8.3.1"
+                "reference": "tags/8.4.0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/ewww-image-optimizer.8.3.1.zip"
+                "url": "https://downloads.wordpress.org/plugin/ewww-image-optimizer.8.4.0.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -3292,15 +3292,15 @@
         },
         {
             "name": "wpackagist-plugin/microsoft-clarity",
-            "version": "0.10.15",
+            "version": "0.10.16",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/microsoft-clarity/",
-                "reference": "tags/0.10.15"
+                "reference": "tags/0.10.16"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/microsoft-clarity.0.10.15.zip"
+                "url": "https://downloads.wordpress.org/plugin/microsoft-clarity.0.10.16.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -3382,15 +3382,15 @@
         },
         {
             "name": "wpackagist-plugin/simple-301-redirects",
-            "version": "2.0.11",
+            "version": "2.1.0",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/simple-301-redirects/",
-                "reference": "tags/2.0.11"
+                "reference": "tags/2.1.0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/simple-301-redirects.2.0.11.zip"
+                "url": "https://downloads.wordpress.org/plugin/simple-301-redirects.2.1.0.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
