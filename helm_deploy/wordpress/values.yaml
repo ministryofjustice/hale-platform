@@ -94,18 +94,18 @@ wp:
 ## Set min/max thresholds in number of pods run based on CPU can memory
 autoscaling:
   enabled: true
-  targetCPU: 75
-  targetMemory: 65
+  targetCPU: 70 
+  targetMemory: 75
   replicaCount:
     prod:
-      min: 3
-      max: 6
+      min: 5
+      max: 8
     staging:
       min: 2
-      max: 3
+      max: 6
     demo:
       min: 2
-      max: 3
+      max: 6
     dev:
       min: 1
       max: 1
