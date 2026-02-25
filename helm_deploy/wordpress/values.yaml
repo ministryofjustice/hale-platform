@@ -167,6 +167,7 @@ secrets:
   s3uploadsregion: ""
   s3uploadsbucketurl: ""
   s3uploadsobjectacl: ""
+  cloudfrontdistributionid: ""
   wbconfig: ""
   acftoken: ""
 
