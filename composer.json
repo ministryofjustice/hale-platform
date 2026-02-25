@@ -99,7 +99,7 @@
     "ministryofjustice/cookie-compliance": "1.0.3",
     "ministryofjustice/govwind": "dev-main",
     "ministryofjustice/hale": "dev-time-picker",
-    "ministryofjustice/hale-components": "1.14.0",
+    "ministryofjustice/hale-components": "dev-add-cache-invalidation",
     "ministryofjustice/hale-dash": "1.1.8",
     "ministryofjustice/hale-showcase": "1.1.10",
     "ministryofjustice/ppo": "dev-main",
