@@ -76,7 +76,7 @@ on:
       s3-uploads-object-acl:
         required: false
       cloudfront-distribution-id:
-        required: false
+        required: true
       alert-slack-webhook-url:
         required: true
       wb-config:
