@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c84dbc88101ff21340af3dd8d6c60df4",
+    "content-hash": "bd91db5cfdd4e66a9867808c4d36fd60",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -1003,16 +1003,16 @@
         },
         {
             "name": "ministryofjustice/hale-components",
-            "version": "1.14.0",
+            "version": "1.15.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale-components.git",
-                "reference": "9b813c8b31e9e24d80f6de806310be2536a4b221"
+                "reference": "0c5cd94e3f9de57f9719be335ea42e819e40a352"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/9b813c8b31e9e24d80f6de806310be2536a4b221",
-                "reference": "9b813c8b31e9e24d80f6de806310be2536a4b221",
+                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/0c5cd94e3f9de57f9719be335ea42e819e40a352",
+                "reference": "0c5cd94e3f9de57f9719be335ea42e819e40a352",
                 "shasum": ""
             },
             "require": {
@@ -1024,10 +1024,10 @@
                 "wordpress"
             ],
             "support": {
-                "source": "https://github.com/ministryofjustice/hale-components/tree/1.14.0",
+                "source": "https://github.com/ministryofjustice/hale-components/tree/1.15.0",
                 "issues": "https://github.com/ministryofjustice/hale-components/issues"
             },
-            "time": "2026-02-04T14:03:01+00:00"
+            "time": "2026-02-26T16:20:03+00:00"
         },
         {
             "name": "ministryofjustice/hale-dash",
@@ -3599,5 +3599,5 @@
         "php": ">=8.0"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
