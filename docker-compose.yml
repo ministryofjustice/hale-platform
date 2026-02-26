@@ -63,10 +63,12 @@ services:
       S3_UPLOADS_USE_INSTANCE_PROFILE: "false"
       S3_UPLOADS_REGION: ""
       S3_UPLOADS_BUCKET: ""
+      S3_UPLOADS_BUCKET_URL: ""
+      S3_UPLOADS_OBJECT_ACL: ""
+      CLOUDFRONT_DISTRIBUTION_ID: ""
       SERVER_NAME: "hale.docker"
       PHP_DSN: "" # Sentry constant (not used locally)
       WP_SENTRY_ENV: ""
-      S3_UPLOADS_BUCKET_URL: ""
       ACF_PRO_LICENSE: ""
 
 volumes:
