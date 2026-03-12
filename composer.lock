@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bd91db5cfdd4e66a9867808c4d36fd60",
+    "content-hash": "1e780d7ec7a3e541f902a1398606ac69",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -1139,21 +1139,20 @@
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
-            "version": "1.0.3",
+            "version": "1.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-gov-uk-notify.git",
-                "reference": "b5571162667f9ddff07e00d95220d29ea319316f"
+                "reference": "3d420be1226c422586d36e0fe65cd30197ec9278"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/wp-gov-uk-notify/zipball/b5571162667f9ddff07e00d95220d29ea319316f",
-                "reference": "b5571162667f9ddff07e00d95220d29ea319316f",
+                "url": "https://api.github.com/repos/ministryofjustice/wp-gov-uk-notify/zipball/3d420be1226c422586d36e0fe65cd30197ec9278",
+                "reference": "3d420be1226c422586d36e0fe65cd30197ec9278",
                 "shasum": ""
             },
             "require": {
                 "alphagov/notifications-php-client": "*",
-                "composer/installers": "^2.0",
                 "php-http/guzzle7-adapter": "*"
             },
             "type": "wordpress-plugin",
@@ -1165,10 +1164,10 @@
             ],
             "description": "A WordPress plugin that configures Wordpress to send emails via the GOV.UK Notify Service",
             "support": {
-                "source": "https://github.com/ministryofjustice/wp-gov-uk-notify/tree/1.0.3",
+                "source": "https://github.com/ministryofjustice/wp-gov-uk-notify/tree/1.0.4",
                 "issues": "https://github.com/ministryofjustice/wp-gov-uk-notify/issues"
             },
-            "time": "2025-12-03T15:08:22+00:00"
+            "time": "2026-03-12T13:17:01+00:00"
         },
         {
             "name": "ministryofjustice/wp-moj-blocks",
