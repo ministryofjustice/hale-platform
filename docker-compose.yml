@@ -69,6 +69,8 @@ services:
       WP_SENTRY_ENV: ""
       S3_UPLOADS_BUCKET_URL: ""
       ACF_PRO_LICENSE: ""
+      S3_UPLOADS_OBJECT_ACL: ""
+      CLOUDFRONT_DISTRIBUTION_ID: ""
 volumes:
   database:
     driver: local
