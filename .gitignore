@@ -1,6 +1,9 @@
+
 ############################
 # Environment & secrets
 ############################
+mysql
+dev/
 .env*
 auth.json
 

@@ -4,26 +4,26 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3258feaf4daa7bb0c75da411702b5777",
+    "content-hash": "56eb824b0c7af37e2c08010b71309aa0",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
-            "version": "6.2.0",
+            "version": "7.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/alphagov/notifications-php-client.git",
-                "reference": "9d186d44d1c91eb9db60d722864cc024c6b9acd9"
+                "reference": "9e9b52272e352426e6bc913addd0683dee428fe9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/alphagov/notifications-php-client/zipball/9d186d44d1c91eb9db60d722864cc024c6b9acd9",
-                "reference": "9d186d44d1c91eb9db60d722864cc024c6b9acd9",
+                "url": "https://api.github.com/repos/alphagov/notifications-php-client/zipball/9e9b52272e352426e6bc913addd0683dee428fe9",
+                "reference": "9e9b52272e352426e6bc913addd0683dee428fe9",
                 "shasum": ""
             },
             "require": {
-                "firebase/php-jwt": "^v6.1.0",
+                "firebase/php-jwt": "^7.0.0",
                 "guzzlehttp/psr7": "^2.1.1",
-                "php": "^7.2|^8.0"
+                "php": "^8.0"
             },
             "require-dev": {
                 "php-http/guzzle7-adapter": "^1.0",
@@ -55,9 +55,9 @@
             "description": "PHP client for GOV.UK Notifications",
             "support": {
                 "issues": "https://github.com/alphagov/notifications-php-client/issues",
-                "source": "https://github.com/alphagov/notifications-php-client/tree/6.2.0"
+                "source": "https://github.com/alphagov/notifications-php-client/tree/7.0.0"
             },
-            "time": "2024-07-31T12:55:43+00:00"
+            "time": "2026-02-18T10:10:35+00:00"
         },
         {
             "name": "aws/aws-crt-php",
@@ -424,16 +424,16 @@
         },
         {
             "name": "firebase/php-jwt",
-            "version": "v6.11.1",
+            "version": "v7.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/firebase/php-jwt.git",
-                "reference": "d1e91ecf8c598d073d0995afa8cd5c75c6e19e66"
+                "reference": "28aa0694bcfdfa5e2959c394d5a1ee7a5083629e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/firebase/php-jwt/zipball/d1e91ecf8c598d073d0995afa8cd5c75c6e19e66",
-                "reference": "d1e91ecf8c598d073d0995afa8cd5c75c6e19e66",
+                "url": "https://api.github.com/repos/firebase/php-jwt/zipball/28aa0694bcfdfa5e2959c394d5a1ee7a5083629e",
+                "reference": "28aa0694bcfdfa5e2959c394d5a1ee7a5083629e",
                 "shasum": ""
             },
             "require": {
@@ -481,9 +481,9 @@
             ],
             "support": {
                 "issues": "https://github.com/firebase/php-jwt/issues",
-                "source": "https://github.com/firebase/php-jwt/tree/v6.11.1"
+                "source": "https://github.com/firebase/php-jwt/tree/v7.0.3"
             },
-            "time": "2025-04-09T20:32:01+00:00"
+            "time": "2026-02-25T22:16:40+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -981,38 +981,38 @@
         },
         {
             "name": "ministryofjustice/hale",
-            "version": "4.30.0",
+            "version": "4.31.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale.git",
-                "reference": "1e139adbc5863eb4d437c631cbf4a5818e3e16ef"
+                "reference": "1b12b6193faca8266900cdcd890086cf0994a44a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/1e139adbc5863eb4d437c631cbf4a5818e3e16ef",
-                "reference": "1e139adbc5863eb4d437c631cbf4a5818e3e16ef",
+                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/1b12b6193faca8266900cdcd890086cf0994a44a",
+                "reference": "1b12b6193faca8266900cdcd890086cf0994a44a",
                 "shasum": ""
             },
             "type": "wordpress-theme",
             "description": "Hale theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/hale/tree/4.30.0",
+                "source": "https://github.com/ministryofjustice/hale/tree/4.31.1",
                 "issues": "https://github.com/ministryofjustice/hale/issues"
             },
-            "time": "2026-01-19T17:18:51+00:00"
+            "time": "2026-02-24T16:50:33+00:00"
         },
         {
             "name": "ministryofjustice/hale-components",
-            "version": "1.13.0",
+            "version": "1.15.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale-components.git",
-                "reference": "c5137b8c6bed821ac59feebd9e543ef2981b8d5f"
+                "reference": "bc5d6d40ef4283ff855e7fd3e12530c5cb38f76f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/c5137b8c6bed821ac59feebd9e543ef2981b8d5f",
-                "reference": "c5137b8c6bed821ac59feebd9e543ef2981b8d5f",
+                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/bc5d6d40ef4283ff855e7fd3e12530c5cb38f76f",
+                "reference": "bc5d6d40ef4283ff855e7fd3e12530c5cb38f76f",
                 "shasum": ""
             },
             "require": {
@@ -1024,10 +1024,10 @@
                 "wordpress"
             ],
             "support": {
-                "source": "https://github.com/ministryofjustice/hale-components/tree/1.13.0",
+                "source": "https://github.com/ministryofjustice/hale-components/tree/1.15.1",
                 "issues": "https://github.com/ministryofjustice/hale-components/issues"
             },
-            "time": "2026-01-16T09:37:58+00:00"
+            "time": "2026-03-12T14:51:43+00:00"
         },
         {
             "name": "ministryofjustice/hale-dash",
@@ -1139,21 +1139,20 @@
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
-            "version": "1.0.3",
+            "version": "1.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-gov-uk-notify.git",
-                "reference": "b5571162667f9ddff07e00d95220d29ea319316f"
+                "reference": "3d420be1226c422586d36e0fe65cd30197ec9278"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/wp-gov-uk-notify/zipball/b5571162667f9ddff07e00d95220d29ea319316f",
-                "reference": "b5571162667f9ddff07e00d95220d29ea319316f",
+                "url": "https://api.github.com/repos/ministryofjustice/wp-gov-uk-notify/zipball/3d420be1226c422586d36e0fe65cd30197ec9278",
+                "reference": "3d420be1226c422586d36e0fe65cd30197ec9278",
                 "shasum": ""
             },
             "require": {
                 "alphagov/notifications-php-client": "*",
-                "composer/installers": "^2.0",
                 "php-http/guzzle7-adapter": "*"
             },
             "type": "wordpress-plugin",
@@ -1165,10 +1164,10 @@
             ],
             "description": "A WordPress plugin that configures Wordpress to send emails via the GOV.UK Notify Service",
             "support": {
-                "source": "https://github.com/ministryofjustice/wp-gov-uk-notify/tree/1.0.3",
+                "source": "https://github.com/ministryofjustice/wp-gov-uk-notify/tree/1.0.4",
                 "issues": "https://github.com/ministryofjustice/wp-gov-uk-notify/issues"
             },
-            "time": "2025-12-03T15:08:22+00:00"
+            "time": "2026-03-12T13:17:01+00:00"
         },
         {
             "name": "ministryofjustice/wp-moj-blocks",
@@ -2422,16 +2421,16 @@
         },
         {
             "name": "symfony/filesystem",
-            "version": "v8.0.1",
+            "version": "v8.0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/filesystem.git",
-                "reference": "d937d400b980523dc9ee946bb69972b5e619058d"
+                "reference": "7bf9162d7a0dff98d079b72948508fa48018a770"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/filesystem/zipball/d937d400b980523dc9ee946bb69972b5e619058d",
-                "reference": "d937d400b980523dc9ee946bb69972b5e619058d",
+                "url": "https://api.github.com/repos/symfony/filesystem/zipball/7bf9162d7a0dff98d079b72948508fa48018a770",
+                "reference": "7bf9162d7a0dff98d079b72948508fa48018a770",
                 "shasum": ""
             },
             "require": {
@@ -2468,7 +2467,7 @@
             "description": "Provides basic utilities for the filesystem",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/filesystem/tree/v8.0.1"
+                "source": "https://github.com/symfony/filesystem/tree/v8.0.6"
             },
             "funding": [
                 {
@@ -2488,7 +2487,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-12-01T09:13:36+00:00"
+            "time": "2026-02-25T16:59:43+00:00"
         },
         {
             "name": "symfony/http-client",
@@ -3274,15 +3273,15 @@
         },
         {
             "name": "wpackagist-plugin/ewww-image-optimizer",
-            "version": "8.3.1",
+            "version": "8.4.1",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/ewww-image-optimizer/",
-                "reference": "tags/8.3.1"
+                "reference": "tags/8.4.1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/ewww-image-optimizer.8.3.1.zip"
+                "url": "https://downloads.wordpress.org/plugin/ewww-image-optimizer.8.4.1.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -3292,15 +3291,15 @@
         },
         {
             "name": "wpackagist-plugin/microsoft-clarity",
-            "version": "0.10.15",
+            "version": "0.10.17",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/microsoft-clarity/",
-                "reference": "tags/0.10.15"
+                "reference": "tags/0.10.17"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/microsoft-clarity.0.10.15.zip"
+                "url": "https://downloads.wordpress.org/plugin/microsoft-clarity.0.10.17.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -3382,15 +3381,15 @@
         },
         {
             "name": "wpackagist-plugin/simple-301-redirects",
-            "version": "2.0.11",
+            "version": "2.1.0",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/simple-301-redirects/",
-                "reference": "tags/2.0.11"
+                "reference": "tags/2.1.0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/simple-301-redirects.2.0.11.zip"
+                "url": "https://downloads.wordpress.org/plugin/simple-301-redirects.2.1.0.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -3599,5 +3598,5 @@
         "php": ">=8.0"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
