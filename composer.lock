@@ -115,29 +115,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-<<<<<<< HEAD
-            "version": "3.369.24",
+            "version": "3.373.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "17f404a47879c1fb47175ac2b61881ab0dc2dc5c"
+                "reference": "483fba51c28b3a0c0647bf5100e0edca82090b18"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/17f404a47879c1fb47175ac2b61881ab0dc2dc5c",
-                "reference": "17f404a47879c1fb47175ac2b61881ab0dc2dc5c",
-=======
-            "version": "3.371.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "26cd04f9f47ca0d66baa59303f70bff5a5d48706"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/26cd04f9f47ca0d66baa59303f70bff5a5d48706",
-                "reference": "26cd04f9f47ca0d66baa59303f70bff5a5d48706",
->>>>>>> bfe6088 (Add update image with wp 6.9.1)
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/483fba51c28b3a0c0647bf5100e0edca82090b18",
+                "reference": "483fba51c28b3a0c0647bf5100e0edca82090b18",
                 "shasum": ""
             },
             "require": {
@@ -158,12 +145,12 @@
                 "aws/aws-php-sns-message-validator": "~1.0",
                 "behat/behat": "~3.0",
                 "composer/composer": "^2.7.8",
-                "dms/phpunit-arraysubset-asserts": "^0.4.0",
+                "dms/phpunit-arraysubset-asserts": "^v0.5.0",
                 "doctrine/cache": "~1.4",
                 "ext-dom": "*",
                 "ext-openssl": "*",
                 "ext-sockets": "*",
-                "phpunit/phpunit": "^9.6",
+                "phpunit/phpunit": "^10.0",
                 "psr/cache": "^2.0 || ^3.0",
                 "psr/simple-cache": "^2.0 || ^3.0",
                 "sebastian/comparator": "^1.2.3 || ^4.0 || ^5.0",
@@ -201,11 +188,11 @@
             "authors": [
                 {
                     "name": "Amazon Web Services",
-                    "homepage": "http://aws.amazon.com"
+                    "homepage": "https://aws.amazon.com"
                 }
             ],
             "description": "AWS SDK for PHP - Use Amazon Web Services in your PHP project",
-            "homepage": "http://aws.amazon.com/sdkforphp",
+            "homepage": "https://aws.amazon.com/sdk-for-php",
             "keywords": [
                 "amazon",
                 "aws",
@@ -219,15 +206,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-<<<<<<< HEAD
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.369.24"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.373.2"
             },
-            "time": "2026-01-30T19:14:32+00:00"
-=======
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.371.1"
-            },
-            "time": "2026-02-25T19:05:28+00:00"
->>>>>>> bfe6088 (Add update image with wp 6.9.1)
+            "time": "2026-03-13T18:08:30+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -715,16 +696,16 @@
         },
         {
             "name": "guzzlehttp/psr7",
-            "version": "2.8.0",
+            "version": "2.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "21dc724a0583619cd1652f673303492272778051"
+                "reference": "7d0ed42f28e42d61352a7a79de682e5e67fec884"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/21dc724a0583619cd1652f673303492272778051",
-                "reference": "21dc724a0583619cd1652f673303492272778051",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/7d0ed42f28e42d61352a7a79de682e5e67fec884",
+                "reference": "7d0ed42f28e42d61352a7a79de682e5e67fec884",
                 "shasum": ""
             },
             "require": {
@@ -740,6 +721,7 @@
             "require-dev": {
                 "bamarni/composer-bin-plugin": "^1.8.2",
                 "http-interop/http-factory-tests": "0.9.0",
+                "jshttp/mime-db": "1.54.0.1",
                 "phpunit/phpunit": "^8.5.44 || ^9.6.25"
             },
             "suggest": {
@@ -811,7 +793,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/psr7/issues",
-                "source": "https://github.com/guzzle/psr7/tree/2.8.0"
+                "source": "https://github.com/guzzle/psr7/tree/2.9.0"
             },
             "funding": [
                 {
@@ -827,7 +809,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-08-23T21:21:41+00:00"
+            "time": "2026-03-10T16:41:02+00:00"
         },
         {
             "name": "http-interop/http-factory-guzzle",
@@ -981,21 +963,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/govwind.git",
-<<<<<<< HEAD
-                "reference": "484fa4d6236584eaf71bbde462beea8b349d26b4"
+                "reference": "074b9e97ca7b4a2b7f043397fecb6614e3b50bfb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/484fa4d6236584eaf71bbde462beea8b349d26b4",
-                "reference": "484fa4d6236584eaf71bbde462beea8b349d26b4",
-=======
-                "reference": "146bdecf4caa997e925bbf7fa073af67fed669e5"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/146bdecf4caa997e925bbf7fa073af67fed669e5",
-                "reference": "146bdecf4caa997e925bbf7fa073af67fed669e5",
->>>>>>> bfe6088 (Add update image with wp 6.9.1)
+                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/074b9e97ca7b4a2b7f043397fecb6614e3b50bfb",
+                "reference": "074b9e97ca7b4a2b7f043397fecb6614e3b50bfb",
                 "shasum": ""
             },
             "default-branch": true,
@@ -1005,11 +978,7 @@
                 "source": "https://github.com/ministryofjustice/govwind/tree/main",
                 "issues": "https://github.com/ministryofjustice/govwind/issues"
             },
-<<<<<<< HEAD
-            "time": "2026-01-28T15:14:14+00:00"
-=======
-            "time": "2026-02-26T10:42:21+00:00"
->>>>>>> bfe6088 (Add update image with wp 6.9.1)
+            "time": "2026-03-16T09:31:34+00:00"
         },
         {
             "name": "ministryofjustice/hale",
@@ -1134,12 +1103,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/website-builder-blocks.git",
-                "reference": "0b8f4133923b76ee77ffcaa43481f43db1255d9a"
+                "reference": "1df406c0a4ac457c159706691e268383fc8564c8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/0b8f4133923b76ee77ffcaa43481f43db1255d9a",
-                "reference": "0b8f4133923b76ee77ffcaa43481f43db1255d9a",
+                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/1df406c0a4ac457c159706691e268383fc8564c8",
+                "reference": "1df406c0a4ac457c159706691e268383fc8564c8",
                 "shasum": ""
             },
             "require-dev": {
@@ -1167,7 +1136,7 @@
                 "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/main",
                 "issues": "https://github.com/ministryofjustice/website-builder-blocks/issues"
             },
-            "time": "2026-01-29T13:24:24+00:00"
+            "time": "2026-03-16T11:23:38+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
@@ -2523,16 +2492,16 @@
         },
         {
             "name": "symfony/http-client",
-            "version": "v7.4.6",
+            "version": "v7.4.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-client.git",
-                "reference": "2bde8afd5ab2fe0b05a9c2d4c3c0e28ceb98a154"
+                "reference": "1010624285470eb60e88ed10035102c75b4ea6af"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-client/zipball/2bde8afd5ab2fe0b05a9c2d4c3c0e28ceb98a154",
-                "reference": "2bde8afd5ab2fe0b05a9c2d4c3c0e28ceb98a154",
+                "url": "https://api.github.com/repos/symfony/http-client/zipball/1010624285470eb60e88ed10035102c75b4ea6af",
+                "reference": "1010624285470eb60e88ed10035102c75b4ea6af",
                 "shasum": ""
             },
             "require": {
@@ -2600,7 +2569,7 @@
                 "http"
             ],
             "support": {
-                "source": "https://github.com/symfony/http-client/tree/v7.4.6"
+                "source": "https://github.com/symfony/http-client/tree/v7.4.7"
             },
             "funding": [
                 {
@@ -2620,7 +2589,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-02-18T09:46:18+00:00"
+            "time": "2026-03-05T11:16:58+00:00"
         },
         {
             "name": "symfony/http-client-contracts",
@@ -3323,15 +3292,15 @@
         },
         {
             "name": "wpackagist-plugin/microsoft-clarity",
-            "version": "0.10.17",
+            "version": "0.10.21",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/microsoft-clarity/",
-                "reference": "tags/0.10.17"
+                "reference": "tags/0.10.21"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/microsoft-clarity.0.10.17.zip"
+                "url": "https://downloads.wordpress.org/plugin/microsoft-clarity.0.10.21.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -3521,10 +3490,10 @@
         },
         {
             "name": "wpengine/advanced-custom-fields-pro",
-            "version": "6.7.0.2",
+            "version": "6.7.1",
             "dist": {
                 "type": "zip",
-                "url": "https://connect.advancedcustomfields.com/v2/plugins/composer_download?s=composer&p=pro&t=6.7.0.2"
+                "url": "https://connect.advancedcustomfields.com/v2/plugins/composer_download?s=composer&p=pro&t=6.7.1"
             },
             "require": {
                 "composer/installers": "~1.0 || ~2.0"
@@ -3630,5 +3599,5 @@
         "php": ">=8.0"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }
