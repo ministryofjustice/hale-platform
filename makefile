@@ -35,8 +35,8 @@ down:
 # Build all images on local machine
 build:
 	@echo "Building Docker images..."
-	@chmod +x bin/build.sh
-	@./bin/build.sh
+	@chmod +x bin/local-build.sh
+	@./bin/local-build.sh
 
 # Shell into the WordPress container
 shell:
