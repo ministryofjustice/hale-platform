@@ -1,0 +1,2 @@
+gh repo clone ministryofjustice/cookie-compliance && gh repo clone ministryofjustice/govwind && gh repo clone ministryofjustice/hale-components && gh repo clone ministryofjustice/hale-dash && gh repo clone ministryofjustice/hale-showcase && gh repo clone ministryofjustice/hale && gh repo clone ministryofjustice/ppo && gh repo clone ministryofjustice/website-builder-blocks && gh repo clone ministryofjustice/wp-gov-uk-notify && gh repo clone ministryofjustice/wp-moj-blocks && gh repo clone ministryofjustice/wp-s3-uploads
+

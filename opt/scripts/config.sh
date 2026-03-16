@@ -58,4 +58,3 @@ wp theme delete twentytwentyone twentytwentytwo
 wp plugin delete akismet hello
 
 exec "$@"
-

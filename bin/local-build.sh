@@ -40,29 +40,19 @@ while true; do
             fi
 
             # Install build dependancies
+            # Cache flag not added here because Composer caches already automatically.
+            # Script deletes lock so Composer is forced to re-reslove dependancies anyway.
             echo -e '\n######################'
             echo -e '# Run Composer'
             echo -e '######################\n'
             rm composer.lock
-            composer install --no-cache
+            composer install -vvv
 
             # Test NPM is installed locally
-            if npm > /dev/null 2>&1; then
-            echo -e "Oops, NPM does not appear to be installed locally.\nMake sure NPM is installed and try again.\n"
-            exit 1
+            if ! command -v npm > /dev/null 2>&1; then
+              echo "Oops, NPM does not appear to be installed locally."
+              exit 1
             fi
-
-            echo -e '\n######################'
-            echo -e '# Run NPM'
-            echo -e '######################\n'
-            npm install --prefix ./wordpress/wp-content/themes/hale
-            npm run production --if-present --prefix ./wordpress/wp-content/themes/hale
-            npm install --prefix ./wordpress/wp-content/themes/hale-dash
-            npm run production --if-present --prefix ./wordpress/wp-content/themes/hale-dash
-            npm install --prefix ./wordpress/wp-content/themes/hale-showcase
-            npm run production --if-present --prefix ./wordpress/wp-content/themes/hale-showcase
-            npm install --prefix ./wordpress/wp-content/themes/ppo
-            npm run production --if-present --prefix ./wordpress/wp-content/themes/ppo
 
 			# Test Docker is running locally
             if ! docker info > /dev/null 2>&1; then
@@ -74,7 +64,7 @@ while true; do
             echo -e '\n######################'
             echo -e '# Run Docker Build'
             echo -e '######################\n'
-            docker compose build --no-cache
+            docker compose build
 
             break;;
         [Nn]* )
