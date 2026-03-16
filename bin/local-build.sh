@@ -40,6 +40,8 @@ while true; do
             fi
 
             # Install build dependancies
+            # Cache flag not added here because Composer caches already automatically.
+            # Script deletes lock so Composer is forced to re-reslove dependancies anyway.
             echo -e '\n######################'
             echo -e '# Run Composer'
             echo -e '######################\n'
