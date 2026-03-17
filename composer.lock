@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "56eb824b0c7af37e2c08010b71309aa0",
+    "content-hash": "4a88d3e12447dd280b50c37c55d81467",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -3253,6 +3253,24 @@
             },
             "type": "wordpress-plugin",
             "homepage": "https://wordpress.org/plugins/auth0/"
+        },
+        {
+            "name": "wpackagist-plugin/breadcrumb-block",
+            "version": "1.1.0",
+            "source": {
+                "type": "svn",
+                "url": "https://plugins.svn.wordpress.org/breadcrumb-block/",
+                "reference": "tags/1.1.0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://downloads.wordpress.org/plugin/breadcrumb-block.1.1.0.zip"
+            },
+            "require": {
+                "composer/installers": "^1.0 || ^2.0"
+            },
+            "type": "wordpress-plugin",
+            "homepage": "https://wordpress.org/plugins/breadcrumb-block/"
         },
         {
             "name": "wpackagist-plugin/classic-editor",
