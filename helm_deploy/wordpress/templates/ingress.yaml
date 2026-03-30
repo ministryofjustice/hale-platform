@@ -27,12 +27,7 @@ metadata:
         tag:environment=hale-platform-{{ .Values.configmap.envtype }}-auth,\
         ctl:ruleEngine=DetectionOnly"
       # Exclude posthog cookie
-      SecRule REQUEST_URI "@rx ." \
-        "id:1001001,\
-        phase:1,\
-        pass,\
-        nolog,\
-        ctl:ruleRemoveTargetById=942290;REQUEST_COOKIES:/^ph_phc_.*_posthog$/"
+      SecRuleUpdateTargetById 942290 "!REQUEST_COOKIES:/^ph_phc_.*_posthog$/"
     nginx.ingress.kubernetes.io/server-snippet: |
       location = /.well-known/security.txt {
         auth_basic off;
