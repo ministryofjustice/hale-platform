@@ -115,16 +115,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.374.2",
+            "version": "3.375.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "67b6b6210af47319c74c5666388d71bc1bc58276"
+                "reference": "6cfa1798c3fa0182d902eda9419dca48c86d74a1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/67b6b6210af47319c74c5666388d71bc1bc58276",
-                "reference": "67b6b6210af47319c74c5666388d71bc1bc58276",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/6cfa1798c3fa0182d902eda9419dca48c86d74a1",
+                "reference": "6cfa1798c3fa0182d902eda9419dca48c86d74a1",
                 "shasum": ""
             },
             "require": {
@@ -206,9 +206,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.374.2"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.375.0"
             },
-            "time": "2026-03-27T18:05:55+00:00"
+            "time": "2026-03-30T19:30:55+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -964,12 +964,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/govwind.git",
-                "reference": "ae460b7653f12b8d4c1c381c2674b4770b2af1b3"
+                "reference": "cf49dc749e9d9c05f5dc487013dbbfa0ac6fe74a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/ae460b7653f12b8d4c1c381c2674b4770b2af1b3",
-                "reference": "ae460b7653f12b8d4c1c381c2674b4770b2af1b3",
+                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/cf49dc749e9d9c05f5dc487013dbbfa0ac6fe74a",
+                "reference": "cf49dc749e9d9c05f5dc487013dbbfa0ac6fe74a",
                 "shasum": ""
             },
             "default-branch": true,
@@ -979,7 +979,7 @@
                 "source": "https://github.com/ministryofjustice/govwind/tree/main",
                 "issues": "https://github.com/ministryofjustice/govwind/issues"
             },
-            "time": "2026-03-25T13:01:36+00:00"
+            "time": "2026-03-31T09:28:13+00:00"
         },
         {
             "name": "ministryofjustice/hale",
@@ -3509,10 +3509,10 @@
         },
         {
             "name": "wpengine/advanced-custom-fields-pro",
-            "version": "6.7.2",
+            "version": "6.8.0",
             "dist": {
                 "type": "zip",
-                "url": "https://connect.advancedcustomfields.com/v2/plugins/composer_download?s=composer&p=pro&t=6.7.2"
+                "url": "https://connect.advancedcustomfields.com/v2/plugins/composer_download?s=composer&p=pro&t=6.8.0"
             },
             "require": {
                 "composer/installers": "~1.0 || ~2.0"
