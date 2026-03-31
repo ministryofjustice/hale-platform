@@ -26,6 +26,8 @@ metadata:
         tag:github_team=hale-platform,\
         tag:environment=hale-platform-{{ .Values.configmap.envtype }}-auth,\
         ctl:ruleEngine=DetectionOnly"
+      # Exclude posthog cookie
+      SecRuleUpdateTargetById 942290 "!REQUEST_COOKIES:/^ph_phc_.*_posthog$/"
     nginx.ingress.kubernetes.io/server-snippet: |
       location = /.well-known/security.txt {
         auth_basic off;
@@ -73,7 +75,7 @@ metadata:
         return 301 https://webarchive.nationalarchives.gov.uk/ukgwa/20241002135959/https://brookhouseinquiry.org.uk/;
       }
 spec:
-  ingressClassName: modsec
+  ingressClassName: modsec-non-prod
   tls:
 {{- if not (eq .Values.configmap.envtype "prod") }}
   - hosts:
