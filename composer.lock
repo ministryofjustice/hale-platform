@@ -115,16 +115,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.375.0",
+            "version": "3.376.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "6cfa1798c3fa0182d902eda9419dca48c86d74a1"
+                "reference": "5c9ce14723532cd694fa64dc1cbd1b33db1c79f9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/6cfa1798c3fa0182d902eda9419dca48c86d74a1",
-                "reference": "6cfa1798c3fa0182d902eda9419dca48c86d74a1",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/5c9ce14723532cd694fa64dc1cbd1b33db1c79f9",
+                "reference": "5c9ce14723532cd694fa64dc1cbd1b33db1c79f9",
                 "shasum": ""
             },
             "require": {
@@ -206,9 +206,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.375.0"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.376.0"
             },
-            "time": "2026-03-30T19:30:55+00:00"
+            "time": "2026-03-31T18:13:11+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -964,12 +964,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/govwind.git",
-                "reference": "cf49dc749e9d9c05f5dc487013dbbfa0ac6fe74a"
+                "reference": "e54313c6add1afb5a25cbe491cfeabebe9d65cde"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/cf49dc749e9d9c05f5dc487013dbbfa0ac6fe74a",
-                "reference": "cf49dc749e9d9c05f5dc487013dbbfa0ac6fe74a",
+                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/e54313c6add1afb5a25cbe491cfeabebe9d65cde",
+                "reference": "e54313c6add1afb5a25cbe491cfeabebe9d65cde",
                 "shasum": ""
             },
             "default-branch": true,
@@ -979,7 +979,7 @@
                 "source": "https://github.com/ministryofjustice/govwind/tree/main",
                 "issues": "https://github.com/ministryofjustice/govwind/issues"
             },
-            "time": "2026-03-31T09:28:13+00:00"
+            "time": "2026-04-01T11:08:26+00:00"
         },
         {
             "name": "ministryofjustice/hale",
@@ -1104,12 +1104,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/website-builder-blocks.git",
-                "reference": "5220d0d580bfdba55dd11d064403fbe7f98602e2"
+                "reference": "7794668f652fca62bbff9e31f1fbf4141cfd30ed"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/5220d0d580bfdba55dd11d064403fbe7f98602e2",
-                "reference": "5220d0d580bfdba55dd11d064403fbe7f98602e2",
+                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/7794668f652fca62bbff9e31f1fbf4141cfd30ed",
+                "reference": "7794668f652fca62bbff9e31f1fbf4141cfd30ed",
                 "shasum": ""
             },
             "require-dev": {
@@ -1137,7 +1137,7 @@
                 "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/main",
                 "issues": "https://github.com/ministryofjustice/website-builder-blocks/issues"
             },
-            "time": "2026-03-26T13:34:31+00:00"
+            "time": "2026-04-01T13:13:18+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
@@ -2423,16 +2423,16 @@
         },
         {
             "name": "symfony/filesystem",
-            "version": "v8.0.6",
+            "version": "v8.0.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/filesystem.git",
-                "reference": "7bf9162d7a0dff98d079b72948508fa48018a770"
+                "reference": "66b769ae743ce2d13e435528fbef4af03d623e5a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/filesystem/zipball/7bf9162d7a0dff98d079b72948508fa48018a770",
-                "reference": "7bf9162d7a0dff98d079b72948508fa48018a770",
+                "url": "https://api.github.com/repos/symfony/filesystem/zipball/66b769ae743ce2d13e435528fbef4af03d623e5a",
+                "reference": "66b769ae743ce2d13e435528fbef4af03d623e5a",
                 "shasum": ""
             },
             "require": {
@@ -2469,7 +2469,7 @@
             "description": "Provides basic utilities for the filesystem",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/filesystem/tree/v8.0.6"
+                "source": "https://github.com/symfony/filesystem/tree/v8.0.8"
             },
             "funding": [
                 {
@@ -2489,20 +2489,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-02-25T16:59:43+00:00"
+            "time": "2026-03-30T15:14:47+00:00"
         },
         {
             "name": "symfony/http-client",
-            "version": "v7.4.7",
+            "version": "v7.4.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-client.git",
-                "reference": "1010624285470eb60e88ed10035102c75b4ea6af"
+                "reference": "01933e626c3de76bea1e22641e205e78f6a34342"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-client/zipball/1010624285470eb60e88ed10035102c75b4ea6af",
-                "reference": "1010624285470eb60e88ed10035102c75b4ea6af",
+                "url": "https://api.github.com/repos/symfony/http-client/zipball/01933e626c3de76bea1e22641e205e78f6a34342",
+                "reference": "01933e626c3de76bea1e22641e205e78f6a34342",
                 "shasum": ""
             },
             "require": {
@@ -2570,7 +2570,7 @@
                 "http"
             ],
             "support": {
-                "source": "https://github.com/symfony/http-client/tree/v7.4.7"
+                "source": "https://github.com/symfony/http-client/tree/v7.4.8"
             },
             "funding": [
                 {
@@ -2590,7 +2590,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-03-05T11:16:58+00:00"
+            "time": "2026-03-30T12:55:43+00:00"
         },
         {
             "name": "symfony/http-client-contracts",
@@ -2672,16 +2672,16 @@
         },
         {
             "name": "symfony/options-resolver",
-            "version": "v7.4.0",
+            "version": "v7.4.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/options-resolver.git",
-                "reference": "b38026df55197f9e39a44f3215788edf83187b80"
+                "reference": "2888fcdc4dc2fd5f7c7397be78631e8af12e02b4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/options-resolver/zipball/b38026df55197f9e39a44f3215788edf83187b80",
-                "reference": "b38026df55197f9e39a44f3215788edf83187b80",
+                "url": "https://api.github.com/repos/symfony/options-resolver/zipball/2888fcdc4dc2fd5f7c7397be78631e8af12e02b4",
+                "reference": "2888fcdc4dc2fd5f7c7397be78631e8af12e02b4",
                 "shasum": ""
             },
             "require": {
@@ -2719,7 +2719,7 @@
                 "options"
             ],
             "support": {
-                "source": "https://github.com/symfony/options-resolver/tree/v7.4.0"
+                "source": "https://github.com/symfony/options-resolver/tree/v7.4.8"
             },
             "funding": [
                 {
@@ -2739,7 +2739,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-11-12T15:39:26+00:00"
+            "time": "2026-03-24T13:12:05+00:00"
         },
         {
             "name": "symfony/polyfill-ctype",
@@ -3509,10 +3509,10 @@
         },
         {
             "name": "wpengine/advanced-custom-fields-pro",
-            "version": "6.8.0",
+            "version": "6.8.0.1",
             "dist": {
                 "type": "zip",
-                "url": "https://connect.advancedcustomfields.com/v2/plugins/composer_download?s=composer&p=pro&t=6.8.0"
+                "url": "https://connect.advancedcustomfields.com/v2/plugins/composer_download?s=composer&p=pro&t=6.8.0.1"
             },
             "require": {
                 "composer/installers": "~1.0 || ~2.0"
