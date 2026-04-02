@@ -1104,12 +1104,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/website-builder-blocks.git",
-                "reference": "bf7147223216bb8a35e95137b1e4528a88e19fb4"
+                "reference": "b88489035e79823247a979f1d14d64074ad9141b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/bf7147223216bb8a35e95137b1e4528a88e19fb4",
-                "reference": "bf7147223216bb8a35e95137b1e4528a88e19fb4",
+                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/b88489035e79823247a979f1d14d64074ad9141b",
+                "reference": "b88489035e79823247a979f1d14d64074ad9141b",
                 "shasum": ""
             },
             "require-dev": {
@@ -1137,7 +1137,7 @@
                 "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/main",
                 "issues": "https://github.com/ministryofjustice/website-builder-blocks/issues"
             },
-            "time": "2026-04-02T05:55:14+00:00"
+            "time": "2026-04-02T07:09:59+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
