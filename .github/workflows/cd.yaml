@@ -49,6 +49,9 @@ jobs:
       wp-nonce-salt-file: ${{ secrets.WORDPRESS_NONCE_SALT_FILE }}
       wp-secure-auth-key-file: ${{ secrets.WORDPRESS_SECURE_AUTH_KEY_FILE }}
       wp-secure-auth-salt-file: ${{ secrets.WORDPRESS_SECURE_AUTH_SALT_FILE }}
+      auth0-env-client-id: ${{ secrets.AUTH0_ENV_CLIENT_ID }}
+      auth0-env-client-secret: ${{ secrets.AUTH0_ENV_CLIENT_SECRET }}
+      auth0-env-domain: ${{ secrets.AUTH0_ENV_DOMAIN }}
       s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
       s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}
       s3-uploads-bucket-url: ${{ secrets.S3_UPLOADS_BUCKET_URL }}
@@ -79,6 +82,9 @@ jobs:
       kube-cert: ${{ secrets.KUBE_CERT }}
       kube-namespace: ${{ secrets.KUBE_NAMESPACE }}
       kube-token: ${{ secrets.KUBE_TOKEN }}
+      auth0-env-client-id: ${{ secrets.AUTH0_ENV_CLIENT_ID }}
+      auth0-env-client-secret: ${{ secrets.AUTH0_ENV_CLIENT_SECRET }}
+      auth0-env-domain: ${{ secrets.AUTH0_ENV_DOMAIN }}
       wp-db-user: ${{ secrets.WORDPRESS_DB_USER }}
       wp-db-host: ${{ secrets.WORDPRESS_DB_HOST }}
       wp-db-name: ${{ secrets.WORDPRESS_DB_NAME }}
@@ -124,6 +130,9 @@ jobs:
       kube-cert: ${{ secrets.KUBE_CERT }}
       kube-namespace: ${{ secrets.KUBE_NAMESPACE }}
       kube-token: ${{ secrets.KUBE_TOKEN }}
+      auth0-env-client-id: ${{ secrets.AUTH0_ENV_CLIENT_ID }}
+      auth0-env-client-secret: ${{ secrets.AUTH0_ENV_CLIENT_SECRET }}
+      auth0-env-domain: ${{ secrets.AUTH0_ENV_DOMAIN }}
       wp-db-user: ${{ secrets.WORDPRESS_DB_USER }}
       wp-db-host: ${{ secrets.WORDPRESS_DB_HOST }}
       wp-db-name: ${{ secrets.WORDPRESS_DB_NAME }}
@@ -170,6 +179,9 @@ jobs:
       kube-token: ${{ secrets.KUBE_TOKEN }}
       relevanssi-user: ${{ secrets.RELEVANSSI_USER }}
       relevanssi-password: ${{ secrets.RELEVANSSI_PASSWORD }}
+      auth0-env-client-id: ${{ secrets.AUTH0_ENV_CLIENT_ID }}
+      auth0-env-client-secret: ${{ secrets.AUTH0_ENV_CLIENT_SECRET }}
+      auth0-env-domain: ${{ secrets.AUTH0_ENV_DOMAIN }}
       wp-db-user: ${{ secrets.WORDPRESS_DB_USER }}
       wp-db-host: ${{ secrets.WORDPRESS_DB_HOST }}
       wp-db-name: ${{ secrets.WORDPRESS_DB_NAME }}
