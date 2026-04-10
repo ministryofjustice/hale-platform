@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "517d8c70a1a2b128bdef082bd80a7837",
+    "content-hash": "e2fdc1071d8b3edae638b5218a604d44",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -932,16 +932,16 @@
         },
         {
             "name": "ministryofjustice/cookie-compliance",
-            "version": "1.0.3",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/cookie-compliance.git",
-                "reference": "d66de5cf23785c7c088502dcee811c36a9fcbaf7"
+                "reference": "4f8076e928822dc2b979e7c0a7fab338a6174777"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/cookie-compliance/zipball/d66de5cf23785c7c088502dcee811c36a9fcbaf7",
-                "reference": "d66de5cf23785c7c088502dcee811c36a9fcbaf7",
+                "url": "https://api.github.com/repos/ministryofjustice/cookie-compliance/zipball/4f8076e928822dc2b979e7c0a7fab338a6174777",
+                "reference": "4f8076e928822dc2b979e7c0a7fab338a6174777",
                 "shasum": ""
             },
             "require": {
@@ -953,10 +953,10 @@
                 "wordpress"
             ],
             "support": {
-                "source": "https://github.com/ministryofjustice/cookie-compliance/tree/1.0.3",
+                "source": "https://github.com/ministryofjustice/cookie-compliance/tree/1.1.0",
                 "issues": "https://github.com/ministryofjustice/cookie-compliance/issues"
             },
-            "time": "2025-11-19T11:09:34+00:00"
+            "time": "2026-04-10T14:42:21+00:00"
         },
         {
             "name": "ministryofjustice/govwind",
