@@ -168,6 +168,9 @@ secrets:
   s3uploadsregion: ""
   cloudfrontdistributionid: ""
   wbconfig: ""
+  auth0envclientid: ""
+  auth0envclientsecret: ""
+  auth0envdomain: ""
   acftoken: ""
 
 ## @param Toggle alerts on/off

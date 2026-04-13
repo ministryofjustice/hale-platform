@@ -14,6 +14,9 @@ wp config set SITECOOKIEPATH "/"
 wp config set WP_ENVIRONMENT_TYPE "\$_SERVER['WP_ENVIRONMENT_TYPE']" --raw
 wp config set AUTOMATIC_UPDATER_DISABLED true --raw
 wp config set FORCE_SSL_ADMIN true --raw
+wp config set AUTH0_ENV_CLIENT_ID "\$_SERVER['AUTH0_ENV_CLIENT_ID']" --raw
+wp config set AUTH0_ENV_CLIENT_SECRET "\$_SERVER['AUTH0_ENV_CLIENT_SECRET']" --raw
+wp config set AUTH0_ENV_DOMAIN "\$_SERVER['AUTH0_ENV_DOMAIN']"
 wp config set S3_UPLOADS_BUCKET "\$_SERVER['S3_UPLOADS_BUCKET']" --raw
 wp config set S3_UPLOADS_REGION "\$_SERVER['S3_UPLOADS_REGION']" --raw
 wp config set S3_UPLOADS_BUCKET_URL "\$_SERVER['S3_UPLOADS_BUCKET_URL']" --raw
