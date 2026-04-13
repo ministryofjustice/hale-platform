@@ -260,9 +260,9 @@ jobs:
           --set secrets.s3uploadsbucketurl=${{ secrets.s3-uploads-bucket-url }} \
           --set secrets.s3uploadsobjectacl=${{ secrets.s3-uploads-object-acl }} \
           --set secrets.cloudfrontdistributionid=${{ secrets.cloudfront-distribution-id }} \
-          --set secrets.auth0envclientid=${{ secrets.AUTH0_ENV_CLIENT_ID }} \
-          --set secrets.auth0envclientsecret=${{ secrets.AUTH0_ENV_CLIENT_SECRET }} \
-          --set secrets.auth0envdomain=${{ secrets.AUTH0_ENV_DOMAIN }} \
+          --set secrets.auth0envclientid=${{ secrets.auth0-env-client-id }} \
+          --set secrets.auth0envclientsecret=${{ secrets.auth0-env-client-secret }} \
+          --set secrets.auth0envdomain=${{ secrets.auth0-env-domain }} \
           --set secrets.wbconfig=${{ secrets.wb-config }} \
           --set secrets.acftoken=${{ secrets.acf-token }} \
           --set alertSecrets.slackWebhookUrl=${{ secrets.alert-slack-webhook-url }} \
