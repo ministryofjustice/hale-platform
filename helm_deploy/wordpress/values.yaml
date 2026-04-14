@@ -98,14 +98,14 @@ autoscaling:
   targetMemory: 75
   replicaCount:
     prod:
-      min: 5
-      max: 8
+      min: 6
+      max: 12
     staging:
       min: 2
-      max: 6
+      max: 4
     demo:
       min: 2
-      max: 6
+      max: 4
     dev:
       min: 1
       max: 1
@@ -114,7 +114,7 @@ autoscaling:
 ## Default settings when HPA is not turned on
 ##
 replicaCount:
-  prod: 4
+  prod: 6
   staging: 3
   dev: 1
   demo: 2
