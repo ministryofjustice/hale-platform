@@ -15,7 +15,7 @@ RUN mkdir -p /usr/local/openresty/nginx/logs \
 
 # Copy configuration and Lua module
 COPY opt/nginx/nginx.conf          /usr/local/openresty/nginx/conf/nginx.conf
-COPY opt/nginx/localwordpress.conf /usr/local/openresty/nginx/conf/conf.d/
+COPY opt/nginx/wordpress.conf      /usr/local/openresty/nginx/conf/conf.d/
 COPY opt/scripts/firewall.lua      /usr/local/openresty/nginx/lua/firewall.lua
 
 # Switch to non-root user (must use numeric UID for K8s runAsNonRoot verification)
