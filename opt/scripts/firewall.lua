@@ -75,8 +75,24 @@ local SCORE_TTL = tonumber(os.getenv("FIREWALL_SCORE_TTL")) or 3600
 
 -- Score threshold above which requests are blocked with 403 Forbidden.
 -- Set to 0 to disable blocking (scoring only).
--- local BLOCK_THRESHOLD = tonumber(os.getenv("FIREWALL_BLOCK_THRESHOLD")) or 2000
-local BLOCK_THRESHOLD = tonumber(os.getenv("FIREWALL_BLOCK_THRESHOLD")) or 10
+local BLOCK_THRESHOLD = tonumber(os.getenv("FIREWALL_BLOCK_THRESHOLD")) or 2000
+
+
+-- ============================================================================
+-- STARTUP HOOK: Called from nginx init_worker_by_lua_block
+-- ============================================================================
+-- This runs once per nginx worker process when nginx starts (or reloads).
+-- We log the resolved firewall settings so operators can verify env config.
+--
+-- In nginx.conf: init_worker_by_lua_block { require("firewall").init() }
+-- ============================================================================
+function _M.init()
+    ngx.log(
+        ngx.NOTICE,
+        "[firewall] startup FIREWALL_BLOCK_THRESHOLD=", BLOCK_THRESHOLD,
+        " FIREWALL_SCORE_TTL=", SCORE_TTL
+    )
+end
 
 
 -- ============================================================================
@@ -227,6 +243,15 @@ end
 -- We add extra score for 404 errors, since attackers often probe for
 -- vulnerable URLs which return 404.
 --
+-- IMPORTANT: The log_by_lua phase does NOT allow socket operations (Redis,
+-- HTTP calls, etc.) because the request is already finished. OpenResty
+-- disables these APIs to prevent blocking during logging.
+--
+-- SOLUTION: We use ngx.timer.at(0, callback) to schedule the Redis work
+-- in a separate "timer context" where sockets ARE allowed. The "0" means
+-- "run as soon as possible" (not a delay). The callback runs asynchronously
+-- after this function returns.
+--
 -- In nginx.conf: log_by_lua_block { require("firewall").res() }
 -- ============================================================================
 function _M.res()
@@ -236,27 +261,51 @@ function _M.res()
         return
     end
     
+    -- Capture variables NOW, before the request context disappears.
+    -- Once we're inside the timer callback, ngx.var.* won't be available
+    -- because the original request will be gone.
     local ip = ngx.var.http_x_forwarded_for or ngx.var.remote_addr
     
-    -- Same pattern as access(): wrap in pcall, use pipeline, fail-open
-    local ok, err = pcall(function()
-        local red = connect_redis()
-        if not red then return end
-        
-        red:init_pipeline()
-        red:incr("score:" .. ip)
-        red:expire("score:" .. ip, SCORE_TTL)
-        local results = red:commit_pipeline()
-        
-        if results then
-            ngx.log(ngx.INFO, "[firewall] res 404 ip=", ip, " score=", results[1])
+    -- Schedule the Redis work to run in a timer context.
+    -- ngx.timer.at(delay, callback) schedules a function to run after 'delay' seconds.
+    -- Using 0 means "run immediately, but in a context where sockets work".
+    --
+    -- The callback receives one argument: 'premature' (boolean).
+    -- premature=true means nginx is shutting down and we should abort quickly.
+    local ok, err = ngx.timer.at(0, function(premature)
+        -- If nginx is shutting down, don't bother with Redis operations
+        if premature then
+            return
         end
         
-        release_redis(red)
+        -- Now we're in a timer context - sockets are allowed here!
+        -- Wrap in pcall for safety (same pattern as req())
+        local timer_ok, timer_err = pcall(function()
+            local red = connect_redis()
+            if not red then return end  -- Fail-open: Redis down, skip scoring
+            
+            -- Pipeline the INCR + EXPIRE for efficiency
+            red:init_pipeline()
+            red:incr("score:" .. ip)
+            red:expire("score:" .. ip, SCORE_TTL)
+            local results = red:commit_pipeline()
+            
+            if results then
+                ngx.log(ngx.INFO, "[firewall] res 404 ip=", ip, " score=", results[1])
+            end
+            
+            release_redis(red)
+        end)
+        
+        if not timer_ok then
+            ngx.log(ngx.ERR, "[firewall] res timer error: ", timer_err)
+        end
     end)
     
+    -- If we couldn't even schedule the timer, log it (rare, usually means
+    -- too many pending timers - controlled by lua_max_pending_timers in nginx.conf)
     if not ok then
-        ngx.log(ngx.ERR, "[firewall] res error (fail-open): ", err)
+        ngx.log(ngx.ERR, "[firewall] res failed to create timer: ", err)
     end
 end
 
@@ -273,6 +322,10 @@ end
 --   }
 -- ============================================================================
 function _M.stats()
+    -- Set Content-Type to text/plain so browsers display inline instead of
+    -- prompting a file download. Must be set before any ngx.say() calls.
+    ngx.header.content_type = "text/plain"
+    
     local red = connect_redis()
     if not red then
         -- ngx.say() writes to HTTP response body (adds newline automatically)
@@ -317,6 +370,6 @@ end
 -- ============================================================================
 -- This is required! When nginx.conf does require("firewall"), Lua runs this
 -- entire file and returns whatever "return" gives. We return our _M table
--- which contains the req(), res(), and stats() functions.
+-- which contains the init(), req(), res(), and stats() functions.
 -- ============================================================================
 return _M
