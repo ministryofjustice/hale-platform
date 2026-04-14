@@ -11,6 +11,7 @@ RUN mkdir -p /usr/local/openresty/nginx/logs \
     && mkdir -p /usr/local/openresty/nginx/fastcgi_temp \
     && mkdir -p /usr/local/openresty/nginx/uwsgi_temp \
     && mkdir -p /usr/local/openresty/nginx/scgi_temp \
+    && mkdir -p /usr/local/openresty/nginx/cache \
     && chown -R hale:hale /usr/local/openresty/nginx
 
 # Copy configuration and Lua module
