@@ -2,7 +2,7 @@
 -- FIREWALL STUB MODULE
 -- ============================================================================
 -- Simple implementation for testing. Increments score:{ip} on each
--- request and 404 response, no banning logic.
+-- request and 404 response. Includes basic banning logic.
 --
 -- USAGE:
 --   In nginx.conf, set:

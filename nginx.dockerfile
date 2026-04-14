@@ -14,10 +14,11 @@ RUN mkdir -p /usr/local/openresty/nginx/logs \
     && mkdir -p /usr/local/openresty/nginx/cache \
     && chown -R hale:hale /usr/local/openresty/nginx
 
-# Copy configuration and Lua module
+# Copy configuration, Lua module and error pages
 COPY opt/nginx/nginx.conf          /usr/local/openresty/nginx/conf/nginx.conf
 COPY opt/nginx/wordpress.conf      /usr/local/openresty/nginx/conf/conf.d/
 COPY opt/scripts/firewall.lua      /usr/local/openresty/nginx/lua/firewall.lua
+COPY opt/nginx/error-pages/        /usr/local/openresty/nginx/html/error-pages/
 
 # Switch to non-root user (must use numeric UID for K8s runAsNonRoot verification)
 USER 1002
