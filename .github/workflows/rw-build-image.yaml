@@ -81,6 +81,12 @@ on:
         required: true
       wb-config:
         required: true
+      auth0-env-client-id:
+        required: true
+      auth0-env-client-secret:
+        required: true
+      auth0-env-domain:
+        required: true
 
 jobs:
   buildImage:
@@ -255,6 +261,9 @@ jobs:
           --set secrets.s3uploadsobjectacl=${{ secrets.s3-uploads-object-acl }} \
           --set secrets.cloudfrontdistributionid=${{ secrets.cloudfront-distribution-id }} \
           --set secrets.wbconfig=${{ secrets.wb-config }} \
+          --set secrets.auth0envclientid=${{ secrets.auth0-env-client-id }} \
+          --set secrets.auth0envclientsecret=${{ secrets.auth0-env-client-secret }} \
+          --set secrets.auth0envdomain=${{ secrets.auth0-env-domain }} \
           --set secrets.acftoken=${{ secrets.acf-token }} \
           --set alertSecrets.slackWebhookUrl=${{ secrets.alert-slack-webhook-url }} \
           --set configmap.envtype=${{ vars.ENV_TYPE }} \
