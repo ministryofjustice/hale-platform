@@ -49,6 +49,9 @@ jobs:
       wp-nonce-salt-file: ${{ secrets.WORDPRESS_NONCE_SALT_FILE }}
       wp-secure-auth-key-file: ${{ secrets.WORDPRESS_SECURE_AUTH_KEY_FILE }}
       wp-secure-auth-salt-file: ${{ secrets.WORDPRESS_SECURE_AUTH_SALT_FILE }}
+      auth0-env-client-id: ${{ secrets.AUTH0_ENV_CLIENT_ID }}
+      auth0-env-client-secret: ${{ secrets.AUTH0_ENV_CLIENT_SECRET }}
+      auth0-env-domain: ${{ secrets.AUTH0_ENV_DOMAIN }}
       s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
       s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}
       s3-uploads-bucket-url: ${{ secrets.S3_UPLOADS_BUCKET_URL }}
@@ -100,6 +103,9 @@ jobs:
       s3-uploads-object-acl: ${{ secrets.S3_UPLOADS_OBJECT_ACL }}
       cloudfront-distribution-id: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
       alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
+      auth0-env-client-id: ${{ secrets.AUTH0_ENV_CLIENT_ID }}
+      auth0-env-client-secret: ${{ secrets.AUTH0_ENV_CLIENT_SECRET }}
+      auth0-env-domain: ${{ secrets.AUTH0_ENV_DOMAIN }}
       wb-config: ${{ secrets.WB_CONFIG}}
 
   deployStaging:
@@ -146,6 +152,9 @@ jobs:
       cloudfront-distribution-id: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
       alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
       wb-config: ${{ secrets.WB_CONFIG}}
+      auth0-env-client-id: ${{ secrets.AUTH0_ENV_CLIENT_ID }}
+      auth0-env-client-secret: ${{ secrets.AUTH0_ENV_CLIENT_SECRET }}
+      auth0-env-domain: ${{ secrets.AUTH0_ENV_DOMAIN }}
 
   deployProd:
     name: Prod deployment
@@ -192,3 +201,6 @@ jobs:
       cloudfront-distribution-id: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
       alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
       wb-config: ${{ secrets.WB_CONFIG}}
+      auth0-env-client-id: ${{ secrets.AUTH0_ENV_CLIENT_ID }}
+      auth0-env-client-secret: ${{ secrets.AUTH0_ENV_CLIENT_SECRET }}
+      auth0-env-domain: ${{ secrets.AUTH0_ENV_DOMAIN }}

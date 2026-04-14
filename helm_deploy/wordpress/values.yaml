@@ -169,6 +169,9 @@ secrets:
   cloudfrontdistributionid: ""
   wbconfig: ""
   acftoken: ""
+  auth0envclientid: ""
+  auth0envclientsecret: ""
+  auth0envdomain: ""
 
 ## @param Toggle alerts on/off
 ##
