@@ -11,12 +11,14 @@ services:
     volumes:
       - ./wordpress:/var/www/html:delegated
       - ./dev:/mnt/dev:delegated
-      - ./opt/nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./opt/nginx/localwordpress.conf:/etc/nginx/conf.d/localwordpress.conf
+      - ./opt/nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
+      - ./opt/nginx/localwordpress.conf:/usr/local/openresty/nginx/conf/conf.d/localwordpress.conf
+      - ./opt/scripts/firewall.lua:/usr/local/openresty/nginx/lua/firewall.lua
       - ./bin/certs:/etc/nginx/certs/self-signed/
     depends_on:
       - wordpress
       - mariadb
+      - redis
     environment:
       VIRTUAL_HOST: hale.docker
       VIRTUAL_PORT: 443
@@ -71,6 +73,10 @@ services:
       PHP_DSN: "" # Sentry constant (not used locally)
       WP_SENTRY_ENV: ""
       ACF_PRO_LICENSE: ""
+  redis:
+    image: redis:7-alpine
+    # ports:
+    #   - "6379:6379"
 volumes:
   database:
     driver: local
