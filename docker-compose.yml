@@ -22,6 +22,7 @@ services:
     environment:
       VIRTUAL_HOST: hale.docker
       VIRTUAL_PORT: 443
+      REDIS_SSL: "false"
   mariadb:
     container_name: mariadb
     platform: linux/arm64

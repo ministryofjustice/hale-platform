@@ -57,6 +57,9 @@ local REDIS_PORT = tonumber(os.getenv("REDIS_PORT")) or 6379
 -- Redis password (nil if not set, which means no auth required)
 local REDIS_AUTH = os.getenv("REDIS_AUTH")
 
+-- Use TLS for Redis connection (default true for ElastiCache, set false for local dev)
+local REDIS_SSL = os.getenv("REDIS_SSL") ~= "false"
+
 -- Timeout in milliseconds for Redis operations (200ms keeps requests fast)
 local REDIS_TIMEOUT = 200
 
@@ -89,8 +92,9 @@ local BLOCK_THRESHOLD = tonumber(os.getenv("FIREWALL_BLOCK_THRESHOLD")) or 2000
 function _M.init()
     ngx.log(
         ngx.NOTICE,
-        "[firewall] startup FIREWALL_BLOCK_THRESHOLD=", BLOCK_THRESHOLD,
-        " FIREWALL_SCORE_TTL=", SCORE_TTL
+        "[firewall] startup BLOCK_THRESHOLD=", BLOCK_THRESHOLD,
+        " SCORE_TTL=", SCORE_TTL,
+        " REDIS_SSL=", tostring(REDIS_SSL)
     )
 end
 
@@ -119,7 +123,14 @@ local function connect_redis()
     -- Attempt to connect to Redis server.
     -- Lua functions often return (success_value, error_message).
     -- If connect fails, ok=nil and err contains the error string.
-    local ok, err = red:connect(REDIS_HOST, REDIS_PORT)
+    -- For ElastiCache with encryption-in-transit, we need SSL.
+    local ok, err
+    if REDIS_SSL then
+        -- ssl_verify=false because ElastiCache certs may not be in CA bundle
+        ok, err = red:connect(REDIS_HOST, REDIS_PORT, { ssl = true, ssl_verify = false })
+    else
+        ok, err = red:connect(REDIS_HOST, REDIS_PORT)
+    end
     if not ok then
         -- ngx.log writes to nginx error log. ngx.ERR is the severity level.
         -- Multiple arguments are concatenated automatically.
