@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "56eb824b0c7af37e2c08010b71309aa0",
+    "content-hash": "08970158790248e98c34d5e0eba6e561",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -963,12 +963,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/govwind.git",
-                "reference": "074b9e97ca7b4a2b7f043397fecb6614e3b50bfb"
+                "reference": "79efd0e589dd3fe21fa9b83d8f4c7b65b7106b8d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/074b9e97ca7b4a2b7f043397fecb6614e3b50bfb",
-                "reference": "074b9e97ca7b4a2b7f043397fecb6614e3b50bfb",
+                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/79efd0e589dd3fe21fa9b83d8f4c7b65b7106b8d",
+                "reference": "79efd0e589dd3fe21fa9b83d8f4c7b65b7106b8d",
                 "shasum": ""
             },
             "default-branch": true,
@@ -978,29 +978,29 @@
                 "source": "https://github.com/ministryofjustice/govwind/tree/main",
                 "issues": "https://github.com/ministryofjustice/govwind/issues"
             },
-            "time": "2026-03-16T09:31:34+00:00"
+            "time": "2026-04-14T09:21:02+00:00"
         },
         {
             "name": "ministryofjustice/hale",
-            "version": "4.31.1",
+            "version": "4.33.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale.git",
-                "reference": "1b12b6193faca8266900cdcd890086cf0994a44a"
+                "reference": "0179c92fbcf6e0a1387a7b698f44562f21589416"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/1b12b6193faca8266900cdcd890086cf0994a44a",
-                "reference": "1b12b6193faca8266900cdcd890086cf0994a44a",
+                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/0179c92fbcf6e0a1387a7b698f44562f21589416",
+                "reference": "0179c92fbcf6e0a1387a7b698f44562f21589416",
                 "shasum": ""
             },
             "type": "wordpress-theme",
             "description": "Hale theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/hale/tree/4.31.1",
+                "source": "https://github.com/ministryofjustice/hale/tree/4.33.0",
                 "issues": "https://github.com/ministryofjustice/hale/issues"
             },
-            "time": "2026-02-24T16:50:33+00:00"
+            "time": "2026-04-14T13:24:26+00:00"
         },
         {
             "name": "ministryofjustice/hale-components",
@@ -1103,12 +1103,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/website-builder-blocks.git",
-                "reference": "1df406c0a4ac457c159706691e268383fc8564c8"
+                "reference": "f76ab9e4f69c3520c67dbf17d27f0adf31538602"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/1df406c0a4ac457c159706691e268383fc8564c8",
-                "reference": "1df406c0a4ac457c159706691e268383fc8564c8",
+                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/f76ab9e4f69c3520c67dbf17d27f0adf31538602",
+                "reference": "f76ab9e4f69c3520c67dbf17d27f0adf31538602",
                 "shasum": ""
             },
             "require-dev": {
@@ -1136,7 +1136,7 @@
                 "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/main",
                 "issues": "https://github.com/ministryofjustice/website-builder-blocks/issues"
             },
-            "time": "2026-03-16T11:23:38+00:00"
+            "time": "2026-04-09T15:01:26+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
@@ -3599,5 +3599,5 @@
         "php": ">=8.0"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
