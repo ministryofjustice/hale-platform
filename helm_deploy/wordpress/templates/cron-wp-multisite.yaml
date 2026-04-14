@@ -18,7 +18,10 @@ spec:
             image: {{ .Values.nginx.image.repository }}
             imagePullPolicy: IfNotPresent
             args:
-            - curl
+            - wget
+            - -q
+            - -O
+            - "-"
             - {{ .Values.domain }}/wp-cron-multisite.php
             securityContext:
               allowPrivilegeEscalation: false
