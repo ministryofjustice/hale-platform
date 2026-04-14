@@ -92,10 +92,10 @@ spec:
           volumeMounts:
             - name: wordpress-volume-file-mount
               mountPath: /var/www/html
-          {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
           envFrom:
             - secretRef:
                 name: hale-nginx-secrets-{{ .Release.Revision }}
+          {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
           readinessProbe:
             exec:
               command:
