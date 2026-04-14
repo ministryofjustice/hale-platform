@@ -18,8 +18,8 @@ COPY opt/nginx/nginx.conf          /usr/local/openresty/nginx/conf/nginx.conf
 COPY opt/nginx/localwordpress.conf /usr/local/openresty/nginx/conf/conf.d/
 COPY opt/scripts/firewall.lua      /usr/local/openresty/nginx/lua/firewall.lua
 
-# Switch to non-root user
-USER hale
+# Switch to non-root user (must use numeric UID for K8s runAsNonRoot verification)
+USER 1002
 
 EXPOSE 8080
 
