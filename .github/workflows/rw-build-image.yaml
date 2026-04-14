@@ -132,21 +132,6 @@ jobs:
           REPOSITORY: ${{ secrets.ecr-repo }}
           IMAGE_TAG: ${{ github.sha }}
 
-      - name: Build and Push Nginx (OpenResty) Image
-        run: |
-          docker buildx create --use
-          docker buildx build \
-            --cache-from=type=local,src=/tmp/.buildx-cache-nginx \
-            --cache-to=type=local,dest=/tmp/.buildx-cache-nginx \
-            --pull \
-            --push \
-            --tag $REGISTRY/$REPOSITORY:hale-platform_nginx-$IMAGE_TAG \
-            --file nginx.dockerfile .
-        env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: ${{ secrets.ecr-repo }}
-          IMAGE_TAG: ${{ github.sha }}
-
       - name: Prepare Composer cache
         run: mkdir -p ~/.composer/cache
 
