@@ -172,6 +172,8 @@ secrets:
   cloudfrontdistributionid: ""
   wbconfig: ""
   acftoken: ""
+  redisauth: ""
+  redishost: ""
 
 ## @param Toggle alerts on/off
 ##
