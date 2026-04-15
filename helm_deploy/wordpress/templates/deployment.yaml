@@ -22,6 +22,8 @@ spec:
         app: wordpress
         tier: frontend-c
     spec:
+      securityContext:
+        fsGroup: 1002
       terminationGracePeriodSeconds: 35
       serviceAccountName: hale-platform-{{ .Values.configmap.envtype }}-service
       containers:
