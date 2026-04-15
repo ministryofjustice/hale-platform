@@ -53,3 +53,5 @@ dev/themes/*
 !dev/plugins/.gitkeep
 !dev/themes/.gitkeep
 
+# AI
+.claude/
