@@ -236,10 +236,10 @@ function _M.req()
         -- Returns a table (array) with one result per command: {new_score, 1}
         local results = red:commit_pipeline()
         
-        -- Log the new score (results[1] is the INCR result).
-        -- Lua arrays are 1-indexed, not 0-indexed!
+        -- Store the score in an nginx variable for the access log.
+        -- This avoids noisy per-request error log lines.
         if results then
-            ngx.log(ngx.INFO, "[firewall] req ip=", ip, " score=", results[1])
+            ngx.var.firewall_score = tostring(results[1])
         end
         
         -- Return connection to pool for reuse
@@ -310,7 +310,7 @@ function _M.res()
             local results = red:commit_pipeline()
             
             if results then
-                ngx.log(ngx.INFO, "[firewall] res 404 ip=", ip, " score=", results[1])
+                ngx.log(ngx.INFO, "[firewall] 404 penalty ip=", ip, " score=", results[1])
             end
             
             release_redis(red)
