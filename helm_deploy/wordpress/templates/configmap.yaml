@@ -15,5 +15,5 @@ metadata:
   name: hale-nginx-config-{{ .Release.Revision }}
 data:
   FIREWALL_ENABLED: {{ .Values.configmap.firewall.enabled | quote }}
-  FIREWALL_BLOCK_THRESHOLD: {{ .Values.configmap.firewall.blockthreshold }}
-  FIREWALL_SCORE_TTL: {{ .Values.configmap.firewall.scorettl }}
+  FIREWALL_BLOCK_THRESHOLD: {{ .Values.configmap.firewall.blockthreshold | quote }}
+  FIREWALL_SCORE_TTL: {{ .Values.configmap.firewall.scorettl | quote }}
