@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1c627022068b16649080848326539b85",
+    "content-hash": "c0d84c472f2560ccd38404d39bef3e7a",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -1033,25 +1033,25 @@
         },
         {
             "name": "ministryofjustice/hale-dash",
-            "version": "1.1.8",
+            "version": "1.1.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale-dash.git",
-                "reference": "1b13cf8addb5776e7c356aa3c861931a197559d2"
+                "reference": "b1b03b97f7e7885e569abb07e1bdce51285f659b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale-dash/zipball/1b13cf8addb5776e7c356aa3c861931a197559d2",
-                "reference": "1b13cf8addb5776e7c356aa3c861931a197559d2",
+                "url": "https://api.github.com/repos/ministryofjustice/hale-dash/zipball/b1b03b97f7e7885e569abb07e1bdce51285f659b",
+                "reference": "b1b03b97f7e7885e569abb07e1bdce51285f659b",
                 "shasum": ""
             },
             "type": "wordpress-theme",
             "description": "Hale Dash theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/hale-dash/tree/1.1.8",
+                "source": "https://github.com/ministryofjustice/hale-dash/tree/1.1.9",
                 "issues": "https://github.com/ministryofjustice/hale-dash/issues"
             },
-            "time": "2025-04-04T14:56:18+00:00"
+            "time": "2026-04-15T12:09:18+00:00"
         },
         {
             "name": "ministryofjustice/hale-showcase",
@@ -1081,12 +1081,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/ppo.git",
-                "reference": "81a4adcc0fee6211305dc8e13be34672d8ab0845"
+                "reference": "c6eeaa1377089919c3c469d370337f5fef1fa34d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/ppo/zipball/81a4adcc0fee6211305dc8e13be34672d8ab0845",
-                "reference": "81a4adcc0fee6211305dc8e13be34672d8ab0845",
+                "url": "https://api.github.com/repos/ministryofjustice/ppo/zipball/c6eeaa1377089919c3c469d370337f5fef1fa34d",
+                "reference": "c6eeaa1377089919c3c469d370337f5fef1fa34d",
                 "shasum": ""
             },
             "default-branch": true,
@@ -1096,7 +1096,7 @@
                 "source": "https://github.com/ministryofjustice/ppo/tree/main",
                 "issues": "https://github.com/ministryofjustice/ppo/issues"
             },
-            "time": "2025-06-11T07:52:18+00:00"
+            "time": "2026-04-15T11:57:17+00:00"
         },
         {
             "name": "ministryofjustice/website-builder-blocks",
@@ -1104,12 +1104,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/website-builder-blocks.git",
-                "reference": "f76ab9e4f69c3520c67dbf17d27f0adf31538602"
+                "reference": "ac6a80be31aaa2cbc3764664b9a380ca019220ad"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/f76ab9e4f69c3520c67dbf17d27f0adf31538602",
-                "reference": "f76ab9e4f69c3520c67dbf17d27f0adf31538602",
+                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/ac6a80be31aaa2cbc3764664b9a380ca019220ad",
+                "reference": "ac6a80be31aaa2cbc3764664b9a380ca019220ad",
                 "shasum": ""
             },
             "require-dev": {
@@ -1137,7 +1137,7 @@
                 "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/main",
                 "issues": "https://github.com/ministryofjustice/website-builder-blocks/issues"
             },
-            "time": "2026-04-09T15:01:26+00:00"
+            "time": "2026-04-15T08:45:46+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
