@@ -17,9 +17,9 @@ spec:
           - name: wp-k8s-cron
             image: {{ .Values.nginx.image.repository }}
             imagePullPolicy: IfNotPresent
-            command: ["/bin/sh", "-c"]
             args:
-            - "wget -q -O - {{ .Values.domain }}/wp-cron-multisite.php"
+            - curl
+            - {{ .Values.domain }}/wp-cron-multisite.php
             securityContext:
               allowPrivilegeEscalation: false
               capabilities:
