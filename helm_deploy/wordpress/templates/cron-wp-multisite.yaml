@@ -19,7 +19,7 @@ spec:
             imagePullPolicy: IfNotPresent
             command: ["/bin/sh", "-c"]
             args:
-            - "wget -q -O - {{ .Values.domain }}/wp-cron-multisite.php"
+            - "curl -sf -H 'Host: {{ .Values.domain }}' http://wordpress:8080/wp-cron-multisite.php"
             securityContext:
               allowPrivilegeEscalation: false
               capabilities:
