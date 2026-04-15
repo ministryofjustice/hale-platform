@@ -54,4 +54,5 @@ dev/themes/*
 !dev/themes/.gitkeep
 
 # AI
-.claude/
+# Ignore claude files until we have a team agreed set of rules/settings
+.claude
