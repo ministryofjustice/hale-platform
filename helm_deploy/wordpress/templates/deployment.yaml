@@ -95,6 +95,8 @@ spec:
             - name: wordpress-volume-file-mount
               mountPath: /var/www/html
           envFrom:
+            - configMapRef:
+                name: hale-nginx-config-{{ .Release.Revision }}
             - secretRef:
                 name: hale-nginx-secrets-{{ .Release.Revision }}
           {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}

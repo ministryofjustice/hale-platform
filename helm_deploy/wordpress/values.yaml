@@ -142,6 +142,10 @@ configmap:
   envtype: ""
   s3useprofile: "true"
   sentrydns: ""
+  firewall:
+    enabled: "true"
+    blockthreshold: 0
+
 
 ## @param secrets passed in via GitActions
 ##

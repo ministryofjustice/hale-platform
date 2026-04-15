@@ -76,6 +76,10 @@ local REDIS_KEEPALIVE_MS = tonumber(os.getenv("REDIS_KEEPALIVE_MS")) or 10000
 -- After 1 hour of no requests, the IP's score resets to 0.
 local SCORE_TTL = tonumber(os.getenv("FIREWALL_SCORE_TTL")) or 3600
 
+-- Kill switch: set to "false" to disable all firewall scoring and blocking.
+-- When disabled, req() and res() return immediately with zero overhead.
+local FIREWALL_ENABLED = os.getenv("FIREWALL_ENABLED") ~= "false"
+
 -- Score threshold above which requests are blocked with 403 Forbidden.
 -- Set to 0 to disable blocking (scoring only).
 local BLOCK_THRESHOLD = tonumber(os.getenv("FIREWALL_BLOCK_THRESHOLD")) or 2000
@@ -92,7 +96,8 @@ local BLOCK_THRESHOLD = tonumber(os.getenv("FIREWALL_BLOCK_THRESHOLD")) or 2000
 function _M.init()
     ngx.log(
         ngx.NOTICE,
-        "[firewall] startup BLOCK_THRESHOLD=", BLOCK_THRESHOLD,
+        "[firewall] startup ENABLED=", tostring(FIREWALL_ENABLED),
+        " BLOCK_THRESHOLD=", BLOCK_THRESHOLD,
         " SCORE_TTL=", SCORE_TTL,
         " REDIS_SSL=", tostring(REDIS_SSL)
     )
@@ -187,6 +192,8 @@ end
 -- In nginx.conf: access_by_lua_block { require("firewall").req() }
 -- ============================================================================
 function _M.req()
+    if not FIREWALL_ENABLED then return end
+
     -- Get the client's IP address.
     -- nginx's realip module resolves X-Forwarded-For into a single, clean IP
     -- (configured via real_ip_header + set_real_ip_from in nginx.conf).
@@ -265,6 +272,8 @@ end
 -- In nginx.conf: log_by_lua_block { require("firewall").res() }
 -- ============================================================================
 function _M.res()
+    if not FIREWALL_ENABLED then return end
+
     -- ngx.status is the HTTP response status code (200, 404, 500, etc.)
     -- Early return if not a 404 - we only care about "not found" responses
     if ngx.status ~= 404 then
