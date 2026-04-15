@@ -188,11 +188,10 @@ end
 -- ============================================================================
 function _M.req()
     -- Get the client's IP address.
-    -- ngx.var gives access to nginx variables.
-    -- http_x_forwarded_for: IP from X-Forwarded-For header (set by load balancer)
-    -- remote_addr: Direct connection IP (fallback if no proxy header)
-    -- The "or" returns the first truthy value (like || in JavaScript).
-    local ip = ngx.var.http_x_forwarded_for or ngx.var.remote_addr
+    -- nginx's realip module resolves X-Forwarded-For into a single, clean IP
+    -- (configured via real_ip_header + set_real_ip_from in nginx.conf).
+    -- Falls back to remote_addr if realip is not available (e.g. direct connection).
+    local ip = ngx.var.realip_remote_addr or ngx.var.remote_addr
     
     -- pcall = "protected call" - Lua's try/catch equivalent.
     -- It calls the function and catches any errors instead of crashing.
@@ -275,7 +274,7 @@ function _M.res()
     -- Capture variables NOW, before the request context disappears.
     -- Once we're inside the timer callback, ngx.var.* won't be available
     -- because the original request will be gone.
-    local ip = ngx.var.http_x_forwarded_for or ngx.var.remote_addr
+    local ip = ngx.var.realip_remote_addr or ngx.var.remote_addr
     
     -- Schedule the Redis work to run in a timer context.
     -- ngx.timer.at(delay, callback) schedules a function to run after 'delay' seconds.
