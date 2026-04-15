@@ -1,5 +1,8 @@
 FROM openresty/openresty:alpine
 
+# Install additional Alpine packages
+RUN apk update && apk add curl
+
 # Create non-root user (UID/GID 1002 to match org standard)
 RUN addgroup -g 1002 -S hale \
     && adduser -u 1002 -D -S -G hale -h /var/cache/nginx hale
