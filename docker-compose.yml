@@ -18,10 +18,10 @@ services:
     depends_on:
       - wordpress
       - mariadb
-      - redis
     environment:
       VIRTUAL_HOST: hale.docker
       VIRTUAL_PORT: 443
+      FIREWALL_ENABLED: ${FIREWALL_ENABLED:-false}
       REDIS_SSL: "false"
   mariadb:
     container_name: mariadb
@@ -79,6 +79,8 @@ services:
       ACF_PRO_LICENSE: ""
   redis:
     image: redis:7-alpine
+    profiles:
+    - firewall
 volumes:
   database:
     driver: local
