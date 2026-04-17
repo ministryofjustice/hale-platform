@@ -283,7 +283,11 @@ function _M.res()
     -- Capture variables NOW, before the request context disappears.
     -- Once we're inside the timer callback, ngx.var.* won't be available
     -- because the original request will be gone.
-    local ip = ngx.var.realip_remote_addr or ngx.var.remote_addr
+
+    -- Get the client's IP address.
+    -- nginx's realip module rewrites remote_addr to the client IP from X-Forwarded-For.
+    -- realip_remote_addr holds the original connection IP (the proxy).
+    local ip = ngx.var.remote_addr
     
     -- Schedule the Redis work to run in a timer context.
     -- ngx.timer.at(delay, callback) schedules a function to run after 'delay' seconds.
