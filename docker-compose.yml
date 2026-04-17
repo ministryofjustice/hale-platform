@@ -11,8 +11,9 @@ services:
     volumes:
       - ./wordpress:/var/www/html:delegated
       - ./dev:/mnt/dev:delegated
-      - ./opt/nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./opt/nginx/localwordpress.conf:/etc/nginx/conf.d/localwordpress.conf
+      - ./opt/nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
+      - ./opt/nginx/localwordpress.conf:/usr/local/openresty/nginx/conf/conf.d/localwordpress.conf
+      - ./opt/scripts/firewall.lua:/usr/local/openresty/nginx/lua/firewall.lua
       - ./bin/certs:/etc/nginx/certs/self-signed/
     depends_on:
       - wordpress
@@ -20,6 +21,8 @@ services:
     environment:
       VIRTUAL_HOST: hale.docker
       VIRTUAL_PORT: 443
+      FIREWALL_ENABLED: ${FIREWALL_ENABLED:-false}
+      REDIS_SSL: "false"
   mariadb:
     container_name: mariadb
     platform: linux/arm64
@@ -67,10 +70,17 @@ services:
       S3_UPLOADS_BUCKET_URL: ""
       S3_UPLOADS_OBJECT_ACL: ""
       CLOUDFRONT_DISTRIBUTION_ID: ""
+      AUTH0_ENV_CLIENT_ID: ""
+      AUTH0_ENV_CLIENT_SECRET: ""
+      AUTH0_ENV_DOMAIN: ""
       SERVER_NAME: "hale.docker"
       PHP_DSN: "" # Sentry constant (not used locally)
       WP_SENTRY_ENV: ""
       ACF_PRO_LICENSE: ""
+  redis:
+    image: redis:7-alpine
+    profiles:
+    - firewall
 volumes:
   database:
     driver: local
