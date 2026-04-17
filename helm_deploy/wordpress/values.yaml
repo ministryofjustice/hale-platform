@@ -142,6 +142,11 @@ configmap:
   envtype: ""
   s3useprofile: "true"
   sentrydns: ""
+  firewall:
+    enabled: "true"
+    blockthreshold: 0
+    scorettl: 60
+
 
 ## @param secrets passed in via GitActions
 ##
@@ -172,6 +177,8 @@ secrets:
   auth0envclientsecret: ""
   auth0envdomain: ""
   acftoken: ""
+  redisauth: ""
+  redishost: ""
 
 ## @param Toggle alerts on/off
 ##

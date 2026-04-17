@@ -1,13 +1,32 @@
-FROM arm64v8/nginx:1.25.2
+FROM openresty/openresty:alpine
 
-RUN apt-get -y update
-RUN apt-get -y install vim
+# Install additional Alpine packages
+RUN apk update && apk add curl
 
-# Copy custom NGINX configurations required for WordPress Multisite
-COPY opt/nginx/nginx.conf /etc/nginx/
-COPY opt/nginx/localwordpress.conf /etc/nginx/conf.d/
+# Create non-root user (UID/GID 1002 to match org standard)
+RUN addgroup -g 1002 -S hale \
+    && adduser -u 1002 -D -S -G hale -h /var/cache/nginx hale
 
-RUN rm -r /etc/nginx/conf.d/default.conf
+# Create required directories with correct ownership
+RUN mkdir -p /usr/local/openresty/nginx/logs \
+    && mkdir -p /usr/local/openresty/nginx/client_body_temp \
+    && mkdir -p /usr/local/openresty/nginx/proxy_temp \
+    && mkdir -p /usr/local/openresty/nginx/fastcgi_temp \
+    && mkdir -p /usr/local/openresty/nginx/uwsgi_temp \
+    && mkdir -p /usr/local/openresty/nginx/scgi_temp \
+    && chown -R hale:hale /usr/local/openresty/nginx
+
+# Copy configuration, Lua module and error pages
+COPY opt/nginx/nginx.conf          /usr/local/openresty/nginx/conf/nginx.conf
+COPY opt/nginx/localwordpress.conf /usr/local/openresty/nginx/conf/conf.d/
+COPY opt/scripts/firewall.lua      /usr/local/openresty/nginx/lua/firewall.lua
+COPY opt/nginx/error-pages/        /usr/local/openresty/nginx/html/error-pages/
+
+# Switch to non-root user (numeric UID for consistency with production)
+USER 1002
 
 EXPOSE 443
 EXPOSE 8080
+
+# Start in the foreground
+CMD ["/usr/local/openresty/bin/openresty", "-g", "daemon off;"]

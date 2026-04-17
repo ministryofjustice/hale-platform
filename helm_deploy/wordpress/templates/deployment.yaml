@@ -42,7 +42,7 @@ spec:
             - containerPort: {{ .Values.wp.image.ports.containerPort }}
           volumeMounts:
             - name: wordpress-volume-file-mount
-              mountPath: /var/www/html
+              mountPath: /var/www
             - name: hale-php-config
               mountPath: /usr/local/etc/php/conf.custom
           envFrom:
@@ -91,7 +91,12 @@ spec:
             - containerPort: {{ .Values.nginx.image.ports.containerPort }}
           volumeMounts:
             - name: wordpress-volume-file-mount
-              mountPath: /var/www/html
+              mountPath: /var/www
+          envFrom:
+            - configMapRef:
+                name: hale-nginx-config-{{ .Release.Revision }}
+            - secretRef:
+                name: hale-nginx-secrets-{{ .Release.Revision }}
           {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
           readinessProbe:
             exec:
