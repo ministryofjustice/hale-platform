@@ -26,10 +26,18 @@ run:
 	@./bin/upload.sh
 	@echo "✓ Site is running"
 
+# Run site (start redis and enable firewall) using Docker
+run-with-firewall:
+	@echo "Starting Docker containers..."
+	FIREWALL_ENABLED=true docker compose --profile firewall up -d
+	@chmod +x bin/upload.sh
+	@./bin/upload.sh
+	@echo "✓ Site is running"
+
 # Shutdown site using Docker
 down:
 	@echo "Stopping Docker containers..."
-	docker compose down --remove-orphans
+	docker compose --profile firewall down --remove-orphans
 	@echo "✓ Containers stopped"
 
 # Build all images on local machine
