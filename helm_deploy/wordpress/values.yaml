@@ -143,9 +143,9 @@ configmap:
   s3useprofile: "true"
   sentrydns: ""
   firewall:
-    enabled: "true"
-    blockthreshold: 0
-    scorettl: 60
+    enabled: "true"   # Enable the lua firewall module
+    blockthreshold: 0 # Monitor mode - log scores, but never block an IP
+    scorettl: 60.     # Reset an IPs score after 60 seconds of inactivity
 
 
 ## @param secrets passed in via GitActions
