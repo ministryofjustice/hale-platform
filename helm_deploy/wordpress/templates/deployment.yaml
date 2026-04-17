@@ -22,8 +22,6 @@ spec:
         app: wordpress
         tier: frontend-c
     spec:
-      securityContext:
-        fsGroup: 1002
       terminationGracePeriodSeconds: 35
       serviceAccountName: hale-platform-{{ .Values.configmap.envtype }}-service
       containers:
@@ -44,7 +42,7 @@ spec:
             - containerPort: {{ .Values.wp.image.ports.containerPort }}
           volumeMounts:
             - name: wordpress-volume-file-mount
-              mountPath: /var/www
+              mountPath: /var/www/html
             - name: hale-php-config
               mountPath: /usr/local/etc/php/conf.custom
           envFrom:
@@ -93,7 +91,7 @@ spec:
             - containerPort: {{ .Values.nginx.image.ports.containerPort }}
           volumeMounts:
             - name: wordpress-volume-file-mount
-              mountPath: /var/www
+              mountPath: /var/www/html
           envFrom:
             - configMapRef:
                 name: hale-nginx-config-{{ .Release.Revision }}
