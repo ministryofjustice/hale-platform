@@ -194,10 +194,9 @@ function _M.req()
     if not FIREWALL_ENABLED then return end
 
     -- Get the client's IP address.
-    -- nginx's realip module resolves X-Forwarded-For into a single, clean IP
-    -- (configured via real_ip_header + set_real_ip_from in nginx.conf).
-    -- Falls back to remote_addr if realip is not available (e.g. direct connection).
-    local ip = ngx.var.realip_remote_addr or ngx.var.remote_addr
+    -- nginx's realip module rewrites remote_addr to the client IP from X-Forwarded-For.
+    -- realip_remote_addr holds the original connection IP (the proxy).
+    local ip = ngx.var.remote_addr
     
     -- pcall = "protected call" - Lua's try/catch equivalent.
     -- It calls the function and catches any errors instead of crashing.
