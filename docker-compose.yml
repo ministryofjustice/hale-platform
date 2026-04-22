@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: nginx.local.dockerfile
+      target: nginx
     ports:
       - 8080:8080
       - 443:443

@@ -69,6 +69,18 @@ symlink:
 	@docker exec wordpress bash /opt/scripts/link-dev-packages.sh
 	@echo "✓ Symlinks created"
 
+# Unit tests (no external dependencies)
+test-firewall:
+	@echo "Running lua tests"
+	docker build -f nginx.local.dockerfile --target test -t firewall-test .
+	@docker compose up -d redis
+	@sleep 1
+	docker run --rm \
+		--network hale-platform_default \
+		-e REDIS_HOST=redis \
+		firewall-test firewall/gcra_integration_spec.lua firewall/config_spec.lua
+	@docker compose stop redis
+
 # Remove all dangling <none> images
 none: clean
 
