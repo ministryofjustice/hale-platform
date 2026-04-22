@@ -194,15 +194,20 @@ function _M.req()
     if not FIREWALL_ENABLED then return end
 
     -- Get the client's IP address.
-    -- nginx's realip module resolves X-Forwarded-For into a single, clean IP
-    -- (configured via real_ip_header + set_real_ip_from in nginx.conf).
-    -- Falls back to remote_addr if realip is not available (e.g. direct connection).
-    local ip = ngx.var.realip_remote_addr or ngx.var.remote_addr
+    -- nginx's realip module rewrites remote_addr to the client IP from X-Forwarded-For.
+    -- realip_remote_addr holds the original connection IP (the proxy).
+    local ip = ngx.var.remote_addr
     
     -- pcall = "protected call" - Lua's try/catch equivalent.
     -- It calls the function and catches any errors instead of crashing.
     -- Returns: (true, return_value) on success, (false, error_message) on error.
     -- We wrap Redis operations in pcall so a bug doesn't break the site.
+    --
+    -- IMPORTANT: ngx.exit() works via a Lua error internally, so it must NOT
+    -- be called inside pcall — pcall would catch and swallow it, allowing the
+    -- request through. Instead we set a flag inside pcall and call ngx.exit()
+    -- after the protected block.
+    local blocked = false
     local ok, err = pcall(function()
         -- Get a Redis connection (may return nil if Redis is down)
         local red = connect_redis()
@@ -216,7 +221,8 @@ function _M.req()
             if score and score ~= ngx.null and tonumber(score) > BLOCK_THRESHOLD then
                 release_redis(red)  -- Return connection before exiting
                 ngx.log(ngx.WARN, "[firewall] blocked ip=", ip, " score=", score)
-                ngx.exit(ngx.HTTP_FORBIDDEN)  -- 403 - stops request processing
+                blocked = true
+                return  -- Exit the pcall cleanly; ngx.exit() called below
             end
         end
         
@@ -244,7 +250,12 @@ function _M.req()
         -- Return connection to pool for reuse
         release_redis(red)
     end)
-    
+
+    -- Called outside pcall so OpenResty's internal error mechanism works correctly
+    if blocked then
+        ngx.exit(ngx.HTTP_FORBIDDEN)  -- 403 - stops request processing
+    end
+
     -- If pcall caught an error (ok=false), log it but don't block the request
     if not ok then
         ngx.log(ngx.ERR, "[firewall] req error (fail-open): ", err)
@@ -282,7 +293,11 @@ function _M.res()
     -- Capture variables NOW, before the request context disappears.
     -- Once we're inside the timer callback, ngx.var.* won't be available
     -- because the original request will be gone.
-    local ip = ngx.var.realip_remote_addr or ngx.var.remote_addr
+
+    -- Get the client's IP address.
+    -- nginx's realip module rewrites remote_addr to the client IP from X-Forwarded-For.
+    -- realip_remote_addr holds the original connection IP (the proxy).
+    local ip = ngx.var.remote_addr
     
     -- Schedule the Redis work to run in a timer context.
     -- ngx.timer.at(delay, callback) schedules a function to run after 'delay' seconds.
