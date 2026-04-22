@@ -14,7 +14,8 @@ services:
       - ./dev:/mnt/dev:delegated
       - ./opt/nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
       - ./opt/nginx/localwordpress.conf:/usr/local/openresty/nginx/conf/conf.d/localwordpress.conf
-      - ./opt/scripts/firewall.lua:/usr/local/openresty/nginx/lua/firewall.lua
+      - ./opt/lua/firewall.lua:/usr/local/openresty/nginx/lua/firewall.lua
+      - ./opt/lua/firewall:/usr/local/openresty/nginx/lua/firewall
       - ./bin/certs:/etc/nginx/certs/self-signed/
     depends_on:
       - wordpress

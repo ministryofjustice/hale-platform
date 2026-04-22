@@ -25,7 +25,8 @@ RUN mkdir -p /usr/local/openresty/nginx/logs \
 # Copy configuration, Lua module and error pages
 COPY opt/nginx/nginx.conf          /usr/local/openresty/nginx/conf/nginx.conf
 COPY opt/nginx/localwordpress.conf /usr/local/openresty/nginx/conf/conf.d/
-COPY opt/scripts/firewall.lua      /usr/local/openresty/nginx/lua/firewall.lua
+COPY opt/lua/firewall.lua          /usr/local/openresty/nginx/lua/firewall.lua
+COPY opt/lua/firewall              /usr/local/openresty/nginx/lua/firewall
 COPY opt/nginx/error-pages/        /usr/local/openresty/nginx/html/error-pages/
 
 # Switch to non-root user (numeric UID for consistency with production)

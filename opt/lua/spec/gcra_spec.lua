@@ -219,7 +219,7 @@ describe("check_direct with mock Redis", function()
 
     it("passes audit_enabled=1 and breakdown pairs when audit is on", function()
         local config = { emission_interval = 1000, burst = 10000, audit_enabled = true }
-        local breakdown = { ["rule:base"] = 1, ["rule:php-ext"] = 20 }
+        local breakdown = { ["rule:base"] = 1, ["rule:txt-ext"] = 20 }
         local red, captured = mock_redis({ 1, 0, 1021000, "" })
 
         gcra.check_direct(red, "gcra:1.2.3.4", 21, config, breakdown)
