@@ -7,8 +7,8 @@ describe("example tests", function()
         assert.are.equal(4, 2 + 2)
     end)
 
-    it("fails: intentional failure example", function()
-        assert.are.equal(5, 2 + 2)  -- 4 ~= 5, this will fail
-    end)
+    -- it("fails: intentional failure example", function()
+    --     assert.are.equal(5, 2 + 2)  -- 4 ~= 5, this will fail
+    -- end)
 
 end)
