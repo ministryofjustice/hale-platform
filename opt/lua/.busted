@@ -3,7 +3,7 @@
 
 return {
     default = {
-        ROOT = {"spec"},
+        ROOT = {"firewall"},
         pattern = "_spec",
         verbose = true,
         output = "utfTerminal"

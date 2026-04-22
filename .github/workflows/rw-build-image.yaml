@@ -93,8 +93,32 @@ on:
         required: true
 
 jobs:
+  test:
+    name: Run Lua Firewall Tests
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
+
+      - name: Build test image
+        run: docker build -f nginx.local.dockerfile --target test -t test-firewall .
+
+      - name: Run tests
+        run: |
+          docker run --rm \
+            --network host \
+            -e REDIS_HOST=localhost \
+            -e REDIS_SSL=false \
+            test-firewall
+
   buildImage:
     name: Build Image and push to ECR
+    needs: [test]
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     permissions:
