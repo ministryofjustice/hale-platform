@@ -145,7 +145,7 @@ configmap:
   firewall:
     enabled: "true"   # Enable the lua firewall module
     blockthreshold: 0 # Monitor mode - log scores, but never block an IP
-    scorettl: 60.     # Reset an IPs score after 60 seconds of inactivity
+    scorettl: 60      # Reset an IPs score after 60 seconds of inactivity
 
 
 ## @param secrets passed in via GitActions
