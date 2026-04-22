@@ -203,6 +203,12 @@ function _M.req()
     -- It calls the function and catches any errors instead of crashing.
     -- Returns: (true, return_value) on success, (false, error_message) on error.
     -- We wrap Redis operations in pcall so a bug doesn't break the site.
+    --
+    -- IMPORTANT: ngx.exit() works via a Lua error internally, so it must NOT
+    -- be called inside pcall — pcall would catch and swallow it, allowing the
+    -- request through. Instead we set a flag inside pcall and call ngx.exit()
+    -- after the protected block.
+    local blocked = false
     local ok, err = pcall(function()
         -- Get a Redis connection (may return nil if Redis is down)
         local red = connect_redis()
@@ -216,7 +222,8 @@ function _M.req()
             if score and score ~= ngx.null and tonumber(score) > BLOCK_THRESHOLD then
                 release_redis(red)  -- Return connection before exiting
                 ngx.log(ngx.WARN, "[firewall] blocked ip=", ip, " score=", score)
-                ngx.exit(ngx.HTTP_FORBIDDEN)  -- 403 - stops request processing
+                blocked = true
+                return  -- Exit the pcall cleanly; ngx.exit() called below
             end
         end
         
@@ -244,7 +251,12 @@ function _M.req()
         -- Return connection to pool for reuse
         release_redis(red)
     end)
-    
+
+    -- Called outside pcall so OpenResty's internal error mechanism works correctly
+    if blocked then
+        ngx.exit(ngx.HTTP_FORBIDDEN)  -- 403 - stops request processing
+    end
+
     -- If pcall caught an error (ok=false), log it but don't block the request
     if not ok then
         ngx.log(ngx.ERR, "[firewall] req error (fail-open): ", err)
