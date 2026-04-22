@@ -131,8 +131,7 @@ local function connect_redis()
     -- For ElastiCache with encryption-in-transit, we need SSL.
     local ok, err
     if REDIS_SSL then
-        -- ssl_verify=false because ElastiCache certs may not be in CA bundle
-        ok, err = red:connect(REDIS_HOST, REDIS_PORT, { ssl = true, ssl_verify = false })
+        ok, err = red:connect(REDIS_HOST, REDIS_PORT, { ssl = true, ssl_verify = true })
     else
         ok, err = red:connect(REDIS_HOST, REDIS_PORT)
     end
