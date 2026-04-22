@@ -366,25 +366,29 @@ function _M.stats()
         return
     end
     
-    -- KEYS * returns all keys in Redis. 
-    -- WARNING: This is slow on large datasets - fine for debugging only!
-    local keys = red:keys("*")
-    
-    -- Check if keys is nil (error) or empty table.
+    -- SCAN is non-blocking: unlike KEYS it yields between batches so Redis
+    -- stays responsive. We do a single pass (no cursor loop) capped at 500
+    -- entries, scoped to score:* keys only.
+    -- SCAN returns: { cursor, { key, key, ... } }
+    local res = red:scan("0", "MATCH", "score:*", "COUNT", 500)
+
+    -- Check for error or empty result.
     -- #keys is the length operator - returns number of elements in array.
+    local keys = res and res[2]
     if not keys or #keys == 0 then
         ngx.say("(empty database)")
         release_redis(red)
         return
     end
-    
-    -- Loop through all keys and print their values.
+
+    -- Loop through returned keys and print their values.
     -- ipairs() iterates over array-style tables in order.
     -- The underscore "_" is a Lua convention for "I don't need this value"
     -- (ipairs returns index, value - we only need value).
+    ngx.say("showing up to 500 entries (single SCAN pass)")
     for _, key in ipairs(keys) do
         local val = red:get(key)
-        
+
         -- ngx.null is a special value that resty.redis returns for nil Redis values.
         -- It's different from Lua's nil for technical reasons.
         if val and val ~= ngx.null then
