@@ -7,7 +7,7 @@
 FROM openresty/openresty:alpine AS nginx
 
 # Install additional Alpine packages
-RUN apk update && apk add curl
+RUN apk update && apk add curl ca-certificates
 
 # Create non-root user (UID/GID 1002 to match org standard)
 RUN addgroup -g 1002 -S hale \
