@@ -964,12 +964,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/govwind.git",
-                "reference": "bcba4bbbb7f18817dcd7f3682e7f36df526fad61"
+                "reference": "c4f35cdcefbab0d361304b9719ea20d8a4894b6d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/bcba4bbbb7f18817dcd7f3682e7f36df526fad61",
-                "reference": "bcba4bbbb7f18817dcd7f3682e7f36df526fad61",
+                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/c4f35cdcefbab0d361304b9719ea20d8a4894b6d",
+                "reference": "c4f35cdcefbab0d361304b9719ea20d8a4894b6d",
                 "shasum": ""
             },
             "default-branch": true,
@@ -979,7 +979,7 @@
                 "source": "https://github.com/ministryofjustice/govwind/tree/main",
                 "issues": "https://github.com/ministryofjustice/govwind/issues"
             },
-            "time": "2026-04-09T14:19:56+00:00"
+            "time": "2026-04-21T19:40:14+00:00"
         },
         {
             "name": "ministryofjustice/hale",
@@ -1081,12 +1081,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/ppo.git",
-                "reference": "81a4adcc0fee6211305dc8e13be34672d8ab0845"
+                "reference": "c6eeaa1377089919c3c469d370337f5fef1fa34d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/ppo/zipball/81a4adcc0fee6211305dc8e13be34672d8ab0845",
-                "reference": "81a4adcc0fee6211305dc8e13be34672d8ab0845",
+                "url": "https://api.github.com/repos/ministryofjustice/ppo/zipball/c6eeaa1377089919c3c469d370337f5fef1fa34d",
+                "reference": "c6eeaa1377089919c3c469d370337f5fef1fa34d",
                 "shasum": ""
             },
             "default-branch": true,
@@ -1096,7 +1096,7 @@
                 "source": "https://github.com/ministryofjustice/ppo/tree/main",
                 "issues": "https://github.com/ministryofjustice/ppo/issues"
             },
-            "time": "2025-06-11T07:52:18+00:00"
+            "time": "2026-04-15T11:57:17+00:00"
         },
         {
             "name": "ministryofjustice/website-builder-blocks",
