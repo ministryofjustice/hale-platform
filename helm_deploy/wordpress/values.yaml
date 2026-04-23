@@ -99,7 +99,7 @@ autoscaling:
   replicaCount:
     prod:
       min: 6
-      max: 12
+      max: 18
     staging:
       min: 2
       max: 4
