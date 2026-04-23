@@ -113,6 +113,18 @@ local function create_redis_client()
         return parse_response()
     end
     
+    -- Generic command helper (used by tests for SET/EXPIRE on allow/block keys)
+    function client:cmd(...)
+        local args = {...}
+        local c = "*" .. #args .. "\r\n"
+        for _, arg in ipairs(args) do
+            arg = tostring(arg)
+            c = c .. "$" .. #arg .. "\r\n" .. arg .. "\r\n"
+        end
+        tcp:send(c)
+        return parse_response()
+    end
+    
     function client:close()
         tcp:close()
     end
@@ -245,5 +257,144 @@ describe("GCRA integration", function()
         -- Loading again should return the same SHA
         local sha2 = gcra.load_script(red)
         assert.equals(sha, sha2)
+    end)
+end)
+
+describe("GCRA allow/block list integration", function()
+    local red
+    local test_key  = "gcra:integration:abtest"
+    local allow_key = "firewall:allow:integration:abtest"
+    local block_key = "firewall:block:integration:abtest"
+    
+    setup(function()
+        red = create_redis_client()
+    end)
+    
+    teardown(function()
+        if red then
+            red:del(test_key)
+            red:del(allow_key)
+            red:del(block_key)
+            red:close()
+        end
+    end)
+    
+    before_each(function()
+        red:del(test_key)
+        red:del(allow_key)
+        red:del(block_key)
+        gcra.script_sha = nil
+    end)
+    
+    it("short-circuits to allow when allow_key exists, even when bucket is exhausted", function()
+        local config = {
+            emission_interval = 1000,
+            burst             = 5000,  -- 5 tokens
+            allow_key         = allow_key,
+            block_key         = block_key,
+        }
+        
+        -- Burn the bucket first
+        for i = 1, 5 do
+            gcra.check_direct(red, test_key, 1, config)
+        end
+        local allowed = gcra.check_direct(red, test_key, 1, config)
+        assert.is_false(allowed, "sanity: bucket should be exhausted")
+        
+        -- Add to allowlist
+        red:cmd("SET", allow_key, "1")
+        
+        -- Should now bypass cleanly
+        local ok, info = gcra.check_direct(red, test_key, 1, config)
+        assert.is_true(ok)
+        assert.equals("allow", info.reason)
+        assert.equals(0,       info.retry_after)
+    end)
+    
+    it("short-circuits to block when block_key exists, returning PTTL as retry_after", function()
+        local config = {
+            emission_interval = 1000,
+            burst             = 100000,
+            allow_key         = allow_key,
+            block_key         = block_key,
+        }
+        
+        -- Block with a 60s TTL
+        red:cmd("SET", block_key, "1", "EX", "60")
+        
+        local ok, info = gcra.check_direct(red, test_key, 1, config)
+        assert.is_false(ok)
+        assert.equals("block", info.reason)
+        -- PTTL should be roughly 60_000 ms (allow some clock slack)
+        assert.is_true(info.retry_after > 50000 and info.retry_after <= 60000,
+                       "retry_after should be ~60000ms, got " .. tostring(info.retry_after))
+    end)
+    
+    it("returns retry_after=0 for permanent ban (no TTL on block_key)", function()
+        local config = {
+            emission_interval = 1000,
+            burst             = 100000,
+            allow_key         = allow_key,
+            block_key         = block_key,
+        }
+        
+        -- Permanent block (no EX)
+        red:cmd("SET", block_key, "1")
+        
+        local ok, info = gcra.check_direct(red, test_key, 1, config)
+        assert.is_false(ok)
+        assert.equals("block", info.reason)
+        assert.equals(0, info.retry_after)
+    end)
+    
+    it("allow takes precedence over block when both keys are set", function()
+        local config = {
+            emission_interval = 1000,
+            burst             = 100000,
+            allow_key         = allow_key,
+            block_key         = block_key,
+        }
+        
+        red:cmd("SET", allow_key, "1")
+        red:cmd("SET", block_key, "1")
+        
+        local ok, info = gcra.check_direct(red, test_key, 1, config)
+        assert.is_true(ok)
+        assert.equals("allow", info.reason)
+    end)
+    
+    it("allowlist bypass does not consume tokens (TAT remains untouched)", function()
+        local config = {
+            emission_interval = 1000,
+            burst             = 5000,
+            allow_key         = allow_key,
+            block_key         = block_key,
+        }
+        
+        red:cmd("SET", allow_key, "1")
+        
+        -- Many bypass requests
+        for i = 1, 100 do
+            local ok, info = gcra.check_direct(red, test_key, 1, config)
+            assert.is_true(ok)
+            assert.equals("allow", info.reason)
+        end
+        
+        -- TAT key should still not exist
+        local tat = red:get(test_key)
+        assert.is_nil(tat)
+    end)
+    
+    it("returns reason='gcra' when neither allow nor block keys are set", function()
+        local config = {
+            emission_interval = 1000,
+            burst             = 10000,
+            allow_key         = allow_key,
+            block_key         = block_key,
+        }
+        
+        local ok, info = gcra.check_direct(red, test_key, 1, config)
+        assert.is_true(ok)
+        assert.equals("gcra", info.reason)
     end)
 end)
