@@ -142,6 +142,11 @@ configmap:
   envtype: ""
   s3useprofile: "true"
   sentrydns: ""
+  firewall:
+    enabled: "true"   # Enable the lua firewall module
+    blockthreshold: 0 # Monitor mode - log scores, but never block an IP
+    scorettl: 60      # Reset an IPs score after 60 seconds of inactivity
+
 
 ## @param secrets passed in via GitActions
 ##
@@ -172,6 +177,8 @@ secrets:
   auth0envclientsecret: ""
   auth0envdomain: ""
   acftoken: ""
+  redisauth: ""
+  redishost: ""
 
 ## @param Toggle alerts on/off
 ##
