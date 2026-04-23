@@ -35,4 +35,5 @@ jobs:
             --network host \
             -e REDIS_HOST=localhost \
             -e REDIS_SSL=false \
+            -e REDIS_DB=1 \
             test-firewall

@@ -249,13 +249,27 @@ function _M.req()
         ngx.var.firewall_cost = tostring(request_cost)
         
         -- Check GCRA rate limit (passes breakdown for audit tracking)
-        -- Returns: allowed (boolean), info table {retry_after, tat, accumulated}
+        -- Returns: allowed (boolean), info table {retry_after, tat, accumulated, reason}
+        -- reason is one of: "allow" (allowlist hit), "block" (blocklist hit), "gcra"
             local allowed, info = gcra_module.check(red, ip, request_cost, gcra_config, breakdown)
+        
+        -- Allowlist short-circuit: clean bypass, no audit, no local cache.
+        -- The GCRA script already skipped TAT update, so nothing else to do.
+        if allowed and info.reason == "allow" then
+            redis_pool.release(red)
+            return
+        end
         
         -- If rate limit exceeded, handle the block
         if not allowed then
-            -- Calculate cache TTL in seconds (retry_after is in ms)
-            local cache_ttl = math.ceil(info.retry_after / 1000)
+            -- retry_after is in ms. 0 from a "block" reason means permanent ban.
+            -- shared_dict :set(key, value, 0) means "no expiry" — exactly what we want.
+            local cache_ttl
+            if info.reason == "block" and info.retry_after == 0 then
+                cache_ttl = 0  -- permanent
+            else
+                cache_ttl = math.ceil(info.retry_after / 1000)
+            end
             
             -- Cache the block locally to avoid Redis hits for this IP
             blocked_cache:set("blocked:" .. ip, true, cache_ttl)
@@ -266,23 +280,31 @@ function _M.req()
                 local audit_stream = gcra_config.audit_stream or "firewall:audit"
                 local audit_maxlen = gcra_config.audit_maxlen or 10000
                 
-                -- Build trigger breakdown string from current request
-                local trigger_parts = {}
-                for rule, rule_cost in pairs(breakdown) do
-                    table.insert(trigger_parts, rule .. ":" .. rule_cost)
+                -- Trigger string differs by reason: blocklist hits don't have a
+                -- meaningful rule breakdown, GCRA blocks do.
+                local trigger
+                if info.reason == "block" then
+                    trigger = "blocklist"
+                else
+                    local trigger_parts = {}
+                    for rule, rule_cost in pairs(breakdown) do
+                        table.insert(trigger_parts, rule .. ":" .. rule_cost)
+                    end
+                    trigger = table.concat(trigger_parts, ",")
                 end
-                local trigger = table.concat(trigger_parts, ",")
                 
                 -- Write to audit stream (accumulated comes from GCRA script)
                 red:xadd(audit_stream, "MAXLEN", "~", audit_maxlen, "*",
                     "ip", ip,
                     "blocked_at", now,
                     "cost", request_cost,
+                    "reason", info.reason,
                     "trigger", trigger,
                     "accumulated", info.accumulated or "")
             end
             
-            ngx.log(ngx.WARN, "[firewall] blocked ip=", ip, 
+            ngx.log(ngx.WARN, "[firewall] blocked ip=", ip,
+                    " reason=", info.reason,
                     " cost=", request_cost,
                     " retry_after=", info.retry_after)
             
@@ -516,6 +538,81 @@ function _M.seed_rules()
     
     redis_pool.release(red)
     
+    return ok, err
+end
+
+
+-- ============================================================================
+-- ALLOW / BLOCK LIST HELPERS
+-- ============================================================================
+-- Thin Redis wrappers used by external tooling (e.g. a future WP CLI command
+-- like `wp firewall allow 1.2.3.4 --ttl=3600`). Each lives in its own Redis
+-- key so native EXPIRE handles ban/grant lifetimes — see the GCRA Lua script
+-- which checks these keys before running rate limiting.
+--
+-- Key naming is kept in sync with gcra.lua DEFAULTS.allow_prefix / block_prefix.
+-- ============================================================================
+
+local ALLOW_PREFIX = "firewall:allow:"
+local BLOCK_PREFIX = "firewall:block:"
+
+-- Set ip on the allowlist. ttl is seconds; nil/0 = permanent.
+function _M.allow_ip(ip, ttl)
+    local red = redis_pool.connect()
+    if not red then return nil, "redis connection failed" end
+    
+    local ok, err
+    if ttl and ttl > 0 then
+        ok, err = red:set(ALLOW_PREFIX .. ip, "1", "EX", ttl)
+    else
+        ok, err = red:set(ALLOW_PREFIX .. ip, "1")
+    end
+    
+    redis_pool.release(red)
+    -- Drop any cached block so the new allow takes effect immediately on this worker
+    blocked_cache:delete("blocked:" .. ip)
+    return ok, err
+end
+
+-- Remove ip from the allowlist.
+function _M.unallow_ip(ip)
+    local red = redis_pool.connect()
+    if not red then return nil, "redis connection failed" end
+    
+    local ok, err = red:del(ALLOW_PREFIX .. ip)
+    redis_pool.release(red)
+    return ok, err
+end
+
+-- Set ip on the blocklist. ttl is seconds; nil/0 = permanent.
+function _M.block_ip(ip, ttl)
+    local red = redis_pool.connect()
+    if not red then return nil, "redis connection failed" end
+    
+    local ok, err
+    if ttl and ttl > 0 then
+        ok, err = red:set(BLOCK_PREFIX .. ip, "1", "EX", ttl)
+    else
+        ok, err = red:set(BLOCK_PREFIX .. ip, "1")
+    end
+    
+    redis_pool.release(red)
+    -- Pre-warm the local cache so this worker blocks immediately
+    if ok then
+        blocked_cache:set("blocked:" .. ip, true, ttl or 0)
+    end
+    return ok, err
+end
+
+-- Remove ip from the blocklist.
+function _M.unblock_ip(ip)
+    local red = redis_pool.connect()
+    if not red then return nil, "redis connection failed" end
+    
+    local ok, err = red:del(BLOCK_PREFIX .. ip)
+    redis_pool.release(red)
+    -- Drop any cached block on this worker
+    blocked_cache:delete("blocked:" .. ip)
     return ok, err
 end
 

@@ -77,6 +77,7 @@ test-firewall:
 	@sleep 1
 	docker run --rm \
 		--network hale-platform_default \
+		-e REDIS_DB=1 \
 		-e REDIS_HOST=redis \
 		test-firewall
 	@docker compose stop redis

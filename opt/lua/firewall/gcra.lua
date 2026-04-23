@@ -30,11 +30,18 @@ local _M = {}
 
 local cjson = require "cjson.safe"
 
--- Redis Lua script for GCRA rate limiting with optional breakdown tracking
--- Runs atomically on Redis server
+-- Redis Lua script for GCRA rate limiting with allow/block list short-circuits
+-- Runs atomically on Redis server.
 --
--- KEYS[1] = gcra:{ip}           - TAT key
--- KEYS[2] = gcra:{ip}:breakdown - breakdown hash (only used if audit enabled)
+-- Decision precedence:
+--   1. allowlist hit  → ALLOW (no TAT update, no audit) — clean bypass
+--   2. blocklist hit  → BLOCK (retry_after = PTTL, or 0 for permanent)
+--   3. GCRA           → ALLOW or BLOCK based on token bucket
+--
+-- KEYS[1] = gcra:{ip}            - TAT key
+-- KEYS[2] = gcra:{ip}:breakdown  - breakdown hash (only used if audit enabled)
+-- KEYS[3] = firewall:allow:{ip}  - allowlist key (presence = bypass)
+-- KEYS[4] = firewall:block:{ip}  - blocklist key (presence = block)
 --
 -- ARGV[1] = emission_interval (ms)
 -- ARGV[2] = burst (ms)
@@ -43,17 +50,39 @@ local cjson = require "cjson.safe"
 -- ARGV[5..N] = breakdown pairs: rule1, hits1, rule2, hits2, ...
 --
 -- RETURNS:
---   [allowed, retry_after, tat, accumulated_json]
---   accumulated_json only returned on block (for audit logging)
+--   [allowed, retry_after, tat, accumulated_json, reason]
+--   reason: "allow" | "block" | "gcra"
+--   retry_after: ms until retry; 0 means permanent ban (no PTTL)
+--   accumulated_json only populated on GCRA block (for audit logging)
 --
 _M.SCRIPT = [[
-local gcra_key = KEYS[1]
+local gcra_key      = KEYS[1]
 local breakdown_key = KEYS[2]
+local allow_key     = KEYS[3]
+local block_key     = KEYS[4]
 
 local emission_interval = tonumber(ARGV[1])
 local burst = tonumber(ARGV[2])
 local cost = tonumber(ARGV[3]) or 1
 local audit_enabled = ARGV[4] == "1"
+
+-- =====================
+-- Allowlist short-circuit (clean bypass)
+-- =====================
+if allow_key and allow_key ~= "" and redis.call('EXISTS', allow_key) == 1 then
+    return {1, 0, 0, "", "allow"}
+end
+
+-- =====================
+-- Blocklist short-circuit
+-- =====================
+if block_key and block_key ~= "" and redis.call('EXISTS', block_key) == 1 then
+    -- PTTL returns ms until expiry, -1 if no TTL (permanent), -2 if missing.
+    -- We treat -1 as 0 (signals "permanent" to caller).
+    local pttl = redis.call('PTTL', block_key)
+    if pttl < 0 then pttl = 0 end
+    return {0, pttl, 0, "", "block"}
+end
 
 -- Use Redis server time to avoid app/Redis clock skew.
 local t = redis.call('TIME')
@@ -84,7 +113,7 @@ if allowed then
         redis.call('PEXPIRE', breakdown_key, ttl)
     end
     
-    return {1, 0, new_tat, ""}
+    return {1, 0, new_tat, "", "gcra"}
 else
     -- Blocked: return accumulated breakdown for audit (read-only)
     local acc_json = ""
@@ -100,7 +129,7 @@ else
         end
     end
     
-    return {0, math.ceil(allow_at - now), tat, acc_json}
+    return {0, math.ceil(allow_at - now), tat, acc_json, "gcra"}
 end
 ]]
 
@@ -109,6 +138,8 @@ _M.DEFAULTS = {
     emission_interval = 1000,  -- 1 token per second
     burst = 100000,            -- 100 seconds of capacity
     key_prefix = "gcra:",
+    allow_prefix = "firewall:allow:",
+    block_prefix = "firewall:block:",
     audit_enabled = false,     -- track rule breakdown
 }
 
@@ -127,10 +158,14 @@ function _M.check(red, ip, cost, config, breakdown)
     local emission_interval = config.emission_interval or _M.DEFAULTS.emission_interval
     local burst = config.burst or _M.DEFAULTS.burst
     local key_prefix = config.key_prefix or _M.DEFAULTS.key_prefix
+    local allow_prefix = config.allow_prefix or _M.DEFAULTS.allow_prefix
+    local block_prefix = config.block_prefix or _M.DEFAULTS.block_prefix
     local audit_enabled = config.audit_enabled or _M.DEFAULTS.audit_enabled
     
-    local gcra_key = key_prefix .. ip
+    local gcra_key      = key_prefix .. ip
     local breakdown_key = key_prefix .. ip .. ":breakdown"
+    local allow_key     = allow_prefix .. ip
+    local block_key     = block_prefix .. ip
     
     -- Build args array
     -- ARGV: emission_interval, burst, cost, audit_enabled, [breakdown pairs...]
@@ -153,7 +188,7 @@ function _M.check(red, ip, cost, config, breakdown)
     
     -- Try EVALSHA first if we have a cached SHA
     if _M.script_sha then
-        result, err = red:evalsha(_M.script_sha, 2, gcra_key, breakdown_key, unpack(args))
+        result, err = red:evalsha(_M.script_sha, 4, gcra_key, breakdown_key, allow_key, block_key, unpack(args))
         if err and err:find("NOSCRIPT") then
             _M.script_sha = nil  -- SHA invalid (Redis restarted), clear it
             result, err = nil, nil
@@ -166,10 +201,10 @@ function _M.check(red, ip, cost, config, breakdown)
         local sha, load_err = red:script("LOAD", _M.SCRIPT)
         if sha then
             _M.script_sha = sha
-            result, err = red:evalsha(sha, 2, gcra_key, breakdown_key, unpack(args))
+            result, err = red:evalsha(sha, 4, gcra_key, breakdown_key, allow_key, block_key, unpack(args))
         else
             -- SCRIPT LOAD failed, fall back to EVAL
-            result, err = red:eval(_M.SCRIPT, 2, gcra_key, breakdown_key, unpack(args))
+            result, err = red:eval(_M.SCRIPT, 4, gcra_key, breakdown_key, allow_key, block_key, unpack(args))
         end
     end
     
@@ -178,15 +213,17 @@ function _M.check(red, ip, cost, config, breakdown)
         return true, { error = err }
     end
     
-    local allowed = result[1] == 1
+    local allowed     = result[1] == 1
     local retry_after = result[2]
-    local tat = result[3]
+    local tat         = result[3]
     local accumulated = result[4] or ""
+    local reason      = result[5] or "gcra"
     
     return allowed, {
         retry_after = retry_after,
         tat = tat,
-        accumulated = accumulated,  -- JSON string of accumulated breakdown (on block)
+        accumulated = accumulated,  -- JSON string of accumulated breakdown (on GCRA block)
+        reason = reason,            -- "allow" | "block" | "gcra"
     }
 end
 
@@ -210,7 +247,10 @@ end
 -- @param red: Redis client or mock
 -- @param key: Full Redis key (gcra:{ip})
 -- @param cost: Cost of this request
--- @param config: Config table {emission_interval, burst, audit_enabled}
+-- @param config: Config table {emission_interval, burst, audit_enabled,
+--                              allow_key, block_key}
+--                allow_key/block_key default to empty strings (skipping the
+--                short-circuit checks) so existing tests work unchanged.
 -- @param breakdown: Optional breakdown table for audit
 -- @return allowed, info
 function _M.check_direct(red, key, cost, config, breakdown)
@@ -218,6 +258,8 @@ function _M.check_direct(red, key, cost, config, breakdown)
     local emission_interval = config.emission_interval or _M.DEFAULTS.emission_interval
     local burst = config.burst or _M.DEFAULTS.burst
     local audit_enabled = config.audit_enabled or false
+    local allow_key = config.allow_key or ""
+    local block_key = config.block_key or ""
     
     local breakdown_key = key .. ":breakdown"
     
@@ -236,7 +278,7 @@ function _M.check_direct(red, key, cost, config, breakdown)
         end
     end
     
-    local result, err = red:eval(_M.SCRIPT, 2, key, breakdown_key, unpack(args))
+    local result, err = red:eval(_M.SCRIPT, 4, key, breakdown_key, allow_key, block_key, unpack(args))
     
     if not result then
         return true, { error = err }
@@ -244,8 +286,9 @@ function _M.check_direct(red, key, cost, config, breakdown)
     
     return result[1] == 1, {
         retry_after = result[2],
-        tat = result[3],
+        tat         = result[3],
         accumulated = result[4] or "",
+        reason      = result[5] or "gcra",
     }
 end
 

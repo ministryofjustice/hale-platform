@@ -22,6 +22,8 @@ describe("gcra module", function()
         assert.equals(1000, gcra.DEFAULTS.emission_interval)
         assert.equals(100000, gcra.DEFAULTS.burst)
         assert.equals("gcra:", gcra.DEFAULTS.key_prefix)
+        assert.equals("firewall:allow:", gcra.DEFAULTS.allow_prefix)
+        assert.equals("firewall:block:", gcra.DEFAULTS.block_prefix)
     end)
     
     it("exports check function", function()
@@ -159,12 +161,14 @@ describe("check_direct with mock Redis", function()
     local function mock_redis(eval_result)
         local captured = {}
         local red = {}
-        function red:eval(script, num_keys, key, breakdown_key, ...)
-            captured.script     = script
-            captured.num_keys   = num_keys
-            captured.key        = key
+        function red:eval(script, num_keys, key, breakdown_key, allow_key, block_key, ...)
+            captured.script        = script
+            captured.num_keys      = num_keys
+            captured.key           = key
             captured.breakdown_key = breakdown_key
-            captured.argv       = { ... }
+            captured.allow_key     = allow_key
+            captured.block_key     = block_key
+            captured.argv          = { ... }
             return eval_result
         end
         return red, captured
@@ -174,29 +178,70 @@ describe("check_direct with mock Redis", function()
 
     it("returns allowed=true and info when Redis says allowed", function()
         local tat = 1500000
-        local red, _ = mock_redis({ 1, 0, tat, "" })
+        local red, _ = mock_redis({ 1, 0, tat, "", "gcra" })
 
         local allowed, info = gcra.check_direct(red, "gcra:1.2.3.4", 1, BASE_CONFIG)
 
         assert.is_true(allowed)
-        assert.equals(0,   info.retry_after)
-        assert.equals(tat, info.tat)
-        assert.equals("",  info.accumulated)
+        assert.equals(0,      info.retry_after)
+        assert.equals(tat,    info.tat)
+        assert.equals("",     info.accumulated)
+        assert.equals("gcra", info.reason)
     end)
 
     it("returns allowed=false with retry_after when Redis says blocked", function()
-        local red, _ = mock_redis({ 0, 3500, 1003500, "" })
+        local red, _ = mock_redis({ 0, 3500, 1003500, "", "gcra" })
 
         local allowed, info = gcra.check_direct(red, "gcra:1.2.3.4", 1, BASE_CONFIG)
 
         assert.is_false(allowed)
-        assert.equals(3500, info.retry_after)
+        assert.equals(3500,   info.retry_after)
+        assert.equals("gcra", info.reason)
+    end)
+
+    it("surfaces reason='allow' from script (allowlist short-circuit)", function()
+        local red, _ = mock_redis({ 1, 0, 0, "", "allow" })
+
+        local allowed, info = gcra.check_direct(red, "gcra:1.2.3.4", 1, BASE_CONFIG)
+
+        assert.is_true(allowed)
+        assert.equals("allow", info.reason)
+    end)
+
+    it("surfaces reason='block' with PTTL retry_after (blocklist short-circuit)", function()
+        local red, _ = mock_redis({ 0, 60000, 0, "", "block" })
+
+        local allowed, info = gcra.check_direct(red, "gcra:1.2.3.4", 1, BASE_CONFIG)
+
+        assert.is_false(allowed)
+        assert.equals(60000,   info.retry_after)
+        assert.equals("block", info.reason)
+    end)
+
+    it("surfaces reason='block' with retry_after=0 for permanent ban", function()
+        local red, _ = mock_redis({ 0, 0, 0, "", "block" })
+
+        local allowed, info = gcra.check_direct(red, "gcra:1.2.3.4", 1, BASE_CONFIG)
+
+        assert.is_false(allowed)
+        assert.equals(0,       info.retry_after)
+        assert.equals("block", info.reason)
+    end)
+
+    it("defaults reason to 'gcra' if script omits 5th element", function()
+        -- Backward compatibility: a 4-element response still works.
+        local red, _ = mock_redis({ 1, 0, 1001000, "" })
+
+        local allowed, info = gcra.check_direct(red, "gcra:1.2.3.4", 1, BASE_CONFIG)
+
+        assert.is_true(allowed)
+        assert.equals("gcra", info.reason)
     end)
 
     it("fails open when Redis returns nil", function()
         local red, _ = mock_redis(nil)
         -- eval returns (nil, err_string) on failure; simulate that
-        function red:eval(...)
+        function red:eval(script, num_keys, key, breakdown_key, allow_key, block_key, ...)
             return nil, "ERR mock redis error"
         end
 
@@ -207,7 +252,7 @@ describe("check_direct with mock Redis", function()
     end)
 
     it("passes correct ARGV order: emission_interval, burst, cost, audit_enabled", function()
-        local red, captured = mock_redis({ 1, 0, 1001000, "" })
+        local red, captured = mock_redis({ 1, 0, 1001000, "", "gcra" })
 
         gcra.check_direct(red, "gcra:1.2.3.4", 5, BASE_CONFIG)
 
@@ -220,7 +265,7 @@ describe("check_direct with mock Redis", function()
     it("passes audit_enabled=1 and breakdown pairs when audit is on", function()
         local config = { emission_interval = 1000, burst = 10000, audit_enabled = true }
         local breakdown = { ["rule:base"] = 1, ["rule:txt-ext"] = 20 }
-        local red, captured = mock_redis({ 1, 0, 1021000, "" })
+        local red, captured = mock_redis({ 1, 0, 1021000, "", "gcra" })
 
         gcra.check_direct(red, "gcra:1.2.3.4", 21, config, breakdown)
 
@@ -229,14 +274,33 @@ describe("check_direct with mock Redis", function()
         assert.truthy(#captured.argv >= 7, "should have at least 2 breakdown pairs in ARGV")
     end)
 
-    it("passes correct keys to eval", function()
-        local red, captured = mock_redis({ 1, 0, 1001000, "" })
+    it("passes 4 keys to eval (gcra, breakdown, allow, block)", function()
+        local red, captured = mock_redis({ 1, 0, 1001000, "", "gcra" })
 
         gcra.check_direct(red, "gcra:10.0.0.1", 1, BASE_CONFIG)
 
-        assert.equals(2,                        captured.num_keys)
-        assert.equals("gcra:10.0.0.1",          captured.key)
+        assert.equals(4,                         captured.num_keys)
+        assert.equals("gcra:10.0.0.1",           captured.key)
         assert.equals("gcra:10.0.0.1:breakdown", captured.breakdown_key)
+        -- check_direct defaults allow/block keys to "" so existing callers
+        -- get unchanged behaviour (script skips EXISTS on empty key).
+        assert.equals("", captured.allow_key)
+        assert.equals("", captured.block_key)
+    end)
+
+    it("forwards explicit allow_key / block_key from config", function()
+        local config = {
+            emission_interval = 1000,
+            burst             = 10000,
+            allow_key         = "firewall:allow:10.0.0.1",
+            block_key         = "firewall:block:10.0.0.1",
+        }
+        local red, captured = mock_redis({ 1, 0, 1001000, "", "gcra" })
+
+        gcra.check_direct(red, "gcra:10.0.0.1", 1, config)
+
+        assert.equals("firewall:allow:10.0.0.1", captured.allow_key)
+        assert.equals("firewall:block:10.0.0.1", captured.block_key)
     end)
 
 end)
