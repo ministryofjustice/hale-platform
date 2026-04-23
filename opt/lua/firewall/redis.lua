@@ -45,6 +45,10 @@ local REDIS_AUTH = os.getenv("REDIS_AUTH")
 -- Use TLS for Redis connection (default true for ElastiCache, set false for local dev)
 local REDIS_SSL = os.getenv("REDIS_SSL") ~= "false"
 
+-- Logical Redis database index. 0 = default (production). Override to 1 in test
+-- environments to isolate test data from live data on the same Redis instance.
+local REDIS_DB = tonumber(os.getenv("REDIS_DB")) or 0
+
 -- Timeout in milliseconds for Redis operations (200ms keeps requests fast)
 local REDIS_TIMEOUT = 200
 
@@ -107,7 +111,17 @@ function _M.connect()
             return nil
         end
     end
-    
+
+    -- Select the logical database. Skipped for DB 0 (Redis default) to avoid
+    -- an unnecessary round-trip in production.
+    if REDIS_DB ~= 0 then
+        local ok, err = red:select(REDIS_DB)
+        if not ok then
+            ngx.log(ngx.ERR, "[redis] select db failed (fail-open): ", err)
+            return nil
+        end
+    end
+
     -- Return the connected client object
     return red
 end
@@ -141,6 +155,7 @@ _M.config = {
     host = REDIS_HOST,
     port = REDIS_PORT,
     ssl = REDIS_SSL,
+    db = REDIS_DB,
     pool_size = REDIS_POOL_SIZE,
     keepalive_ms = REDIS_KEEPALIVE_MS,
 }
