@@ -6,6 +6,8 @@ metadata:
   namespace: hale-platform-{{ .Values.configmap.envtype }}
 spec:
   schedule: "* * * * *"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 120
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
   jobTemplate:

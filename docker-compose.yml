@@ -77,6 +77,7 @@ services:
       PHP_DSN: "" # Sentry constant (not used locally)
       WP_SENTRY_ENV: ""
       ACF_PRO_LICENSE: ""
+      WP_CRON_INTERNAL_URL: "https://nginx"
   redis:
     image: redis:7-alpine
     profiles:
