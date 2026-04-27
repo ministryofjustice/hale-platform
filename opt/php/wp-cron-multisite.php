@@ -25,7 +25,7 @@ $sql = $wpdb->prepare("SELECT domain, path FROM $wpdb->blogs WHERE archived='0' 
 
 // Default targets the nginx container (port 8080) on the same pod.
 // Local docker-compose overrides via WP_CRON_INTERNAL_URL=https://nginx.
-$internal_base = rtrim( getenv( 'WP_CRON_INTERNAL_URL' ) ?: 'http://127.0.0.1:8080', '/' );
+$internal_base = getenv( 'WP_CRON_INTERNAL_URL' ) ?: 'http://127.0.0.1:8080';
 
 $blogs = $wpdb->get_results($sql);
 
