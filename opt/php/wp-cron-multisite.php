@@ -4,8 +4,8 @@
  * Invoked every minute by helm_deploy/wordpress/templates/cron-wp-multisite.yaml.
  *
  * Use HTTP requests in favour of `shell_exec(wp cron event run --due-now --url='')`
- * because, http requests leverage in process opcache, and shell_exec was compiling
- * php on each invocation. HTTP requests are an order of magnitude quicker.
+ * because, HTTP requests leverage in process opcache, and shell_exec was compiling
+ * PHP on each invocation. HTTP requests are an order of magnitude quicker.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
