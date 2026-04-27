@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c0d84c472f2560ccd38404d39bef3e7a",
+    "content-hash": "30bf7ce8cc497d956df735fcc5b5a4a2",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -115,16 +115,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.379.0",
+            "version": "3.379.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "a50c3cc2c59f5ebeb56cbe170e6f144034b252b6"
+                "reference": "2c338cb3f2bcb9e8616ffbac7a36d66034f2ceef"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/a50c3cc2c59f5ebeb56cbe170e6f144034b252b6",
-                "reference": "a50c3cc2c59f5ebeb56cbe170e6f144034b252b6",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/2c338cb3f2bcb9e8616ffbac7a36d66034f2ceef",
+                "reference": "2c338cb3f2bcb9e8616ffbac7a36d66034f2ceef",
                 "shasum": ""
             },
             "require": {
@@ -206,9 +206,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.379.0"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.379.7"
             },
-            "time": "2026-04-13T18:11:10+00:00"
+            "time": "2026-04-24T18:17:06+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -964,12 +964,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/govwind.git",
-                "reference": "79efd0e589dd3fe21fa9b83d8f4c7b65b7106b8d"
+                "reference": "5fe4d4390e740bca3bae415d9def667e82cffac7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/79efd0e589dd3fe21fa9b83d8f4c7b65b7106b8d",
-                "reference": "79efd0e589dd3fe21fa9b83d8f4c7b65b7106b8d",
+                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/5fe4d4390e740bca3bae415d9def667e82cffac7",
+                "reference": "5fe4d4390e740bca3bae415d9def667e82cffac7",
                 "shasum": ""
             },
             "default-branch": true,
@@ -979,7 +979,7 @@
                 "source": "https://github.com/ministryofjustice/govwind/tree/main",
                 "issues": "https://github.com/ministryofjustice/govwind/issues"
             },
-            "time": "2026-04-14T09:21:02+00:00"
+            "time": "2026-04-27T08:15:17+00:00"
         },
         {
             "name": "ministryofjustice/hale",
@@ -1033,25 +1033,25 @@
         },
         {
             "name": "ministryofjustice/hale-dash",
-            "version": "1.1.9",
+            "version": "2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale-dash.git",
-                "reference": "b1b03b97f7e7885e569abb07e1bdce51285f659b"
+                "reference": "80dfd022e52cc694570f3ab45aa7315a9bb2ee82"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale-dash/zipball/b1b03b97f7e7885e569abb07e1bdce51285f659b",
-                "reference": "b1b03b97f7e7885e569abb07e1bdce51285f659b",
+                "url": "https://api.github.com/repos/ministryofjustice/hale-dash/zipball/80dfd022e52cc694570f3ab45aa7315a9bb2ee82",
+                "reference": "80dfd022e52cc694570f3ab45aa7315a9bb2ee82",
                 "shasum": ""
             },
             "type": "wordpress-theme",
             "description": "Hale Dash theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/hale-dash/tree/1.1.9",
+                "source": "https://github.com/ministryofjustice/hale-dash/tree/2.0.0",
                 "issues": "https://github.com/ministryofjustice/hale-dash/issues"
             },
-            "time": "2026-04-15T12:09:18+00:00"
+            "time": "2026-04-27T13:12:49+00:00"
         },
         {
             "name": "ministryofjustice/hale-showcase",
@@ -2743,7 +2743,7 @@
         },
         {
             "name": "symfony/polyfill-ctype",
-            "version": "v1.35.0",
+            "version": "v1.37.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-ctype.git",
@@ -2802,7 +2802,7 @@
                 "portable"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-ctype/tree/v1.35.0"
+                "source": "https://github.com/symfony/polyfill-ctype/tree/v1.37.0"
             },
             "funding": [
                 {
@@ -2826,7 +2826,7 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.35.0",
+            "version": "v1.37.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
@@ -2887,7 +2887,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.35.0"
+                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.37.0"
             },
             "funding": [
                 {
@@ -2911,7 +2911,7 @@
         },
         {
             "name": "symfony/polyfill-php80",
-            "version": "v1.35.0",
+            "version": "v1.37.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php80.git",
@@ -2971,7 +2971,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-php80/tree/v1.35.0"
+                "source": "https://github.com/symfony/polyfill-php80/tree/v1.37.0"
             },
             "funding": [
                 {
@@ -2995,7 +2995,7 @@
         },
         {
             "name": "symfony/polyfill-php83",
-            "version": "v1.35.0",
+            "version": "v1.37.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php83.git",
@@ -3051,7 +3051,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-php83/tree/v1.35.0"
+                "source": "https://github.com/symfony/polyfill-php83/tree/v1.37.0"
             },
             "funding": [
                 {
@@ -3311,15 +3311,15 @@
         },
         {
             "name": "wpackagist-plugin/microsoft-clarity",
-            "version": "0.10.22",
+            "version": "0.10.23",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/microsoft-clarity/",
-                "reference": "tags/0.10.22"
+                "reference": "tags/0.10.23"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/microsoft-clarity.0.10.22.zip"
+                "url": "https://downloads.wordpress.org/plugin/microsoft-clarity.0.10.23.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
