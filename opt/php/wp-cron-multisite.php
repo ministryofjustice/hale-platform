@@ -12,7 +12,12 @@ if ( ! defined( 'ABSPATH' ) ) {
     define( 'ABSPATH', dirname( __FILE__ ) . '/' );
 }
 
-require ABSPATH . 'wp-load.php';
+if ( file_exists( ABSPATH . 'wp-load.php' ) ) {
+    include( ABSPATH . 'wp-load.php' );
+}else{
+    status_header( 500 );
+    exit("[". date('h:i:s') ."] File does not exist: " . ABSPATH . "wp-load.php" );
+}
 
 /** @var wpdb $wpdb */
 global $wpdb;
