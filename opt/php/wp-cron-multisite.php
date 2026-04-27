@@ -48,4 +48,6 @@ foreach ( $blogs as $blog ) {
 
 if ( $failures ) {
     error_log( '[wp-cron-multisite] failures: ' . implode( '; ', $failures ) );
+    status_header( 500 );
+    exit( 'wp-cron-multisite encountered failures' );
 }
