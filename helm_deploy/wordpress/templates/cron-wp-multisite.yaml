@@ -18,8 +18,7 @@ spec:
             image: {{ .Values.nginx.image.repository }}
             imagePullPolicy: IfNotPresent
             args:
-            - curl
-            - {{ .Values.domain }}/wp-cron-multisite.php
+            - "curl http://wordpress:8080/wp-cron-multisite.php"
             securityContext:
               allowPrivilegeEscalation: false
               capabilities:

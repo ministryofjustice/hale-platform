@@ -50,6 +50,7 @@ RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 # Create new user to run the container as non-root
 RUN adduser --disabled-password hale -u 1002 \
     && chown -R hale:hale /var/www/html \
+    && chown -R hale:hale /usr/src/wordpress \
     && chown hale:hale /usr/local/bin/docker-entrypoint.sh
 
 # Make multisite scripts executable
