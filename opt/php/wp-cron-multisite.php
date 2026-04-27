@@ -5,7 +5,7 @@
  *
  * Use HTTP requests in favour of `shell_exec(wp cron event run --due-now --url='')`
  * because, HTTP requests leverage in process opcache, and shell_exec was compiling
- * php on each invocation. HTTP requests are an order of magnitude quicker.
+ * PHP on each invocation. HTTP requests are an order of magnitude quicker.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
