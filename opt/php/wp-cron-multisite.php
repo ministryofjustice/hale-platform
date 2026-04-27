@@ -24,7 +24,7 @@ $internal_base = rtrim( getenv( 'WP_CRON_INTERNAL_URL' ) ?: 'http://127.0.0.1:80
 
 $blogs = $wpdb->get_results($sql);
 
-$failures = array();
+$failures = [];
 
 foreach ( $blogs as $blog ) {
     $path = $blog->path ?: '/';
@@ -34,11 +34,10 @@ foreach ( $blogs as $blog ) {
     // at the lock-check without firing any hooks.
     $url = $internal_base . $path . 'wp-cron.php';
 
-    $response = wp_remote_get( $url, array(
+    $response = wp_remote_get( $url, [
         'timeout'   => 30,
-        'sslverify' => false,
-        'headers'   => array( 'Host' => $blog->domain ),
-    ) );
+        'headers'   => [ 'Host' => $blog->domain ],
+    ] );
 
     if ( is_wp_error( $response ) ) {
         $failures[] = $blog->domain . $path . ' err=' . $response->get_error_message();
