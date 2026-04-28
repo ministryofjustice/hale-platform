@@ -150,6 +150,7 @@ local function connect_redis()
         local ok, err = red:auth(REDIS_AUTH)
         if not ok then
             ngx.log(ngx.ERR, "[firewall] redis auth failed (fail-open): ", err)
+            red:close()
             return nil
         end
     end
