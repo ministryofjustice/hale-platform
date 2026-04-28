@@ -20,7 +20,7 @@ spec:
             imagePullPolicy: IfNotPresent
             args:
             - curl
-            - {{ .Values.domain }}/wp-cron-multisite.php
+            - http://wordpress:8080/wp-cron-multisite.php
             securityContext:
               allowPrivilegeEscalation: false
               capabilities:
