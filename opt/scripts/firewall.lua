@@ -219,11 +219,16 @@ function _M.req()
         if BLOCK_THRESHOLD > 0 then
             local score = red:get("score:" .. ip)
             -- score is nil if key doesn't exist, ngx.null if Redis returns null
-            if score and score ~= ngx.null and tonumber(score) > BLOCK_THRESHOLD then
-                release_redis(red)  -- Return connection before exiting
-                ngx.log(ngx.WARN, "[firewall] blocked ip=", ip, " score=", score)
-                blocked = true
-                return  -- Exit the pcall cleanly; ngx.exit() called below
+            if score and score ~= ngx.null then
+                local score_num = tonumber(score)
+                if not score_num then
+                    ngx.log(ngx.WARN, "[firewall] invalid score value ip=", ip, " score=", tostring(score))
+                elseif score_num > BLOCK_THRESHOLD then
+                    release_redis(red)  -- Return connection before exiting
+                    ngx.log(ngx.WARN, "[firewall] blocked ip=", ip, " score=", score)
+                    blocked = true
+                    return  -- Exit the pcall cleanly; ngx.exit() called below
+                end
             end
         end
         
