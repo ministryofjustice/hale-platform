@@ -31,7 +31,7 @@ function wb_reformat_mu_plugin_urls($url, $path, $plugin)
         return $url;
     }
 
-    // Replace symlink mount path (/mnt/dev) with 
+    // Replace symlink mount path (/mnt/dev) with
     // target path WP_CONTENT_DIR (e.g. /var/www/html/wp-content).
     $plugin_reformatted = str_replace('/mnt/dev/mu-plugins', WPMU_PLUGIN_DIR, $plugin);
 
