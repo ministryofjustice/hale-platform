@@ -964,12 +964,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/govwind.git",
-                "reference": "99ce382a96b2775ecebeb574ac09d51a43a15d89"
+                "reference": "a45d45959a0b52184bf117c3e2e32aa82b24bb24"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/99ce382a96b2775ecebeb574ac09d51a43a15d89",
-                "reference": "99ce382a96b2775ecebeb574ac09d51a43a15d89",
+                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/a45d45959a0b52184bf117c3e2e32aa82b24bb24",
+                "reference": "a45d45959a0b52184bf117c3e2e32aa82b24bb24",
                 "shasum": ""
             },
             "default-branch": true,
@@ -979,7 +979,7 @@
                 "source": "https://github.com/ministryofjustice/govwind/tree/main",
                 "issues": "https://github.com/ministryofjustice/govwind/issues"
             },
-            "time": "2026-04-27T14:16:33+00:00"
+            "time": "2026-04-28T14:55:10+00:00"
         },
         {
             "name": "ministryofjustice/hale",
