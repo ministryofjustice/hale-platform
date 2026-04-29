@@ -13,7 +13,7 @@ if (getenv('WP_ENVIRONMENT_TYPE') != 'local') {
 }
 
 /**
- * Replace symlink mount path (/mnt/dev/) with target path (/var/www/html/wp-content/).
+ * Replace symlink mount path (/mnt/dev/mu-plugins) with target path (/var/www/html/wp-content/mu-plugins).
  *
  * This fixes an issue where the value for `$plugin` is a path that WordPress doesn't recognise,
  * e.g. /mnt/dev/mu-plugins/hale-components/moj-components/component/Users/UserSwitch.php
