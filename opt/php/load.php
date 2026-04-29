@@ -35,9 +35,13 @@ function wb_reformat_mu_plugin_urls($url, $path, $plugin)
     // target path WP_CONTENT_DIR (e.g. /var/www/html/wp-content).
     $plugin_reformatted = str_replace('/mnt/dev/mu-plugins', WPMU_PLUGIN_DIR, $plugin);
 
-    // Recall plugins_url with the reformatted path.
-    // No infinite loop, because we replaced `/mnt/dev`
-    return plugins_url($path, $plugin_reformatted);
+    // Recalculate the URL using the reformatted path without re-entering
+    // this callback in the `plugins_url` filter chain.
+    remove_filter('plugins_url', 'wb_reformat_mu_plugin_urls', 10);
+    $reformatted_url = plugins_url($path, $plugin_reformatted);
+    add_filter('plugins_url', 'wb_reformat_mu_plugin_urls', 10, 3);
+
+    return $reformatted_url;
 }
 
 if (getenv('WP_ENVIRONMENT_TYPE') === 'local') {
