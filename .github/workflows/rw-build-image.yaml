@@ -87,6 +87,10 @@ on:
         required: true
       auth0-env-domain:
         required: true
+      redis-auth:
+        required: true
+      redis-host:
+        required: true
 
 jobs:
   buildImage:
@@ -265,6 +269,8 @@ jobs:
           --set secrets.auth0envclientsecret=${{ secrets.auth0-env-client-secret }} \
           --set secrets.auth0envdomain=${{ secrets.auth0-env-domain }} \
           --set secrets.acftoken=${{ secrets.acf-token }} \
+          --set secrets.redisauth=${{ secrets.redis-auth }} \
+          --set secrets.redishost=${{ secrets.redis-host }} \
           --set alertSecrets.slackWebhookUrl=${{ secrets.alert-slack-webhook-url }} \
           --set configmap.envtype=${{ vars.ENV_TYPE }} \
           --set configmap.sentrydns=${{ vars.PHP_DSN }} \
