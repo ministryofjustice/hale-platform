@@ -24,6 +24,13 @@ RUN addgroup -g 1001 wp \
     && adduser -G wp -g wp -s /bin/sh -D wp \
     && chown wp:wp /var/www/html
 
+RUN apk add --no-cache --virtual .build-deps pcre-dev $PHPIZE_DEPS
+
+RUN pecl install redis \
+    && docker-php-ext-enable redis.so
+
+RUN apk del .build-deps $PHPIZE_DEPS
+
 # Add PHP multsite supporting files
 COPY opt/php/load.php /usr/src/wordpress/wp-content/mu-plugins/load.php
 COPY opt/php/application.php /usr/src/wordpress/wp-content/mu-plugins/application.php

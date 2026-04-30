@@ -37,6 +37,15 @@ wp config set WP_SENTRY_BROWSER_FRONTEND_ENABLED true --raw
 wp config set WP_SENTRY_BROWSER_TRACES_SAMPLE_RATE "0.2" --raw # sample ~30% of traffic
 wp config set WP_SENTRY_BROWSER_REPLAYS_ON_ERROR_SAMPLE_RATE "1.0" --raw
 
+# Redis / Firewall (use the same defaults as in opt/lua/firewall)
+wp config set REDIS_HOST "\$_SERVER['REDIS_HOST'] ?? 'redis'" --raw
+wp config set REDIS_PORT "\$_SERVER['REDIS_PORT'] ?? 6379" --raw
+wp config set REDIS_AUTH "\$_SERVER['REDIS_AUTH'] ?? false" --raw
+wp config set REDIS_SSL "(\$_SERVER['REDIS_SSL'] ?? '') !== 'false'" --raw
+wp config set REDIS_DB "\$_SERVER['REDIS_DB'] ?? 0" --raw
+wp config set REDIS_TIMEOUT "\$_SERVER['REDIS_TIMEOUT'] ?? 200" --raw
+wp config set FIREWALL_ENABLED "(\$_SERVER['FIREWALL_ENABLED'] ?? '') !== 'false'" --raw
+
 #WP core install
 wp core multisite-install --title="Hale Multisite Platform" \
     --admin_user="${WORDPRESS_ADMIN_USER}" \

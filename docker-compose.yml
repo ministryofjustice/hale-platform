@@ -80,6 +80,8 @@ services:
       WP_SENTRY_ENV: ""
       ACF_PRO_LICENSE: ""
       WP_CRON_INTERNAL_URL: "https://nginx"
+      FIREWALL_ENABLED: ${FIREWALL_ENABLED:-false}
+      REDIS_SSL: "false"
   redis:
     image: redis:7-alpine
     profiles:
