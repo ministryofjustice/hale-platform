@@ -21,6 +21,7 @@ describe("gcra module", function()
         assert.is_table(gcra.DEFAULTS)
         assert.equals(1000, gcra.DEFAULTS.emission_interval)
         assert.equals(100000, gcra.DEFAULTS.burst)
+        assert.equals(600000, gcra.DEFAULTS.penalty_ttl)
         assert.equals("gcra:", gcra.DEFAULTS.key_prefix)
         assert.equals("firewall:allow:", gcra.DEFAULTS.allow_prefix)
         assert.equals("firewall:block:", gcra.DEFAULTS.block_prefix)
@@ -208,7 +209,7 @@ describe("check_direct with mock Redis", function()
         assert.equals("allow", info.reason)
     end)
 
-    it("surfaces reason='block' with PTTL retry_after (blocklist short-circuit)", function()
+    it("surfaces reason='block' with PTTL retry_after (manual admin ban)", function()
         local red, _ = mock_redis({ 0, 60000, 0, "", "block" })
 
         local allowed, info = gcra.check_direct(red, "gcra:1.2.3.4", 1, BASE_CONFIG)
@@ -216,6 +217,16 @@ describe("check_direct with mock Redis", function()
         assert.is_false(allowed)
         assert.equals(60000,   info.retry_after)
         assert.equals("block", info.reason)
+    end)
+
+    it("surfaces reason='penalty' when GCRA-written penalty key is hit", function()
+        local red, _ = mock_redis({ 0, 600000, 0, "", "penalty" })
+
+        local allowed, info = gcra.check_direct(red, "gcra:1.2.3.4", 1, BASE_CONFIG)
+
+        assert.is_false(allowed)
+        assert.equals(600000,    info.retry_after)
+        assert.equals("penalty", info.reason)
     end)
 
     it("surfaces reason='block' with retry_after=0 for permanent ban", function()
@@ -251,7 +262,7 @@ describe("check_direct with mock Redis", function()
         assert.is_string(info.error)
     end)
 
-    it("passes correct ARGV order: emission_interval, burst, cost, audit_enabled", function()
+    it("passes correct ARGV order: emission_interval, burst, cost, audit_enabled, penalty_ttl", function()
         local red, captured = mock_redis({ 1, 0, 1001000, "", "gcra" })
 
         gcra.check_direct(red, "gcra:1.2.3.4", 5, BASE_CONFIG)
@@ -260,6 +271,7 @@ describe("check_direct with mock Redis", function()
         assert.equals(10000,   tonumber(captured.argv[2]))  -- burst
         assert.equals(5,       tonumber(captured.argv[3]))  -- cost
         assert.equals("0",     captured.argv[4])            -- audit_enabled=false
+        assert.equals(600000,  tonumber(captured.argv[5]))  -- penalty_ttl (default)
     end)
 
     it("passes audit_enabled=1 and breakdown pairs when audit is on", function()
@@ -270,8 +282,8 @@ describe("check_direct with mock Redis", function()
         gcra.check_direct(red, "gcra:1.2.3.4", 21, config, breakdown)
 
         assert.equals("1", captured.argv[4])  -- audit_enabled=true
-        -- ARGV[5..N] should contain breakdown pairs (rule, hits)
-        assert.truthy(#captured.argv >= 7, "should have at least 2 breakdown pairs in ARGV")
+        -- ARGV[5] = penalty_ttl; ARGV[6..N] should contain breakdown pairs (rule, hits)
+        assert.truthy(#captured.argv >= 9, "should have penalty_ttl + at least 2 breakdown pairs in ARGV")
     end)
 
     it("passes 4 keys to eval (gcra, breakdown, allow, block)", function()

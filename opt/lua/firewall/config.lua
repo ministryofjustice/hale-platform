@@ -27,12 +27,12 @@
 -- ----------------------------------------------------------------------------
 --
 --   {
---     "emission_interval": <number>,   -- REQUIRED. Milliseconds per token
+--     "emission_interval": <number>,   -- Optional. Milliseconds per token
 --                                      --   (i.e. the inverse of the sustained
 --                                      --   request rate). Must be > 0.
 --                                      --   Default: 1000  (1 req/s sustained)
 --
---     "burst": <number>,               -- REQUIRED. Burst capacity in ms.
+--     "burst": <number>,               -- Optional. Burst capacity in ms.
 --                                      --   Allows short bursts above the
 --                                      --   sustained rate. Must be >= 0.
 --                                      --   Default: 100000 (100 s of burst)
@@ -46,9 +46,17 @@
 --                                      --   audit events.
 --                                      --   Default: "firewall:audit"
 --
---     "audit_maxlen": <integer>        -- Optional. MAXLEN trim on the audit
+--     "audit_maxlen": <integer>,       -- Optional. MAXLEN trim on the audit
 --                                      --   stream (approximate). Must be > 0.
 --                                      --   Default: 10000
+--
+--     "mode": <string>                 -- Optional. One of:
+--                                      --     "enforce" — block requests that exceed limits (429)
+--                                      --     "monitor" — log/audit "would-block" events but allow the request
+--                                      --     "off"     — skip GCRA entirely (still cheaper than disabling Lua)
+--                                      --   Default: "monitor"  (safe rollout)
+--                                      --   Note: changes propagate within RC_CACHE_TTL (60s),
+--                                      --   or instantly via /firewall/flush-cache.
 --   }
 --
 -- Example (minimal):
@@ -126,12 +134,17 @@ local _M = {}
 
 -- GCRA defaults (kept in sync with gcra.lua DEFAULTS)
 _M.DEFAULTS = {
-    emission_interval = 1000,          -- ms per token
-    burst             = 100000,        -- ms of burst capacity
+    emission_interval = 100,           -- ms per token
+    burst             = 150000,        -- ms of burst capacity
+    penalty_ttl       = 600000,        -- ms; penalty block key TTL written on GCRA block (0 = disabled)
     audit_enabled     = false,
     audit_stream      = "firewall:audit",
     audit_maxlen      = 10000,
+    mode              = "monitor",     -- "enforce" | "monitor" | "off"
 }
+
+-- Valid values for the "mode" config field.
+_M.VALID_MODES = { enforce = true, monitor = true, off = true }
 
 -- ============================================================================
 -- parse_config: validate and coerce a decoded firewall:config object
@@ -160,26 +173,30 @@ function _M.parse_config(raw)
         return out, warnings
     end
 
-    -- emission_interval: must be a positive number
-    local ei = tonumber(raw.emission_interval)
-    if ei == nil or ei <= 0 then
-        table.insert(warnings,
-            "config.emission_interval invalid ("
-            .. tostring(raw.emission_interval)
-            .. ") — using default " .. _M.DEFAULTS.emission_interval)
-    else
-        out.emission_interval = ei
+    -- emission_interval: must be a positive number (optional — default if absent)
+    if raw.emission_interval ~= nil then
+        local ei = tonumber(raw.emission_interval)
+        if ei == nil or ei <= 0 then
+            table.insert(warnings,
+                "config.emission_interval invalid ("
+                .. tostring(raw.emission_interval)
+                .. ") — using default " .. _M.DEFAULTS.emission_interval)
+        else
+            out.emission_interval = ei
+        end
     end
 
-    -- burst: must be a non-negative number
-    local burst = tonumber(raw.burst)
-    if burst == nil or burst < 0 then
-        table.insert(warnings,
-            "config.burst invalid ("
-            .. tostring(raw.burst)
-            .. ") — using default " .. _M.DEFAULTS.burst)
-    else
-        out.burst = burst
+    -- burst: must be a non-negative number (optional — default if absent)
+    if raw.burst ~= nil then
+        local burst = tonumber(raw.burst)
+        if burst == nil or burst < 0 then
+            table.insert(warnings,
+                "config.burst invalid ("
+                .. tostring(raw.burst)
+                .. ") — using default " .. _M.DEFAULTS.burst)
+        else
+            out.burst = burst
+        end
     end
 
     -- audit_enabled: boolean, optional
@@ -196,6 +213,30 @@ function _M.parse_config(raw)
     local maxlen = tonumber(raw.audit_maxlen)
     if maxlen ~= nil and maxlen > 0 then
         out.audit_maxlen = math.floor(maxlen)
+    end
+
+    -- mode: enforce | monitor | off, optional
+    if raw.mode ~= nil then
+        if type(raw.mode) == "string" and _M.VALID_MODES[raw.mode] then
+            out.mode = raw.mode
+        else
+            table.insert(warnings,
+                "config.mode invalid (" .. tostring(raw.mode)
+                .. ") — must be enforce|monitor|off — using default " .. _M.DEFAULTS.mode)
+        end
+    end
+
+    -- penalty_ttl: non-negative integer (ms), optional
+    if raw.penalty_ttl ~= nil then
+        local pt = tonumber(raw.penalty_ttl)
+        if pt == nil or pt < 0 then
+            table.insert(warnings,
+                "config.penalty_ttl invalid ("
+                .. tostring(raw.penalty_ttl)
+                .. ") — using default " .. _M.DEFAULTS.penalty_ttl)
+        else
+            out.penalty_ttl = math.floor(pt)
+        end
     end
 
     return out, warnings

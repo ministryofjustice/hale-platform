@@ -73,14 +73,14 @@ symlink:
 test-firewall:
 	@echo "Running Lua firewall tests"
 	@docker build -f nginx.local.dockerfile --target test -t test-firewall .
-	@docker compose up -d redis
-	@sleep 1
+	$(eval REDIS_WAS_RUNNING := $(shell docker compose ps --status running redis 2>/dev/null | grep -q redis && echo yes || echo no))
+	@if [ "$(REDIS_WAS_RUNNING)" = "no" ]; then docker compose up -d redis && sleep 1; fi
 	docker run --rm \
 		--network hale-platform_default \
 		-e REDIS_DB=1 \
 		-e REDIS_HOST=redis \
 		test-firewall
-	@docker compose stop redis
+	@if [ "$(REDIS_WAS_RUNNING)" = "no" ]; then docker compose stop redis; fi
 
 # Remove all dangling <none> images
 none: clean

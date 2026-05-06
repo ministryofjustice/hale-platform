@@ -47,7 +47,8 @@ local cjson = require "cjson.safe"
 -- ARGV[2] = burst (ms)
 -- ARGV[3] = cost
 -- ARGV[4] = audit_enabled ("1" or "0")
--- ARGV[5..N] = breakdown pairs: rule1, hits1, rule2, hits2, ...
+-- ARGV[5] = penalty_ttl_ms (0 = disabled; >0 = write block key with this TTL on GCRA block)
+-- ARGV[6..N] = breakdown pairs: rule1, hits1, rule2, hits2, ...
 --
 -- RETURNS:
 --   [allowed, retry_after, tat, accumulated_json, reason]
@@ -65,6 +66,7 @@ local emission_interval = tonumber(ARGV[1])
 local burst = tonumber(ARGV[2])
 local cost = tonumber(ARGV[3]) or 1
 local audit_enabled = ARGV[4] == "1"
+local penalty_ttl = tonumber(ARGV[5]) or 0
 
 -- =====================
 -- Allowlist short-circuit (clean bypass)
@@ -81,7 +83,12 @@ if block_key and block_key ~= "" and redis.call('EXISTS', block_key) == 1 then
     -- We treat -1 as 0 (signals "permanent" to caller).
     local pttl = redis.call('PTTL', block_key)
     if pttl < 0 then pttl = 0 end
-    return {0, pttl, 0, "", "block"}
+    -- Value "gcra" means this key was written automatically by GCRA penalty;
+    -- any other value means a manual admin ban.  Surfacing the distinction lets
+    -- the audit stream tell the two apart.
+    local block_val = redis.call('GET', block_key)
+    local block_reason = (block_val == "gcra") and "penalty" or "block"
+    return {0, pttl, 0, "", block_reason}
 end
 
 -- Use Redis server time to avoid app/Redis clock skew.
@@ -103,9 +110,9 @@ if allowed then
     redis.call('SET', gcra_key, new_tat, 'PX', burst + emission_interval)
     
     -- Track breakdown ONLY for allowed requests (no writes on block)
-    if audit_enabled and #ARGV >= 5 then
+    if audit_enabled and #ARGV >= 6 then
         local ttl = burst + emission_interval
-        for i = 5, #ARGV, 2 do
+        for i = 6, #ARGV, 2 do
             local rule = ARGV[i]
             local hits = tonumber(ARGV[i + 1]) or 1
             redis.call('HINCRBY', breakdown_key, rule, hits)
@@ -129,7 +136,16 @@ else
         end
     end
     
-    return {0, math.ceil(allow_at - now), tat, acc_json, "gcra"}
+    -- If penalty_ttl is configured, write a timed block key so all subsequent
+    -- requests from this IP short-circuit the blocklist check for penalty_ttl ms.
+    -- Value "gcra" marks it as an automatic penalty (vs a manual admin ban).
+    -- NX ensures we do not overwrite a longer-lived manual ban.
+    local actual_retry_after = math.ceil(allow_at - now)
+    if penalty_ttl > 0 then
+        redis.call('SET', block_key, 'gcra', 'PX', penalty_ttl, 'NX')
+        actual_retry_after = penalty_ttl
+    end
+    return {0, actual_retry_after, tat, acc_json, "gcra"}
 end
 ]]
 
@@ -137,6 +153,7 @@ end
 _M.DEFAULTS = {
     emission_interval = 1000,  -- 1 token per second
     burst = 100000,            -- 100 seconds of capacity
+    penalty_ttl = 600000,      -- 10 minutes in ms; written to block key on GCRA block (0 = disabled)
     key_prefix = "gcra:",
     allow_prefix = "firewall:allow:",
     block_prefix = "firewall:block:",
@@ -161,6 +178,7 @@ function _M.check(red, ip, cost, config, breakdown)
     local allow_prefix = config.allow_prefix or _M.DEFAULTS.allow_prefix
     local block_prefix = config.block_prefix or _M.DEFAULTS.block_prefix
     local audit_enabled = config.audit_enabled or _M.DEFAULTS.audit_enabled
+    local penalty_ttl = config.penalty_ttl or _M.DEFAULTS.penalty_ttl
     
     local gcra_key      = key_prefix .. ip
     local breakdown_key = key_prefix .. ip .. ":breakdown"
@@ -168,12 +186,13 @@ function _M.check(red, ip, cost, config, breakdown)
     local block_key     = block_prefix .. ip
     
     -- Build args array
-    -- ARGV: emission_interval, burst, cost, audit_enabled, [breakdown pairs...]
+    -- ARGV: emission_interval, burst, cost, audit_enabled, penalty_ttl, [breakdown pairs...]
     local args = {
         emission_interval,
         burst,
         cost,
         audit_enabled and "1" or "0",
+        penalty_ttl,
     }
     
     -- Append breakdown pairs if audit enabled and breakdown provided
@@ -260,6 +279,7 @@ function _M.check_direct(red, key, cost, config, breakdown)
     local audit_enabled = config.audit_enabled or false
     local allow_key = config.allow_key or ""
     local block_key = config.block_key or ""
+    local penalty_ttl = config.penalty_ttl or _M.DEFAULTS.penalty_ttl
     
     local breakdown_key = key .. ":breakdown"
     
@@ -269,6 +289,7 @@ function _M.check_direct(red, key, cost, config, breakdown)
         burst,
         cost,
         audit_enabled and "1" or "0",
+        penalty_ttl,
     }
     
     if audit_enabled and breakdown then

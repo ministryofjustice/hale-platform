@@ -175,22 +175,84 @@ end
 -- ============================================================================
 -- REQUEST PHASE: Called on every incoming request
 -- ============================================================================
--- This function is called from nginx.conf in the "access_by_lua" directive,
--- which runs before nginx processes the request.
+-- This function runs in nginx's access_by_lua phase, before nginx processes
+-- the request. We calculate the request's "cost" based on rules, then check
+-- if the IP has exceeded its rate limit using GCRA (Generic Cell Rate Algorithm).
 --
--- We calculate the request's "cost" based on rules, then check if the IP
--- has exceeded its rate limit using GCRA (Generic Cell Rate Algorithm).
+-- ----------------------------------------------------------------------------
+-- OPERATING MODES (firewall:config.mode in Redis)
+-- ----------------------------------------------------------------------------
+--   enforce  — over-limit requests are blocked with 429
+--   monitor  — over-limit requests are LOGGED + AUDITED but allowed through;
+--              this is the safe-rollout / observability mode
+--   off      — GCRA is skipped entirely (allowlist/blocklist also skipped)
 --
--- BLOCKING OPTIMIZATION:
---   1. Check nginx shared dict first - if IP is cached as blocked, 429 immediately
---   2. If not cached, do GCRA check in Redis
---   3. If blocked: write audit entry ONCE to Redis stream, cache locally
---   4. Subsequent requests from blocked IP hit local cache (0 Redis operations)
+-- ----------------------------------------------------------------------------
+-- THE SHARED `blocked_cache` AND WHY MONITOR USES IT TOO
+-- ----------------------------------------------------------------------------
+-- It would be tempting to think monitor mode should NOT populate the cache,
+-- on the theory that "every offending request should be logged so we see the
+-- real volume". That intuition turns out to be wrong, for three reasons:
+--
+-- 1. SYMMETRY WITH ENFORCE MODE.
+--    In enforce mode, blocked requests never reach Redis — the fast path
+--    short-circuits them. The GCRA bucket only sees requests that were
+--    *allowed*. If monitor mode behaves differently (every request reaches
+--    Redis and updates the bucket), the bucket diverges from what enforce
+--    mode would produce. Monitor mode would then over-predict blocking,
+--    making it useless for answering "what would happen if I flipped to
+--    enforce?". Sharing the cache keeps both modes operating on identical
+--    GCRA state.
+--
+-- 2. PERFORMANCE PARITY.
+--    Without the cache, monitor mode pays one Redis round-trip per request
+--    from a misbehaving IP. Under sustained attack that is significant load
+--    you wouldn't be paying in enforce mode — which makes monitor mode
+--    expensive to run in production, defeating its purpose as a safe rollout.
+--
+-- 3. AUDIT VOLUME.
+--    With the cache, audit volume is "one entry per block episode per IP" in
+--    BOTH modes. Without it, monitor mode would write thousands of duplicate
+--    audit entries during a single attack. Per-request volume is recoverable
+--    from nginx access logs anyway; the audit stream's job is recording
+--    *decisions*, and decisions are what enforce mode would log too.
+--
+-- The only real difference between the two modes is whether the fast path
+-- emits a 429. Everything else — GCRA bucket evolution, audit volume, Redis
+-- load, cache TTL semantics — is identical.
+--
+-- The cached VALUE is the mode that decided the block ("enforce" or
+-- "monitor"), not a boolean. This lets the fast path act on the recorded
+-- decision without re-reading config from Redis, and means a mode flip
+-- mid-window doesn't retroactively change how cached entries behave — they
+-- continue to act as their original mode said they should until they expire.
+-- Operators who want a flip to take effect immediately should call
+-- /firewall/flush-cache.
+--
+-- ----------------------------------------------------------------------------
+-- REQUEST FLOW
+-- ----------------------------------------------------------------------------
+--   1. Fast path: check blocked_cache.
+--        • cached "enforce" → 429, no Redis ops.
+--        • cached "monitor" → allow through, no Redis ops, no audit
+--          (we already audited this episode for this IP).
+--        • not cached → continue.
+--   2. Load rules + config (worker-cached, see load_rules_and_config).
+--   3. Compute request cost from rules.
+--   4. If mode == "off", return early.
+--   5. Run GCRA check in Redis.
+--   6. If allowed: nothing more to do.
+--   7. If blocked: cache the IP under the current mode, write ONE audit
+--      entry, log a WARN line, and (only in enforce mode) signal ngx.exit
+--      after the pcall.
 --
 -- In nginx.conf: access_by_lua_block { require("firewall").req() }
 -- ============================================================================
 
--- Local cache for blocked IPs (nginx shared dict)
+-- Shared cache for IPs that have triggered a block within their cooldown
+-- window. Keyed by "blocked:<ip>". The stored value is the mode that decided
+-- the block ("enforce" or "monitor") — see the function-header comment above
+-- for why both modes share this cache and what the value is used for.
 local blocked_cache = ngx.shared.firewall_cache
 
 function _M.req()
@@ -202,15 +264,36 @@ function _M.req()
     local ip = ngx.var.remote_addr
     
     -- =========================================================================
-    -- FAST PATH: Check local cache for blocked IP (0 Redis operations)
+    -- FAST PATH: short-circuit using the shared cache (0 Redis operations)
     -- =========================================================================
-    local cached_block = blocked_cache:get("blocked:" .. ip)
-    if cached_block then
-        ngx.exit(ngx.HTTP_TOO_MANY_REQUESTS)
+    -- See the function-header comment for the full rationale. In brief:
+    -- both enforce and monitor mode populate this cache, and the stored value
+    -- is the mode that decided the block. That keeps GCRA state identical
+    -- between the two modes (essential for monitor mode to accurately predict
+    -- enforce-mode behaviour) and bounds audit volume to one entry per block
+    -- episode per IP in both modes.
+    --
+    --   cached "enforce" → short-circuit with 429.
+    --   cached "monitor" → allow the request; do not re-audit (we already
+    --                      recorded one entry for this episode in the
+    --                      original Redis-backed call).
+    --   not cached       → fall through to the slow path below.
+    --
+    -- Note: a mid-window mode flip does NOT retroactively change cached
+    -- entries — each entry continues to act as its original mode until its
+    -- TTL expires. Call /firewall/flush-cache for an immediate cluster-wide
+    -- reset.
+    local cached_mode = blocked_cache:get("blocked:" .. ip)
+    if cached_mode then
+        if cached_mode == "enforce" then
+            ngx.exit(ngx.HTTP_TOO_MANY_REQUESTS)
+        end
+        -- monitor: episode already audited, request is allowed through
+        return
     end
     
-    -- Capture request details for cost calculation
-    local uri = ngx.var.uri
+    -- Match against original client-visible path, not rewritten /index.php.
+    local uri = (ngx.var.request_uri or ngx.var.uri or ""):gsub("%?.*$", "")
     local ua = ngx.var.http_user_agent or ""
     local method = ngx.var.request_method
         local args = ngx.var.args
@@ -243,14 +326,26 @@ function _M.req()
         local request_cost, breakdown = cost_module.calculate(
             uri, ua, method, has_query, args, rules, ngx_regex_match
         )
-        
+
         -- Store cost in nginx variable for access log
         -- (avoids noisy per-request error log lines)
         ngx.var.firewall_cost = tostring(request_cost)
-        
+
+        -- Operating mode: "enforce" (block), "monitor" (log only), "off" (skip GCRA).
+        -- Sourced from firewall:config (Redis), not env, so it can be flipped
+        -- cluster-wide without an nginx reload. See the function-header comment
+        -- for the full mode model and why monitor mode shares blocked_cache
+        -- with enforce mode.
+        local mode = (gcra_config and gcra_config.mode) or "monitor"
+
+        if mode == "off" then
+            redis_pool.release(red)
+            return
+        end
+
         -- Check GCRA rate limit (passes breakdown for audit tracking)
         -- Returns: allowed (boolean), info table {retry_after, tat, accumulated, reason}
-        -- reason is one of: "allow" (allowlist hit), "block" (blocklist hit), "gcra"
+        -- reason is one of: "allow" (allowlist hit), "block" (manual blocklist), "penalty" (GCRA-triggered ban), "gcra" (live GCRA decision)
             local allowed, info = gcra_module.check(red, ip, request_cost, gcra_config, breakdown)
         
         -- Allowlist short-circuit: clean bypass, no audit, no local cache.
@@ -266,25 +361,39 @@ function _M.req()
             -- shared_dict :set(key, value, 0) means "no expiry" — exactly what we want.
             local cache_ttl
             if info.reason == "block" and info.retry_after == 0 then
-                cache_ttl = 0  -- permanent
+                cache_ttl = 0  -- permanent manual ban
             else
                 cache_ttl = math.ceil(info.retry_after / 1000)
             end
-            
-            -- Cache the block locally to avoid Redis hits for this IP
-            blocked_cache:set("blocked:" .. ip, true, cache_ttl)
-            
-            -- Write audit entry ONCE (subsequent blocks hit local cache, skip this)
+
+            -- Cache the block locally so subsequent requests from this IP
+            -- short-circuit at the fast path. The stored value is the CURRENT
+            -- mode — not a boolean — so the fast path can act on the recorded
+            -- decision without re-reading config:
+            --   enforce → future requests get 429 from the fast path
+            --   monitor → future requests are allowed but skip duplicate audit
+            -- Both modes use the same cache, on purpose: it keeps the GCRA
+            -- bucket evolution identical between modes, which is what makes
+            -- monitor mode an accurate predictor of enforce-mode behaviour.
+            blocked_cache:set("blocked:" .. ip, mode, cache_ttl)
+
+            -- Write audit entry ONCE per block episode per IP. Subsequent
+            -- requests within the cache window hit the fast path and skip
+            -- this branch entirely (in both enforce and monitor modes).
             if gcra_config and gcra_config.audit_enabled then
                 local now = math.floor(ngx.now() * 1000)
                 local audit_stream = gcra_config.audit_stream or "firewall:audit"
                 local audit_maxlen = gcra_config.audit_maxlen or 10000
-                
-                -- Trigger string differs by reason: blocklist hits don't have a
-                -- meaningful rule breakdown, GCRA blocks do.
+
+                -- Trigger string differs by reason:
+                --   block   = manual admin ban (no rule breakdown)
+                --   penalty = GCRA-triggered automatic ban (no rule breakdown for this hop)
+                --   gcra    = live GCRA decision (rule breakdown available)
                 local trigger
                 if info.reason == "block" then
                     trigger = "blocklist"
+                elseif info.reason == "penalty" then
+                    trigger = "penalty"
                 else
                     local trigger_parts = {}
                     for rule, rule_cost in pairs(breakdown) do
@@ -292,26 +401,35 @@ function _M.req()
                     end
                     trigger = table.concat(trigger_parts, ",")
                 end
-                
-                -- Write to audit stream (accumulated comes from GCRA script)
+
+                -- Write to audit stream (accumulated and retry_after come from GCRA script).
+                -- mode field lets dashboards distinguish enforced blocks from monitor events.
+                -- retry_after (ms) is how long until the IP's bucket recovers; especially
+                -- useful in monitor mode where no Retry-After HTTP header is sent to the client.
                 red:xadd(audit_stream, "MAXLEN", "~", audit_maxlen, "*",
                     "ip", ip,
                     "blocked_at", now,
                     "cost", request_cost,
                     "reason", info.reason,
+                    "mode", mode,
                     "trigger", trigger,
-                    "accumulated", info.accumulated or "")
+                    "accumulated", info.accumulated or "",
+                    "retry_after", info.retry_after or "")
             end
-            
-            ngx.log(ngx.WARN, "[firewall] blocked ip=", ip,
+
+            ngx.log(ngx.WARN, "[firewall] ",
+                    mode == "monitor" and "would-block" or "blocked",
+                    " ip=", ip,
                     " reason=", info.reason,
                     " cost=", request_cost,
                     " retry_after=", info.retry_after)
-            
+
             -- Return connection before signalling block
             redis_pool.release(red)
-            
-            blocked = true
+
+            if mode == "enforce" then
+                blocked = true
+            end
         end
         
         -- Return connection to pool for reuse
@@ -383,32 +501,45 @@ function _M.res()
             
             -- Load GCRA config (we don't need rules for penalty)
             local _, gcra_config = load_rules_and_config(red)
-            
+            local mode = (gcra_config and gcra_config.mode) or "monitor"
+
+            if mode == "off" then
+                redis_pool.release(red)
+                return
+            end
+
             -- Add 404 penalty via GCRA - consumes PENALTY_404 tokens
             -- Pass a simple breakdown for audit
             local breakdown = { ["rule:404-penalty"] = PENALTY_404 }
             local allowed, info = gcra_module.check(red, ip, PENALTY_404, gcra_config, breakdown)
-            
-            -- If blocked by 404 penalty, cache locally
+
+            -- If blocked by 404 penalty, cache the IP under the current mode.
+            -- Symmetric with req(): the fast path in the next request will
+            -- read this value and either short-circuit with 429 (enforce) or
+            -- silently suppress the duplicate audit (monitor). See the req()
+            -- function-header comment for the full rationale.
             if not allowed then
                 local cache_ttl = math.ceil(info.retry_after / 1000)
-                blocked_cache:set("blocked:" .. ip, true, cache_ttl)
-                
+                blocked_cache:set("blocked:" .. ip, mode, cache_ttl)
+
                 -- Write audit if enabled
                 if gcra_config and gcra_config.audit_enabled then
                     local now = math.floor(ngx.now() * 1000)
                     local audit_stream = gcra_config.audit_stream or "firewall:audit"
                     local audit_maxlen = gcra_config.audit_maxlen or 10000
-                    
+
                     red:xadd(audit_stream, "MAXLEN", "~", audit_maxlen, "*",
                         "ip", ip,
                         "blocked_at", now,
                         "cost", PENALTY_404,
+                        "mode", mode,
                         "trigger", "rule:404-penalty:" .. PENALTY_404,
                         "accumulated", info.accumulated or "")
                 end
-                
-                ngx.log(ngx.WARN, "[firewall] blocked by 404 penalty ip=", ip,
+
+                ngx.log(ngx.WARN, "[firewall] ",
+                        mode == "monitor" and "would-block" or "blocked",
+                        " by 404 penalty ip=", ip,
                         " retry_after=", info.retry_after)
             else
                 ngx.log(ngx.INFO, "[firewall] 404 penalty ip=", ip,
@@ -614,6 +745,44 @@ function _M.unblock_ip(ip)
     -- Drop any cached block on this worker
     blocked_cache:delete("blocked:" .. ip)
     return ok, err
+end
+
+-- ============================================================================
+-- CLEAR PENALTIES: Remove all GCRA-written penalty block keys from Redis
+-- ============================================================================
+-- Deletes every firewall:block:{ip} key whose value is "gcra" (i.e. written
+-- automatically by the GCRA penalty mechanism).  Manual admin bans (value
+-- "1") are left untouched.
+--
+-- Intended for use in tests and admin tooling only — not called in hot path.
+-- ============================================================================
+function _M.clear_penalties()
+    local red = redis_pool.connect()
+    if not red then
+        ngx.status = 503
+        ngx.say('{"ok":false,"error":"redis unavailable"}')
+        return
+    end
+
+    -- KEYS is acceptable here: this is an admin/test-only path, never the hot path.
+    local keys, err = red:keys(BLOCK_PREFIX .. "*")
+    local deleted = 0
+    if keys and type(keys) == "table" then
+        for _, key in ipairs(keys) do
+            local val = red:get(key)
+            if val == "gcra" then
+                red:del(key)
+                -- Also evict from the local nginx cache
+                local ip = key:sub(#BLOCK_PREFIX + 1)
+                blocked_cache:delete("blocked:" .. ip)
+                deleted = deleted + 1
+            end
+        end
+    end
+
+    redis_pool.release(red)
+    ngx.header.content_type = "application/json"
+    ngx.say('{"ok":true,"deleted":' .. deleted .. '}')
 end
 
 

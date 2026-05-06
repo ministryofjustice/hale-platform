@@ -24,11 +24,14 @@ RUN addgroup -g 1001 wp \
     && adduser -G wp -g wp -s /bin/sh -D wp \
     && chown wp:wp /var/www/html
 
+# Install PHPRedis build dependencies
 RUN apk add --no-cache --virtual .build-deps pcre-dev $PHPIZE_DEPS
 
+# Install and enable PHPRedis
 RUN pecl install redis \
     && docker-php-ext-enable redis.so
 
+# Delete PHPRedis build dependencies
 RUN apk del .build-deps $PHPIZE_DEPS
 
 # Add PHP multsite supporting files
