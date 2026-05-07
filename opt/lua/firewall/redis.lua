@@ -103,11 +103,9 @@ function _M.connect()
     -- If REDIS_AUTH is set and not empty string, authenticate with Redis.
     -- The "and" here is a guard: only evaluate right side if left is truthy.
     if REDIS_AUTH and REDIS_AUTH ~= "" then
-        -- Note: we reuse variable names "ok" and "err" - this is common in Lua.
-        -- The previous ok/err are just overwritten (no block scoping like JS let).
-        local ok, err = red:auth(REDIS_AUTH)
-        if not ok then
-            ngx.log(ngx.ERR, "[redis] auth failed (fail-open): ", err)
+        local auth_ok, auth_err = red:auth(REDIS_AUTH)
+        if not auth_ok then
+            ngx.log(ngx.ERR, "[redis] auth failed (fail-open): ", auth_err)
             return nil
         end
     end
@@ -115,9 +113,9 @@ function _M.connect()
     -- Select the logical database. Skipped for DB 0 (Redis default) to avoid
     -- an unnecessary round-trip in production.
     if REDIS_DB ~= 0 then
-        local ok, err = red:select(REDIS_DB)
-        if not ok then
-            ngx.log(ngx.ERR, "[redis] select db failed (fail-open): ", err)
+        local sel_ok, sel_err = red:select(REDIS_DB)
+        if not sel_ok then
+            ngx.log(ngx.ERR, "[redis] select db failed (fail-open): ", sel_err)
             return nil
         end
     end

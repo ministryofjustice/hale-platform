@@ -84,6 +84,9 @@ end
 -- Flags "ijo" = case-insensitive, JIT-compile, compile-once cached.
 local function ngx_regex_match(subject, pattern)
     local m, err = ngx.re.match(subject, pattern, "ijo")
+    if err then
+        ngx.log(ngx.WARN, "[firewall] regex error in pattern '", pattern, "': ", err)
+    end
     return m ~= nil
 end
 
@@ -518,6 +521,9 @@ function _M.clear_penalties()
 
     local keys, err = red:keys(BLOCK_PREFIX .. "*")
     local deleted = 0
+    if err then
+        ngx.log(ngx.ERR, "[firewall] failed to list block keys: ", err)
+    end
     if keys and type(keys) == "table" then
         for _, key in ipairs(keys) do
             local val = red:get(key)

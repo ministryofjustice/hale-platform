@@ -36,7 +36,6 @@
 
 local _M = {}
 
-local cjson    = require "cjson.safe"
 local defaults = require "firewall.defaults"
 
 -- Redis Lua script for GCRA rate limiting with allow/block list short-circuits
@@ -226,6 +225,7 @@ function _M.check(red, ip, cost, config, breakdown)
             result, err = red:evalsha(sha, 4, gcra_key, breakdown_key, allow_key, block_key, unpack(args))
         else
             -- SCRIPT LOAD failed, fall back to EVAL
+            ngx.log(ngx.WARN, "[gcra] SCRIPT LOAD failed, falling back to EVAL: ", load_err)
             result, err = red:eval(_M.SCRIPT, 4, gcra_key, breakdown_key, allow_key, block_key, unpack(args))
         end
     end

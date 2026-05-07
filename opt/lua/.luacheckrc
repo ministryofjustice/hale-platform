@@ -6,12 +6,9 @@ globals = {
     "ngx"
 }
 
--- busted test framework globals (injected by the test runner)
-read_globals = {
-    "describe", "it", "pending", "context",
-    "before_each", "after_each", "setup", "teardown",
-    "insulate", "expose",
-    "spy", "stub", "mock",
-    "assert",
+files["spec/*"] = { 
+    -- Test data strings (JSON payloads) legitimately exceed 120 chars.
+    max_line_length = false,
+    -- Busted mocks and setup functions commonly have unused `self` / signature args.
+    unused_args = false
 }
-

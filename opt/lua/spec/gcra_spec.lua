@@ -87,7 +87,7 @@ describe("gcra SCRIPT logic", function()
         local now = 1000000
 
         -- Consume all 10 tokens (burst=10000, emission=1000)
-        for i = 1, 10 do
+        for _ = 1, 10 do
             simulate_gcra(store, "ip1", 1000, 10000, now, 1)
         end
 
@@ -102,7 +102,7 @@ describe("gcra SCRIPT logic", function()
         local now = 1000000
 
         -- Consume all tokens
-        for i = 1, 10 do
+        for _ = 1, 10 do
             simulate_gcra(store, "ip1", 1000, 10000, now, 1)
         end
 
@@ -140,7 +140,7 @@ describe("gcra SCRIPT logic", function()
         local now = 1000000
 
         -- Use 5 tokens
-        for i = 1, 5 do
+        for _ = 1, 5 do
             simulate_gcra(store, "ip1", 1000, 10000, now, 1)
         end
 

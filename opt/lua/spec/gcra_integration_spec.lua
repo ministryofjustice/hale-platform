@@ -24,18 +24,6 @@ local function create_redis_client()
         error("Failed to connect to Redis at " .. redis_host .. ":" .. redis_port .. ": " .. (err or "unknown"))
     end
 
-    -- Send raw Redis command and get response
-    local function send_command(...)
-        local args = {...}
-        local cmd = "*" .. #args .. "\r\n"
-        for _, arg in ipairs(args) do
-            arg = tostring(arg)
-            cmd = cmd .. "$" .. #arg .. "\r\n" .. arg .. "\r\n"
-        end
-        tcp:send(cmd)
-        return tcp:receive("*l")
-    end
-
     -- Parse Redis response
     local function parse_response()
         local line = tcp:receive("*l")
@@ -168,7 +156,7 @@ describe("GCRA integration", function()
 
         -- Simulate 10 requests at same time (within burst)
         for i = 1, 10 do
-            local allowed, info = gcra.check_direct(red, test_key, 1, config)
+            local allowed = gcra.check_direct(red, test_key, 1, config)
             assert.is_true(allowed, "Request " .. i .. " should be allowed")
         end
     end)
@@ -184,7 +172,7 @@ describe("GCRA integration", function()
         local blocked_count = 0
 
         -- Send 12 requests - should allow 10, block 2
-        for i = 1, 12 do
+        for _ = 1, 12 do
             local allowed, info = gcra.check_direct(red, test_key, 1, config)
             if allowed then
                 allowed_count = allowed_count + 1
@@ -207,21 +195,21 @@ describe("GCRA integration", function()
         }
 
         -- Exhaust burst immediately
-        for i = 1, 5 do
+        for _ = 1, 5 do
             gcra.check_direct(red, test_key, 1, config)
         end
 
         -- Blocked immediately after burst is exhausted
-        local allowed, info = gcra.check_direct(red, test_key, 1, config)
+        local allowed = gcra.check_direct(red, test_key, 1, config)
         assert.is_false(allowed)
 
         -- Wait for one token (20ms) to refill
         require("socket").sleep(0.03)
-        allowed, info = gcra.check_direct(red, test_key, 1, config)
+        allowed = gcra.check_direct(red, test_key, 1, config)
         assert.is_true(allowed)
 
         -- But not 2
-        allowed, info = gcra.check_direct(red, test_key, 1, config)
+        allowed = gcra.check_direct(red, test_key, 1, config)
         assert.is_false(allowed)
     end)
 
@@ -295,7 +283,7 @@ describe("GCRA allow/block list integration", function()
         }
 
         -- Burn the bucket first
-        for i = 1, 5 do
+        for _ = 1, 5 do
             gcra.check_direct(red, test_key, 1, config)
         end
         local allowed = gcra.check_direct(red, test_key, 1, config)
@@ -374,7 +362,7 @@ describe("GCRA allow/block list integration", function()
         red:cmd("SET", allow_key, "1")
 
         -- Many bypass requests
-        for i = 1, 100 do
+        for _ = 1, 100 do
             local ok, info = gcra.check_direct(red, test_key, 1, config)
             assert.is_true(ok)
             assert.equals("allow", info.reason)
