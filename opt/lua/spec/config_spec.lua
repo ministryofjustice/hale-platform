@@ -373,3 +373,235 @@ describe("parse_rules", function()
     end)
 
 end)
+
+-- ============================================================================
+-- STRICT VALIDATORS (admin write path)
+-- ============================================================================
+describe("validate_rules_strict", function()
+    it("rejects non-table input", function()
+        local r = config_mod.validate_rules_strict("not a table")
+        assert.is_false(r.ok)
+        assert.equals(1, #r.errors)
+        assert.is_truthy(r.errors[1]:find("array"))
+    end)
+
+    it("rejects a JSON object where an array is expected", function()
+        local r = config_mod.validate_rules_strict({ foo = "bar" })
+        assert.is_false(r.ok)
+        assert.is_truthy(r.errors[1]:find("array"))
+    end)
+
+    it("accepts an empty rules array and normalises it", function()
+        local r = config_mod.validate_rules_strict({})
+        assert.is_true(r.ok)
+        assert.equals(0, #r.errors)
+        assert.is_table(r.normalised)
+    end)
+
+    it("accepts a clean rules array", function()
+        local r = config_mod.validate_rules_strict({ { id = "base", cost = 1 } })
+        assert.is_true(r.ok)
+        assert.equals(0, #r.errors)
+        assert.equals(1, #r.normalised)
+    end)
+
+    it("promotes parse_rules warnings to errors", function()
+        local r = config_mod.validate_rules_strict({ { id = "bad", cost = -1 } })
+        assert.is_false(r.ok)
+        assert.is_true(#r.errors >= 1)
+        assert.is_truthy(r.errors[1]:find("cost"))
+    end)
+end)
+
+describe("validate_config_strict", function()
+    it("rejects non-table input", function()
+        local r = config_mod.validate_config_strict("not a table")
+        assert.is_false(r.ok)
+        assert.is_truthy(r.errors[1]:find("object"))
+    end)
+
+    it("rejects a JSON array where an object is expected", function()
+        local r = config_mod.validate_config_strict({ "a", "b", "c" })
+        assert.is_false(r.ok)
+        assert.is_truthy(r.errors[1]:find("array"))
+    end)
+
+    it("accepts an empty config and applies defaults", function()
+        local r = config_mod.validate_config_strict({})
+        assert.is_true(r.ok)
+        assert.equals(0, #r.errors)
+        assert.equals(config_mod.DEFAULTS.mode, r.normalised.mode)
+    end)
+
+    it("rejects unknown keys (catches typos)", function()
+        local r = config_mod.validate_config_strict({ burts = 50000 })
+        assert.is_false(r.ok)
+        local found = false
+        for _, e in ipairs(r.errors) do
+            if e:find("burts") then found = true end
+        end
+        assert.is_true(found)
+    end)
+
+    it("promotes parse_config warnings to errors", function()
+        local r = config_mod.validate_config_strict({ emission_interval = -10 })
+        assert.is_false(r.ok)
+        assert.is_truthy(r.errors[1]:find("emission_interval"))
+    end)
+
+    it("accepts a clean config and returns normalised values", function()
+        local r = config_mod.validate_config_strict({
+            emission_interval = 500,
+            burst = 50000,
+            mode = "enforce",
+        })
+        assert.is_true(r.ok)
+        assert.equals(0, #r.errors)
+        assert.equals(500, r.normalised.emission_interval)
+        assert.equals("enforce", r.normalised.mode)
+    end)
+end)
+
+-- ============================================================================
+-- STRICT VALIDATORS — table-driven failure payloads
+-- ============================================================================
+-- Each entry exercises the strict path with input that should be rejected.
+-- The match string is asserted against the joined error list so re-wording
+-- a single error message in parse_* doesn't silently weaken these tests.
+-- ============================================================================
+local cjson = require "cjson.safe"
+
+local function _errors_string(r)
+    return table.concat(r.errors or {}, " | ")
+end
+
+describe("validate_rules_strict — failing payloads", function()
+    local cases = {
+        { name = "nil",                    payload = nil,                                       match = "array" },
+        { name = "number",                 payload = 42,                                        match = "array" },
+        { name = "boolean",                payload = true,                                      match = "array" },
+        { name = "JSON object",            payload = { foo = "bar" },                           match = "array" },
+        { name = "rule is a string",       payload = { "not a rule" },                          match = "not an object" },
+        { name = "rule is a number",       payload = { 99 },                                    match = "not an object" },
+        { name = "missing id",             payload = { { cost = 1 } },                          match = "id" },
+        { name = "empty string id",        payload = { { id = "", cost = 1 } },                 match = "id" },
+        { name = "non-string id",          payload = { { id = 42, cost = 1 } },                 match = "id" },
+        { name = "missing cost",           payload = { { id = "x" } },                          match = "cost" },
+        { name = "negative cost",          payload = { { id = "x", cost = -1 } },               match = "cost" },
+        { name = "zero cost",              payload = { { id = "x", cost = 0 } },                match = "cost" },
+        { name = "string cost",            payload = { { id = "x", cost = "5" } },              match = "cost" },
+        { name = "conditions not object",  payload = { { id = "x", cost = 1, conditions = "y" } }, match = "conditions" },
+        { name = "uri_pattern not string", payload = { { id = "x", cost = 1, conditions = { uri_pattern = 5 } } }, match = "uri_pattern" },
+        { name = "ua_pattern not string",  payload = { { id = "x", cost = 1, conditions = { ua_pattern  = {} } } }, match = "ua_pattern" },
+        { name = "method not string",      payload = { { id = "x", cost = 1, conditions = { method      = 1 } } }, match = "method" },
+        { name = "second rule bad",        payload = { { id = "ok", cost = 1 }, { id = "bad", cost = -1 } },        match = "cost" },
+    }
+
+    for _, case in ipairs(cases) do
+        it("rejects: " .. case.name, function()
+            local r = config_mod.validate_rules_strict(case.payload)
+            assert.is_false(r.ok, "expected ok=false for " .. case.name)
+            assert.is_true(#r.errors >= 1, "expected at least one error for " .. case.name)
+            assert.is_truthy(_errors_string(r):find(case.match),
+                "expected error to mention '" .. case.match .. "' for " .. case.name
+                .. ", got: " .. _errors_string(r))
+        end)
+    end
+end)
+
+describe("validate_config_strict — failing payloads", function()
+    local cases = {
+        { name = "nil",                       payload = nil,                                  match = "object" },
+        { name = "string",                    payload = "hello",                              match = "object" },
+        { name = "number",                    payload = 7,                                    match = "object" },
+        { name = "JSON array",                payload = { 1, 2, 3 },                          match = "array" },
+        { name = "unknown key (typo)",        payload = { burts = 100 },                      match = "burts" },
+        { name = "two unknown keys",          payload = { foo = 1, bar = 2 },                 match = "foo" },
+        { name = "emission_interval = 0",     payload = { emission_interval = 0 },            match = "emission_interval" },
+        { name = "emission_interval string",  payload = { emission_interval = "fast" },       match = "emission_interval" },
+        { name = "burst negative",            payload = { burst = -1 },                       match = "burst" },
+        { name = "mode unknown",              payload = { mode = "panic" },                   match = "mode" },
+        { name = "mode wrong type",           payload = { mode = true },                      match = "mode" },
+        { name = "penalty_ttl negative",      payload = { penalty_ttl = -5 },                 match = "penalty_ttl" },
+        { name = "unknown key + bad value",   payload = { foo = 1, mode = "panic" },          match = "mode" },
+    }
+
+    for _, case in ipairs(cases) do
+        it("rejects: " .. case.name, function()
+            local r = config_mod.validate_config_strict(case.payload)
+            assert.is_false(r.ok, "expected ok=false for " .. case.name)
+            assert.is_true(#r.errors >= 1, "expected at least one error for " .. case.name)
+            assert.is_truthy(_errors_string(r):find(case.match),
+                "expected error to mention '" .. case.match .. "' for " .. case.name
+                .. ", got: " .. _errors_string(r))
+        end)
+    end
+
+    it("collects multiple errors in one pass (does not bail on first)", function()
+        local r = config_mod.validate_config_strict({
+            foo = 1,
+            burst = -1,
+            mode = "panic",
+        })
+        assert.is_false(r.ok)
+        assert.is_true(#r.errors >= 3,
+            "expected >=3 errors, got " .. #r.errors .. ": " .. _errors_string(r))
+    end)
+end)
+
+-- ============================================================================
+-- Round-trip via cjson — exercises the path the HTTP endpoint takes
+-- ============================================================================
+describe("strict validators via JSON round-trip", function()
+    local function decode_and_validate_rules(json_str)
+        local decoded = cjson.decode(json_str)
+        return config_mod.validate_rules_strict(decoded)
+    end
+    local function decode_and_validate_config(json_str)
+        local decoded = cjson.decode(json_str)
+        return config_mod.validate_config_strict(decoded)
+    end
+
+    it("rules: accepts the example from the schema docstring", function()
+        local r = decode_and_validate_rules([[
+            [
+              {"id":"base",        "cost":1},
+              {"id":"query-string","cost":4,  "conditions":{"has_query":true}},
+              {"id":"txt-ext",     "cost":20, "conditions":{"uri_pattern":"\\.txt$"}},
+              {"id":"post",        "cost":2,  "conditions":{"method":"POST"}},
+              {"id":"bad-bot",     "cost":50, "conditions":{"ua_pattern":"zgrab|masscan"}}
+            ]
+        ]])
+        assert.is_true(r.ok, _errors_string(r))
+        assert.equals(5, #r.normalised)
+    end)
+
+    it("config: accepts the example from the schema docstring", function()
+        local r = decode_and_validate_config(
+            [[{"emission_interval":500,"burst":50000,"audit_enabled":true,"audit_maxlen":5000}]])
+        assert.is_true(r.ok, _errors_string(r))
+        assert.equals(500, r.normalised.emission_interval)
+        assert.equals(true, r.normalised.audit_enabled)
+        assert.equals(5000, r.normalised.audit_maxlen)
+    end)
+
+    it("rules: rejects a JSON object posted where an array was expected", function()
+        local r = decode_and_validate_rules('{"id":"base","cost":1}')
+        assert.is_false(r.ok)
+        assert.is_truthy(_errors_string(r):find("array"))
+    end)
+
+    it("config: rejects a JSON array posted where an object was expected", function()
+        local r = decode_and_validate_config('[1,2,3]')
+        assert.is_false(r.ok)
+        assert.is_truthy(_errors_string(r):find("array"))
+    end)
+
+    it("config: rejects a payload with both an unknown key and a bad value", function()
+        local r = decode_and_validate_config([[{"burts":50000,"mode":"panic"}]])
+        assert.is_false(r.ok)
+        local s = _errors_string(r)
+        assert.is_truthy(s:find("burts"))
+        assert.is_truthy(s:find("mode"))
+    end)
+end)

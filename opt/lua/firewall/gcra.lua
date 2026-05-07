@@ -24,11 +24,20 @@
 --   - Blocked IPs are cached in nginx shared dict (no Redis hits)
 --   - Breakdown tracking only happens for ALLOWED requests (no writes on block)
 --   - Audit log written ONCE when first blocked, then IP cached locally
+--
+-- REFERENCES:
+--   - https://en.wikipedia.org/wiki/Generic_cell_rate_algorithm
+--     The original telecom-era spec; explains TAT, emission interval, and
+--     why GCRA is equivalent to a leaky-bucket counter without the bookkeeping.
+--   - https://www.youtube.com/watch?v=HqAjClwTBy0
+--     "Distributed Rate Limiter with Redis & Lua | GCRA Algorithm Demo" —
+--     walks through the same Redis+Lua pattern this module uses.
 -- ============================================================================
 
 local _M = {}
 
-local cjson = require "cjson.safe"
+local cjson    = require "cjson.safe"
+local defaults = require "firewall.defaults"
 
 -- Redis Lua script for GCRA rate limiting with allow/block list short-circuits
 -- Runs atomically on Redis server.
@@ -108,7 +117,7 @@ local allowed = now >= allow_at
 if allowed then
     -- Update TAT
     redis.call('SET', gcra_key, new_tat, 'PX', burst + emission_interval)
-    
+
     -- Track breakdown ONLY for allowed requests (no writes on block)
     if audit_enabled and #ARGV >= 6 then
         local ttl = burst + emission_interval
@@ -119,7 +128,7 @@ if allowed then
         end
         redis.call('PEXPIRE', breakdown_key, ttl)
     end
-    
+
     return {1, 0, new_tat, "", "gcra"}
 else
     -- Blocked: return accumulated breakdown for audit (read-only)
@@ -135,7 +144,7 @@ else
             acc_json = "{" .. table.concat(parts, ",") .. "}"
         end
     end
-    
+
     -- If penalty_ttl is configured, write a timed block key so all subsequent
     -- requests from this IP short-circuit the blocklist check for penalty_ttl ms.
     -- Value "gcra" marks it as an automatic penalty (vs a manual admin ban).
@@ -149,16 +158,10 @@ else
 end
 ]]
 
--- Default configuration
-_M.DEFAULTS = {
-    emission_interval = 1000,  -- 1 token per second
-    burst = 100000,            -- 100 seconds of capacity
-    penalty_ttl = 600000,      -- 10 minutes in ms; written to block key on GCRA block (0 = disabled)
-    key_prefix = "gcra:",
-    allow_prefix = "firewall:allow:",
-    block_prefix = "firewall:block:",
-    audit_enabled = false,     -- track rule breakdown
-}
+-- Single source of truth for default config values lives in
+-- firewall.defaults. Re-exported here so existing callers and tests can
+-- still use gcra.DEFAULTS.
+_M.DEFAULTS = defaults.GCRA
 
 --- Production rate-limit entry point.
 -- Builds Redis keys from IP/config, prefers EVALSHA with SCRIPT LOAD fallback,
@@ -179,12 +182,12 @@ function _M.check(red, ip, cost, config, breakdown)
     local block_prefix = config.block_prefix or _M.DEFAULTS.block_prefix
     local audit_enabled = config.audit_enabled or _M.DEFAULTS.audit_enabled
     local penalty_ttl = config.penalty_ttl or _M.DEFAULTS.penalty_ttl
-    
+
     local gcra_key      = key_prefix .. ip
     local breakdown_key = key_prefix .. ip .. ":breakdown"
     local allow_key     = allow_prefix .. ip
     local block_key     = block_prefix .. ip
-    
+
     -- Build args array
     -- ARGV: emission_interval, burst, cost, audit_enabled, penalty_ttl, [breakdown pairs...]
     local args = {
@@ -194,7 +197,7 @@ function _M.check(red, ip, cost, config, breakdown)
         audit_enabled and "1" or "0",
         penalty_ttl,
     }
-    
+
     -- Append breakdown pairs if audit enabled and breakdown provided
     if audit_enabled and breakdown then
         for rule, _ in pairs(breakdown) do
@@ -202,9 +205,9 @@ function _M.check(red, ip, cost, config, breakdown)
             table.insert(args, 1)  -- 1 hit per request
         end
     end
-    
+
     local result, err
-    
+
     -- Try EVALSHA first if we have a cached SHA
     if _M.script_sha then
         result, err = red:evalsha(_M.script_sha, 4, gcra_key, breakdown_key, allow_key, block_key, unpack(args))
@@ -213,7 +216,7 @@ function _M.check(red, ip, cost, config, breakdown)
             result, err = nil, nil
         end
     end
-    
+
     -- Fall back to EVAL and cache the SHA
     if not result and not err then
         -- Load script and cache SHA for future calls
@@ -226,18 +229,18 @@ function _M.check(red, ip, cost, config, breakdown)
             result, err = red:eval(_M.SCRIPT, 4, gcra_key, breakdown_key, allow_key, block_key, unpack(args))
         end
     end
-    
+
     if not result then
         -- Redis error - fail open
         return true, { error = err }
     end
-    
+
     local allowed     = result[1] == 1
     local retry_after = result[2]
     local tat         = result[3]
     local accumulated = result[4] or ""
     local reason      = result[5] or "gcra"
-    
+
     return allowed, {
         retry_after = retry_after,
         tat = tat,
@@ -280,9 +283,9 @@ function _M.check_direct(red, key, cost, config, breakdown)
     local allow_key = config.allow_key or ""
     local block_key = config.block_key or ""
     local penalty_ttl = config.penalty_ttl or _M.DEFAULTS.penalty_ttl
-    
+
     local breakdown_key = key .. ":breakdown"
-    
+
     -- Build args (matching script interface)
     local args = {
         emission_interval,
@@ -291,20 +294,20 @@ function _M.check_direct(red, key, cost, config, breakdown)
         audit_enabled and "1" or "0",
         penalty_ttl,
     }
-    
+
     if audit_enabled and breakdown then
         for rule, _ in pairs(breakdown) do
             table.insert(args, rule)
             table.insert(args, 1)
         end
     end
-    
+
     local result, err = red:eval(_M.SCRIPT, 4, key, breakdown_key, allow_key, block_key, unpack(args))
-    
+
     if not result then
         return true, { error = err }
     end
-    
+
     return result[1] == 1, {
         retry_after = result[2],
         tat         = result[3],

@@ -132,16 +132,11 @@
 
 local _M = {}
 
--- GCRA defaults (kept in sync with gcra.lua DEFAULTS)
-_M.DEFAULTS = {
-    emission_interval = 100,           -- ms per token
-    burst             = 150000,        -- ms of burst capacity
-    penalty_ttl       = 600000,        -- ms; penalty block key TTL written on GCRA block (0 = disabled)
-    audit_enabled     = false,
-    audit_stream      = "firewall:audit",
-    audit_maxlen      = 10000,
-    mode              = "monitor",     -- "enforce" | "monitor" | "off"
-}
+local defaults = require "firewall.defaults"
+
+-- Default config values live in firewall.defaults. Re-exported here so
+-- parse_config() and existing callers continue to use config.DEFAULTS.
+_M.DEFAULTS = defaults.GCRA
 
 -- Valid values for the "mode" config field.
 _M.VALID_MODES = { enforce = true, monitor = true, off = true }
@@ -324,6 +319,75 @@ function _M.parse_rules(raw)
     end
 
     return valid, warnings
+end
+
+-- ============================================================================
+-- ADMIN-SIDE STRICT VALIDATION
+-- ============================================================================
+-- parse_config / parse_rules are fail-soft: at request time we want bad
+-- entries skipped with a warning so the firewall keeps running. On the
+-- admin write path we want the opposite — surface every warning as an
+-- error so the operator can fix the input before it lands in Redis. These
+-- wrappers also catch top-level shape problems and unknown keys, which
+-- are silently ignored by the lenient path.
+-- ============================================================================
+
+-- Promote a list of warnings to errors and return ok/errors/normalised.
+local function _result(ok, errors, normalised)
+    return { ok = ok, errors = errors or {}, normalised = normalised }
+end
+
+-- Detect whether a Lua table decoded from JSON looks like a JSON array.
+-- cjson decodes [] -> empty table and {} -> empty table, so we treat an
+-- empty table as "object" (callers reject empty config separately).
+local function _is_json_array(t)
+    if next(t) == nil then return false end
+    local n = 0
+    for _ in pairs(t) do n = n + 1 end
+    return n == #t and #t > 0
+end
+
+function _M.validate_rules_strict(raw)
+    if type(raw) ~= "table" then
+        return _result(false, { "Rules must be a JSON array of rule objects." })
+    end
+    if next(raw) ~= nil and not _is_json_array(raw) then
+        return _result(false, { "Rules must be a JSON array, not an object." })
+    end
+
+    local cleaned, warnings = _M.parse_rules(raw)
+    if #warnings > 0 then
+        return _result(false, warnings)
+    end
+    return _result(true, {}, cleaned or {})
+end
+
+function _M.validate_config_strict(raw)
+    if type(raw) ~= "table" then
+        return _result(false, { "Config must be a JSON object." })
+    end
+    if _is_json_array(raw) then
+        return _result(false, { "Config must be a JSON object, not a JSON array." })
+    end
+
+    local allowed = {
+        emission_interval = true, burst = true, penalty_ttl = true,
+        audit_enabled = true, audit_stream = true, audit_maxlen = true,
+        mode = true,
+    }
+    local errors = {}
+    for k in pairs(raw) do
+        if not allowed[k] then
+            table.insert(errors, "Unknown config key \"" .. tostring(k) .. "\".")
+        end
+    end
+
+    local cleaned, warnings = _M.parse_config(raw)
+    for _, w in ipairs(warnings) do table.insert(errors, w) end
+    if #errors > 0 then
+        return _result(false, errors)
+    end
+    return _result(true, {}, cleaned)
 end
 
 return _M

@@ -7,7 +7,7 @@ local cost = require "firewall.cost"
 -- Simple regex mock
 local function mock_regex(subject, pattern)
     if not subject or not pattern then return false end
-    
+
     if pattern:find("|") then
         for part in pattern:gmatch("[^|]+") do
             local p = part:gsub("\\%.", "%%."):gsub("%-", "%%-")
@@ -15,7 +15,7 @@ local function mock_regex(subject, pattern)
         end
         return false
     end
-    
+
     local lua_pattern = pattern
         :gsub("\\%.", "%%.")
         :gsub("%-", "%%-")

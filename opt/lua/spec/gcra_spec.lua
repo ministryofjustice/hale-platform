@@ -11,46 +11,51 @@ package.path = package.path .. ";lua/?.lua;lua/?/init.lua"
 local gcra = require "firewall.gcra"
 
 describe("gcra module", function()
-    
+
     it("exports SCRIPT", function()
         assert.is_string(gcra.SCRIPT)
         assert.truthy(gcra.SCRIPT:find("KEYS%[1%]"))
     end)
-    
+
     it("exports DEFAULTS", function()
         assert.is_table(gcra.DEFAULTS)
-        assert.equals(1000, gcra.DEFAULTS.emission_interval)
-        assert.equals(100000, gcra.DEFAULTS.burst)
+        assert.equals(100, gcra.DEFAULTS.emission_interval)
+        assert.equals(150000, gcra.DEFAULTS.burst)
         assert.equals(600000, gcra.DEFAULTS.penalty_ttl)
         assert.equals("gcra:", gcra.DEFAULTS.key_prefix)
         assert.equals("firewall:allow:", gcra.DEFAULTS.allow_prefix)
         assert.equals("firewall:block:", gcra.DEFAULTS.block_prefix)
     end)
-    
+
+    it("DEFAULTS is the same table as config.DEFAULTS", function()
+        local config = require "firewall.config"
+        assert.equals(gcra.DEFAULTS, config.DEFAULTS)
+    end)
+
     it("exports check function", function()
         assert.is_function(gcra.check)
     end)
-    
+
     it("exports check_direct function", function()
         assert.is_function(gcra.check_direct)
     end)
-    
+
     it("exports load_script function", function()
         assert.is_function(gcra.load_script)
     end)
-    
+
 end)
 
 describe("gcra SCRIPT logic", function()
     -- These tests verify the Redis Lua script behavior
     -- by manually simulating what Redis would do
-    
+
     local function simulate_gcra(tat_store, key, emission_interval, burst, now, cost)
         -- Simulate the Redis Lua script
         local tat = tat_store[key] or now
         local new_tat = math.max(tat, now) + (emission_interval * cost)
         local allow_at = new_tat - burst
-        
+
         if now < allow_at then
             return {0, math.ceil(allow_at - now), tat}
         else
@@ -58,15 +63,15 @@ describe("gcra SCRIPT logic", function()
             return {1, 0, new_tat}
         end
     end
-    
+
     it("allows first request", function()
         local store = {}
         local result = simulate_gcra(store, "ip1", 1000, 10000, 1000000, 1)
-        
+
         assert.equals(1, result[1])  -- allowed
         assert.equals(0, result[2])  -- no retry needed
     end)
-    
+
     it("allows requests within burst", function()
         local store = {}
         -- Burst of 10 = 10000ms capacity
@@ -76,83 +81,83 @@ describe("gcra SCRIPT logic", function()
             assert.equals(1, result[1], "request " .. i .. " should be allowed")
         end
     end)
-    
+
     it("blocks when burst exceeded", function()
         local store = {}
         local now = 1000000
-        
+
         -- Consume all 10 tokens (burst=10000, emission=1000)
         for i = 1, 10 do
             simulate_gcra(store, "ip1", 1000, 10000, now, 1)
         end
-        
+
         -- 11th request should be blocked
         local result = simulate_gcra(store, "ip1", 1000, 10000, now, 1)
         assert.equals(0, result[1])  -- blocked
         assert.truthy(result[2] > 0)  -- retry_after > 0
     end)
-    
+
     it("allows after waiting", function()
         local store = {}
         local now = 1000000
-        
+
         -- Consume all tokens
         for i = 1, 10 do
             simulate_gcra(store, "ip1", 1000, 10000, now, 1)
         end
-        
+
         -- Blocked now
         local result1 = simulate_gcra(store, "ip1", 1000, 10000, now, 1)
         assert.equals(0, result1[1])
-        
+
         -- Wait for retry_after + buffer
         now = now + result1[2] + 100
-        
+
         -- Now allowed
         local result2 = simulate_gcra(store, "ip1", 1000, 10000, now, 1)
         assert.equals(1, result2[1])
     end)
-    
+
     it("handles high cost requests", function()
         local store = {}
         local now = 1000000
-        
+
         -- Request with cost=50 (half of burst=100)
         local result1 = simulate_gcra(store, "ip1", 1000, 100000, now, 50)
         assert.equals(1, result1[1])
-        
+
         -- Another cost=50 should work
         local result2 = simulate_gcra(store, "ip1", 1000, 100000, now, 50)
         assert.equals(1, result2[1])
-        
+
         -- Third cost=50 should be blocked (150 > 100 capacity)
         local result3 = simulate_gcra(store, "ip1", 1000, 100000, now, 50)
         assert.equals(0, result3[1])
     end)
-    
+
     it("drains over time", function()
         local store = {}
         local now = 1000000
-        
+
         -- Use 5 tokens
         for i = 1, 5 do
             simulate_gcra(store, "ip1", 1000, 10000, now, 1)
         end
-        
+
         -- Wait 3 seconds (3000ms) = 3 tokens refill
         now = now + 3000
-        
+
         -- Should be able to use 8 more (5 used - 3 refilled + 8 new = 10 = burst)
         for i = 1, 8 do
             local result = simulate_gcra(store, "ip1", 1000, 10000, now, 1)
             assert.equals(1, result[1], "request " .. i .. " should be allowed")
         end
-        
+
         -- 9th should fail
         local result = simulate_gcra(store, "ip1", 1000, 10000, now, 1)
         assert.equals(0, result[1])
     end)
-    
+
 end)
 
 describe("check_direct with mock Redis", function()
