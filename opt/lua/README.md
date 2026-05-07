@@ -153,7 +153,7 @@ flowchart LR
     L -- async timer --> R
 
     WP --> PHP
-    PHP -- get/set rules<br/>get/set config<br/>read audit --> R
+    PHP -- saveRulesAndNotify<br/>saveConfigAndNotify<br/>getRules/getConfig<br/>read audit --> R
     PHP -- POST flush-cache --> ADMIN
     ADMIN -- bump version --> D
 ```
