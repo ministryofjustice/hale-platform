@@ -14,14 +14,15 @@ but if you only read one document, read this one.
 ## Contents
 
 1. [What it does](#what-it-does)
-2. [Architecture at a glance](#architecture-at-a-glance)
-3. [Request flow](#request-flow)
-4. [Data model (Redis keys)](#data-model-redis-keys)
-5. [Operating modes](#operating-modes)
-6. [File map](#file-map)
-7. [How to operate](#how-to-operate)
-8. [How to test](#how-to-test)
-9. [Design decisions](#design-decisions)
+2. [The firewall contract](#the-firewall-contract)
+3. [Architecture at a glance](#architecture-at-a-glance)
+4. [Request flow](#request-flow)
+5. [Data model (Redis keys)](#data-model-redis-keys)
+6. [Operating modes](#operating-modes)
+7. [File map](#file-map)
+8. [How to operate](#how-to-operate)
+9. [How to test](#how-to-test)
+10. [Design decisions](#design-decisions)
 
 ---
 
@@ -45,6 +46,78 @@ For every incoming HTTP request:
 The point of GCRA over a naïve counter is that it handles decay naturally
 and does not have the "TTL refresh" bug where a slow attacker can accumulate
 score forever.
+
+---
+
+## The firewall contract
+
+Four separate codebases (nginx Lua, WordPress PHP, nginx config, busted/e2e
+tests) cooperate without ever calling each other directly. They agree on
+four things, listed here so each is documented in exactly one place. Any
+change to these is a breaking change — update this section first.
+
+### 1. HTTP endpoints (`/firewall/*`)
+
+All dispatched by `firewall.admin.handle_route()` in [firewall/admin.lua](firewall/admin.lua).
+Access is restricted to loopback in production by a single `location ^~
+/firewall/` block.
+
+| Method | Path | Purpose | Caller |
+|---|---|---|---|
+| `GET`  | `/firewall/stats`            | JSON snapshot of rules, config, and live GCRA TATs | Ops, debug |
+| `GET`  | `/firewall/flush-cache`      | Bump shared version counter so all workers re-read rules/config; clears local block cache | PHP after every save; ops after manual Redis edits |
+| `GET`  | `/firewall/clear-penalties`  | Delete every `firewall:block:{ip}` whose value is `"gcra"` (manual bans untouched) | Ops |
+| `POST` | `/firewall/admin/validate?kind=rules\|config` | Strict schema check, body is the candidate JSON; **read-only, no Redis writes** | PHP admin form before save |
+
+### 2. Redis keys
+
+See [Data model](#data-model-redis-keys) below for the full table. Key
+names are pinned as constants in [firewall/defaults.lua](firewall/defaults.lua):
+`GCRA_KEY_PREFIX`, `ALLOW_KEY_PREFIX`, `BLOCK_KEY_PREFIX`, `AUDIT_STREAM`.
+PHP hardcodes the same strings; if you rename one, update both sides.
+
+### 3. Audit stream fields (`firewall:audit`)
+
+Written by `firewall.req()` (request-time blocks) and the `firewall.res()`
+404-penalty timer. Read by the WordPress admin audit table.
+
+| Field | Type | Always present | Meaning |
+|---|---|---|---|
+| `ip`           | string  | yes | Client IP that triggered the block |
+| `blocked_at`   | int (ms epoch) | yes | When the block decision was taken |
+| `cost`         | int  | yes | GCRA cost charged on this request |
+| `mode`         | string  | yes | `enforce` or `monitor` — mode in force at the moment of the block |
+| `trigger`      | string  | yes | What caused the block: `blocklist`, `penalty`, `rule:404-penalty:N`, or comma-separated `rule:id:cost` pairs |
+| `accumulated`  | int (ms) | yes | GCRA accumulated TAT excess at the moment of the block (`""` if Redis returned nil) |
+| `reason`       | string  | request only | `block` / `penalty` / `gcra` — which arm of the GCRA script fired (omitted on the 404-penalty entry) |
+| `retry_after`  | int (ms) | request only | Suggested cooldown for the client; same value used for the local cache TTL |
+
+The stream is capped by `XADD MAXLEN ~ audit_maxlen` (default 10 000,
+tunable via `firewall:config.audit_maxlen`).
+
+### 4. Validate response shape
+
+`POST /firewall/admin/validate` always returns `200 application/json` with
+this exact shape, regardless of whether validation succeeded:
+
+```json
+{
+  "ok": true,
+  "errors": [],
+  "normalised": [ /* rules array */ ] | { /* config object */ } | null
+}
+```
+
+- `ok`: `true` only if every rule / every config field passed strict
+  validation **and** (for rules) every PCRE pattern compiled.
+- `errors`: human-readable strings, one per problem found. Empty when `ok`.
+- `normalised`: the payload as it would be persisted to Redis — defaults
+  applied, types coerced, unknown keys stripped. `null` when `ok` is
+  `false`. PHP writes this verbatim to Redis on success; never the raw
+  operator input.
+
+A non-200 response indicates a request-shape problem (missing `kind`,
+empty body, malformed JSON), not a schema problem.
 
 ---
 
@@ -94,7 +167,7 @@ flowchart LR
 | Redis | Shared state | external (ElastiCache in prod, container locally) |
 
 Redis is the **only** coupling between Lua and PHP. They never talk
-directly; the schema in [firewall/config.lua](firewall/config.lua) is the
+directly; the schema in [firewall/schema.lua](firewall/schema.lua) is the
 contract.
 
 ---
@@ -213,12 +286,12 @@ participates in the same bucket arithmetic and respects the same mode.
 | `firewall:config` | JSON string | PHP | Lua | GCRA params, mode, audit settings |
 | `firewall:allow:{ip}` | string `"1"` | PHP/CLI | Lua script | Allowlist (bypass GCRA entirely) |
 | `firewall:block:{ip}` | string (`"1"` manual, `"gcra"` auto) | PHP/CLI + Lua | Lua script | Blocklist; TTL = ban duration |
-| `gcra:{ip}` | string (TAT, ms epoch) | Lua script | Lua script | GCRA bucket state |
-| `gcra:{ip}:breakdown` | hash | Lua script | Lua script | Per-rule hit counts (audit only) |
+| `firewall:gcra:{ip}` | string (TAT, ms epoch) | Lua script | Lua script | GCRA bucket state |
+| `firewall:gcra:{ip}:breakdown` | hash | Lua script | Lua script | Per-rule hit counts (audit only) |
 | `firewall:audit` | stream | Lua | PHP | Decision log, capped by `audit_maxlen` |
 
 The schema for `firewall:rules` and `firewall:config` is documented in the
-header of [firewall/config.lua](firewall/config.lua) — that file is the
+header of [firewall/schema.lua](firewall/schema.lua) — that file is the
 authoritative schema reference.
 
 ---
@@ -248,10 +321,13 @@ comment on `_M.req` in [firewall.lua](firewall.lua) for the full reasoning.
 
 | File | Responsibility |
 |---|---|
-| [firewall.lua](firewall.lua) | Orchestrator. Exports `init/req/res/stats/flush_cache/validate/seed_rules/allow_ip/block_ip/clear_penalties`. Called by nginx phases. |
+| [firewall.lua](firewall.lua) | **Hot path only.** Exports `init`, `req`, `res`. Called by `init_worker_by_lua_block`, `access_by_lua_block`, `log_by_lua_block`. |
+| [firewall/admin.lua](firewall/admin.lua) | Admin endpoints. Exports `handle_route`, `stats`, `flush_cache`, `validate`, `clear_penalties`. Called by `content_by_lua_block` in the `/firewall/*` location. |
+| [firewall/cache.lua](firewall/cache.lua) | Shared cache state: `blocked_cache` (shared dict), `load_rules_and_config` (per-worker TTL cache), `flush`. Required by both `firewall` and `firewall.admin`. |
 | [firewall/cost.lua](firewall/cost.lua) | Pure function — score a request against rules. No `ngx.*` deps; unit-testable. |
 | [firewall/gcra.lua](firewall/gcra.lua) | GCRA algorithm + the Redis Lua script that runs server-side. EVALSHA + cache. |
-| [firewall/config.lua](firewall/config.lua) | Pure validators for `firewall:rules` and `firewall:config`. **Authoritative schema lives here.** Exposes `parse_*` (fail-soft, runtime) and `validate_*_strict` (fail-hard, admin path). |
+| [firewall/schema.lua](firewall/schema.lua) | Pure validators for `firewall:rules` and `firewall:config`. **Authoritative schema lives here.** Exposes `parse_*` (fail-soft, runtime) and `validate_*_strict` (fail-hard, admin path). |
+| [firewall/defaults.lua](firewall/defaults.lua) | Single source of truth for constants (`GCRA_KEY_PREFIX` etc.) and GCRA tunable defaults. |
 | [firewall/redis.lua](firewall/redis.lua) | Connection pool, fail-open. Reads `REDIS_*` env. |
 | [spec/](spec/) | busted unit + integration tests (run with `make test-firewall`). |
 | [firewall_e2e_test.js](firewall_e2e_test.js) | Node/Deno e2e tests + CSV fixture replay against a running stack. |
@@ -262,8 +338,8 @@ comment on `_M.req` in [firewall.lua](firewall.lua) for the full reasoning.
 | File | Responsibility |
 |---|---|
 | `nginx.conf` | `lua_package_path`, shared dicts, `init_worker_by_lua_block`, `env FIREWALL_ENABLED`, log format. |
-| `wordpress.conf` | Production server block. `access_by_lua_block { firewall.req() }`, `log_by_lua_block { firewall.res() }`, admin endpoints. |
-| `localwordpress.conf` | Local-dev equivalent. |
+| `wordpress.conf` | Production server block. `access_by_lua_block { firewall.req() }`, `log_by_lua_block { firewall.res() }`. `location ^~ /firewall/` restricted to loopback — dispatches all admin endpoints via `firewall.admin.handle_route()`. |
+| `localwordpress.conf` | Local-dev equivalent. Same structure, no loopback restriction on `/firewall/`. |
 
 ### PHP (`dev/mu-plugins/hale-components/inc/`)
 
@@ -280,7 +356,7 @@ comment on `_M.req` in [firewall.lua](firewall.lua) for the full reasoning.
 
 WordPress admin → Network dashboard → Firewall section. Edit JSON, save.
 The form POSTs the payload to `/firewall/admin/validate?kind=rules|config`
-first — the Lua schema in [firewall/config.lua](firewall/config.lua) is the
+first — the Lua schema in [firewall/schema.lua](firewall/schema.lua) is the
 single source of truth, so any error you see in the admin form is the
 same error the runtime parser would log. On success PHP writes the
 *normalised* payload to Redis (defaults applied, types coerced) and calls
@@ -289,21 +365,20 @@ request (otherwise it takes up to 60 s).
 
 ### Allow or block an IP
 
-There is no admin UI for these yet. From inside the nginx container:
-
-```lua
-require("firewall").allow_ip("1.2.3.4", 3600)   -- 1 hour
-require("firewall").block_ip("1.2.3.4", nil)    -- permanent
-require("firewall").unblock_ip("1.2.3.4")
-```
-
-Or directly in Redis:
+There is no admin UI for these yet. Write directly to Redis:
 
 ```
-SET firewall:allow:1.2.3.4 1 EX 3600
-SET firewall:block:1.2.3.4 1            # permanent manual ban
+SET firewall:allow:1.2.3.4 1 EX 3600  # allow for 1 hour
+SET firewall:allow:1.2.3.4 1           # allow permanently
 DEL firewall:allow:1.2.3.4
+
+SET firewall:block:1.2.3.4 1           # permanent manual ban
+DEL firewall:block:1.2.3.4
 ```
+
+After writing, call `GET /firewall/flush-cache` so all workers pick up the
+change immediately (otherwise the local block cache may hold a stale entry
+for up to 60 s).
 
 ### Inspect state
 
@@ -436,7 +511,7 @@ over up to 60 s with stale and fresh requests interleaved.
 ### Schema validation lives in Lua, exposed over HTTP
 
 The schema for `firewall:rules` and `firewall:config` is defined once in
-[firewall/config.lua](firewall/config.lua). The WordPress admin form
+[firewall/schema.lua](firewall/schema.lua). The WordPress admin form
 posts the operator's input to `POST /firewall/admin/validate?kind=rules`
 (or `kind=config`) and uses the JSON response (`ok`, `errors`,
 `normalised`) to decide whether to write to Redis.
@@ -466,3 +541,64 @@ What this design intentionally does *not* do (yet):
   removing the duplicated *validation* code is the high-value change;
   removing the duplicated *read* path is a larger refactor for a
   smaller win.
+
+### Admin endpoint routing is dispatched in Lua, not in nginx locations
+
+All `/firewall/*` admin endpoints are served by a single nginx block:
+
+```nginx
+location ^~ /firewall/ {
+    allow 127.0.0.1; allow ::1; deny all;  # prod only
+    content_by_lua_block { require("firewall.admin").handle_route() }
+}
+```
+
+`handle_route()` in [firewall/admin.lua](firewall/admin.lua) inspects `ngx.var.uri` and dispatches
+to `stats()`, `flush_cache()`, `clear_penalties()`, or `validate()`. An
+unrecognised path gets a 404 JSON response.
+
+Why not a separate `location =` block per endpoint:
+
+- **Access control in one place.** The loopback `allow`/`deny` is
+  declared once on the parent block and inherited by every endpoint. A
+  new endpoint can't be added without the ACL; it's structurally
+  impossible to accidentally leave one unrestricted.
+- **nginx config stays minimal.** Adding or renaming an endpoint is a
+  Lua change only — no nginx config edit, no rebuild required in local
+  dev (Lua files are volume-mounted).
+- **Testable.** The route table in `handle_route()` is plain Lua data;
+  the routing logic can be exercised in the e2e test suite by hitting
+  each path, without needing to inspect nginx internals.
+
+### PCRE pattern validation lives in the HTTP endpoint, not the schema module
+
+`schema.lua` validates rule structure (types, required fields, known
+keys) but does not call the PCRE engine. This is deliberate: `schema.lua`
+is a pure Lua module with no `ngx` dependency, which keeps it fully
+unit-testable with plain busted outside an OpenResty worker.
+
+`ngx.re.match` — the PCRE engine — is only available inside a running
+nginx worker. Rather than inject it as a parameter (which would make
+`validate_rules_strict`'s behaviour conditional and harder to reason
+about), the compile-check lives in [firewall/admin.lua](firewall/admin.lua)'s
+`compile_check_patterns()` helper, called from `validate()` immediately
+after the structural check passes:
+
+```
+-- firewall/admin.lua validate()
+result = schema.validate_rules_strict(decoded)  -- structure only
+
+if result.ok and result.normalised then
+    -- second pass: compile each PCRE pattern with the real engine
+    local regex_errors = compile_check_patterns(result.normalised)
+    if #regex_errors > 0 then
+        result = { ok = false, errors = regex_errors, normalised = nil }
+    end
+end
+```
+
+The layers are honest about their responsibilities: `schema.lua` owns
+the schema, `firewall/admin.lua` owns the nginx layer. The compile-check
+loop is small enough that the absence of a busted unit test for it is
+acceptable — it calls a single well-understood API with no branching
+logic of its own.

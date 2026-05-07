@@ -2,6 +2,14 @@
 // No package.json or node_modules needed.
 // Node:  node --test firewall_e2e_test.js
 // Deno:  deno test --allow-net="hale.docker" --allow-read="./fixtures" --unsafely-ignore-certificate-errors firewall_e2e_test.js
+//
+// Prerequisites
+// -------------
+// 1. dory up                  — starts the local DNS proxy so hale.docker resolves
+// 2. make run-with-firewall   — starts nginx, WordPress, Redis and loads the firewall
+//
+// If the connectivity check at the top of this file fails, the remaining tests
+// are skipped automatically.  Check that both prerequisites are met first.
 
 const isDeno = typeof Deno !== "undefined";
 
@@ -26,6 +34,73 @@ const fetchClient = isDeno
 
 const fetchOpts = fetchClient ? { client: fetchClient } : {};
 
+// ---------------------------------------------------------------------------
+// Connectivity pre-check — must pass before any other test runs
+// ---------------------------------------------------------------------------
+// Attempts a single GET to FIREWALL_URL.  If it fails (DNS, connection
+// refused, TLS, etc.) all remaining tests are skipped and help is printed.
+// ---------------------------------------------------------------------------
+
+let _firewallReachable = false;
+
+try {
+  const probe = await fetch(`${FIREWALL_URL}/firewall/stats`, {
+    ...fetchOpts,
+    signal: AbortSignal.timeout(5000),
+  });
+  await probe.body?.cancel();
+  if (probe.status !== 200) {
+    throw `http response code ${probe.status}`;
+  }
+  _firewallReachable = true;
+} catch (e) {
+  console.error(`
+╔══════════════════════════════════════════════════════════════════╗
+║  FIREWALL NOT REACHABLE — test results will be inaccurate        ║
+╠══════════════════════════════════════════════════════════════════╣
+║  URL:   ${`${FIREWALL_URL}/firewall/stats`.padEnd(57)}║
+║  Error: ${String(e.message ?? e)
+    .slice(0, 57)
+    .padEnd(57)}║
+╠══════════════════════════════════════════════════════════════════╣
+║  To fix, run both of these in order:                             ║
+║    1.  dory up                                                   ║
+║    2.  make run-with-firewall   (from the repo root)             ║
+╚══════════════════════════════════════════════════════════════════╝
+`);
+}
+
+test(
+  "e2e: [pre-check] firewall is reachable at " +
+    FIREWALL_URL +
+    "/firewall/stats",
+  async () => {
+    if (!_firewallReachable) {
+      // Re-attempt inside the test so the failure is attributed here and
+      // the error message appears in the test output, not just on stderr.
+      try {
+        const res = await fetch(`${FIREWALL_URL}/firewall/stats`, {
+          ...fetchOpts,
+          signal: AbortSignal.timeout(5000),
+        });
+        await res.body?.cancel();
+        assert.equal(
+          res.status,
+          200,
+          `${FIREWALL_URL}/firewall/stats returned ${res.status} — is the firewall running?`,
+        );
+      } catch (e) {
+        assert.ok(
+          false,
+          `Cannot reach ${FIREWALL_URL}/stats: ${e.message}\n` +
+            `  Prerequisites: (1) dory up  (2) make run-with-firewall`,
+        );
+      }
+    }
+    assert.ok(_firewallReachable, `${FIREWALL_URL} must be reachable`);
+  },
+);
+
 async function sendRequest(ip, opts = {}) {
   const { method = "GET", path = "/", ua = "normal-browser" } = opts;
   return await fetch(`${FIREWALL_URL}${path}`, {
@@ -46,7 +121,10 @@ async function flushNginxCache() {
 }
 
 async function clearPenaltyBlocks() {
-  const res = await fetch(`${FIREWALL_URL}/firewall/clear-penalties`, fetchOpts);
+  const res = await fetch(
+    `${FIREWALL_URL}/firewall/clear-penalties`,
+    fetchOpts,
+  );
   await res.body?.cancel();
 }
 
@@ -79,7 +157,147 @@ test("e2e: /firewall/flush-cache endpoint returns 200", async () => {
 });
 
 // ---------------------------------------------------------------------------
-// Rate-limiting behaviour
+// /firewall/admin/validate — schema and PCRE validation
+// ---------------------------------------------------------------------------
+// These tests exercise the full stack: nginx routing → Lua validate() →
+// config_module.validate_rules_strict (structure) → ngx.re.match compile
+// probe (PCRE).  The PCRE check in particular cannot be covered by busted
+// because ngx.re is only available inside a running OpenResty worker.
+// ---------------------------------------------------------------------------
+
+async function postValidate(kind, body) {
+  const res = await fetch(
+    `${FIREWALL_URL}/firewall/admin/validate?kind=${kind}`,
+    {
+      ...fetchOpts,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: typeof body === "string" ? body : JSON.stringify(body),
+    },
+  );
+  const json = await res.json();
+  return { status: res.status, body: json };
+}
+
+test("e2e: validate rules — accepts a valid ruleset", async () => {
+  const { status, body } = await postValidate("rules", [
+    { id: "base", cost: 1 },
+    { id: "php-probe", cost: 20, conditions: { uri_pattern: "\\.php$" } },
+    { id: "bad-bot", cost: 50, conditions: { ua_pattern: "zgrab|masscan" } },
+  ]);
+  assert.equal(status, 200);
+  assert.ok(
+    body.ok,
+    `expected ok=true, got errors: ${JSON.stringify(body.errors)}`,
+  );
+  assert.equal(body.normalised.length, 3);
+});
+
+test("e2e: validate rules — rejects a structurally invalid rule (missing id)", async () => {
+  const { status, body } = await postValidate("rules", [{ cost: 1 }]);
+  assert.equal(status, 200);
+  assert.ok(!body.ok, "expected ok=false for rule missing id");
+  assert.ok(
+    body.errors.some((e) => e.includes("id")),
+    `expected error mentioning 'id', got: ${JSON.stringify(body.errors)}`,
+  );
+});
+
+test("e2e: validate rules — rejects an invalid PCRE pattern", async () => {
+  // "[unclosed" is a PCRE syntax error (missing closing bracket).
+  // This error can only be caught by ngx.re.match inside a real worker —
+  // it is not caught by the pure-Lua structural check in config.lua.
+  const { status, body } = await postValidate("rules", [
+    { id: "bad-regex", cost: 1, conditions: { uri_pattern: "[unclosed" } },
+  ]);
+  assert.equal(status, 200);
+  assert.ok(!body.ok, "expected ok=false for invalid PCRE pattern");
+  assert.ok(
+    body.errors.some(
+      (e) =>
+        e.includes("PCRE") ||
+        e.toLowerCase().includes("pcre") ||
+        e.includes("uri_pattern"),
+    ),
+    `expected PCRE error mentioning uri_pattern, got: ${JSON.stringify(body.errors)}`,
+  );
+});
+
+test("e2e: validate rules — rejects invalid PCRE in ua_pattern and query_pattern", async () => {
+  for (const field of ["ua_pattern", "query_pattern"]) {
+    const conditions = { [field]: "[bad" };
+    const { body } = await postValidate("rules", [
+      { id: "r", cost: 1, conditions },
+    ]);
+    assert.ok(!body.ok, `expected ok=false for invalid PCRE in ${field}`);
+    assert.ok(
+      body.errors.some((e) => e.includes(field)),
+      `expected error mentioning '${field}', got: ${JSON.stringify(body.errors)}`,
+    );
+  }
+});
+
+test("e2e: validate rules — rejects non-array body", async () => {
+  const { status, body } = await postValidate("rules", { id: "x", cost: 1 });
+  assert.equal(status, 200);
+  assert.ok(!body.ok);
+  assert.ok(body.errors.some((e) => e.includes("array")));
+});
+
+test("e2e: validate config — accepts a valid config", async () => {
+  const { status, body } = await postValidate("config", {
+    emission_interval: 500,
+    burst: 50000,
+    mode: "monitor",
+  });
+  assert.equal(status, 200);
+  assert.ok(body.ok, `expected ok=true, got: ${JSON.stringify(body.errors)}`);
+});
+
+test("e2e: validate config — rejects unknown keys", async () => {
+  const { status, body } = await postValidate("config", { burts: 500 });
+  assert.equal(status, 200);
+  assert.ok(!body.ok);
+  assert.ok(body.errors.some((e) => e.includes("burts")));
+});
+
+test("e2e: validate — missing kind parameter returns 400", async () => {
+  const res = await fetch(`${FIREWALL_URL}/firewall/admin/validate`, {
+    ...fetchOpts,
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: "[]",
+  });
+  const json = await res.json();
+  assert.equal(res.status, 400);
+  assert.ok(!json.ok);
+});
+
+test("e2e: validate — empty body returns 400", async () => {
+  const res = await fetch(
+    `${FIREWALL_URL}/firewall/admin/validate?kind=rules`,
+    { ...fetchOpts, method: "POST" },
+  );
+  const json = await res.json();
+  assert.equal(res.status, 400);
+  assert.ok(!json.ok);
+});
+
+test("e2e: validate — invalid JSON body returns 400", async () => {
+  const res = await fetch(
+    `${FIREWALL_URL}/firewall/admin/validate?kind=rules`,
+    {
+      ...fetchOpts,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{not valid json",
+    },
+  );
+  const json = await res.json();
+  assert.equal(res.status, 400);
+  assert.ok(!json.ok);
+});
+
 // ---------------------------------------------------------------------------
 
 test("e2e: repeated YisouSpider requests are eventually rate-limited (429)", async () => {
@@ -246,7 +464,9 @@ for (const fixturePath of fixtureFiles) {
     const firstTs = new Date(rows[0]?.[H.time]).getTime();
     const lastTs = new Date(rows[rows.length - 1]?.[H.time]).getTime();
     const expectedMs = isNaN(firstTs) || isNaN(lastTs) ? 0 : lastTs - firstTs;
-    console.log(`[fixtures] ${fixtureName}: ${rows.length} rows, expected replay duration ~${(expectedMs / 1000).toFixed(1)}s`);
+    console.log(
+      `[fixtures] ${fixtureName}: ${rows.length} rows, expected replay duration ~${(expectedMs / 1000).toFixed(1)}s`,
+    );
 
     let lastTimestamp = null;
     let skipped = 0;

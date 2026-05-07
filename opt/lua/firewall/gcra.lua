@@ -17,8 +17,8 @@
 --   audit_enabled: track rule breakdown (default: false)
 --
 -- REDIS KEYS (when audit_enabled):
---   gcra:{ip}           - TAT (theoretical arrival time)
---   gcra:{ip}:breakdown - Hash of rule -> hit count (accumulated)
+--   firewall:gcra:{ip}           - TAT (theoretical arrival time)
+--   firewall:gcra:{ip}:breakdown - Hash of rule -> hit count (accumulated)
 --
 -- BLOCKING OPTIMIZATION:
 --   - Blocked IPs are cached in nginx shared dict (no Redis hits)
@@ -46,8 +46,8 @@ local defaults = require "firewall.defaults"
 --   2. blocklist hit  → BLOCK (retry_after = PTTL, or 0 for permanent)
 --   3. GCRA           → ALLOW or BLOCK based on token bucket
 --
--- KEYS[1] = gcra:{ip}            - TAT key
--- KEYS[2] = gcra:{ip}:breakdown  - breakdown hash (only used if audit enabled)
+-- KEYS[1] = firewall:gcra:{ip}            - TAT key
+-- KEYS[2] = firewall:gcra:{ip}:breakdown  - breakdown hash (only used if audit enabled)
 -- KEYS[3] = firewall:allow:{ip}  - allowlist key (presence = bypass)
 -- KEYS[4] = firewall:block:{ip}  - blocklist key (presence = block)
 --
@@ -168,7 +168,7 @@ _M.DEFAULTS = defaults.GCRA
 -- @param red: Redis client (resty.redis instance)
 -- @param ip: IP address string
 -- @param cost: Cost of this request (tokens to consume)
--- @param config: Optional config table {emission_interval, burst, key_prefix, audit_enabled}
+-- @param config: Optional config table {emission_interval, burst, audit_enabled}
 -- @param breakdown: Optional table {["rule:id"]=cost, ...} for breakdown tracking
 -- @return allowed: boolean, true if request is allowed
 -- @return info: table {retry_after=ms, tat=timestamp, accumulated=json_string}
@@ -176,16 +176,13 @@ function _M.check(red, ip, cost, config, breakdown)
     config = config or {}
     local emission_interval = config.emission_interval or _M.DEFAULTS.emission_interval
     local burst = config.burst or _M.DEFAULTS.burst
-    local key_prefix = config.key_prefix or _M.DEFAULTS.key_prefix
-    local allow_prefix = config.allow_prefix or _M.DEFAULTS.allow_prefix
-    local block_prefix = config.block_prefix or _M.DEFAULTS.block_prefix
     local audit_enabled = config.audit_enabled or _M.DEFAULTS.audit_enabled
     local penalty_ttl = config.penalty_ttl or _M.DEFAULTS.penalty_ttl
 
-    local gcra_key      = key_prefix .. ip
-    local breakdown_key = key_prefix .. ip .. ":breakdown"
-    local allow_key     = allow_prefix .. ip
-    local block_key     = block_prefix .. ip
+    local gcra_key      = defaults.GCRA_KEY_PREFIX .. ip
+    local breakdown_key = gcra_key .. ":breakdown"
+    local allow_key     = defaults.ALLOW_KEY_PREFIX .. ip
+    local block_key     = defaults.BLOCK_KEY_PREFIX .. ip
 
     -- Build args array
     -- ARGV: emission_interval, burst, cost, audit_enabled, penalty_ttl, [breakdown pairs...]
@@ -267,7 +264,7 @@ end
 -- Despite its test-oriented role, this is not a pure function: it still
 -- performs Redis I/O.
 -- @param red: Redis client or mock
--- @param key: Full Redis key (gcra:{ip})
+-- @param key: Full Redis key (firewall:gcra:{ip})
 -- @param cost: Cost of this request
 -- @param config: Config table {emission_interval, burst, audit_enabled,
 --                              allow_key, block_key}

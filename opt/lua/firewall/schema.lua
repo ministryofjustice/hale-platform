@@ -1,13 +1,15 @@
 -- ============================================================================
--- CONFIG PARSING MODULE
+-- SCHEMA MODULE
 -- ============================================================================
--- Pure functions for parsing and validating firewall config and rules loaded
--- from Redis. No ngx.* dependencies so this can be unit tested with busted.
+-- Pure schema for the `firewall:rules` and `firewall:config` Redis keys:
+-- parse + validate functions, the canonical key whitelists, and the
+-- VALID_MODES set. No ngx.* dependencies so this can be unit tested with
+-- plain busted.
 --
 -- USAGE:
---   local config_mod = require "firewall.config"
---   local cfg, warns = config_mod.parse_config(cjson.decode(raw_json))
---   local rules, warns = config_mod.parse_rules(cjson.decode(raw_json))
+--   local schema = require "firewall.schema"
+--   local cfg,   warns = schema.parse_config(cjson.decode(raw_json))
+--   local rules, warns = schema.parse_rules(cjson.decode(raw_json))
 --
 -- Both functions return (result, warnings_table).
 -- warnings_table is always a table (may be empty). Caller is responsible
@@ -41,10 +43,6 @@
 --                                      --   writes rule breakdowns to the audit
 --                                      --   stream on each blocked request.
 --                                      --   Default: false
---
---     "audit_stream": <string>,        -- Optional. Redis stream key name for
---                                      --   audit events.
---                                      --   Default: "firewall:audit"
 --
 --     "audit_maxlen": <integer>,       -- Optional. MAXLEN trim on the audit
 --                                      --   stream (approximate). Must be > 0.
@@ -135,7 +133,7 @@ local _M = {}
 local defaults = require "firewall.defaults"
 
 -- Default config values live in firewall.defaults. Re-exported here so
--- parse_config() and existing callers continue to use config.DEFAULTS.
+-- parse_config() and existing callers continue to use schema.DEFAULTS.
 _M.DEFAULTS = defaults.GCRA
 
 -- Valid values for the "mode" config field.
@@ -199,11 +197,6 @@ function _M.parse_config(raw)
         out.audit_enabled = not not raw.audit_enabled
     end
 
-    -- audit_stream: string, optional
-    if type(raw.audit_stream) == "string" and raw.audit_stream ~= "" then
-        out.audit_stream = raw.audit_stream
-    end
-
     -- audit_maxlen: positive integer, optional
     local maxlen = tonumber(raw.audit_maxlen)
     if maxlen ~= nil and maxlen > 0 then
@@ -244,6 +237,18 @@ end
 -- @return table|nil: cleaned rules array, or nil if structurally unusable
 -- @return table: list of warning strings (empty when input is clean)
 -- ============================================================================
+
+-- Whitelists used by parse_rules to reject unknown keys (catches typos like
+-- "cosst" or "enabledd" before they reach Redis where they would be silently
+-- ignored at request time).
+local _ALLOWED_RULE_KEYS = {
+    id = true, cost = true, enabled = true, conditions = true,
+}
+local _ALLOWED_CONDITION_KEYS = {
+    uri_pattern = true, ua_pattern = true, query_pattern = true,
+    method = true, has_query = true,
+}
+
 function _M.parse_rules(raw)
     local warnings = {}
 
@@ -309,6 +314,36 @@ function _M.parse_rules(raw)
                             skip = true
                         end
                     end
+                    if not skip then
+                        for k in pairs(rule.conditions) do
+                            if not _ALLOWED_CONDITION_KEYS[k] then
+                                table.insert(warnings,
+                                    label .. " conditions has unknown key \"" .. tostring(k) .. "\" — skipping")
+                                skip = true
+                                break
+                            end
+                        end
+                    end
+                end
+            end
+
+            -- enabled, if present, must be a boolean (catches typos like "falsse")
+            if not skip and rule.enabled ~= nil and type(rule.enabled) ~= "boolean" then
+                table.insert(warnings,
+                    label .. " enabled must be a boolean (got " .. type(rule.enabled)
+                    .. " " .. tostring(rule.enabled) .. ") — skipping")
+                skip = true
+            end
+
+            -- Reject unknown top-level rule keys (catches typos like "cosst")
+            if not skip then
+                for k in pairs(rule) do
+                    if not _ALLOWED_RULE_KEYS[k] then
+                        table.insert(warnings,
+                            label .. " has unknown key \"" .. tostring(k) .. "\" — skipping")
+                        skip = true
+                        break
+                    end
                 end
             end
         end
@@ -372,7 +407,7 @@ function _M.validate_config_strict(raw)
 
     local allowed = {
         emission_interval = true, burst = true, penalty_ttl = true,
-        audit_enabled = true, audit_stream = true, audit_maxlen = true,
+        audit_enabled = true, audit_maxlen = true,
         mode = true,
     }
     local errors = {}

@@ -22,14 +22,11 @@ describe("gcra module", function()
         assert.equals(100, gcra.DEFAULTS.emission_interval)
         assert.equals(150000, gcra.DEFAULTS.burst)
         assert.equals(600000, gcra.DEFAULTS.penalty_ttl)
-        assert.equals("gcra:", gcra.DEFAULTS.key_prefix)
-        assert.equals("firewall:allow:", gcra.DEFAULTS.allow_prefix)
-        assert.equals("firewall:block:", gcra.DEFAULTS.block_prefix)
     end)
 
-    it("DEFAULTS is the same table as config.DEFAULTS", function()
-        local config = require "firewall.config"
-        assert.equals(gcra.DEFAULTS, config.DEFAULTS)
+    it("DEFAULTS is the same table as schema.DEFAULTS", function()
+        local schema = require "firewall.schema"
+        assert.equals(gcra.DEFAULTS, schema.DEFAULTS)
     end)
 
     it("exports check function", function()

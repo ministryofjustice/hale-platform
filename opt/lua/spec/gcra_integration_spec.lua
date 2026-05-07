@@ -122,7 +122,7 @@ end
 
 describe("GCRA integration", function()
     local red
-    local test_key = "gcra:integration:test"
+    local test_key = "firewall:gcra:integration:test"
 
     setup(function()
         red = create_redis_client()
@@ -151,7 +151,6 @@ describe("GCRA integration", function()
         local config = {
             emission_interval = 1000,  -- 1 token per second
             burst = 10000,             -- 10 seconds of burst
-            key_prefix = "gcra:integration:",
         }
 
         -- Simulate 10 requests at same time (within burst)
@@ -165,7 +164,6 @@ describe("GCRA integration", function()
         local config = {
             emission_interval = 1000,
             burst = 10000,
-            key_prefix = "gcra:integration:",
         }
 
         local allowed_count = 0
@@ -189,12 +187,15 @@ describe("GCRA integration", function()
 
     it("allows requests after tokens refill", function()
         local config = {
-            emission_interval = 20,
-            burst = 100,
-            key_prefix = "gcra:integration:",
+            -- Use 100ms emission interval so the refill window (100ms) is
+            -- wide enough not to be affected by scheduler jitter.  A sleep
+            -- of 150ms is safely inside the 1-token zone (100-199ms); the
+            -- test would only flake if the sleep overshot by >50ms.
+            emission_interval = 100,
+            burst = 500,
         }
 
-        -- Exhaust burst immediately
+        -- Exhaust burst immediately (5 * 100ms = 500ms = burst)
         for _ = 1, 5 do
             gcra.check_direct(red, test_key, 1, config)
         end
@@ -203,12 +204,12 @@ describe("GCRA integration", function()
         local allowed = gcra.check_direct(red, test_key, 1, config)
         assert.is_false(allowed)
 
-        -- Wait for one token (20ms) to refill
-        require("socket").sleep(0.03)
+        -- Wait for one token (100ms) to refill; sleep 150ms for margin
+        require("socket").sleep(0.15)
         allowed = gcra.check_direct(red, test_key, 1, config)
         assert.is_true(allowed)
 
-        -- But not 2
+        -- But not 2 — only one token refilled
         allowed = gcra.check_direct(red, test_key, 1, config)
         assert.is_false(allowed)
     end)
@@ -217,7 +218,6 @@ describe("GCRA integration", function()
         local config = {
             emission_interval = 1000,
             burst = 10000,
-            key_prefix = "gcra:integration:",
         }
 
         -- High-cost request (cost=5) consumes 5 tokens
@@ -250,7 +250,7 @@ end)
 
 describe("GCRA allow/block list integration", function()
     local red
-    local test_key  = "gcra:integration:abtest"
+    local test_key  = "firewall:gcra:integration:abtest"
     local allow_key = "firewall:allow:integration:abtest"
     local block_key = "firewall:block:integration:abtest"
 
