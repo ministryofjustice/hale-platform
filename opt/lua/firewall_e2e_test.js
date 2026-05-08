@@ -181,34 +181,49 @@ async function postValidate(kind, body) {
 
 test("e2e: validate rules — accepts a valid ruleset", async () => {
   const { status, body } = await postValidate("rules", [
-    { id: "base", cost: 1 },
-    { id: "php-probe", cost: 20, conditions: { uri_pattern: "\\.php$" } },
-    { id: "bad-bot", cost: 50, conditions: { ua_pattern: "zgrab|masscan" } },
+    { name: "req-base", phase: "req", cost: 1, match: { has_query: false } },
+    { name: "req-php-probe", phase: "req", cost: 20, match: { uri_pattern: "\\.php$" } },
+    { name: "req-bad-bot", phase: "req", cost: 50, match: { ua_pattern: "zgrab|masscan" } },
+    { name: "res-404", phase: "res", cost: 50, match: { status: 404 } },
   ]);
   assert.equal(status, 200);
   assert.ok(
     body.ok,
     `expected ok=true, got errors: ${JSON.stringify(body.errors)}`,
   );
-  assert.equal(body.normalised.length, 3);
+  assert.equal(body.normalised.length, 4);
 });
 
-test("e2e: validate rules — rejects a structurally invalid rule (missing id)", async () => {
-  const { status, body } = await postValidate("rules", [{ cost: 1 }]);
+test("e2e: validate rules — rejects a structurally invalid rule (missing name)", async () => {
+  const { status, body } = await postValidate("rules", [
+    { phase: "req", cost: 1, match: { method: "GET" } },
+  ]);
   assert.equal(status, 200);
-  assert.ok(!body.ok, "expected ok=false for rule missing id");
+  assert.ok(!body.ok, "expected ok=false for rule missing name");
   assert.ok(
-    body.errors.some((e) => e.includes("id")),
-    `expected error mentioning 'id', got: ${JSON.stringify(body.errors)}`,
+    body.errors.some((e) => e.includes("name")),
+    `expected error mentioning 'name', got: ${JSON.stringify(body.errors)}`,
+  );
+});
+
+test("e2e: validate rules — rejects a rule with unknown phase", async () => {
+  const { status, body } = await postValidate("rules", [
+    { name: "r", phase: "bogus", cost: 1, match: { method: "GET" } },
+  ]);
+  assert.equal(status, 200);
+  assert.ok(!body.ok, "expected ok=false for unknown phase");
+  assert.ok(
+    body.errors.some((e) => e.includes("phase")),
+    `expected error mentioning 'phase', got: ${JSON.stringify(body.errors)}`,
   );
 });
 
 test("e2e: validate rules — rejects an invalid PCRE pattern", async () => {
   // "[unclosed" is a PCRE syntax error (missing closing bracket).
   // This error can only be caught by ngx.re.match inside a real worker —
-  // it is not caught by the pure-Lua structural check in config.lua.
+  // it is not caught by the pure-Lua structural check in schema.lua.
   const { status, body } = await postValidate("rules", [
-    { id: "bad-regex", cost: 1, conditions: { uri_pattern: "[unclosed" } },
+    { name: "bad-regex", phase: "req", cost: 1, match: { uri_pattern: "[unclosed" } },
   ]);
   assert.equal(status, 200);
   assert.ok(!body.ok, "expected ok=false for invalid PCRE pattern");
@@ -225,9 +240,9 @@ test("e2e: validate rules — rejects an invalid PCRE pattern", async () => {
 
 test("e2e: validate rules — rejects invalid PCRE in ua_pattern and query_pattern", async () => {
   for (const field of ["ua_pattern", "query_pattern"]) {
-    const conditions = { [field]: "[bad" };
+    const match = { [field]: "[bad" };
     const { body } = await postValidate("rules", [
-      { id: "r", cost: 1, conditions },
+      { name: "r", phase: "req", cost: 1, match },
     ]);
     assert.ok(!body.ok, `expected ok=false for invalid PCRE in ${field}`);
     assert.ok(
@@ -238,7 +253,9 @@ test("e2e: validate rules — rejects invalid PCRE in ua_pattern and query_patte
 });
 
 test("e2e: validate rules — rejects non-array body", async () => {
-  const { status, body } = await postValidate("rules", { id: "x", cost: 1 });
+  const { status, body } = await postValidate("rules", {
+    name: "x", phase: "req", cost: 1, match: { method: "GET" },
+  });
   assert.equal(status, 200);
   assert.ok(!body.ok);
   assert.ok(body.errors.some((e) => e.includes("array")));
