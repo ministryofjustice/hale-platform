@@ -6,10 +6,12 @@
 -- modules can require("firewall.cache") independently; neither needs to
 -- require the other.
 --
--- The _rc_cache table is a module-level singleton. Lua caches module results
--- after the first require(), so every caller in the same worker process sees
--- the same table — mutations (e.g. flush() zeroing expires) are immediately
--- visible everywhere.
+-- This module is a singleton. Lua caches module results after the first
+-- require(), so every caller in the same worker process shares the same
+-- module state. _rc_cache is a module-level upvalue; load_rules_and_config()
+-- reassigns it to a fresh table on each Redis refresh, and all accessor
+-- functions (get_rules, is_allowed, is_blocked, flush) re-dereference it on
+-- every call, so they always see the current version.
 -- ============================================================================
 
 local _M = {}
