@@ -73,6 +73,7 @@ symlink:
 test-firewall:
 	@echo "Running Lua firewall tests"
 	@docker build -f nginx.local.dockerfile --target test -t test-firewall .
+	@# Start Redis - only if it is not already running.
 	$(eval REDIS_WAS_RUNNING := $(shell docker compose ps --status running redis 2>/dev/null | grep -q redis && echo yes || echo no))
 	@if [ "$(REDIS_WAS_RUNNING)" = "no" ]; then docker compose up -d redis && sleep 1; fi
 	docker run --rm \

@@ -90,8 +90,6 @@ services:
       - redis:/data
   redis-insight:
     image: redis/redisinsight:latest
-    # ports:
-    #   - "127.0.0.1:5540:5540"
     profiles:
     - firewall
     environment:

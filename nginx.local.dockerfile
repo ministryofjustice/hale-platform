@@ -40,7 +40,7 @@ CMD ["/usr/local/openresty/bin/openresty", "-g", "daemon off;"]
 
 
 ####################################################
-# Lua test suite image
+# Lua lint and test suite image
 # luarocks, busted, and luasocket (needed for
 # integration specs that connect to Redis directly).
 # ##################################################
