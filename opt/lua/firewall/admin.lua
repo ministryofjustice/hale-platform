@@ -39,15 +39,15 @@ local PATTERN_FIELDS = { "uri_pattern", "ua_pattern", "query_pattern" }
 local function compile_check_patterns(rules)
     local errors = {}
     for _, rule in ipairs(rules) do
-        if rule.conditions then
+        if rule.match then
             for _, field in ipairs(PATTERN_FIELDS) do
-                local pattern = rule.conditions[field]
+                local pattern = rule.match[field]
                 if pattern then
                     local _, compile_err = ngx.re.match("", pattern, "o")
                     if compile_err then
                         table.insert(errors,
-                            "Rule id=" .. tostring(rule.id)
-                            .. " conditions." .. field
+                            "Rule name=" .. tostring(rule.name)
+                            .. " match." .. field
                             .. " is not valid PCRE: " .. compile_err)
                     end
                 end

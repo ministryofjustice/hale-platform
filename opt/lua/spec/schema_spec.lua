@@ -32,7 +32,7 @@ describe("config DEFAULTS", function()
 end)
 
 -- ============================================================================
--- VALID_MODES
+-- VALID_MODES / VALID_PHASES
 -- ============================================================================
 describe("config VALID_MODES", function()
     it("accepts enforce, monitor, off", function()
@@ -44,6 +44,18 @@ describe("config VALID_MODES", function()
     it("does not accept unknown keys", function()
         assert.is_falsy(schema.VALID_MODES["turbo"])
         assert.is_falsy(schema.VALID_MODES[""])
+    end)
+end)
+
+describe("rule VALID_PHASES", function()
+    it("accepts req and res", function()
+        assert.is_truthy(schema.VALID_PHASES["req"])
+        assert.is_truthy(schema.VALID_PHASES["res"])
+    end)
+
+    it("does not accept unknown phases", function()
+        assert.is_falsy(schema.VALID_PHASES["log"])
+        assert.is_falsy(schema.VALID_PHASES[""])
     end)
 end)
 
@@ -206,8 +218,17 @@ describe("parse_config", function()
 end)
 
 -- ============================================================================
--- parse_rules
+-- parse_rules — phased rules
 -- ============================================================================
+-- Helper to build a minimal valid rule for the given phase (req|res).
+local function _req_rule(name, cost, match)
+    return { name = name, phase = "req", cost = cost, match = match or { uri_pattern = "x" } }
+end
+
+local function _res_rule(name, cost, status)
+    return { name = name, phase = "res", cost = cost, match = { status = status or 404 } }
+end
+
 describe("parse_rules", function()
 
     it("returns nil and no warnings when raw is nil", function()
@@ -223,144 +244,293 @@ describe("parse_rules", function()
         assert.is_truthy(warns[1]:find("not a JSON array"))
     end)
 
-    it("returns all rules when all are valid", function()
-        local raw = {
-            { id = "base",    cost = 1 },
-            { id = "txt-ext", cost = 20 },
-        }
-        local rules, warns = schema.parse_rules(raw)
-        assert.equals(2, #rules)
-        assert.equals(0, #warns)
-    end)
-
-    it("skips rule with non-numeric cost and warns", function()
-        local raw = {
-            { id = "base",  cost = 1 },
-            { id = "bad",   cost = "notanumber" },
-        }
-        local rules, warns = schema.parse_rules(raw)
-        assert.equals(1, #rules)
-        assert.equals("base", rules[1].id)
-        assert.equals(1, #warns)
-        assert.is_truthy(warns[1]:find("invalid cost"))
-    end)
-
-    it("skips rule with zero cost and warns", function()
-        local raw = { { id = "base", cost = 0 } }
-        local rules, warns = schema.parse_rules(raw)
-        assert.equals(0, #rules)
-        assert.equals(1, #warns)
-    end)
-
-    it("skips rule with negative cost and warns", function()
-        local raw = { { id = "base", cost = -5 } }
-        local rules, warns = schema.parse_rules(raw)
-        assert.equals(0, #rules)
-        assert.equals(1, #warns)
-    end)
-
-    it("skips non-table entry in rules array and warns", function()
-        local raw = { { id = "base", cost = 1 }, "oops" }
-        local rules, warns = schema.parse_rules(raw)
-        assert.equals(1, #rules)
-        assert.equals(1, #warns)
-        assert.is_truthy(warns[1]:find("not an object"))
-    end)
-
     it("returns empty table for empty rules array", function()
         local rules, warns = schema.parse_rules({})
         assert.equals(0, #rules)
         assert.equals(0, #warns)
     end)
 
-    it("preserves rule fields other than cost", function()
+    it("returns all rules when all are valid (mixed phases)", function()
         local raw = {
-            { id = "qs", cost = 4, enabled = false, conditions = { has_query = true } },
+            _req_rule("base", 1, { uri_pattern = "\\.php$" }),
+            _req_rule("txt-ext", 20, { uri_pattern = "\\.txt$" }),
+            _res_rule("res-404", 50, 404),
         }
         local rules, warns = schema.parse_rules(raw)
-        assert.equals(1, #rules)
-        assert.is_false(rules[1].enabled)
-        assert.same({ has_query = true }, rules[1].conditions)
+        assert.equals(3, #rules)
         assert.equals(0, #warns)
     end)
 
-    it("skips rule with missing id and warns", function()
-        local raw = { { cost = 1 } }
+    it("preserves match and other rule fields verbatim", function()
+        local raw = { _req_rule("qs", 4, { has_query = true }) }
         local rules, warns = schema.parse_rules(raw)
-        assert.equals(0, #rules)
-        assert.equals(1, #warns)
-        assert.is_truthy(warns[1]:find("missing or non%-string id"))
+        assert.equals(1, #rules)
+        assert.equals("qs",   rules[1].name)
+        assert.equals("req",  rules[1].phase)
+        assert.equals(4,      rules[1].cost)
+        assert.same({ has_query = true }, rules[1].match)
+        assert.equals(0, #warns)
     end)
 
-    it("skips rule with numeric id and warns", function()
-        local raw = { { id = 42, cost = 1 } }
+    -- name --------------------------------------------------------------------
+
+    it("skips rule with missing name and warns", function()
+        local raw = { { phase = "req", cost = 1, match = { uri_pattern = "x" } } }
         local rules, warns = schema.parse_rules(raw)
         assert.equals(0, #rules)
-        assert.equals(1, #warns)
+        assert.is_truthy(warns[1]:find("name"))
     end)
 
-    it("skips rule with empty string id and warns", function()
-        local raw = { { id = "", cost = 1 } }
+    it("skips rule with non-string name", function()
+        local raw = { { name = 42, phase = "req", cost = 1, match = { uri_pattern = "x" } } }
         local rules, warns = schema.parse_rules(raw)
         assert.equals(0, #rules)
-        assert.equals(1, #warns)
+        assert.is_truthy(warns[1]:find("name"))
     end)
 
-    it("skips rule where conditions is not a table and warns", function()
-        local raw = { { id = "base", cost = 1, conditions = "bad" } }
+    it("skips rule with empty name", function()
+        local raw = { _req_rule("", 1) }
         local rules, warns = schema.parse_rules(raw)
         assert.equals(0, #rules)
-        assert.equals(1, #warns)
-        assert.is_truthy(warns[1]:find("conditions is not an object"))
+        assert.is_truthy(warns[1]:find("name"))
     end)
 
-    it("skips rule where conditions.uri_pattern is not a string and warns", function()
-        local raw = { { id = "base", cost = 1, conditions = { uri_pattern = 123 } } }
+    it("skips rule with name containing invalid charset (uppercase)", function()
+        local raw = { _req_rule("BadName", 1) }
         local rules, warns = schema.parse_rules(raw)
         assert.equals(0, #rules)
+        assert.is_truthy(warns[1]:find("charset"))
+    end)
+
+    it("skips rule with name containing colon", function()
+        local raw = { _req_rule("a:b", 1) }
+        local rules, warns = schema.parse_rules(raw)
+        assert.equals(0, #rules)
+        assert.is_truthy(warns[1]:find("charset"))
+    end)
+
+    it("skips rule with name longer than 64 chars", function()
+        local long = string.rep("a", 65)
+        local raw = { _req_rule(long, 1) }
+        local rules, warns = schema.parse_rules(raw)
+        assert.equals(0, #rules)
+        assert.is_truthy(warns[1]:find("64"))
+    end)
+
+    it("accepts a 64-char name at the boundary", function()
+        local exact = string.rep("a", 64)
+        local raw = { _req_rule(exact, 1) }
+        local rules, warns = schema.parse_rules(raw)
+        assert.equals(1, #rules)
+        assert.equals(0, #warns)
+    end)
+
+    it("skips duplicate names within the array", function()
+        local raw = { _req_rule("dupe", 1), _req_rule("dupe", 2) }
+        local rules, warns = schema.parse_rules(raw)
+        assert.equals(1, #rules)
         assert.equals(1, #warns)
+        assert.is_truthy(warns[1]:find("duplicated"))
+    end)
+
+    -- phase -------------------------------------------------------------------
+
+    it("skips rule with missing phase", function()
+        local raw = { { name = "x", cost = 1, match = { uri_pattern = "y" } } }
+        local rules, warns = schema.parse_rules(raw)
+        assert.equals(0, #rules)
+        assert.is_truthy(warns[1]:find("phase"))
+    end)
+
+    it("skips rule with unknown phase", function()
+        local raw = { { name = "x", phase = "log", cost = 1, match = { uri_pattern = "y" } } }
+        local rules, warns = schema.parse_rules(raw)
+        assert.equals(0, #rules)
+        assert.is_truthy(warns[1]:find("phase"))
+    end)
+
+    -- cost --------------------------------------------------------------------
+
+    it("skips rule with missing cost", function()
+        local raw = { { name = "x", phase = "req", match = { uri_pattern = "y" } } }
+        local rules, warns = schema.parse_rules(raw)
+        assert.equals(0, #rules)
+        assert.is_truthy(warns[1]:find("cost"))
+    end)
+
+    it("accepts cost = 0 (audit-only)", function()
+        local raw = { _req_rule("audit-only", 0) }
+        local rules, warns = schema.parse_rules(raw)
+        assert.equals(1, #rules)
+        assert.equals(0, #warns)
+    end)
+
+    it("skips rule with negative cost", function()
+        local raw = { _req_rule("bad", -1) }
+        local rules, warns = schema.parse_rules(raw)
+        assert.equals(0, #rules)
+        assert.is_truthy(warns[1]:find("cost"))
+    end)
+
+    it("skips rule with non-integer cost", function()
+        local raw = { _req_rule("bad", 1.5) }
+        local rules, warns = schema.parse_rules(raw)
+        assert.equals(0, #rules)
+        assert.is_truthy(warns[1]:find("cost"))
+    end)
+
+    it("skips rule with cost above 99999", function()
+        local raw = { _req_rule("bad", 100000) }
+        local rules, warns = schema.parse_rules(raw)
+        assert.equals(0, #rules)
+        assert.is_truthy(warns[1]:find("cost"))
+    end)
+
+    it("accepts cost at the 99999 ceiling", function()
+        local raw = { _req_rule("max", 99999) }
+        local rules, warns = schema.parse_rules(raw)
+        assert.equals(1, #rules)
+        assert.equals(0, #warns)
+    end)
+
+    -- match -------------------------------------------------------------------
+
+    it("skips rule with missing match", function()
+        local raw = { { name = "x", phase = "req", cost = 1 } }
+        local rules, warns = schema.parse_rules(raw)
+        assert.equals(0, #rules)
+        assert.is_truthy(warns[1]:find("match"))
+    end)
+
+    it("skips rule with non-object match", function()
+        local raw = { { name = "x", phase = "req", cost = 1, match = "bad" } }
+        local rules, warns = schema.parse_rules(raw)
+        assert.equals(0, #rules)
+        assert.is_truthy(warns[1]:find("match"))
+    end)
+
+    it("skips rule with empty match (no predicates)", function()
+        local raw = { { name = "x", phase = "req", cost = 1, match = {} } }
+        local rules, warns = schema.parse_rules(raw)
+        assert.equals(0, #rules)
+        assert.is_truthy(warns[1]:find("predicate"))
+    end)
+
+    -- req-phase predicates ----------------------------------------------------
+
+    it("skips req-rule whose match.uri_pattern is not a string", function()
+        local raw = { _req_rule("x", 1, { uri_pattern = 5 }) }
+        local rules, warns = schema.parse_rules(raw)
+        assert.equals(0, #rules)
         assert.is_truthy(warns[1]:find("uri_pattern"))
     end)
 
-    it("skips rule where conditions.ua_pattern is not a string and warns", function()
-        local raw = { { id = "base", cost = 1, conditions = { ua_pattern = true } } }
+    it("skips req-rule whose match.ua_pattern is not a string", function()
+        local raw = { _req_rule("x", 1, { ua_pattern = {} }) }
         local rules, warns = schema.parse_rules(raw)
         assert.equals(0, #rules)
-        assert.equals(1, #warns)
         assert.is_truthy(warns[1]:find("ua_pattern"))
     end)
 
-    it("skips rule where conditions.query_pattern is not a string and warns", function()
-        local raw = { { id = "probe", cost = 15, conditions = { query_pattern = 99 } } }
+    it("skips req-rule whose match.query_pattern is not a string", function()
+        local raw = { _req_rule("x", 1, { query_pattern = 99 }) }
         local rules, warns = schema.parse_rules(raw)
         assert.equals(0, #rules)
-        assert.equals(1, #warns)
         assert.is_truthy(warns[1]:find("query_pattern"))
     end)
 
-    it("accepts rule with valid query_pattern string", function()
-        local raw = { { id = "probe", cost = 15, conditions = { query_pattern = "^[a-z]{6}=[0-9]{6}$" } } }
+    it("accepts req-rule with valid query_pattern string", function()
+        local raw = { _req_rule("probe", 15, { query_pattern = "^[a-z]{6}=[0-9]{6}$" }) }
         local rules, warns = schema.parse_rules(raw)
         assert.equals(1, #rules)
         assert.equals(0, #warns)
-        assert.equals("^[a-z]{6}=[0-9]{6}$", rules[1].conditions.query_pattern)
+        assert.equals("^[a-z]{6}=[0-9]{6}$", rules[1].match.query_pattern)
     end)
 
-    it("skips rule where conditions.method is not a string and warns", function()
-        local raw = { { id = "base", cost = 1, conditions = { method = 99 } } }
+    it("skips req-rule whose match.method is not a string", function()
+        local raw = { _req_rule("x", 1, { method = 99 }) }
         local rules, warns = schema.parse_rules(raw)
         assert.equals(0, #rules)
-        assert.equals(1, #warns)
         assert.is_truthy(warns[1]:find("method"))
     end)
 
-    it("accepts rule with valid string conditions", function()
-        local raw = { { id = "txt", cost = 20, conditions = { uri_pattern = "\\.txt$", method = "GET" } } }
+    it("skips req-rule whose match.has_query is not a boolean", function()
+        local raw = { _req_rule("x", 1, { has_query = "yes" }) }
+        local rules, warns = schema.parse_rules(raw)
+        assert.equals(0, #rules)
+        assert.is_truthy(warns[1]:find("has_query"))
+    end)
+
+    it("skips req-rule with unknown match key", function()
+        local raw = { _req_rule("x", 1, { uri_path = "/foo" }) }
+        local rules, warns = schema.parse_rules(raw)
+        assert.equals(0, #rules)
+        assert.is_truthy(warns[1]:find("uri_path"))
+    end)
+
+    it("rejects res-only predicate on a req-phase rule", function()
+        local raw = { _req_rule("x", 1, { status = 404 }) }
+        local rules, warns = schema.parse_rules(raw)
+        assert.equals(0, #rules)
+        assert.is_truthy(warns[1]:find("status"))
+    end)
+
+    -- res-phase predicates ----------------------------------------------------
+
+    it("accepts res-rule with valid status", function()
+        local raw = { _res_rule("res-404", 50, 404) }
         local rules, warns = schema.parse_rules(raw)
         assert.equals(1, #rules)
         assert.equals(0, #warns)
     end)
 
+    it("skips res-rule with non-integer status", function()
+        local raw = { { name = "x", phase = "res", cost = 1, match = { status = 200.5 } } }
+        local rules, warns = schema.parse_rules(raw)
+        assert.equals(0, #rules)
+        assert.is_truthy(warns[1]:find("status"))
+    end)
+
+    it("skips res-rule with status below 100", function()
+        local raw = { _res_rule("x", 1, 99) }
+        local rules, warns = schema.parse_rules(raw)
+        assert.equals(0, #rules)
+        assert.is_truthy(warns[1]:find("status"))
+    end)
+
+    it("skips res-rule with status above 599", function()
+        local raw = { _res_rule("x", 1, 600) }
+        local rules, warns = schema.parse_rules(raw)
+        assert.equals(0, #rules)
+        assert.is_truthy(warns[1]:find("status"))
+    end)
+
+    it("rejects req-only predicate on a res-phase rule", function()
+        local raw = { { name = "x", phase = "res", cost = 1, match = { uri_pattern = "/foo" } } }
+        local rules, warns = schema.parse_rules(raw)
+        assert.equals(0, #rules)
+        assert.is_truthy(warns[1]:find("uri_pattern"))
+    end)
+
+    -- top-level unknown keys --------------------------------------------------
+
+    it("skips rule with unknown top-level key", function()
+        local raw = { {
+            name = "x", phase = "req", cost = 1,
+            match = { uri_pattern = "y" }, action = "block",
+        } }
+        local rules, warns = schema.parse_rules(raw)
+        assert.equals(0, #rules)
+        assert.is_truthy(warns[1]:find("action"))
+    end)
+
+    it("skips non-table entry in rules array", function()
+        local raw = { _req_rule("ok", 1), "oops" }
+        local rules, warns = schema.parse_rules(raw)
+        assert.equals(1, #rules)
+        assert.equals(1, #warns)
+        assert.is_truthy(warns[1]:find("not an object"))
+    end)
 end)
 
 -- ============================================================================
@@ -388,14 +558,14 @@ describe("validate_rules_strict", function()
     end)
 
     it("accepts a clean rules array", function()
-        local r = schema.validate_rules_strict({ { id = "base", cost = 1 } })
+        local r = schema.validate_rules_strict({ _req_rule("base", 1) })
         assert.is_true(r.ok)
         assert.equals(0, #r.errors)
         assert.equals(1, #r.normalised)
     end)
 
     it("promotes parse_rules warnings to errors", function()
-        local r = schema.validate_rules_strict({ { id = "bad", cost = -1 } })
+        local r = schema.validate_rules_strict({ _req_rule("bad", -1) })
         assert.is_false(r.ok)
         assert.is_true(#r.errors >= 1)
         assert.is_truthy(r.errors[1]:find("cost"))
@@ -454,10 +624,6 @@ end)
 -- ============================================================================
 -- STRICT VALIDATORS — table-driven failure payloads
 -- ============================================================================
--- Each entry exercises the strict path with input that should be rejected.
--- The match string is asserted against the joined error list so re-wording
--- a single error message in parse_* doesn't silently weaken these tests.
--- ============================================================================
 local cjson = require "cjson.safe"
 
 local function _errors_string(r)
@@ -466,28 +632,37 @@ end
 
 describe("validate_rules_strict — failing payloads", function()
     local cases = {
-        { name = "nil",                    payload = nil,                                       match = "array" },
-        { name = "number",                 payload = 42,                                        match = "array" },
-        { name = "boolean",                payload = true,                                      match = "array" },
-        { name = "JSON object",            payload = { foo = "bar" },                           match = "array" },
-        { name = "rule is a string",       payload = { "not a rule" },                          match = "not an object" },
-        { name = "rule is a number",       payload = { 99 },                                    match = "not an object" },
-        { name = "missing id",             payload = { { cost = 1 } },                          match = "id" },
-        { name = "empty string id",        payload = { { id = "", cost = 1 } },                 match = "id" },
-        { name = "non-string id",          payload = { { id = 42, cost = 1 } },                 match = "id" },
-        { name = "missing cost",           payload = { { id = "x" } },                          match = "cost" },
-        { name = "negative cost",          payload = { { id = "x", cost = -1 } },               match = "cost" },
-        { name = "zero cost",              payload = { { id = "x", cost = 0 } },                match = "cost" },
-        { name = "string cost",            payload = { { id = "x", cost = "5" } },              match = "cost" },
-        { name = "conditions not object",  payload = { { id = "x", cost = 1, conditions = "y" } }, match = "conditions" },
-        { name = "uri_pattern not string", payload = { { id = "x", cost = 1, conditions = { uri_pattern = 5 } } }, match = "uri_pattern" },
-        { name = "ua_pattern not string",  payload = { { id = "x", cost = 1, conditions = { ua_pattern  = {} } } }, match = "ua_pattern" },
-        { name = "method not string",      payload = { { id = "x", cost = 1, conditions = { method      = 1 } } }, match = "method" },
-        { name = "second rule bad",        payload = { { id = "ok", cost = 1 }, { id = "bad", cost = -1 } },        match = "cost" },
-        { name = "enabled is string",      payload = { { id = "x", cost = 1, enabled = "falsse" } },                match = "enabled" },
-        { name = "enabled is number",      payload = { { id = "x", cost = 1, enabled = 0 } },                       match = "enabled" },
-        { name = "unknown rule key",       payload = { { id = "x", cost = 1, cosst = 5 } },                         match = "cosst" },
-        { name = "unknown condition key",  payload = { { id = "x", cost = 1, conditions = { uri = "/foo" } } },     match = "uri" },
+        { name = "nil",                   payload = nil,                                    match = "array" },
+        { name = "number",                payload = 42,                                     match = "array" },
+        { name = "boolean",               payload = true,                                   match = "array" },
+        { name = "JSON object",           payload = { foo = "bar" },                        match = "array" },
+        { name = "rule is a string",      payload = { "not a rule" },                       match = "not an object" },
+        { name = "rule is a number",      payload = { 99 },                                 match = "not an object" },
+        { name = "missing name",          payload = { { phase = "req", cost = 1, match = { uri_pattern = "y" } } },          match = "name" },
+        { name = "empty name",            payload = { _req_rule("", 1) },                                                    match = "name" },
+        { name = "non-string name",       payload = { { name = 42, phase = "req", cost = 1, match = { uri_pattern = "y" } } }, match = "name" },
+        { name = "name with uppercase",   payload = { _req_rule("Bad", 1) },                                                  match = "charset" },
+        { name = "duplicate name",        payload = { _req_rule("dupe", 1), _req_rule("dupe", 2) },                           match = "duplicated" },
+        { name = "missing phase",         payload = { { name = "x", cost = 1, match = { uri_pattern = "y" } } },              match = "phase" },
+        { name = "unknown phase",         payload = { { name = "x", phase = "log", cost = 1, match = { uri_pattern = "y" } } }, match = "phase" },
+        { name = "missing cost",          payload = { { name = "x", phase = "req", match = { uri_pattern = "y" } } },         match = "cost" },
+        { name = "negative cost",         payload = { _req_rule("x", -1) },                                                   match = "cost" },
+        { name = "non-integer cost",      payload = { _req_rule("x", 1.5) },                                                  match = "cost" },
+        { name = "cost above ceiling",    payload = { _req_rule("x", 100000) },                                               match = "cost" },
+        { name = "string cost",           payload = { { name = "x", phase = "req", cost = "5", match = { uri_pattern = "y" } } }, match = "cost" },
+        { name = "missing match",         payload = { { name = "x", phase = "req", cost = 1 } },                              match = "match" },
+        { name = "match not object",      payload = { { name = "x", phase = "req", cost = 1, match = "y" } },                 match = "match" },
+        { name = "empty match",           payload = { { name = "x", phase = "req", cost = 1, match = {} } },                  match = "predicate" },
+        { name = "uri_pattern not string",payload = { _req_rule("x", 1, { uri_pattern = 5 }) },                                match = "uri_pattern" },
+        { name = "ua_pattern not string", payload = { _req_rule("x", 1, { ua_pattern  = {} }) },                               match = "ua_pattern" },
+        { name = "method not string",     payload = { _req_rule("x", 1, { method      = 1 }) },                                match = "method" },
+        { name = "has_query not bool",    payload = { _req_rule("x", 1, { has_query   = "y" }) },                              match = "has_query" },
+        { name = "unknown rule key",      payload = { { name = "x", phase = "req", cost = 1, match = { uri_pattern = "y" }, cosst = 5 } }, match = "cosst" },
+        { name = "unknown match key",     payload = { _req_rule("x", 1, { uri = "/foo" }) },                                   match = "uri" },
+        { name = "res-rule status low",   payload = { _res_rule("x", 1, 50) },                                                 match = "status" },
+        { name = "res-rule status high",  payload = { _res_rule("x", 1, 700) },                                                match = "status" },
+        { name = "cross-phase predicate", payload = { _req_rule("x", 1, { status = 404 }) },                                   match = "status" },
+        { name = "second rule bad",       payload = { _req_rule("ok", 1), _req_rule("bad", -1) },                              match = "cost" },
     }
 
     for _, case in ipairs(cases) do
@@ -558,15 +733,24 @@ describe("strict validators via JSON round-trip", function()
     it("rules: accepts the example from the schema docstring", function()
         local r = decode_and_validate_rules([[
             [
-              {"id":"base",        "cost":1},
-              {"id":"query-string","cost":4,  "conditions":{"has_query":true}},
-              {"id":"txt-ext",     "cost":20, "conditions":{"uri_pattern":"\\.txt$"}},
-              {"id":"post",        "cost":2,  "conditions":{"method":"POST"}},
-              {"id":"bad-bot",     "cost":50, "conditions":{"ua_pattern":"zgrab|masscan"}}
+              {"name":"req-base",        "phase":"req","cost":1,
+                 "match":{"uri_pattern":"\\.php$"}},
+              {"name":"req-query-string","phase":"req","cost":4,
+                 "match":{"has_query":true}},
+              {"name":"req-txt-ext",     "phase":"req","cost":20,
+                 "match":{"uri_pattern":"\\.txt$"}},
+              {"name":"req-post",        "phase":"req","cost":2,
+                 "match":{"method":"POST"}},
+              {"name":"req-bad-bot",     "phase":"req","cost":50,
+                 "match":{"ua_pattern":"zgrab|masscan"}},
+              {"name":"res-404",         "phase":"res","cost":50,
+                 "match":{"status":404}},
+              {"name":"res-499",         "phase":"res","cost":25,
+                 "match":{"status":499}}
             ]
         ]])
         assert.is_true(r.ok, _errors_string(r))
-        assert.equals(5, #r.normalised)
+        assert.equals(7, #r.normalised)
     end)
 
     it("config: accepts the example from the schema docstring", function()
@@ -579,7 +763,7 @@ describe("strict validators via JSON round-trip", function()
     end)
 
     it("rules: rejects a JSON object posted where an array was expected", function()
-        local r = decode_and_validate_rules('{"id":"base","cost":1}')
+        local r = decode_and_validate_rules('{"name":"x","phase":"req","cost":1,"match":{"uri_pattern":"y"}}')
         assert.is_false(r.ok)
         assert.is_truthy(_errors_string(r):find("array"))
     end)

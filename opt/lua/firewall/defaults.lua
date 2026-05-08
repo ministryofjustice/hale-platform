@@ -2,7 +2,7 @@
 -- Single source of truth for firewall constants and default config values.
 --
 -- Required by:
---   firewall.lua          — PENALTY_404, ALLOW_KEY_PREFIX, BLOCK_KEY_PREFIX,
+--   firewall.lua          — ALLOW_KEY_PREFIX, BLOCK_KEY_PREFIX,
 --                           AUDIT_STREAM, BLOCKED_CACHE_PREFIX
 --   firewall.gcra         — re-exports _M.GCRA as gcra.DEFAULTS; reads the
 --                           prefix constants directly
@@ -38,10 +38,6 @@ _M.GCRA = {
     audit_maxlen      = 10000,
     mode              = "monitor",      -- "enforce" | "monitor" | "off"
 }
-
--- Cost charged on 404 responses by firewall.res() (probing for vulnerable
--- URLs is expensive — make the attacker pay for it).
-_M.PENALTY_404 = 50
 
 -- Shared-dict block-cache key prefix used by firewall.req()/res().
 _M.BLOCKED_CACHE_PREFIX = "blocked:"

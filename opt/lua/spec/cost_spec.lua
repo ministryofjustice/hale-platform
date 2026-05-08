@@ -23,105 +23,131 @@ local function mock_regex(subject, pattern)
     return subject:lower():find(lua_pattern:lower()) ~= nil
 end
 
-describe("calculate", function()
-    it("returns 0 for nil/empty rules", function()
-        assert.equals(0, (cost.calculate("/test", "ua", "GET", false, nil, nil, mock_regex)))
-        assert.equals(0, (cost.calculate("/test", "ua", "GET", false, nil, {}, mock_regex)))
-    end)
+-- Build req-phase signal table for the new cost.calculate(signals, rules, regex_fn)
+-- signature. Tests stay readable while paying the same predicate ground.
+local function _req(uri, ua, method, has_query, query)
+    return { uri = uri, ua = ua, method = method, has_query = has_query, query = query }
+end
 
-    it("matches unconditional rule", function()
-        local rules = {{ id = "base", conditions = {}, cost = 1 }}
-        local total, _ = cost.calculate("/anything", "ua", "GET", false, nil, rules, mock_regex)
-        assert.equals(1, total)
+local function _req_rule(name, cost_, match)
+    return { name = name, phase = "req", cost = cost_, match = match }
+end
+
+describe("calculate (req phase)", function()
+    it("returns 0 for nil/empty rules", function()
+        assert.equals(0, (cost.calculate(_req("/test", "ua", "GET", false), nil,  mock_regex)))
+        assert.equals(0, (cost.calculate(_req("/test", "ua", "GET", false), {},   mock_regex)))
     end)
 
     it("matches uri_pattern", function()
-        local rules = {{ id = "txt", conditions = { uri_pattern = "\\.txt$" }, cost = 20 }}
-        assert.equals(20, (cost.calculate("/admin.txt", "ua", "GET", false, nil, rules, mock_regex)))
-        assert.equals(0,  (cost.calculate("/admin.html", "ua", "GET", false, nil, rules, mock_regex)))
+        local rules = { _req_rule("txt", 20, { uri_pattern = "\\.txt$" }) }
+        assert.equals(20, (cost.calculate(_req("/admin.txt",  "ua", "GET", false), rules, mock_regex)))
+        assert.equals(0,  (cost.calculate(_req("/admin.html", "ua", "GET", false), rules, mock_regex)))
     end)
 
     it("matches ua_pattern", function()
-        local rules = {{ id = "curl", conditions = { ua_pattern = "curl" }, cost = 25 }}
-        assert.equals(25, (cost.calculate("/api", "curl/7.64", "GET", false, nil, rules, mock_regex)))
-        assert.equals(0,  (cost.calculate("/api", "Mozilla",   "GET", false, nil, rules, mock_regex)))
+        local rules = { _req_rule("curl", 25, { ua_pattern = "curl" }) }
+        assert.equals(25, (cost.calculate(_req("/api", "curl/7.64", "GET", false), rules, mock_regex)))
+        assert.equals(0,  (cost.calculate(_req("/api", "Mozilla",   "GET", false), rules, mock_regex)))
     end)
 
     it("matches method exactly", function()
-        local rules = {{ id = "post", conditions = { method = "POST" }, cost = 10 }}
-        assert.equals(10, (cost.calculate("/api", "ua", "POST", false, nil, rules, mock_regex)))
-        assert.equals(0,  (cost.calculate("/api", "ua", "GET",  false, nil, rules, mock_regex)))
+        local rules = { _req_rule("post", 10, { method = "POST" }) }
+        assert.equals(10, (cost.calculate(_req("/api", "ua", "POST", false), rules, mock_regex)))
+        assert.equals(0,  (cost.calculate(_req("/api", "ua", "GET",  false), rules, mock_regex)))
     end)
 
-    it("matches has_query condition", function()
-        local rules = {{ id = "query", conditions = { has_query = true }, cost = 5 }}
-        assert.equals(5, (cost.calculate("/search", "ua", "GET", true,  nil, rules, mock_regex)))
-        assert.equals(0, (cost.calculate("/search", "ua", "GET", false, nil, rules, mock_regex)))
+    it("matches has_query predicate", function()
+        local rules = { _req_rule("query", 5, { has_query = true }) }
+        assert.equals(5, (cost.calculate(_req("/search", "ua", "GET", true),  rules, mock_regex)))
+        assert.equals(0, (cost.calculate(_req("/search", "ua", "GET", false), rules, mock_regex)))
     end)
 
     it("matches query_pattern when query string present", function()
-        -- Use simple substring pattern compatible with the Lua-based mock regex
-        local rules = {{ id = "probe", conditions = { query_pattern = "probe=" }, cost = 30 }}
-        assert.equals(30, (cost.calculate("/", "ua", "GET", true, "probe=948726", rules, mock_regex)))
+        local rules = { _req_rule("probe", 30, { query_pattern = "probe=" }) }
+        assert.equals(30, (cost.calculate(_req("/", "ua", "GET", true, "probe=948726"), rules, mock_regex)))
     end)
 
     it("does not match query_pattern when query string is nil", function()
-        local rules = {{ id = "probe", conditions = { query_pattern = "probe=" }, cost = 30 }}
-        assert.equals(0, (cost.calculate("/", "ua", "GET", false, nil, rules, mock_regex)))
+        local rules = { _req_rule("probe", 30, { query_pattern = "probe=" }) }
+        assert.equals(0, (cost.calculate(_req("/", "ua", "GET", false, nil), rules, mock_regex)))
     end)
 
     it("does not match query_pattern when query string is empty", function()
-        local rules = {{ id = "probe", conditions = { query_pattern = "probe=" }, cost = 30 }}
-        assert.equals(0, (cost.calculate("/", "ua", "GET", false, "", rules, mock_regex)))
+        local rules = { _req_rule("probe", 30, { query_pattern = "probe=" }) }
+        assert.equals(0, (cost.calculate(_req("/", "ua", "GET", false, ""), rules, mock_regex)))
     end)
 
     it("query_pattern does not match when pattern is absent from query string", function()
-        local rules = {{ id = "probe", conditions = { query_pattern = "probe=" }, cost = 30 }}
-        -- WP asset query string does not contain "probe=" so rule should not fire
-        assert.equals(0, (cost.calculate("/wp-includes/css/style.css", "ua", "GET", true, "ver=6.9.1", rules, mock_regex)))
+        local rules = { _req_rule("probe", 30, { query_pattern = "probe=" }) }
+        assert.equals(0, (cost.calculate(_req("/wp-includes/css/style.css", "ua", "GET", true, "ver=6.9.1"), rules, mock_regex)))
     end)
 
-    it("requires all conditions to match", function()
-        local rules = {{
-            id = "specific",
-            conditions = { uri_pattern = "admin", ua_pattern = "curl", method = "POST" },
-            cost = 200
-        }}
-        assert.equals(200, (cost.calculate("/admin", "curl/7", "POST", false, nil, rules, mock_regex)))
-        assert.equals(0,   (cost.calculate("/index", "curl/7", "POST", false, nil, rules, mock_regex)))
-        assert.equals(0,   (cost.calculate("/admin", "Mozilla", "POST", false, nil, rules, mock_regex)))
+    it("requires all predicates within a rule to match", function()
+        local rules = { _req_rule("specific", 200, {
+            uri_pattern = "admin", ua_pattern = "curl", method = "POST",
+        }) }
+        assert.equals(200, (cost.calculate(_req("/admin", "curl/7", "POST", false), rules, mock_regex)))
+        assert.equals(0,   (cost.calculate(_req("/index", "curl/7", "POST", false), rules, mock_regex)))
+        assert.equals(0,   (cost.calculate(_req("/admin", "Mozilla", "POST", false), rules, mock_regex)))
     end)
 
-    it("skips disabled rules", function()
-        local rules = {{ id = "off", enabled = false, conditions = {}, cost = 1000 }}
-        assert.equals(0, (cost.calculate("/any", "any", "GET", false, nil, rules, mock_regex)))
+    it("includes cost=0 (audit-only) rules in the breakdown but adds nothing to total", function()
+        local rules = { _req_rule("audit", 0, { uri_pattern = "\\.txt$" }) }
+        local total, breakdown = cost.calculate(_req("/x.txt", "ua", "GET", false), rules, mock_regex)
+        assert.equals(0, total)
+        assert.equals(0, breakdown["rule:req-score:audit"])
     end)
 
-    it("stacks multiple matching rules", function()
+    it("stacks multiple matching rules and keys breakdown by name", function()
         local rules = {
-            { id = "base", conditions = {}, cost = 1 },
-            { id = "txt",  conditions = { uri_pattern = "\\.txt$" }, cost = 20 },
+            _req_rule("base", 1, { uri_pattern = "." }),
+            _req_rule("txt",  20, { uri_pattern = "\\.txt$" }),
         }
-        local total, breakdown = cost.calculate("/admin.txt", "ua", "GET", false, nil, rules, mock_regex)
+        local total, breakdown = cost.calculate(_req("/admin.txt", "ua", "GET", false), rules, mock_regex)
         assert.equals(21, total)
-        assert.equals(1,  breakdown["rule:base"])
-        assert.equals(20, breakdown["rule:txt"])
+        assert.equals(1,  breakdown["rule:req-score:base"])
+        assert.equals(20, breakdown["rule:req-score:txt"])
     end)
 end)
 
-describe("calculate with realistic rules", function()
+describe("calculate with realistic req rules", function()
     local rules = {
-        { id = "base",         conditions = {},                           cost = 1  },
-        { id = "query-string", conditions = { has_query = true },        cost = 4  },
-        { id = "txt-ext",      conditions = { uri_pattern = "\\.txt$" }, cost = 20 },
+        _req_rule("base",         1,  { uri_pattern = "." }),
+        _req_rule("query-string", 4,  { has_query = true }),
+        _req_rule("txt-ext",      20, { uri_pattern = "\\.txt$" }),
     }
 
     it("stacks base + query-string + txt-ext", function()
-        local total, breakdown = cost.calculate("/admin.txt", "ua", "GET", true, "foo=1", rules, mock_regex)
-        -- base(1) + query-string(4) + txt-ext(20) = 25
+        local total, breakdown = cost.calculate(_req("/admin.txt", "ua", "GET", true, "foo=1"), rules, mock_regex)
         assert.equals(25, total)
-        assert.equals(1,  breakdown["rule:base"])
-        assert.equals(4,  breakdown["rule:query-string"])
-        assert.equals(20, breakdown["rule:txt-ext"])
+        assert.equals(1,  breakdown["rule:req-score:base"])
+        assert.equals(4,  breakdown["rule:req-score:query-string"])
+        assert.equals(20, breakdown["rule:req-score:txt-ext"])
+    end)
+end)
+
+describe("calculate (res phase)", function()
+    local rules = {
+        { name = "res-404", phase = "res", cost = 50, match = { status = 404 } },
+        { name = "res-499", phase = "res", cost = 25, match = { status = 499 } },
+    }
+
+    it("matches a status rule and keys breakdown by name", function()
+        local total, breakdown = cost.calculate({ status = 404 }, rules, nil)
+        assert.equals(50, total)
+        assert.equals(50, breakdown["rule:res-score:res-404"])
+        assert.is_nil(breakdown["rule:res-score:res-499"])
+    end)
+
+    it("returns 0 when status does not match any rule", function()
+        local total, breakdown = cost.calculate({ status = 200 }, rules, nil)
+        assert.equals(0, total)
+        assert.same({}, breakdown)
+    end)
+
+    it("returns 0 for nil/empty rules", function()
+        assert.equals(0, (cost.calculate({ status = 404 }, nil, nil)))
+        assert.equals(0, (cost.calculate({ status = 404 }, {},  nil)))
     end)
 end)

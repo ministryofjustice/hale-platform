@@ -36,8 +36,7 @@ describe("firewall.defaults", function()
         assert.equals("firewall:audit",  defaults.AUDIT_STREAM)
     end)
 
-    it("pins PENALTY_404 and BLOCKED_CACHE_PREFIX", function()
-        assert.equals(50,        defaults.PENALTY_404)
+    it("pins BLOCKED_CACHE_PREFIX", function()
         assert.equals("blocked:", defaults.BLOCKED_CACHE_PREFIX)
     end)
 

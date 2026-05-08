@@ -57,75 +57,75 @@
 --                                      --   or instantly via /firewall/flush-cache.
 --   }
 --
--- Example (minimal):
---   SET firewall:config '{"emission_interval":500,"burst":50000}'
---
--- Example (with audit):
---   SET firewall:config '{"emission_interval":500,"burst":50000,
---                          "audit_enabled":true,"audit_maxlen":5000}'
---
 -- ----------------------------------------------------------------------------
--- KEY: firewall:rules  (JSON array of rule objects)
+-- KEY: firewall:rules  (JSON array of rule objects, phase-tagged)
 -- ----------------------------------------------------------------------------
+--
+-- Each rule belongs to exactly one phase ("req" or "res"). All matching
+-- rules within a phase contribute their cost to the per-IP GCRA bucket;
+-- there is no separate action enum — the bucket is the only mechanism.
 --
 --   [
 --     {
---       "id": <string>,          -- REQUIRED. Unique rule identifier. Used as
---                                --   the breakdown key ("rule:<id>") in audit
---                                --   events. Must be a non-empty string.
+--       "name":  <string>,         -- REQUIRED. Stable identifier. Used as
+--                                  --   the audit trigger ("rule:<phase>-score:<name>:<cost>").
+--                                  --   1..64 chars, [a-z0-9-] only,
+--                                  --   unique within the array.
 --
---       "cost": <number>,        -- REQUIRED. Tokens consumed when this rule
---                                --   matches. Must be > 0.
+--       "phase": <string>,         -- REQUIRED. "req" | "res".
+--                                  --   "req" rules are evaluated in
+--                                  --   access_by_lua against the request.
+--                                  --   "res" rules are evaluated in
+--                                  --   log_by_lua against the response.
 --
---       "enabled": <boolean>,    -- Optional. Set to false to disable without
---                                --   removing. Default: true (any non-false
---                                --   value is treated as enabled).
+--       "cost":  <integer>,        -- REQUIRED. Tokens contributed to the
+--                                  --   GCRA bucket on a match. 0..99999.
+--                                  --     0           = audit only (no scoring)
+--                                  --     small       = accumulates over time
+--                                  --     >= capacity = guaranteed block on match
 --
---       "conditions": {          -- Optional. If omitted the rule matches every
---                                --   request.
---
---         "uri_pattern": <string>,  -- Optional. PCRE regex matched against the
---                                   --   request path only (ngx.var.uri).
---                                   --   Does NOT include the query string —
---                                   --   use has_query for query detection.
---                                   --   Case-insensitive.
---
---         "query_pattern": <string>, -- Optional. PCRE regex matched against the
---                                   --   raw query string (ngx.var.args), e.g.
---                                   --   "^[a-z]{6}=[0-9]{6}$" to detect random
---                                   --   probe parameters. Only matches when a
---                                   --   query string is present. Case-insensitive.
---
---         "ua_pattern":  <string>,  -- Optional. PCRE regex matched against the
---                                   --   User-Agent header. Case-insensitive.
---
---         "method":      <string>,  -- Optional. Exact HTTP method match,
---                                   --   e.g. "POST". Case-sensitive.
---
---         "has_query":   <boolean>  -- Optional. true = only match requests
---                                   --   with a query string; false = only
---                                   --   match requests without one.
---       }
---     },
---     ...
+--       "match": { ... }           -- REQUIRED. Predicate object. Keys allowed
+--                                  --   depend on the rule's phase (see below).
+--                                  --   Predicates within a single rule are
+--                                  --   AND'd. At least one predicate required.
+--     }
 --   ]
+--
+-- Request-phase match predicates (phase = "req"):
+--   "uri_pattern":   <string>      -- PCRE against the request path only
+--                                  --   (no query string). Case-insensitive.
+--   "ua_pattern":    <string>      -- PCRE against the User-Agent header.
+--                                  --   Case-insensitive.
+--   "query_pattern": <string>      -- PCRE against the raw query string
+--                                  --   (ngx.var.args). Only matches when
+--                                  --   a query string is present. Case-insensitive.
+--   "method":        <string>      -- Exact HTTP method match (e.g. "POST").
+--                                  --   Case-sensitive.
+--   "has_query":     <boolean>     -- true = match only requests with a query
+--                                  --   string; false = only those without.
+--
+-- Response-phase match predicates (phase = "res"):
+--   "status":        <integer>     -- Exact HTTP status match. 100..599.
 --
 -- Example:
 --   SET firewall:rules '[
---     {"id":"base",       "cost":1},
---     {"id":"query-string","cost":4,  "conditions":{"has_query":true}},
---     {"id":"txt-ext",    "cost":20,  "conditions":{"uri_pattern":"\\.txt$"}},
---     {"id":"post",       "cost":2,   "conditions":{"method":"POST"}},
---     {"id":"bad-bot",    "cost":50,  "conditions":{"ua_pattern":"zgrab|masscan"}}
+--     {"name":"req-wp-install-probe", "phase":"req", "cost":9999,
+--        "match":{"uri_pattern":"^/wp-admin/install\\.php$"}},
+--     {"name":"req-php-post",         "phase":"req", "cost":10,
+--        "match":{"uri_pattern":"\\.php$","method":"POST"}},
+--     {"name":"req-sqlmap-ua",        "phase":"req", "cost":50,
+--        "match":{"ua_pattern":"sqlmap"}},
+--     {"name":"res-404",              "phase":"res", "cost":50,
+--        "match":{"status":404}},
+--     {"name":"res-499",              "phase":"res", "cost":25,
+--        "match":{"status":499}}
 --   ]'
 --
--- Validation rules (enforced by parse_rules):
---   - Rules with missing/non-string id are skipped with WARN.
---   - Rules with non-numeric or non-positive cost are skipped with WARN.
---   - Rules where conditions is not an object are skipped with WARN.
---   - Rules where uri_pattern, ua_pattern, query_pattern, or method is not a
---     string are skipped with WARN (prevents regex engine errors at request time).
---   - has_query is not type-checked (any falsy/truthy value is accepted).
+-- Validation behaviour:
+--   - parse_rules is fail-soft: invalid entries are dropped with a WARN log;
+--     the firewall keeps running on whatever survives.
+--   - validate_rules_strict (admin write path) promotes every WARN to an
+--     ERROR so the operator must fix bad input before it lands in Redis.
 -- ============================================================================
 
 local _M = {}
@@ -138,6 +138,21 @@ _M.DEFAULTS = defaults.GCRA
 
 -- Valid values for the "mode" config field.
 _M.VALID_MODES = { enforce = true, monitor = true, off = true }
+
+-- Valid values for the rule "phase" field. Adding a new phase only requires
+-- (a) extending this set, (b) adding a phase-specific predicate validator
+-- in _PHASE_VALIDATORS below, and (c) wiring a hot-path call to
+-- cache.get_rules("<phase>"). The cache layer itself is data-driven and
+-- needs no change.
+_M.VALID_PHASES = { req = true, res = true }
+
+-- Name charset: lowercase, digits, hyphens. No spaces, dots, slashes, or
+-- colons (colons would break the "rule:<phase>-score:<name>:<cost>" audit
+-- trigger format).
+local _NAME_PATTERN = "^[a-z0-9%-]+$"
+local _NAME_MAX_LEN = 64
+
+local _COST_MAX = 99999
 
 -- ============================================================================
 -- parse_config: validate and coerce a decoded firewall:config object
@@ -238,23 +253,79 @@ end
 -- @return table: list of warning strings (empty when input is clean)
 -- ============================================================================
 
--- Whitelists used by parse_rules to reject unknown keys (catches typos like
--- "cosst" or "enabledd" before they reach Redis where they would be silently
--- ignored at request time).
 local _ALLOWED_RULE_KEYS = {
-    id = true, cost = true, enabled = true, conditions = true,
+    name = true, phase = true, cost = true, match = true,
 }
-local _ALLOWED_CONDITION_KEYS = {
-    uri_pattern = true, ua_pattern = true, query_pattern = true,
-    method = true, has_query = true,
+
+local _ALLOWED_REQ_MATCH_KEYS = {
+    uri_pattern   = true,
+    ua_pattern    = true,
+    query_pattern = true,
+    method        = true,
+    has_query     = true,
 }
+
+local _ALLOWED_RES_MATCH_KEYS = {
+    status = true,
+}
+
+-- Per-phase predicate validator. Each returns (ok, err_string).
+-- Called only after the rule has passed top-level validation (name/phase/cost/match).
+local function _validate_req_match(match)
+    -- string-typed pattern fields
+    for _, field in ipairs({ "uri_pattern", "ua_pattern", "query_pattern" }) do
+        local v = match[field]
+        if v ~= nil and type(v) ~= "string" then
+            return false, "match." .. field .. " must be a string (got " .. type(v) .. ")"
+        end
+    end
+    if match.method ~= nil and type(match.method) ~= "string" then
+        return false, "match.method must be a string (got " .. type(match.method) .. ")"
+    end
+    if match.has_query ~= nil and type(match.has_query) ~= "boolean" then
+        return false, "match.has_query must be a boolean (got " .. type(match.has_query) .. ")"
+    end
+    for k in pairs(match) do
+        if not _ALLOWED_REQ_MATCH_KEYS[k] then
+            return false, "match has unknown key \"" .. tostring(k) .. "\" for phase=req"
+        end
+    end
+    return true
+end
+
+local function _validate_res_match(match)
+    if match.status ~= nil then
+        local s = tonumber(match.status)
+        if s == nil or s ~= math.floor(s) or s < 100 or s > 599 then
+            return false, "match.status must be an integer in 100..599 (got " .. tostring(match.status) .. ")"
+        end
+    end
+    for k in pairs(match) do
+        if not _ALLOWED_RES_MATCH_KEYS[k] then
+            return false, "match has unknown key \"" .. tostring(k) .. "\" for phase=res"
+        end
+    end
+    return true
+end
+
+local _PHASE_VALIDATORS = {
+    req = _validate_req_match,
+    res = _validate_res_match,
+}
+
+-- Count entries in a table (works for non-sequential keys too).
+local function _count_keys(t)
+    local n = 0
+    for _ in pairs(t) do n = n + 1 end
+    return n
+end
 
 function _M.parse_rules(raw)
     local warnings = {}
 
     if raw == nil then
-        -- Absence of rules is handled by the ERR log in firewall.lua; no extra
-        -- warning needed here so callers can distinguish "missing" from "malformed".
+        -- Absence of rules is a normal startup state; firewall.lua logs an
+        -- ERR separately so callers can distinguish "missing" from "malformed".
         return nil, warnings
     end
 
@@ -265,6 +336,8 @@ function _M.parse_rules(raw)
     end
 
     local valid = {}
+    local seen_names = {}
+
     for i, rule in ipairs(raw) do
         local label = "rules[" .. i .. "]"
         local skip = false
@@ -272,83 +345,88 @@ function _M.parse_rules(raw)
         if type(rule) ~= "table" then
             table.insert(warnings, label .. " is not an object — skipping")
             skip = true
-        else
-            label = label .. " id=" .. tostring(rule.id)
+        end
 
-            -- id must be a non-empty string (used as breakdown key)
-            if type(rule.id) ~= "string" or rule.id == "" then
+        -- name: required, charset/length-validated, unique
+        if not skip then
+            local name = rule.name
+            if type(name) ~= "string" or name == "" then
                 table.insert(warnings,
-                    label .. " missing or non-string id — skipping")
+                    label .. " missing or non-string name — skipping")
+                skip = true
+            elseif #name > _NAME_MAX_LEN then
+                table.insert(warnings,
+                    label .. " name=" .. tostring(name) .. " exceeds "
+                    .. _NAME_MAX_LEN .. " chars — skipping")
+                skip = true
+            elseif not name:match(_NAME_PATTERN) then
+                table.insert(warnings,
+                    label .. " name=" .. tostring(name)
+                    .. " has invalid charset (allowed: [a-z0-9-]) — skipping")
+                skip = true
+            elseif seen_names[name] then
+                table.insert(warnings,
+                    label .. " name=" .. tostring(name) .. " is duplicated — skipping")
                 skip = true
             end
+            if not skip then label = label .. " name=" .. rule.name end
+        end
 
-            -- cost must be a positive number
-            if not skip and (type(rule.cost) ~= "number" or rule.cost <= 0) then
+        -- phase: required, must be in VALID_PHASES
+        if not skip then
+            if type(rule.phase) ~= "string" or not _M.VALID_PHASES[rule.phase] then
                 table.insert(warnings,
-                    label .. " has invalid cost (" .. tostring(rule.cost) .. ") — skipping")
+                    label .. " has invalid phase (" .. tostring(rule.phase)
+                    .. ") — must be one of req|res — skipping")
                 skip = true
             end
+        end
 
-            -- conditions, if present, must be a table with string pattern values
-            if not skip and rule.conditions ~= nil then
-                if type(rule.conditions) ~= "table" then
-                    table.insert(warnings,
-                        label .. " conditions is not an object — skipping")
+        -- cost: required, integer, 0..99999
+        if not skip then
+            local c = rule.cost
+            if type(c) ~= "number" or c ~= math.floor(c) or c < 0 or c > _COST_MAX then
+                table.insert(warnings,
+                    label .. " has invalid cost (" .. tostring(c)
+                    .. ") — must be integer in 0.." .. _COST_MAX .. " — skipping")
+                skip = true
+            end
+        end
+
+        -- match: required, table, at least one predicate, phase-validated
+        if not skip then
+            if type(rule.match) ~= "table" then
+                table.insert(warnings,
+                    label .. " missing or non-object match — skipping")
+                skip = true
+            elseif _count_keys(rule.match) == 0 then
+                table.insert(warnings,
+                    label .. " match must contain at least one predicate — skipping")
+                skip = true
+            else
+                local validator = _PHASE_VALIDATORS[rule.phase]
+                local ok, err = validator(rule.match)
+                if not ok then
+                    table.insert(warnings, label .. " " .. err .. " — skipping")
                     skip = true
-                else
-                    for _, pattern_field in ipairs({ "uri_pattern", "ua_pattern", "query_pattern" }) do
-                        local v = rule.conditions[pattern_field]
-                        if v ~= nil and type(v) ~= "string" then
-                            table.insert(warnings,
-                                label .. " conditions." .. pattern_field
-                                .. " must be a string (got " .. type(v) .. ") — skipping")
-                            skip = true
-                            break
-                        end
-                    end
-                    if not skip then
-                        local m = rule.conditions.method
-                        if m ~= nil and type(m) ~= "string" then
-                            table.insert(warnings,
-                                label .. " conditions.method must be a string (got " .. type(m) .. ") — skipping")
-                            skip = true
-                        end
-                    end
-                    if not skip then
-                        for k in pairs(rule.conditions) do
-                            if not _ALLOWED_CONDITION_KEYS[k] then
-                                table.insert(warnings,
-                                    label .. " conditions has unknown key \"" .. tostring(k) .. "\" — skipping")
-                                skip = true
-                                break
-                            end
-                        end
-                    end
                 end
             end
+        end
 
-            -- enabled, if present, must be a boolean (catches typos like "falsse")
-            if not skip and rule.enabled ~= nil and type(rule.enabled) ~= "boolean" then
-                table.insert(warnings,
-                    label .. " enabled must be a boolean (got " .. type(rule.enabled)
-                    .. " " .. tostring(rule.enabled) .. ") — skipping")
-                skip = true
-            end
-
-            -- Reject unknown top-level rule keys (catches typos like "cosst")
-            if not skip then
-                for k in pairs(rule) do
-                    if not _ALLOWED_RULE_KEYS[k] then
-                        table.insert(warnings,
-                            label .. " has unknown key \"" .. tostring(k) .. "\" — skipping")
-                        skip = true
-                        break
-                    end
+        -- Reject unknown top-level rule keys (catches typos like "cosst").
+        if not skip then
+            for k in pairs(rule) do
+                if not _ALLOWED_RULE_KEYS[k] then
+                    table.insert(warnings,
+                        label .. " has unknown key \"" .. tostring(k) .. "\" — skipping")
+                    skip = true
+                    break
                 end
             end
         end
 
         if not skip then
+            seen_names[rule.name] = true
             table.insert(valid, rule)
         end
     end

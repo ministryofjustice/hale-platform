@@ -79,7 +79,7 @@ PHP hardcodes the same strings; if you rename one, update both sides.
 ### 3. Audit stream fields (`firewall:audit`)
 
 Written by `firewall.req()` (request-time blocks) and the `firewall.res()`
-404-penalty timer. Read by the WordPress admin audit table.
+response-phase timer. Read by the WordPress admin audit table.
 
 | Field | Type | Always present | Meaning |
 |---|---|---|---|
@@ -87,9 +87,9 @@ Written by `firewall.req()` (request-time blocks) and the `firewall.res()`
 | `blocked_at`   | int (ms epoch) | yes | When the block decision was taken |
 | `cost`         | int  | yes | GCRA cost charged on this request |
 | `mode`         | string  | yes | `enforce` or `monitor` — mode in force at the moment of the block |
-| `trigger`      | string  | yes | What caused the block: `blocklist`, `penalty`, `rule:404-penalty:N`, or comma-separated `rule:id:cost` pairs |
+| `trigger`      | string  | yes | What caused the block: `blocklist`, `penalty`, or comma-separated `rule:<phase>-score:<name>:<cost>` pairs (e.g. `rule:req-score:php-probe:20`, `rule:res-score:res-404:50`) |
 | `accumulated`  | int (ms) | yes | GCRA accumulated TAT excess at the moment of the block (`""` if Redis returned nil) |
-| `reason`       | string  | request only | `block` / `penalty` / `gcra` — which arm of the GCRA script fired (omitted on the 404-penalty entry) |
+| `reason`       | string  | request only | `block` / `penalty` / `gcra` — which arm of the GCRA script fired (omitted on response-phase entries) |
 | `retry_after`  | int (ms) | request only | Suggested cooldown for the client; same value used for the local cache TTL |
 
 The stream is capped by `XADD MAXLEN ~ audit_maxlen` (default 10 000,
@@ -261,20 +261,21 @@ sequenceDiagram
 
     U-->>C: response
     U->>L: log_by_lua fires
-    alt status ≠ 404 OR ip already cached
+    alt no res-phase rules match OR ip already cached
         Note over L: no-op
-    else status == 404 AND not cached
+    else any res-phase rule matches AND not cached
         L->>T: schedule 0-delay timer
-        T->>R: GCRA charge PENALTY_404
-        alt blocked by penalty
+        T->>R: GCRA charge sum of matching res-rule costs
+        alt blocked
             T->>SD: set blocked:<ip>=mode TTL=retry_after
-            T->>R: XADD firewall:audit (trigger=404-penalty)
+            T->>R: XADD firewall:audit (trigger=rule:res-score:<name>:<cost>,...)
         end
     end
 ```
 
-The penalty runs through the same GCRA path as a normal request, so it
-participates in the same bucket arithmetic and respects the same mode.
+The response-phase charge runs through the same GCRA path as a normal
+request, so it participates in the same bucket arithmetic and respects
+the same mode.
 
 ---
 
@@ -293,6 +294,33 @@ participates in the same bucket arithmetic and respects the same mode.
 The schema for `firewall:rules` and `firewall:config` is documented in the
 header of [firewall/schema.lua](firewall/schema.lua) — that file is the
 authoritative schema reference.
+
+### Rule schema (summary)
+
+Each entry in `firewall:rules` is `{name, phase, cost, match}`:
+
+- **`name`** — required, `[a-z0-9-]{1,64}`, unique within the array. Used
+  as the audit trigger identity (`rule:<phase>-score:<name>:<cost>`).
+- **`phase`** — required, `"req"` (evaluated in `access_by_lua`) or
+  `"res"` (evaluated in `log_by_lua`).
+- **`cost`** — required integer in `0..99999`. `0` = audit-only (matches
+  appear in the breakdown but add no tokens); a value `>=` bucket
+  capacity guarantees a block on first match.
+- **`match`** — required object, at least one predicate. Predicate keys
+  are phase-specific:
+  - **req** — `uri_pattern` / `ua_pattern` / `query_pattern` (PCRE,
+    case-insensitive), `method` (exact, case-sensitive), `has_query`
+    (boolean). Predicates within a rule are AND'd.
+  - **res** — `status` (integer 100–599).
+
+There is **no separate action enum**: every rule contributes to the
+single per-IP GCRA bucket, and the bucket is the only blocking
+mechanism. Operators tune behaviour via `cost` (0 → audit, large →
+guaranteed block).
+
+An empty `firewall:rules` array means no scoring is applied — by design,
+this is a "no firewall" deployment. To enable scoring you must seed
+rules.
 
 ---
 
@@ -486,12 +514,30 @@ retroactively change cached entries — they keep behaving as their original
 mode said until the TTL expires. Use `/firewall/flush-cache` for an
 immediate cluster-wide reset.
 
-### Why the 404 penalty runs in a timer
+### Why response-phase scoring runs in a timer
 
 `log_by_lua` does not allow socket I/O — the request is finished. We
 schedule a 0-delay timer because timer contexts *do* allow sockets. The
-penalty is applied via the same GCRA path as a normal request, so it
+charge is applied via the same GCRA path as a normal request, so it
 participates in the same bucket arithmetic.
+
+Response-phase scoring is fully data-driven via `firewall:rules` entries
+with `phase: "res"` (see "Rule schema" above). For example:
+
+```json
+[
+  {"name":"res-404","phase":"res","cost":50,"match":{"status":404}},
+  {"name":"res-499","phase":"res","cost":25,"match":{"status":499}}
+]
+```
+
+| Status | Suggested cost | Rationale |
+|---|---|---|
+| 404 | 50 | Probing for vulnerable paths that nothing legitimate requests |
+| 499 | 25 | Client closed connection — real users rarely abort, scanners fire-and-forget |
+
+Adding a new status is one rule entry in `firewall:rules`; no application
+logic changes.
 
 ### Fail-open everywhere
 

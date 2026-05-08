@@ -27,7 +27,6 @@ local FIREWALL_ENABLED = os.getenv("FIREWALL_ENABLED") ~= "false"
 
 -- See firewall.defaults for rationale and any tuning. Pulled into locals
 -- here so the hot path doesn't pay table-lookup cost per request.
-local PENALTY_404          = defaults.PENALTY_404
 local CACHE_PREFIX         = defaults.BLOCKED_CACHE_PREFIX
 local AUDIT_STREAM         = defaults.AUDIT_STREAM
 local DEFAULT_AUDIT_MAXLEN = defaults.GCRA.audit_maxlen
@@ -102,8 +101,11 @@ function _M.req()
             return
         end
 
+        local req_rules = cache.get_rules("req")
         local request_cost, breakdown = cost_module.calculate(
-            uri, ua, method, has_query, args, rules, ngx_regex_match
+            { uri = uri, ua = ua, method = method, has_query = has_query, query = args },
+            req_rules,
+            ngx_regex_match
         )
 
         -- Surface cost to the access log via $firewall_cost (set in nginx.conf).
@@ -160,6 +162,10 @@ function _M.req()
                     for rule, rule_cost in pairs(breakdown) do
                         table.insert(trigger_parts, rule .. ":" .. rule_cost)
                     end
+                    -- Sort so the audit `trigger` field is deterministic across
+                    -- requests with the same matching rule set (pairs() order is
+                    -- otherwise hash-dependent).
+                    table.sort(trigger_parts)
                     trigger = table.concat(trigger_parts, ",")
                 end
 
@@ -200,11 +206,23 @@ function _M.req()
 end
 
 
--- RESPONSE PHASE — log_by_lua. 404s get an extra GCRA charge; the work is
--- deferred into a 0-delay timer because log_by_lua forbids socket I/O.
+-- RESPONSE PHASE — log_by_lua. Iterates the cached res-phase rules and
+-- charges the per-IP GCRA bucket once with the sum of all matching costs
+-- (e.g. a 404 → probing, 499 → client-closed scanner fire-and-forget).
+-- The work is deferred into a 0-delay timer because log_by_lua forbids
+-- socket I/O. The breakdown table is keyed by rule name so the audit
+-- trigger format ('rule:res-score:<name>:<cost>') is symmetric with req().
 function _M.res()
     if not FIREWALL_ENABLED then return end
-    if ngx.status ~= ngx.HTTP_NOT_FOUND then return end
+
+    local res_rules = cache.get_rules("res")
+    if #res_rules == 0 then return end
+
+    local status = ngx.status
+    local total_cost, breakdown = cost_module.calculate(
+        { status = status }, res_rules, nil
+    )
+    if total_cost == 0 and next(breakdown) == nil then return end
 
     -- Capture ngx.var NOW; it is unavailable inside the timer callback.
     local ip = ngx.var.remote_addr
@@ -229,8 +247,7 @@ function _M.res()
                 return
             end
 
-            local breakdown = { ["rule:404-penalty"] = PENALTY_404 }
-            local allowed, info = gcra_module.check(red, ip, PENALTY_404, gcra_config, breakdown)
+            local allowed, info = gcra_module.check(red, ip, total_cost, gcra_config, breakdown)
 
             if not allowed then
                 local cache_ttl = math.ceil(info.retry_after / 1000)
@@ -240,22 +257,35 @@ function _M.res()
                     local now = math.floor(ngx.now() * 1000)
                     local audit_maxlen = gcra_config.audit_maxlen or DEFAULT_AUDIT_MAXLEN
 
+                    -- Stable, comma-separated 'rule:res-score:<name>:<cost>' pairs.
+                    -- Sorted so the audit `trigger` field is deterministic
+                    -- across requests with the same matching rule set.
+                    local trigger_parts = {}
+                    for rule, rule_cost in pairs(breakdown) do
+                        table.insert(trigger_parts, rule .. ":" .. rule_cost)
+                    end
+                    table.sort(trigger_parts)
+                    local trigger = table.concat(trigger_parts, ",")
+
                     red:xadd(AUDIT_STREAM, "MAXLEN", "~", audit_maxlen, "*",
                         "ip", ip,
                         "blocked_at", now,
-                        "cost", PENALTY_404,
+                        "cost", total_cost,
                         "mode", mode,
-                        "trigger", "rule:404-penalty:" .. PENALTY_404,
+                        "trigger", trigger,
                         "accumulated", info.accumulated or "")
                 end
 
                 ngx.log(ngx.WARN, "[firewall] ",
                         mode == "monitor" and "would-block" or "blocked",
-                        " by 404 penalty ip=", ip,
+                        " by res-rules ip=", ip,
+                        " status=", status,
+                        " cost=", total_cost,
                         " retry_after=", info.retry_after)
             else
-                ngx.log(ngx.INFO, "[firewall] 404 penalty ip=", ip,
-                        " cost=", PENALTY_404)
+                ngx.log(ngx.INFO, "[firewall] res-rules charged ip=", ip,
+                        " status=", status,
+                        " cost=", total_cost)
             end
 
             redis_pool.release(red)
