@@ -161,7 +161,7 @@ flowchart LR
 
     WP --> PHP
     PHP -- saveRulesAndNotify<br/>saveConfigAndNotify<br/>getRules/getConfig<br/>read audit --> R
-    PHP -- POST flush-cache --> ADMIN
+    PHP -- GET flush-cache --> ADMIN
     ADMIN -- bump version --> D
 ```
 
@@ -196,9 +196,18 @@ sequenceDiagram
     autonumber
     participant C as Client
     participant N as nginx access_by_lua
+    participant M as per-worker CIDR cache
     participant SD as shared dict<br/>firewall_cache
 
     C->>N: HTTP request
+    N->>M: is_allowed(ip)?
+    alt CIDR allowlist hit
+        Note over N: bypass — pass through
+    end
+    N->>M: is_blocked(ip)?
+    alt CIDR blocklist hit
+        N-->>C: 403 (no Redis I/O)
+    end
     N->>SD: get blocked:<ip>
     alt cached "enforce"
         N-->>C: 429 (no Redis I/O)
