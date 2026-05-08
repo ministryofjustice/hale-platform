@@ -23,7 +23,7 @@ RUN pecl install redis \
     && docker-php-ext-enable redis
 
 # Delete PHPRedis build dependencies
-RUN apk del .build-deps $PHPIZE_DEPS
+RUN apk del .build-deps
 
 # Install wp-cli
 RUN curl -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
