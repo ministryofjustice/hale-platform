@@ -30,6 +30,9 @@ local FIREWALL_ENABLED = os.getenv("FIREWALL_ENABLED") ~= "false"
 local CACHE_PREFIX         = defaults.BLOCKED_CACHE_PREFIX
 local AUDIT_STREAM         = defaults.AUDIT_STREAM
 local DEFAULT_AUDIT_MAXLEN = defaults.GCRA.audit_maxlen
+-- Pulled up here (rather than just before _M.req) so ngx_regex_match can
+-- use it for the log-flood dedup guard without a forward reference.
+local blocked_cache        = cache.blocked_cache
 
 
 -- Logs resolved firewall settings once per nginx worker.
@@ -37,8 +40,8 @@ local DEFAULT_AUDIT_MAXLEN = defaults.GCRA.audit_maxlen
 function _M.init()
     ngx.log(
         ngx.NOTICE,
-        "[firewall] startup ENABLED=", tostring(FIREWALL_ENABLED),
-        " REDIS_SSL=", tostring(redis_pool.config.ssl)
+        "[firewall] event=startup enabled=", tostring(FIREWALL_ENABLED),
+        " redis_ssl=", tostring(redis_pool.config.ssl)
     )
 end
 
@@ -46,10 +49,24 @@ end
 
 -- PCRE wrapper passed into the (pure, ngx-free) cost module.
 -- Flags "ijo" = case-insensitive, JIT-compile, compile-once cached.
+--
+-- Log-flood guard: a bad pattern fires on every request, so we deduplicate
+-- via a shared-dict key.  blocked_cache is already present; we namespace
+-- the key with "logged:regex:" to avoid any collision with block entries.
+-- TTL of 3600 s means: log once per hour per pattern while the problem
+-- persists, rather than once per request.  The admin /validate endpoint
+-- catches bad patterns before they reach Redis in normal operation, so this
+-- branch should never fire in production — but if a rule is written to Redis
+-- directly (e.g. a migration script), the operator will still get a signal.
+local REGEX_WARN_TTL = 3600  -- seconds between repeat warnings for the same bad pattern
 local function ngx_regex_match(subject, pattern)
     local m, err = ngx.re.match(subject, pattern, "ijo")
     if err then
-        ngx.log(ngx.WARN, "[firewall] regex error in pattern '", pattern, "': ", err)
+        local seen_key = "logged:regex:" .. pattern
+        if not blocked_cache:get(seen_key) then
+            blocked_cache:set(seen_key, 1, REGEX_WARN_TTL)
+            ngx.log(ngx.WARN, "[firewall] event=regex_error pattern=", pattern, " err=", err)
+        end
     end
     return m ~= nil
 end
@@ -58,7 +75,6 @@ end
 
 -- REQUEST PHASE — access_by_lua. See README.md → "Request flow" /
 -- "Operating modes" / "Design decisions".
-local blocked_cache = cache.blocked_cache
 
 function _M.req()
     if not FIREWALL_ENABLED then return end
@@ -102,8 +118,7 @@ function _M.req()
         local rules, gcra_config = cache.load_rules_and_config(red)
 
         if not rules then
-            ngx.log(ngx.ERR, "[firewall] no rules found in Redis (firewall:rules) "
-                          .. "— all requests allowed. Seed via: SET firewall:rules '[...]'")
+            ngx.log(ngx.ERR, "[firewall] event=no_rules msg=firewall:rules missing or empty, all requests allowed")
             redis_pool.release(red)
             return
         end
@@ -176,7 +191,7 @@ function _M.req()
                     trigger = table.concat(trigger_parts, ",")
                 end
 
-                red:xadd(AUDIT_STREAM, "MAXLEN", "~", audit_maxlen, "*",
+                local _, xadd_err = red:xadd(AUDIT_STREAM, "MAXLEN", "~", audit_maxlen, "*",
                     "ip", ip,
                     "blocked_at", now,
                     "cost", request_cost,
@@ -185,10 +200,12 @@ function _M.req()
                     "trigger", trigger,
                     "accumulated", info.accumulated or "",
                     "retry_after", info.retry_after or "")
+                if xadd_err then
+                    ngx.log(ngx.ERR, "[firewall] event=audit_write_failed phase=req ip=", ip, " err=", xadd_err)
+                end
             end
 
-            ngx.log(ngx.WARN, "[firewall] ",
-                    mode == "monitor" and "would-block" or "blocked",
+            ngx.log(ngx.INFO, "[firewall] event=block phase=req mode=", mode,
                     " ip=", ip,
                     " reason=", info.reason,
                     " cost=", request_cost,
@@ -205,7 +222,7 @@ function _M.req()
     end)
 
     if not ok then
-        ngx.log(ngx.ERR, "[firewall] req error (fail-open): ", err)
+        ngx.log(ngx.ERR, "[firewall] event=req_error err=", err)
     elseif blocked then
         -- ngx.exit() here is outside pcall and cannot be swallowed.
         ngx.exit(ngx.HTTP_TOO_MANY_REQUESTS)
@@ -278,23 +295,25 @@ function _M.res()
                     table.sort(trigger_parts)
                     local trigger = table.concat(trigger_parts, ",")
 
-                    red:xadd(AUDIT_STREAM, "MAXLEN", "~", audit_maxlen, "*",
+                    local _, xadd_err = red:xadd(AUDIT_STREAM, "MAXLEN", "~", audit_maxlen, "*",
                         "ip", ip,
                         "blocked_at", now,
                         "cost", total_cost,
                         "mode", mode,
                         "trigger", trigger,
                         "accumulated", info.accumulated or "")
+                    if xadd_err then
+                        ngx.log(ngx.ERR, "[firewall] event=audit_write_failed phase=res ip=", ip, " err=", xadd_err)
+                    end
                 end
 
-                ngx.log(ngx.WARN, "[firewall] ",
-                        mode == "monitor" and "would-block" or "blocked",
-                        " by res-rules ip=", ip,
+                ngx.log(ngx.INFO, "[firewall] event=block phase=res mode=", mode,
+                        " ip=", ip,
                         " status=", status,
                         " cost=", total_cost,
                         " retry_after=", info.retry_after)
             else
-                ngx.log(ngx.INFO, "[firewall] res-rules charged ip=", ip,
+                ngx.log(ngx.INFO, "[firewall] event=res_charge phase=res ip=", ip,
                         " status=", status,
                         " cost=", total_cost)
             end
@@ -303,12 +322,12 @@ function _M.res()
         end)
 
         if not timer_ok then
-            ngx.log(ngx.ERR, "[firewall] res timer error: ", timer_err)
+            ngx.log(ngx.ERR, "[firewall] event=res_timer_error err=", timer_err)
         end
     end)
 
     if not ok then
-        ngx.log(ngx.ERR, "[firewall] timer schedule error: ", err)
+        ngx.log(ngx.ERR, "[firewall] event=timer_schedule_error err=", err)
     end
 end
 

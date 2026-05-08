@@ -19,10 +19,11 @@ but if you only read one document, read this one.
 4. [Request flow](#request-flow)
 5. [Data model (Redis keys)](#data-model-redis-keys)
 6. [Operating modes](#operating-modes)
-7. [File map](#file-map)
-8. [How to operate](#how-to-operate)
-9. [How to test](#how-to-test)
-10. [Design decisions](#design-decisions)
+7. [Logging](#logging)
+8. [File map](#file-map)
+9. [How to operate](#how-to-operate)
+10. [How to test](#how-to-test)
+11. [Design decisions](#design-decisions)
 
 ---
 
@@ -348,6 +349,174 @@ of `mode`. Otherwise `mode` takes effect.
 bucket evolves identically under both modes, which is what makes monitor an
 accurate predictor of what enforce *would* do. See the function-header
 comment on `_M.req` in [firewall.lua](firewall.lua) for the full reasoning.
+
+---
+
+## Logging
+
+The firewall writes to **three independent destinations**. Each answers a
+different operational question; together they make every decision
+traceable from a single request line back to the rule that scored it.
+
+| Destination | Where it goes | What it answers | Cardinality |
+|---|---|---|---|
+| nginx access log | `/dev/stdout` (pod stdout) | "What was the score on *this* request?" | One line per request |
+| nginx error log  | `/dev/stderr` at `info` level (pod stderr) | "Did the firewall behave as expected, and if not, why?" | One line per event |
+| Redis stream `firewall:audit` | Redis (read by WP admin) | "Which IPs got blocked, when, and what triggered it?" | One entry per block episode per IP |
+
+### 1. nginx access log
+
+Declared once in [nginx.conf](../nginx/nginx.conf) and applied to every
+server block:
+
+```nginx
+log_format main '$remote_addr - $remote_user [$time_local] '
+                '"$request" $status $body_bytes_sent '
+                '"$http_referer" "$http_user_agent" '
+                'fw_cost=$firewall_cost cache=$upstream_cache_status';
+access_log /dev/stdout main;
+```
+
+The firewall contributes one field: **`fw_cost=N`**, the GCRA cost charged
+on this request. Set in `firewall.req()` via `ngx.var.firewall_cost =
+tostring(request_cost)` after rule scoring. Values:
+
+- `fw_cost=0` — no rules matched (or firewall disabled / fast-path cache hit before scoring ran).
+- `fw_cost=N` (N > 0) — sum of costs of all matching `req`-phase rules.
+
+Response-phase (`res`) costs do **not** appear in the access log — by the
+time `log_by_lua` runs, the line has already been formatted. They appear
+in the audit stream and the error log instead.
+
+### 2. nginx error log
+
+Written via `ngx.log(level, ...)` from Lua. Goes to `/dev/stderr` at
+`info` level and above (set in [nginx.conf](../nginx/nginx.conf)). Every
+firewall message is prefixed `[firewall]`, `[redis]`, or `[gcra]` so
+`grep '\[firewall\]' …` is the canonical way to read it.
+
+What each level means in this codebase:
+
+| Level | Meaning | Operator action |
+|---|---|---|
+| `NOTICE`  | Lifecycle / configuration events (startup, cache reload, flush) | None — confirms the system is behaving as expected |
+| `INFO`    | Normal decisions — block episodes, res-phase charges | None — useful for incident post-mortems |
+| `WARN`    | Something is off but the request was handled (schema problem, regex error, GCRA script fallback) | Investigate if frequent |
+| `ERR`     | Internal failure; firewall failed open, or a write to the audit stream was lost | Page if sustained |
+
+Every firewall message begins with `[firewall]` and uses a consistent
+`event=<name> key=value …` format so log shippers (Fluent Bit, Loki) can
+parse them without a custom regex per message type. The pattern is:
+
+```
+[firewall] event=<event> [field=value ...]
+```
+
+Complete catalogue of events, by source file:
+
+#### [firewall.lua](firewall.lua) — request hot path
+
+| Level | `event=` | Fields | When |
+|---|---|---|---|
+| `NOTICE` | `startup` | `enabled=` `redis_ssl=` | Once per nginx worker from `init()`. Confirms kill-switch and SSL config. |
+| `WARN`   | `regex_error` | `pattern=` `err=` | A rule's PCRE failed at match time. **Deduplicated:** logged at most once per hour per pattern via a shared-dict key (`logged:regex:<pattern>`, TTL 3600 s) to prevent a single bad rule flooding stderr on every request. Should never fire in production — admin validate runs `compile_check_patterns` first. Indicates a rule was written directly to Redis. |
+| `ERR`    | `no_rules` | `msg=` | `firewall:rules` is missing or empty. Fail-open; firewall is effectively off until rules are seeded. |
+| `INFO`   | `block` | `phase=req` `mode=` `ip=` `reason=` `cost=` `retry_after=` | Block decision (req phase). `mode=enforce` → 429 was returned; `mode=monitor` → request passed through. One entry per block episode per IP (fast-path cache deduplicates). |
+| `ERR`    | `audit_write_failed` | `phase=req` `ip=` `err=` | `XADD firewall:audit` failed. The block decision was enforced correctly but the audit record was lost. |
+| `ERR`    | `req_error` | `err=` | The protected `pcall` block in `req()` raised. Request was allowed through (fail-open). Almost always a Lua bug; investigate immediately. |
+| `INFO`   | `block` | `phase=res` `mode=` `ip=` `status=` `cost=` `retry_after=` | Response-phase charge tripped the bucket. The current response was already sent; the *next* request from this IP hits the fast path. |
+| `ERR`    | `audit_write_failed` | `phase=res` `ip=` `err=` | `XADD firewall:audit` failed in the res-phase timer. |
+| `INFO`   | `res_charge` | `phase=res` `ip=` `status=` `cost=` | Res-phase rule matched and charged the bucket but did **not** block. Confirms res-rules are scoring without yet tipping the bucket. |
+| `ERR`    | `res_timer_error` | `err=` | The deferred res-phase work raised inside the timer. The charge was lost; the response was already sent. |
+| `ERR`    | `timer_schedule_error` | `err=` | `ngx.timer.at(0, …)` itself failed (typically out of timers). Res-phase scoring skipped entirely for this request. |
+
+**`reason=` values** in `event=block` entries, mirroring the audit stream's
+`reason` field:
+
+- `block`   — `firewall:block:<ip>` is set (manual ban).
+- `penalty` — `firewall:block:<ip>` is set with value `"gcra"` (automatic ban from a previous GCRA block).
+- `gcra`    — live GCRA bucket exhausted.
+- `allow`   — never logged (suppressed: an allowlisted IP is not a block event).
+
+#### [firewall/cache.lua](firewall/cache.lua)
+
+| Level | `event=` | Fields | When |
+|---|---|---|---|
+| `NOTICE` | `rules_reload` | `version=` `rule_count=` | Fired once per worker each time the per-worker cache is refreshed from Redis (either the 60 s TTL expired or `/firewall/flush-cache` bumped the version counter). Correlate `version=` across workers to confirm a config change propagated everywhere. |
+| `WARN`   | `schema_warn` | `kind=rules\|config\|allowlist\|blocklist` + the warning text | A rule / config field / CIDR entry in Redis failed structural validation. The offending entry is dropped; the rest are kept. Should never fire in production — admin validate catches this before save. |
+| `NOTICE` | `cache_flush` | `version=` | The shared version counter was bumped by `/firewall/flush-cache`. All workers will reload on their next request. `version=` is the new counter value. |
+| `ERR`    | `cache_flush_error` | `err=` | The shared-dict version counter could not be incremented. Falls back to `set("version", 1)`. Indicates `firewall_rc_cache` shared dict is misconfigured. |
+
+#### [firewall/cost.lua](firewall/cost.lua)
+
+| Level | Message | When |
+|---|---|---|
+| `WARN` | `[firewall] cost.calculate skipped rule name=<n> with unknown phase=<p>` | A rule with a phase other than `req`/`res` reached the scorer. Defensive; `schema.parse_rules` already rejects this, so this only fires if rules were written directly to Redis. |
+
+#### [firewall/redis.lua](firewall/redis.lua)
+
+| Level | Message | When |
+|---|---|---|
+| `ERR` | `[redis] connect failed (fail-open): <err>` | TCP connect to Redis failed. Caller returns early; firewall behaves as if disabled until Redis returns. |
+| `ERR` | `[redis] auth failed (fail-open): <err>` | `REDIS_AUTH` was set but `AUTH` was rejected. Fail-open. |
+| `ERR` | `[redis] select db failed (fail-open): <err>` | `SELECT <REDIS_DB>` failed. Fail-open. |
+
+#### [firewall/gcra.lua](firewall/gcra.lua)
+
+| Level | Message | When |
+|---|---|---|
+| `WARN` | `[gcra] SCRIPT LOAD failed, falling back to EVAL: <err>` | The GCRA Lua script could not be cached server-side. The script still runs via `EVAL` (slower but functionally identical). Usually transient (Redis restart flushed the script cache). |
+
+#### [firewall/admin.lua](firewall/admin.lua)
+
+| Level | Message | When |
+|---|---|---|
+| `ERR` | `[firewall] failed to list block keys: <err>` | `KEYS firewall:block:*` failed during `/firewall/clear-penalties`. Endpoint continues with whatever keys were returned. |
+
+### 3. Audit stream — `firewall:audit`
+
+The structured, machine-readable record of every block decision. Written
+from two places:
+
+- `firewall.req()` — request-phase blocks (allowlist/blocklist, GCRA bucket, manual/automatic bans).
+- The deferred timer in `firewall.res()` — response-phase blocks (404/499 penalty tripped the bucket).
+
+Written with `XADD firewall:audit MAXLEN ~ <audit_maxlen> * field value …`.
+The `~` makes the trim approximate (cheap); `audit_maxlen` defaults to
+10 000 and is set in `firewall:config.audit_maxlen`. Writes are gated by
+`firewall:config.audit_enabled` — set it to `false` to silence the stream
+entirely without touching the rest of the firewall.
+
+Fields are documented in full in
+[The firewall contract → Audit stream fields](#3-audit-stream-fields-firewallaudit).
+The key invariants:
+
+- **One entry per block episode per IP.** The fast-path `firewall_cache`
+  short-circuits subsequent requests within the cooldown window before
+  they reach the audit code, so a 10 000-request burst from one IP
+  produces one row, not 10 000.
+- **`mode` is captured at write time**, not read time. Audit reflects what
+  the firewall did — flipping `mode` later does not rewrite history.
+- **Monitor mode writes audit entries** the same way enforce does. That
+  is the whole point of monitor: see what enforce *would* have done.
+- **`trigger` is sorted** so the same matching rule set always produces
+  the same string, making `XREVRANGE` output diff-able across requests.
+
+Read it from the WordPress admin (Network dashboard → Firewall → audit
+table) or directly:
+
+```
+XREVRANGE firewall:audit + - COUNT 50
+XLEN firewall:audit
+```
+
+### Quick reference — "why was this request blocked?"
+
+Given a 429 response, walk these in order:
+
+1. **Access log** for the request: confirm `fw_cost=N` (req-phase score).
+2. **Audit stream** filtered to the IP: `XREVRANGE firewall:audit + - COUNT 100` then grep. The `trigger`, `reason`, and `cost` fields fully explain the decision.
+3. **Error log** filtered to the IP: `grep 'event=block.*ip=<ip>'` shows the corresponding INFO line and any preceding ERR (e.g. `event=audit_write_failed` means the audit row may be missing).
 
 ---
 

@@ -91,10 +91,10 @@ function _M.load_rules_and_config(red)
     local allowlist_strs,   allow_warns  = schema.parse_allowlist(raw_allowlist)
     local blocklist_strs,   block_warns  = schema.parse_blocklist(raw_blocklist)
 
-    for _, w in ipairs(rule_warns)   do ngx.log(ngx.WARN, "[firewall] ", w) end
-    for _, w in ipairs(config_warns) do ngx.log(ngx.WARN, "[firewall] ", w) end
-    for _, w in ipairs(allow_warns)  do ngx.log(ngx.WARN, "[firewall] ", w) end
-    for _, w in ipairs(block_warns)  do ngx.log(ngx.WARN, "[firewall] ", w) end
+    for _, w in ipairs(rule_warns)   do ngx.log(ngx.WARN, "[firewall] event=schema_warn kind=rules ", w) end
+    for _, w in ipairs(config_warns) do ngx.log(ngx.WARN, "[firewall] event=schema_warn kind=config ", w) end
+    for _, w in ipairs(allow_warns)  do ngx.log(ngx.WARN, "[firewall] event=schema_warn kind=allowlist ", w) end
+    for _, w in ipairs(block_warns)  do ngx.log(ngx.WARN, "[firewall] event=schema_warn kind=blocklist ", w) end
 
     _rc_cache = {
         rules          = rules,
@@ -105,6 +105,8 @@ function _M.load_rules_and_config(red)
         version        = shared_version,
         expires        = now + RC_CACHE_TTL,
     }
+    ngx.log(ngx.NOTICE, "[firewall] event=rules_reload version=", shared_version,
+            " rule_count=", rules and #rules or 0)
     return rules, gcra_config
 end
 
@@ -145,8 +147,10 @@ function _M.flush()
     _M.blocked_cache:flush_all()
     local ok, err = rc_shared:incr("version", 1, 0)
     if not ok then
-        ngx.log(ngx.ERR, "[firewall] cache.flush: rc_shared:incr failed: ", err)
+        ngx.log(ngx.ERR, "[firewall] event=cache_flush_error err=", err)
         rc_shared:set("version", 1)
+    else
+        ngx.log(ngx.NOTICE, "[firewall] event=cache_flush version=", ok)
     end
     _rc_cache.expires = 0
 end
