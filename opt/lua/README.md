@@ -427,7 +427,7 @@ Complete catalogue of events, by source file:
 
 | Level | `event=` | Fields | When |
 |---|---|---|---|
-| `NOTICE` | `startup` | `enabled=` `redis_ssl=` | Once per nginx worker from `init()`. Confirms kill-switch and SSL config. |
+| `NOTICE` | `startup` | `enabled=` `redis_ssl=` | Once per nginx worker from `init()`. Confirms kill-switch and SSL config. `init()` also pre-warms the CIDR/rules cache via a Redis call so `is_allowed`/`is_blocked` have populated lists before the first request. Fail-open: if Redis is unavailable at startup the first request re-attempts via the normal `pcall` path. |
 | `WARN`   | `regex_error` | `pattern=` `err=` | A rule's PCRE failed at match time. **Deduplicated:** logged at most once per hour per pattern via a shared-dict key (`logged:regex:<pattern>`, TTL 3600 s) to prevent a single bad rule flooding stderr on every request. Should never fire in production — admin validate runs `compile_check_patterns` first. Indicates a rule was written directly to Redis. |
 | `ERR`    | `no_rules` | `msg=` | `firewall:rules` is missing or empty. Fail-open; firewall is effectively off until rules are seeded. |
 | `INFO`   | `block` | `phase=req` `mode=` `ip=` `reason=` `cost=` `retry_after=` | Block decision (req phase). `mode=enforce` → 429 was returned; `mode=monitor` → request passed through. One entry per block episode per IP (fast-path cache deduplicates). |

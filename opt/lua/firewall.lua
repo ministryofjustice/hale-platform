@@ -35,7 +35,9 @@ local DEFAULT_AUDIT_MAXLEN = defaults.GCRA.audit_maxlen
 local blocked_cache        = cache.blocked_cache
 
 
--- Logs resolved firewall settings once per nginx worker.
+-- Logs resolved firewall settings once per nginx worker and pre-warms the
+-- per-worker CIDR/rules cache so is_allowed/is_blocked have populated lists
+-- before the first request arrives.
 -- ============================================================================
 function _M.init()
     ngx.log(
@@ -43,6 +45,14 @@ function _M.init()
         "[firewall] event=startup enabled=", tostring(FIREWALL_ENABLED),
         " redis_ssl=", tostring(redis_pool.config.ssl)
     )
+    if not FIREWALL_ENABLED then return end
+    -- Warm the cache eagerly. Fail-open: if Redis is unavailable here the
+    -- first request will re-attempt via the normal pcall path in req().
+    local red = redis_pool.connect()
+    if red then
+        cache.load_rules_and_config(red)
+        redis_pool.release(red)
+    end
 end
 
 
