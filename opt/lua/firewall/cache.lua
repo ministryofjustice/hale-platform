@@ -15,14 +15,19 @@
 local _M = {}
 
 local schema = require "firewall.schema"
-local cjson         = require "cjson.safe"
+local cidr   = require "firewall.cidr"
+local cjson  = require "cjson.safe"
 
 -- Per-worker in-memory cache of decoded rules + config.
 -- `rules_by_phase` is the lookup table the request and response hot paths
 -- iterate over via get_rules(phase); each entry is a slice of `rules`.
+-- `allowlist` and `blocklist` hold pre-parsed CIDR entries for is_allowed()
+-- and is_blocked(); they are populated from the same Redis refresh cycle.
 local _rc_cache    = {
     rules          = nil,
     rules_by_phase = { req = {}, res = {} },
+    allowlist      = {},
+    blocklist      = {},
     config         = nil,
     version        = -1,
     expires        = 0,
@@ -47,6 +52,18 @@ local function _split_by_phase(rules)
 end
 
 
+-- Pre-parse a list of CIDR/IP strings into cidr.parse() entries once at
+-- refresh time so is_allowed()/is_blocked() do no parsing on the hot path.
+local function _parse_cidr_list(strings)
+    local parsed = {}
+    for _, s in ipairs(strings or {}) do
+        local entry = cidr.parse(s)
+        if entry then table.insert(parsed, entry) end
+    end
+    return parsed
+end
+
+
 -- Load and validate firewall:rules + firewall:config from Redis.
 -- Per-worker cache keyed off a shared version counter so flush() propagates
 -- invalidation to all workers at once. Validation warnings are logged at
@@ -59,21 +76,31 @@ function _M.load_rules_and_config(red)
         return _rc_cache.rules, _rc_cache.config
     end
 
-    local rules_json  = red:get("firewall:rules")
-    local config_json = red:get("firewall:config")
+    local rules_json      = red:get("firewall:rules")
+    local config_json     = red:get("firewall:config")
+    local allowlist_json  = red:get("firewall:allowlist")
+    local blocklist_json  = red:get("firewall:blocklist")
 
-    local raw_rules  = (rules_json  and rules_json  ~= ngx.null) and cjson.decode(rules_json)  or nil
-    local raw_config = (config_json and config_json ~= ngx.null) and cjson.decode(config_json) or nil
+    local raw_rules     = (rules_json     and rules_json     ~= ngx.null) and cjson.decode(rules_json)     or nil
+    local raw_config    = (config_json    and config_json    ~= ngx.null) and cjson.decode(config_json)    or nil
+    local raw_allowlist = (allowlist_json and allowlist_json ~= ngx.null) and cjson.decode(allowlist_json) or nil
+    local raw_blocklist = (blocklist_json and blocklist_json ~= ngx.null) and cjson.decode(blocklist_json) or nil
 
-    local rules,       rule_warns   = schema.parse_rules(raw_rules)
-    local gcra_config, config_warns = schema.parse_config(raw_config)
+    local rules,            rule_warns   = schema.parse_rules(raw_rules)
+    local gcra_config,      config_warns = schema.parse_config(raw_config)
+    local allowlist_strs,   allow_warns  = schema.parse_allowlist(raw_allowlist)
+    local blocklist_strs,   block_warns  = schema.parse_blocklist(raw_blocklist)
 
     for _, w in ipairs(rule_warns)   do ngx.log(ngx.WARN, "[firewall] ", w) end
     for _, w in ipairs(config_warns) do ngx.log(ngx.WARN, "[firewall] ", w) end
+    for _, w in ipairs(allow_warns)  do ngx.log(ngx.WARN, "[firewall] ", w) end
+    for _, w in ipairs(block_warns)  do ngx.log(ngx.WARN, "[firewall] ", w) end
 
     _rc_cache = {
         rules          = rules,
         rules_by_phase = _split_by_phase(rules),
+        allowlist      = _parse_cidr_list(allowlist_strs),
+        blocklist      = _parse_cidr_list(blocklist_strs),
         config         = gcra_config,
         version        = shared_version,
         expires        = now + RC_CACHE_TTL,
@@ -89,6 +116,20 @@ end
 function _M.get_rules(phase)
     local bucket = _rc_cache.rules_by_phase and _rc_cache.rules_by_phase[phase]
     return bucket or {}
+end
+
+
+-- Check whether ip falls within the cached CIDR allowlist.
+-- Returns false on cold cache (empty list) — consistent with fail-open
+-- behavior for rules and config on worker startup.
+function _M.is_allowed(ip)
+    return cidr.contains(_rc_cache.allowlist, ip)
+end
+
+
+-- Check whether ip falls within the cached CIDR blocklist.
+function _M.is_blocked(ip)
+    return cidr.contains(_rc_cache.blocklist, ip)
 end
 
 

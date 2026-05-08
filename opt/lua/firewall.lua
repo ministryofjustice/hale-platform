@@ -66,6 +66,13 @@ function _M.req()
     -- realip module has rewritten remote_addr from X-Forwarded-For.
     local ip = ngx.var.remote_addr
 
+    -- CIDR allow/block: pure in-memory check against the per-worker cache.
+    -- Runs before the shared-dict lookup and all Redis I/O. Uses the list
+    -- populated at the last cache refresh; a cold worker (empty lists) fails
+    -- open, consistent with rules/config on worker startup.
+    if cache.is_allowed(ip) then return end
+    if cache.is_blocked(ip) then ngx.exit(ngx.HTTP_FORBIDDEN) end
+
     -- Fast path: 0 Redis ops while this IP is in an active block window.
     -- Value is the mode ("enforce" → 429, "monitor" → allow) so a mid-window
     -- mode flip does not retroactively reinterpret cached entries.
@@ -215,6 +222,12 @@ end
 function _M.res()
     if not FIREWALL_ENABLED then return end
 
+    -- CIDR checks mirror req(): allowed IPs bypass scoring entirely;
+    -- already-blocked IPs skip GCRA (response already sent, just avoid noise).
+    local ip = ngx.var.remote_addr
+    if cache.is_allowed(ip) then return end
+    if cache.is_blocked(ip) then return end
+
     local res_rules = cache.get_rules("res")
     if #res_rules == 0 then return end
 
@@ -224,9 +237,7 @@ function _M.res()
     )
     if total_cost == 0 and next(breakdown) == nil then return end
 
-    -- Capture ngx.var NOW; it is unavailable inside the timer callback.
-    local ip = ngx.var.remote_addr
-
+    -- ip already captured above; ngx.var is unavailable inside the timer.
     if blocked_cache:get(CACHE_PREFIX .. ip) then return end
 
     local ok, err = ngx.timer.at(0, function(premature)

@@ -141,11 +141,12 @@ function _M.validate()
     ngx.header.content_type = "application/json"
 
     local kind = ngx.var.arg_kind
-    if kind ~= "rules" and kind ~= "config" then
+    if kind ~= "rules" and kind ~= "config"
+                       and kind ~= "allowlist" and kind ~= "blocklist" then
         ngx.status = 400
         ngx.say(cjson.encode({
             ok = false,
-            errors = { "Query parameter 'kind' must be 'rules' or 'config'." },
+            errors = { "Query parameter 'kind' must be 'rules', 'config', 'allowlist', or 'blocklist'." },
         }))
         return
     end
@@ -181,15 +182,21 @@ function _M.validate()
                 result = { ok = false, errors = regex_errors, normalised = nil }
             end
         end
-    else
+    elseif kind == "config" then
         result = schema.validate_config_strict(decoded)
+    elseif kind == "allowlist" then
+        result = schema.validate_allowlist_strict(decoded)
+    else
+        result = schema.validate_blocklist_strict(decoded)
     end
 
-    -- cjson encodes empty Lua tables as objects by default; force the
-    -- normalised rules payload to serialise as a JSON array.
-    if kind == "rules" and result.normalised then
-        if next(result.normalised) == nil then
-            result.normalised = cjson.empty_array
+    -- cjson encodes empty Lua tables as objects by default; force list-typed
+    -- payloads to serialise as JSON arrays.
+    for _, list_kind in ipairs({ "rules", "allowlist", "blocklist" }) do
+        if kind == list_kind and result.normalised then
+            if next(result.normalised) == nil then
+                result.normalised = cjson.empty_array
+            end
         end
     end
 

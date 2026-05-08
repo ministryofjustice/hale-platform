@@ -131,6 +131,7 @@
 local _M = {}
 
 local defaults = require "firewall.defaults"
+local cidr     = require "firewall.cidr"
 
 -- Default config values live in firewall.defaults. Re-exported here so
 -- parse_config() and existing callers continue to use schema.DEFAULTS.
@@ -473,6 +474,85 @@ function _M.validate_rules_strict(raw)
         return _result(false, warnings)
     end
     return _result(true, {}, cleaned or {})
+end
+
+-- ============================================================================
+-- parse_allowlist / parse_blocklist
+-- ============================================================================
+-- Fail-soft validators for firewall:allowlist and firewall:blocklist.
+-- Both keys hold a JSON array of IPv4 addresses or CIDR strings.
+-- Invalid entries are skipped with a warning; valid entries are returned
+-- as the original strings (callers convert to parsed form via cidr.parse).
+--
+-- @param  raw   table|nil  cjson-decoded Redis value
+-- @param  label string     used in warning messages ("allowlist"|"blocklist")
+-- @return table            array of valid CIDR/IP strings
+-- @return table            list of warning strings
+-- ============================================================================
+local function _parse_ip_list(raw, label)
+    local warnings = {}
+    if raw == nil then
+        return {}, warnings
+    end
+    if type(raw) ~= "table" then
+        table.insert(warnings,
+            label .. " must be a JSON array (got " .. type(raw) .. ")")
+        return {}, warnings
+    end
+    local valid = {}
+    for i, entry in ipairs(raw) do
+        local lbl = label .. "[" .. i .. "]"
+        if type(entry) ~= "string" or entry == "" then
+            table.insert(warnings, lbl .. " must be a non-empty string — skipping")
+        elseif not cidr.parse(entry) then
+            table.insert(warnings,
+                lbl .. " \"" .. tostring(entry)
+                .. "\" is not a valid IPv4 address or CIDR — skipping")
+        else
+            table.insert(valid, entry)
+        end
+    end
+    return valid, warnings
+end
+
+function _M.parse_allowlist(raw)
+    return _parse_ip_list(raw, "allowlist")
+end
+
+function _M.parse_blocklist(raw)
+    return _parse_ip_list(raw, "blocklist")
+end
+
+-- ============================================================================
+-- ADMIN-SIDE STRICT VALIDATION
+-- ============================================================================
+
+function _M.validate_allowlist_strict(raw)
+    if type(raw) ~= "table" then
+        return _result(false, { "Allowlist must be a JSON array of IPv4 addresses or CIDRs." })
+    end
+    if next(raw) ~= nil and not _is_json_array(raw) then
+        return _result(false, { "Allowlist must be a JSON array, not an object." })
+    end
+    local cleaned, warnings = _M.parse_allowlist(raw)
+    if #warnings > 0 then
+        return _result(false, warnings)
+    end
+    return _result(true, {}, cleaned)
+end
+
+function _M.validate_blocklist_strict(raw)
+    if type(raw) ~= "table" then
+        return _result(false, { "Blocklist must be a JSON array of IPv4 addresses or CIDRs." })
+    end
+    if next(raw) ~= nil and not _is_json_array(raw) then
+        return _result(false, { "Blocklist must be a JSON array, not an object." })
+    end
+    local cleaned, warnings = _M.parse_blocklist(raw)
+    if #warnings > 0 then
+        return _result(false, warnings)
+    end
+    return _result(true, {}, cleaned)
 end
 
 function _M.validate_config_strict(raw)

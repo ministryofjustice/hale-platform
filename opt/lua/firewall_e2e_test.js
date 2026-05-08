@@ -278,6 +278,71 @@ test("e2e: validate config — rejects unknown keys", async () => {
   assert.ok(body.errors.some((e) => e.includes("burts")));
 });
 
+// ---------------------------------------------------------------------------
+// /firewall/admin/validate — allowlist and blocklist
+// ---------------------------------------------------------------------------
+
+test("e2e: validate allowlist — accepts valid CIDRs and bare IPs", async () => {
+  const { status, body } = await postValidate("allowlist", [
+    "10.0.0.0/8",
+    "192.168.1.0/24",
+    "172.16.5.5",
+  ]);
+  assert.equal(status, 200);
+  assert.ok(body.ok, `expected ok=true, got: ${JSON.stringify(body.errors)}`);
+  assert.equal(body.normalised.length, 3);
+});
+
+test("e2e: validate allowlist — rejects an invalid CIDR", async () => {
+  const { status, body } = await postValidate("allowlist", [
+    "10.0.0.0/8",
+    "not-an-ip",
+  ]);
+  assert.equal(status, 200);
+  assert.ok(!body.ok, "expected ok=false for invalid entry");
+  assert.ok(
+    body.errors.some((e) => e.includes("not-an-ip")),
+    `expected error mentioning the bad entry, got: ${JSON.stringify(body.errors)}`,
+  );
+});
+
+test("e2e: validate allowlist — rejects a non-array body", async () => {
+  const { status, body } = await postValidate("allowlist", { cidr: "10.0.0.0/8" });
+  assert.equal(status, 200);
+  assert.ok(!body.ok);
+});
+
+test("e2e: validate blocklist — accepts valid CIDRs", async () => {
+  const { status, body } = await postValidate("blocklist", [
+    "203.0.113.0/24",
+    "198.51.100.1",
+  ]);
+  assert.equal(status, 200);
+  assert.ok(body.ok, `expected ok=true, got: ${JSON.stringify(body.errors)}`);
+  assert.equal(body.normalised.length, 2);
+});
+
+test("e2e: validate blocklist — rejects an out-of-range prefix", async () => {
+  const { status, body } = await postValidate("blocklist", ["10.0.0.0/33"]);
+  assert.equal(status, 200);
+  assert.ok(!body.ok, "expected ok=false for /33 prefix");
+});
+
+test("e2e: validate — unknown kind returns 400", async () => {
+  const res = await fetch(
+    `${FIREWALL_URL}/firewall/admin/validate?kind=unknown`,
+    {
+      ...fetchOpts,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "[]",
+    },
+  );
+  const json = await res.json();
+  assert.equal(res.status, 400);
+  assert.ok(!json.ok);
+});
+
 test("e2e: validate — missing kind parameter returns 400", async () => {
   const res = await fetch(`${FIREWALL_URL}/firewall/admin/validate`, {
     ...fetchOpts,
