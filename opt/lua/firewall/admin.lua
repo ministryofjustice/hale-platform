@@ -73,7 +73,8 @@ function _M.handle_route()
         handler()
     else
         ngx.status = 404
-        ngx.say('{"error":"not found"}')
+        ngx.header.content_type = "application/json"
+        ngx.say(cjson.encode({ error = "not found" }))
     end
 end
 
