@@ -30,18 +30,22 @@ but if you only read one document, read this one.
 
 For every incoming HTTP request:
 
-1. Look up the client IP in a small in-nginx cache. If we already decided to
+1. Check the client IP against the **CIDR allowlist** (`firewall:allowlist`).
+   If it matches, bypass all firewall logic and pass through.
+2. Check the client IP against the **CIDR blocklist** (`firewall:blocklist`).
+   If it matches, return 403 immediately — no scoring, no GCRA.
+3. Look up the client IP in a small in-nginx cache. If we already decided to
    block it within a recent window, short-circuit (no Redis hit).
-2. Otherwise, score the request against a list of **rules** (patterns on
+4. Otherwise, score the request against a list of **rules** (patterns on
    URI, User-Agent, method, query string) loaded from Redis. Each matching
    rule contributes a **cost**.
-3. Run **GCRA** (a token-bucket rate limit) in a Redis Lua script, charging
-   the IP that cost. Allowlists and blocklists short-circuit inside the same
+5. Run **GCRA** (a token-bucket rate limit) in a Redis Lua script, charging
+   the IP that cost. Per-IP allow/block keys short-circuit inside the same
    script.
-4. Allow the request, or return 429. In `monitor` mode, log the would-block
+6. Allow the request, or return 429. In `monitor` mode, log the would-block
    decision and let the request through.
-5. After the response, if it was a 404, schedule an extra penalty cost
-   asynchronously (probing for vulnerable URLs is expensive).
+7. After the response, if any `res`-phase rules match, schedule an extra
+   charge asynchronously (e.g. a 404 penalty for path probing).
 
 The point of GCRA over a naïve counter is that it handles decay naturally
 and does not have the "TTL refresh" bug where a slow attacker can accumulate
@@ -67,7 +71,7 @@ Access is restricted to loopback in production by a single `location ^~
 | `GET`  | `/firewall/stats`            | JSON snapshot of rules, config, and live GCRA TATs | Ops, debug |
 | `GET`  | `/firewall/flush-cache`      | Bump shared version counter so all workers re-read rules/config; clears local block cache | PHP after every save; ops after manual Redis edits |
 | `GET`  | `/firewall/clear-penalties`  | Delete every `firewall:block:{ip}` whose value is `"gcra"` (manual bans untouched) | Ops |
-| `POST` | `/firewall/admin/validate?kind=rules\|config` | Strict schema check, body is the candidate JSON; **read-only, no Redis writes** | PHP admin form before save |
+| `POST` | `/firewall/admin/validate?kind=rules\|config\|allowlist\|blocklist` | Strict schema check, body is the candidate JSON; **read-only, no Redis writes** | PHP admin form before save |
 
 ### 2. Redis keys
 
@@ -114,7 +118,9 @@ this exact shape, regardless of whether validation succeeded:
 - `normalised`: the payload as it would be persisted to Redis — defaults
   applied, types coerced, unknown keys stripped. `null` when `ok` is
   `false`. PHP writes this verbatim to Redis on success; never the raw
-  operator input.
+  operator input. For `allowlist` and `blocklist` kinds this is a JSON
+  array of strings (CIDR notation, e.g. `["10.0.0.0/8", "192.168.1.5"]`);
+  bare IPs are accepted and stored as-is (treated as /32 at match time).
 
 A non-200 response indicates a request-shape problem (missing `kind`,
 empty body, malformed JSON), not a schema problem.
@@ -285,8 +291,10 @@ the same mode.
 |---|---|---|---|---|
 | `firewall:rules` | JSON string | PHP | Lua | Array of scoring rules |
 | `firewall:config` | JSON string | PHP | Lua | GCRA params, mode, audit settings |
-| `firewall:allow:{ip}` | string `"1"` | PHP/CLI | Lua script | Allowlist (bypass GCRA entirely) |
-| `firewall:block:{ip}` | string (`"1"` manual, `"gcra"` auto) | PHP/CLI + Lua | Lua script | Blocklist; TTL = ban duration |
+| `firewall:allowlist` | JSON string | PHP/CLI | Lua | Array of IPv4 CIDR strings (or bare IPs) that bypass all firewall logic |
+| `firewall:blocklist` | JSON string | PHP/CLI | Lua | Array of IPv4 CIDR strings (or bare IPs) that receive an immediate 403 |
+| `firewall:allow:{ip}` | string `"1"` | PHP/CLI | Lua script | Per-IP bypass flag (checked inside GCRA script) |
+| `firewall:block:{ip}` | string (`"1"` manual, `"gcra"` auto) | PHP/CLI + Lua | Lua script | Per-IP block flag; TTL = ban duration |
 | `firewall:gcra:{ip}` | string (TAT, ms epoch) | Lua script | Lua script | GCRA bucket state |
 | `firewall:gcra:{ip}:breakdown` | hash | Lua script | Lua script | Per-rule hit counts (audit only) |
 | `firewall:audit` | stream | Lua | PHP | Decision log, capped by `audit_maxlen` |
@@ -356,6 +364,7 @@ comment on `_M.req` in [firewall.lua](firewall.lua) for the full reasoning.
 | [firewall/gcra.lua](firewall/gcra.lua) | GCRA algorithm + the Redis Lua script that runs server-side. EVALSHA + cache. |
 | [firewall/schema.lua](firewall/schema.lua) | Pure validators for `firewall:rules` and `firewall:config`. **Authoritative schema lives here.** Exposes `parse_*` (fail-soft, runtime) and `validate_*_strict` (fail-hard, admin path). |
 | [firewall/defaults.lua](firewall/defaults.lua) | Single source of truth for constants (`GCRA_KEY_PREFIX` etc.) and GCRA tunable defaults. |
+| [firewall/cidr.lua](firewall/cidr.lua) | Pure IPv4 CIDR matching. No `ngx.*` deps; unit-testable. `parse(entry)` → `{net, host_count}` or nil. `contains(parsed_list, ip)` → bool. Bare IPs treated as /32. |
 | [firewall/redis.lua](firewall/redis.lua) | Connection pool, fail-open. Reads `REDIS_*` env. |
 | [spec/](spec/) | busted unit + integration tests (run with `make test-firewall`). |
 | [firewall_e2e_test.js](firewall_e2e_test.js) | Node/Deno e2e tests + CSV fixture replay against a running stack. |
@@ -391,9 +400,37 @@ same error the runtime parser would log. On success PHP writes the
 `/firewall/flush-cache` so all nginx workers re-read on their next
 request (otherwise it takes up to 60 s).
 
-### Allow or block an IP
+### Allow or block a CIDR range (or single IP)
 
-There is no admin UI for these yet. Write directly to Redis:
+Edit `firewall:allowlist` or `firewall:blocklist` in Redis as a JSON array
+of IPv4 CIDR strings. Bare IPs are accepted and treated as /32.
+
+```
+# Allow a whole subnet (bypass all firewall logic)
+SET firewall:allowlist '["10.0.0.0/8", "172.16.0.0/12"]'
+
+# Block a range (return 403 before GCRA)
+SET firewall:blocklist '["198.51.100.0/24"]'
+
+# Clear a list
+SET firewall:allowlist '[]'
+```
+
+Validate the payload before writing:
+
+```
+POST /firewall/admin/validate?kind=allowlist
+Content-Type: application/json
+["10.0.0.0/8"]
+```
+
+After writing, call `GET /firewall/flush-cache` so all workers reload the
+lists immediately (otherwise the worker cache TTL is up to 60 s).
+
+### Allow or block a single IP (GCRA-level)
+
+For per-IP overrides that live inside the GCRA script rather than the
+early-return path:
 
 ```
 SET firewall:allow:1.2.3.4 1 EX 3600  # allow for 1 hour
@@ -405,15 +442,14 @@ DEL firewall:block:1.2.3.4
 ```
 
 After writing, call `GET /firewall/flush-cache` so all workers pick up the
-change immediately (otherwise the local block cache may hold a stale entry
-for up to 60 s).
+change immediately.
 
 ### Inspect state
 
 | What | How |
 |---|---|
 | Current rules/config + active GCRA TATs | `GET /firewall/stats` (returns JSON) |
-| Dry-run schema check on a payload | `POST /firewall/admin/validate?kind=rules\|config` with the JSON body |
+| Dry-run schema check on a payload | `POST /firewall/admin/validate?kind=rules\|config\|allowlist\|blocklist` with the JSON body |
 | Recent decisions | WordPress admin → audit table, or `XREVRANGE firewall:audit + - COUNT 50` |
 | Currently active blocks | `KEYS firewall:block:*` then `PTTL` per key |
 | nginx access log | `fw_cost=N` field on every line shows the rule total |
