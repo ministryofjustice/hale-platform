@@ -452,6 +452,7 @@ Complete catalogue of events, by source file:
 | Level | `event=` | Fields | When |
 |---|---|---|---|
 | `NOTICE` | `rules_reload` | `version=` `rule_count=` | Fired once per worker each time the per-worker cache is refreshed from Redis (either the 60 s TTL expired or `/firewall/flush-cache` bumped the version counter). Correlate `version=` across workers to confirm a config change propagated everywhere. |
+| `ERR`    | `json_decode_error` | `key=` `err=` | A Redis key (`firewall:rules`, `:config`, `:allowlist`, or `:blocklist`) contained invalid JSON. The affected list is treated as empty (fail-open). Indicates a bad direct write to Redis bypassing the admin validate endpoint. |
 | `WARN`   | `schema_warn` | `kind=rules\|config\|allowlist\|blocklist` + the warning text | A rule / config field / CIDR entry in Redis failed structural validation. The offending entry is dropped; the rest are kept. Should never fire in production — admin validate catches this before save. |
 | `NOTICE` | `cache_flush` | `version=` | The shared version counter was bumped by `/firewall/flush-cache`. All workers will reload on their next request. `version=` is the new counter value. |
 | `ERR`    | `cache_flush_error` | `err=` | The shared-dict version counter could not be incremented. Falls back to `set("version", 1)`. Indicates `firewall_rc_cache` shared dict is misconfigured. |

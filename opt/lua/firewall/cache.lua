@@ -81,10 +81,36 @@ function _M.load_rules_and_config(red)
     local allowlist_json  = red:get("firewall:allowlist")
     local blocklist_json  = red:get("firewall:blocklist")
 
-    local raw_rules     = (rules_json     and rules_json     ~= ngx.null) and cjson.decode(rules_json)     or nil
-    local raw_config    = (config_json    and config_json    ~= ngx.null) and cjson.decode(config_json)    or nil
-    local raw_allowlist = (allowlist_json and allowlist_json ~= ngx.null) and cjson.decode(allowlist_json) or nil
-    local raw_blocklist = (blocklist_json and blocklist_json ~= ngx.null) and cjson.decode(blocklist_json) or nil
+    local raw_rules,     rules_json_err
+    local raw_config,    config_json_err
+    local raw_allowlist, allowlist_json_err
+    local raw_blocklist, blocklist_json_err
+
+    if rules_json     and rules_json     ~= ngx.null then
+        raw_rules,     rules_json_err     = cjson.decode(rules_json)
+    end
+    if config_json    and config_json    ~= ngx.null then
+        raw_config,    config_json_err    = cjson.decode(config_json)
+    end
+    if allowlist_json and allowlist_json ~= ngx.null then
+        raw_allowlist, allowlist_json_err = cjson.decode(allowlist_json)
+    end
+    if blocklist_json and blocklist_json ~= ngx.null then
+        raw_blocklist, blocklist_json_err = cjson.decode(blocklist_json)
+    end
+
+    if rules_json_err     then
+        ngx.log(ngx.ERR, "[firewall] event=json_decode_error key=firewall:rules err=", rules_json_err)
+    end
+    if config_json_err    then
+        ngx.log(ngx.ERR, "[firewall] event=json_decode_error key=firewall:config err=", config_json_err)
+    end
+    if allowlist_json_err then
+        ngx.log(ngx.ERR, "[firewall] event=json_decode_error key=firewall:allowlist err=", allowlist_json_err)
+    end
+    if blocklist_json_err then
+        ngx.log(ngx.ERR, "[firewall] event=json_decode_error key=firewall:blocklist err=", blocklist_json_err)
+    end
 
     local rules,            rule_warns   = schema.parse_rules(raw_rules)
     local gcra_config,      config_warns = schema.parse_config(raw_config)
