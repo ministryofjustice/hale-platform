@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "08970158790248e98c34d5e0eba6e561",
+    "content-hash": "381a6caa241d5a2189ebd9895a832ee1",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -982,25 +982,25 @@
         },
         {
             "name": "ministryofjustice/hale",
-            "version": "4.33.0",
+            "version": "dev-npm-audit-fix",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale.git",
-                "reference": "0179c92fbcf6e0a1387a7b698f44562f21589416"
+                "reference": "18371f98f5b74aae7b70695aa16b6e997f586ced"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/0179c92fbcf6e0a1387a7b698f44562f21589416",
-                "reference": "0179c92fbcf6e0a1387a7b698f44562f21589416",
+                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/18371f98f5b74aae7b70695aa16b6e997f586ced",
+                "reference": "18371f98f5b74aae7b70695aa16b6e997f586ced",
                 "shasum": ""
             },
             "type": "wordpress-theme",
             "description": "Hale theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/hale/tree/4.33.0",
+                "source": "https://github.com/ministryofjustice/hale/tree/npm-audit-fix",
                 "issues": "https://github.com/ministryofjustice/hale/issues"
             },
-            "time": "2026-04-14T13:24:26+00:00"
+            "time": "2026-05-11T11:46:20+00:00"
         },
         {
             "name": "ministryofjustice/hale-components",
@@ -3590,6 +3590,7 @@
     "minimum-stability": "stable",
     "stability-flags": {
         "ministryofjustice/govwind": 20,
+        "ministryofjustice/hale": 20,
         "ministryofjustice/ppo": 20,
         "ministryofjustice/website-builder-blocks": 20
     },
