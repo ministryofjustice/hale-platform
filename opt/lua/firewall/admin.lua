@@ -127,8 +127,8 @@ end
 
 
 -- /firewall/admin/validate — strict schema check for admin saves.
--- Request:  POST  body = raw JSON for either rules or config
---           query: kind=rules | kind=config
+-- Request:  POST  body = raw JSON for either rules, config, allowlist, or blocklist
+--           query: kind=rules | kind=config | kind=allowlist | kind=blocklist
 -- Response: 200 application/json
 --   { "ok": bool, "errors": [string,...], "normalised": <array|object|null> }
 --
