@@ -80,7 +80,10 @@ end
 
 
 -- /firewall/stats — JSON snapshot of rules, config and live GCRA TATs.
--- Uses KEYS firewall:gcra:* — fine for ops/debug, do not call in hot paths.
+-- Uses SCAN over firewall:gcra:* with TYPE=string so the per-IP breakdown
+-- hashes (firewall:gcra:{ip}:breakdown) are filtered out at the Redis level —
+-- a plain GET on those would return WRONGTYPE. SCAN is non-blocking
+-- (cursor-paged) so it's safe even if the keyspace grows large.
 function _M.stats()
     ngx.header.content_type = "application/json"
 
@@ -94,16 +97,28 @@ function _M.stats()
     local rules, config = cache.load_rules_and_config(red)
 
     local gcra_prefix = defaults.GCRA_KEY_PREFIX
-    local gcra_keys = red:keys(gcra_prefix .. "*")
     local tat_data = {}
-    if gcra_keys and #gcra_keys > 0 then
-        for _, key in ipairs(gcra_keys) do
-            local tat = red:get(key)
-            if tat and tat ~= ngx.null then
-                tat_data[key:sub(#gcra_prefix + 1)] = tonumber(tat)  -- strip prefix
+    local cursor = "0"
+    repeat
+        local res, err = red:scan(cursor,
+            "MATCH", gcra_prefix .. "*",
+            "COUNT", 100,
+            "TYPE",  "string")
+        if not res then
+            ngx.log(ngx.ERR, "[firewall] SCAN failed: ", err)
+            break
+        end
+        cursor = res[1]
+        local keys = res[2]
+        if keys and #keys > 0 then
+            for _, key in ipairs(keys) do
+                local tat = red:get(key)
+                if tat and tat ~= ngx.null then
+                    tat_data[key:sub(#gcra_prefix + 1)] = tonumber(tat)  -- strip prefix
+                end
             end
         end
-    end
+    until cursor == "0"
 
     redis_pool.release(red)
 
