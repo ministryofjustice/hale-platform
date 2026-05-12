@@ -317,4 +317,25 @@ describe("check_direct with mock Redis", function()
         assert.equals("firewall:block:10.0.0.1", captured.block_key)
     end)
 
+    -- burst=0 is a valid operator choice (no capacity → every request blocked).
+    -- penalty_ttl=0 is a valid operator choice (disable automatic bans).
+    -- Both must be passed through as 0, not silently replaced by the default.
+    it("passes burst=0 to eval without replacing with default", function()
+        local config = { emission_interval = 1000, burst = 0, penalty_ttl = 600000 }
+        local red, captured = mock_redis({ 1, 0, 0, "", "gcra" })
+
+        gcra.check_direct(red, "gcra:10.0.0.1", 1, config)
+
+        assert.equals(0, tonumber(captured.argv[2]))  -- burst must be 0, not DEFAULTS.burst
+    end)
+
+    it("passes penalty_ttl=0 to eval without replacing with default", function()
+        local config = { emission_interval = 1000, burst = 10000, penalty_ttl = 0 }
+        local red, captured = mock_redis({ 1, 0, 1001000, "", "gcra" })
+
+        gcra.check_direct(red, "gcra:10.0.0.1", 1, config)
+
+        assert.equals(0, tonumber(captured.argv[5]))  -- penalty_ttl must be 0, not DEFAULTS.penalty_ttl
+    end)
+
 end)
