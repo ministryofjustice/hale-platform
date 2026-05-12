@@ -120,16 +120,16 @@ function _M.req()
     -- ngx.exit() raises a Lua error internally, so it must NOT run inside
     -- pcall (which would swallow it and let the request through). Set a flag
     -- inside the protected block; call ngx.exit() after.
+    local red
     local blocked = false
     local ok, err = pcall(function()
-        local red = redis_pool.connect()
+        red = redis_pool.connect()
         if not red then return end  -- fail-open
 
         local rules, gcra_config = cache.load_rules_and_config(red)
 
         if not rules then
             ngx.log(ngx.ERR, "[firewall] event=no_rules msg=firewall:rules missing or empty, all requests allowed")
-            redis_pool.release(red)
             return
         end
 
@@ -148,7 +148,6 @@ function _M.req()
         local mode = (gcra_config and gcra_config.mode) or "monitor"
 
         if mode == "off" then
-            redis_pool.release(red)
             return
         end
 
@@ -160,7 +159,6 @@ function _M.req()
         local allowed, info = gcra_module.check(red, ip, request_cost, gcra_config, breakdown)
 
         if allowed then
-            redis_pool.release(red)
             return
         end
 
@@ -222,13 +220,12 @@ function _M.req()
                 " cost=", request_cost,
                 " retry_after=", info.retry_after)
 
-        redis_pool.release(red)
-
         if mode == "enforce" then
             blocked = true
         end
     end)
 
+    if red then redis_pool.release(red) end
     if not ok then
         ngx.log(ngx.ERR, "[firewall] event=req_error err=", err)
     elseif blocked then
@@ -268,18 +265,18 @@ function _M.res()
     local ok, err = ngx.timer.at(0, function(premature)
         if premature then return end  -- nginx shutting down
 
+        local red
         local timer_ok, timer_err = pcall(function()
             -- Recheck cache: another worker may have blocked this IP since.
             if blocked_cache:get(CACHE_PREFIX .. ip) then return end
 
-            local red = redis_pool.connect()
+            red = redis_pool.connect()
             if not red then return end
 
             local _, gcra_config = cache.load_rules_and_config(red)
             local mode = (gcra_config and gcra_config.mode) or "monitor"
 
             if mode == "off" then
-                redis_pool.release(red)
                 return
             end
 
@@ -326,9 +323,9 @@ function _M.res()
                         " cost=", total_cost)
             end
 
-            redis_pool.release(red)
         end)
 
+        if red then redis_pool.release(red) end
         if not timer_ok then
             ngx.log(ngx.ERR, "[firewall] event=res_timer_error err=", timer_err)
         end
