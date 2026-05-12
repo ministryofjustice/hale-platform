@@ -231,22 +231,34 @@ function _M.clear_penalties()
         return
     end
 
-    local keys, err = red:keys(BLOCK_PREFIX .. "*")
+    -- SCAN (cursor-paged, non-blocking) instead of KEYS (O(N), blocks Redis).
+    -- TYPE=string filters to firewall:block:{ip} entries directly so we don't
+    -- GET keys we're not going to touch. Mirrors the SCAN pattern in _M.stats().
     local deleted = 0
-    if err then
-        ngx.log(ngx.ERR, "[firewall] failed to list block keys: ", err)
-    end
-    if keys and type(keys) == "table" then
-        for _, key in ipairs(keys) do
-            local val = red:get(key)
-            if val == "gcra" then
-                red:del(key)
-                local ip = key:sub(#BLOCK_PREFIX + 1)
-                cache.blocked_cache:delete(CACHE_PREFIX .. ip)
-                deleted = deleted + 1
+    local cursor = "0"
+    repeat
+        local res, scan_err = red:scan(cursor,
+            "MATCH", BLOCK_PREFIX .. "*",
+            "COUNT", 100,
+            "TYPE",  "string")
+        if not res then
+            ngx.log(ngx.ERR, "[firewall] failed to scan block keys: ", scan_err)
+            break
+        end
+        cursor = res[1]
+        local keys = res[2]
+        if keys and #keys > 0 then
+            for _, key in ipairs(keys) do
+                local val = red:get(key)
+                if val == "gcra" then
+                    red:del(key)
+                    local ip = key:sub(#BLOCK_PREFIX + 1)
+                    cache.blocked_cache:delete(CACHE_PREFIX .. ip)
+                    deleted = deleted + 1
+                end
             end
         end
-    end
+    until cursor == "0"
 
     redis_pool.release(red)
     ngx.header.content_type = "application/json"
