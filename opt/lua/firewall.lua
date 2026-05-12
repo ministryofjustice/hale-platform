@@ -159,76 +159,74 @@ function _M.req()
         --   gcra    = live GCRA decision against the bucket
         local allowed, info = gcra_module.check(red, ip, request_cost, gcra_config, breakdown)
 
-        if allowed and info.reason == "allow" then
+        if allowed then
             redis_pool.release(red)
             return
         end
 
-        if not allowed then
-            -- retry_after is ms; 0 from a "block" reason = permanent ban,
-            -- and shared_dict :set(_, _, 0) means "no expiry".
-            local cache_ttl
-            if info.reason == "block" and info.retry_after == 0 then
-                cache_ttl = 0
+        -- here, handle the case where allowed is false
+
+        -- retry_after is ms; 0 from a "block" reason = permanent ban,
+        -- and shared_dict :set(_, _, 0) means "no expiry".
+        local cache_ttl
+        if info.reason == "block" and info.retry_after == 0 then
+            cache_ttl = 0
+        else
+            cache_ttl = math.ceil(info.retry_after / 1000)
+        end
+
+        -- Cache the decision under the current mode so the fast path
+        -- can act on it without re-reading config.
+        blocked_cache:set(CACHE_PREFIX .. ip, mode, cache_ttl)
+
+        -- One audit entry per block episode per IP (subsequent requests
+        -- short-circuit at the fast path and do not re-audit).
+        if gcra_config and gcra_config.audit_enabled then
+            local now = math.floor(ngx.now() * 1000)
+            local audit_maxlen = gcra_config.audit_maxlen or DEFAULT_AUDIT_MAXLEN
+
+            local trigger
+            if info.reason == "block" then
+                trigger = "blocklist"
+            elseif info.reason == "penalty" then
+                trigger = "penalty"
             else
-                cache_ttl = math.ceil(info.retry_after / 1000)
+                local trigger_parts = {}
+                for rule, rule_cost in pairs(breakdown) do
+                    table.insert(trigger_parts, rule .. ":" .. rule_cost)
+                end
+                -- Sort so the audit `trigger` field is deterministic across
+                -- requests with the same matching rule set (pairs() order is
+                -- otherwise hash-dependent).
+                table.sort(trigger_parts)
+                trigger = table.concat(trigger_parts, ",")
             end
 
-            -- Cache the decision under the current mode so the fast path
-            -- can act on it without re-reading config.
-            blocked_cache:set(CACHE_PREFIX .. ip, mode, cache_ttl)
-
-            -- One audit entry per block episode per IP (subsequent requests
-            -- short-circuit at the fast path and do not re-audit).
-            if gcra_config and gcra_config.audit_enabled then
-                local now = math.floor(ngx.now() * 1000)
-                local audit_maxlen = gcra_config.audit_maxlen or DEFAULT_AUDIT_MAXLEN
-
-                local trigger
-                if info.reason == "block" then
-                    trigger = "blocklist"
-                elseif info.reason == "penalty" then
-                    trigger = "penalty"
-                else
-                    local trigger_parts = {}
-                    for rule, rule_cost in pairs(breakdown) do
-                        table.insert(trigger_parts, rule .. ":" .. rule_cost)
-                    end
-                    -- Sort so the audit `trigger` field is deterministic across
-                    -- requests with the same matching rule set (pairs() order is
-                    -- otherwise hash-dependent).
-                    table.sort(trigger_parts)
-                    trigger = table.concat(trigger_parts, ",")
-                end
-
-                local _, xadd_err = red:xadd(AUDIT_STREAM, "MAXLEN", "~", audit_maxlen, "*",
-                    "ip", ip,
-                    "blocked_at", now,
-                    "cost", request_cost,
-                    "reason", info.reason,
-                    "mode", mode,
-                    "trigger", trigger,
-                    "accumulated", info.accumulated or "",
-                    "retry_after", info.retry_after or "")
-                if xadd_err then
-                    ngx.log(ngx.ERR, "[firewall] event=audit_write_failed phase=req ip=", ip, " err=", xadd_err)
-                end
-            end
-
-            ngx.log(ngx.INFO, "[firewall] event=block phase=req mode=", mode,
-                    " ip=", ip,
-                    " reason=", info.reason,
-                    " cost=", request_cost,
-                    " retry_after=", info.retry_after)
-
-            redis_pool.release(red)
-
-            if mode == "enforce" then
-                blocked = true
+            local _, xadd_err = red:xadd(AUDIT_STREAM, "MAXLEN", "~", audit_maxlen, "*",
+                "ip", ip,
+                "blocked_at", now,
+                "cost", request_cost,
+                "reason", info.reason,
+                "mode", mode,
+                "trigger", trigger,
+                "accumulated", info.accumulated or "",
+                "retry_after", info.retry_after or "")
+            if xadd_err then
+                ngx.log(ngx.ERR, "[firewall] event=audit_write_failed phase=req ip=", ip, " err=", xadd_err)
             end
         end
 
+        ngx.log(ngx.INFO, "[firewall] event=block phase=req mode=", mode,
+                " ip=", ip,
+                " reason=", info.reason,
+                " cost=", request_cost,
+                " retry_after=", info.retry_after)
+
         redis_pool.release(red)
+
+        if mode == "enforce" then
+            blocked = true
+        end
     end)
 
     if not ok then
