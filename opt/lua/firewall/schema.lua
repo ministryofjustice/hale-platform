@@ -39,9 +39,9 @@
 --                                      --   sustained rate. Must be >= 0.
 --                                      --   Default: 150000 (150 s of burst)
 --
---     "penalty_ttl": <integer>,        -- Optional. TTL in seconds applied to
+--     "penalty_ttl": <integer>,        -- Optional. TTL in ms applied to
 --                                      --   penalty state. Must be >= 0.
---                                      --   Default: 900
+--                                      --   Default: 600000 (600 s)
 --
 --     "audit_enabled": <boolean>,      -- Optional. When true, the GCRA script
 --                                      --   writes rule breakdowns to the audit
