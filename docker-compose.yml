@@ -89,7 +89,7 @@ services:
     volumes:
       - redis:/data
   redis-insight:
-    image: redis/redisinsight:3
+    image: redis/redisinsight:3.4
     profiles:
     - firewall
     environment:
