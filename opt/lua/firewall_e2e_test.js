@@ -462,8 +462,8 @@ test("e2e: JSP path probes are rate-limited quickly", async () => {
 //   time
 //
 // The test replays requests preserving inter-request timing from the log, and
-// asserts that the firewall's response code matches the logged status for each
-// row.  Rows where the logged status is outside 2xx/4xx/5xx are skipped.
+// summarizes the observed firewall behavior for the replayed traffic.
+// Rows where the logged status is not a valid integer are skipped.
 // ---------------------------------------------------------------------------
 
 function parseCsv(text) {
