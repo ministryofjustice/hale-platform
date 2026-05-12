@@ -171,8 +171,7 @@ function _M.parse_config(raw)
 
     if raw == nil then
         table.insert(warnings,
-            "firewall:config not found in Redis — using defaults. "
-            .. "Run seed_config() to initialise.")
+            "firewall:config not found in Redis — using defaults.")
         return out, warnings
     end
 
