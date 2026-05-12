@@ -209,7 +209,13 @@ function _M.parse_config(raw)
 
     -- audit_enabled: boolean, optional
     if raw.audit_enabled ~= nil then
-        out.audit_enabled = not not raw.audit_enabled
+        if type(raw.audit_enabled) ~= "boolean" then
+            table.insert(warnings,
+                "config.audit_enabled must be a boolean (true or false), got "
+                .. type(raw.audit_enabled))
+        else
+            out.audit_enabled = raw.audit_enabled
+        end
     end
 
     -- audit_maxlen: positive integer, optional
