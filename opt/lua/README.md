@@ -632,6 +632,7 @@ change immediately.
 | Recent decisions | WordPress admin → audit table, or `XREVRANGE firewall:audit + - COUNT 50` |
 | Currently active blocks | `KEYS firewall:block:*` then `PTTL` per key |
 | nginx access log | `fw_cost=N` field on every line shows the rule total |
+| Browse Redis keys interactively (local only) | http://redis-insight.docker — RedisInsight UI shipped with the local Docker stack |
 
 ### Flip mode without a deploy
 
