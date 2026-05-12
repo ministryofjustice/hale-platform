@@ -46,13 +46,17 @@ function _M.init()
         " redis_ssl=", tostring(redis_pool.config.ssl)
     )
     if not FIREWALL_ENABLED then return end
-    -- Warm the cache eagerly. Fail-open: if Redis is unavailable here the
-    -- first request will re-attempt via the normal pcall path in req().
-    local red = redis_pool.connect()
-    if red then
-        cache.load_rules_and_config(red)
-        redis_pool.release(red)
-    end
+    -- Warm the cache eagerly via a timer — ngx.socket is not available in
+    -- init_worker_by_lua directly, but IS available in timer callbacks.
+    -- Fail-open: if Redis is unavailable the first request will re-attempt
+    -- via the normal pcall path in req().
+    ngx.timer.at(0, function()
+        local red = redis_pool.connect()
+        if red then
+            cache.load_rules_and_config(red)
+            redis_pool.release(red)
+        end
+    end)
 end
 
 
