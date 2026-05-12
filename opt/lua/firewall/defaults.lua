@@ -33,8 +33,8 @@ _M.BLOCKLIST_KEY    = "firewall:blocklist"  -- CIDR/IP range blocklist (early 40
 -- by config.parse_config() to firewall:config. Every field here is an
 -- operator tunable, exposed via the WordPress admin UI.
 _M.GCRA = {
-    emission_interval = 1000,           -- ms per token
-    burst             = 100000,         -- ms of burst capacity
+    emission_interval = 100,            -- ms per token
+    burst             = 150000,         -- ms of burst capacity
     penalty_ttl       = 600000,         -- ms; written to block key on GCRA block (0 = disabled)
     audit_enabled     = false,
     audit_maxlen      = 10000,

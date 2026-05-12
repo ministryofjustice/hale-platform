@@ -32,12 +32,12 @@
 --     "emission_interval": <number>,   -- Optional. Milliseconds per token
 --                                      --   (i.e. the inverse of the sustained
 --                                      --   request rate). Must be > 0.
---                                      --   Default: 1000  (1 req/s sustained)
+--                                      --   Default: 100  (10 req/s sustained)
 --
 --     "burst": <number>,               -- Optional. Burst capacity in ms.
 --                                      --   Allows short bursts above the
 --                                      --   sustained rate. Must be >= 0.
---                                      --   Default: 100000 (100 s of burst)
+--                                      --   Default: 150000 (150 s of burst)
 --
 --     "penalty_ttl": <integer>,        -- Optional. TTL in seconds applied to
 --                                      --   penalty state. Must be >= 0.
