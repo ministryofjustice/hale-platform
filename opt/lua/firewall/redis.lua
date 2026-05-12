@@ -75,13 +75,13 @@ function _M.connect()
     -- require() loads a Lua module. "resty.redis" is OpenResty's Redis client.
     -- Unlike Node.js require(), Lua caches modules so this is cheap after first call.
     local redis = require "resty.redis"
-    
+
     -- Create a new Redis client instance (this doesn't connect yet)
     local red = redis:new()
-    
+
     -- Set timeout for all subsequent Redis operations on this client
     red:set_timeout(REDIS_TIMEOUT)
-    
+
     -- Attempt to connect to Redis server.
     -- Lua functions often return (success_value, error_message).
     -- If connect fails, ok=nil and err contains the error string.
@@ -99,15 +99,13 @@ function _M.connect()
         ngx.log(ngx.ERR, "[redis] connect failed (fail-open): ", err)
         return nil  -- Return nil to signal failure; caller should handle gracefully
     end
-    
+
     -- If REDIS_AUTH is set and not empty string, authenticate with Redis.
     -- The "and" here is a guard: only evaluate right side if left is truthy.
     if REDIS_AUTH and REDIS_AUTH ~= "" then
-        -- Note: we reuse variable names "ok" and "err" - this is common in Lua.
-        -- The previous ok/err are just overwritten (no block scoping like JS let).
-        local ok, err = red:auth(REDIS_AUTH)
-        if not ok then
-            ngx.log(ngx.ERR, "[redis] auth failed (fail-open): ", err)
+        local auth_ok, auth_err = red:auth(REDIS_AUTH)
+        if not auth_ok then
+            ngx.log(ngx.ERR, "[redis] auth failed (fail-open): ", auth_err)
             return nil
         end
     end
@@ -115,9 +113,9 @@ function _M.connect()
     -- Select the logical database. Skipped for DB 0 (Redis default) to avoid
     -- an unnecessary round-trip in production.
     if REDIS_DB ~= 0 then
-        local ok, err = red:select(REDIS_DB)
-        if not ok then
-            ngx.log(ngx.ERR, "[redis] select db failed (fail-open): ", err)
+        local sel_ok, sel_err = red:select(REDIS_DB)
+        if not sel_ok then
+            ngx.log(ngx.ERR, "[redis] select db failed (fail-open): ", sel_err)
             return nil
         end
     end

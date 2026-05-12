@@ -79,11 +79,26 @@ services:
       PHP_DSN: "" # Sentry constant (not used locally)
       WP_SENTRY_ENV: ""
       ACF_PRO_LICENSE: ""
-      WP_CRON_INTERNAL_URL: "https://nginx"
+      NGINX_INTERNAL_URL: "https://nginx"
+      FIREWALL_ENABLED: ${FIREWALL_ENABLED:-false}
+      REDIS_SSL: "false"
   redis:
     image: redis:7-alpine
     profiles:
     - firewall
+    volumes:
+      - redis:/data
+  redis-insight:
+    image: redis/redisinsight:3
+    profiles:
+    - firewall
+    environment:
+      VIRTUAL_PORT: 5540
+      VIRTUAL_HOST: redis-insight.docker
+      RI_ACCEPT_TERMS_AND_CONDITIONS: true
+      RI_REDIS_HOST: redis
 volumes:
   database:
+    driver: local
+  redis:
     driver: local

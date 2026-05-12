@@ -40,7 +40,7 @@ CMD ["/usr/local/openresty/bin/openresty", "-g", "daemon off;"]
 
 
 ####################################################
-# Lua test suite image
+# Lua lint and test suite image
 # luarocks, busted, and luasocket (needed for
 # integration specs that connect to Redis directly).
 # ##################################################
@@ -55,6 +55,7 @@ RUN apk add --no-cache \
     && luarocks-5.1 install busted \
     && luarocks-5.1 install luasocket \
     && luarocks-5.1 install lua-cjson \
+    && luarocks-5.1 install luacheck \
     && apk del gcc musl-dev lua5.1-dev \
     && rm -rf /root/.cache
 
@@ -62,4 +63,4 @@ WORKDIR /app
 
 COPY opt/lua/  .
 
-ENTRYPOINT ["busted"]
+ENTRYPOINT ["/bin/sh", "-c", "luacheck . && busted"]
