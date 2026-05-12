@@ -93,7 +93,7 @@ response-phase timer. Read by the WordPress admin audit table.
 | `cost`         | int  | yes | GCRA cost charged on this request |
 | `mode`         | string  | yes | `enforce` or `monitor` — mode in force at the moment of the block |
 | `trigger`      | string  | yes | What caused the block: `blocklist`, `penalty`, or comma-separated `rule:<phase>-score:<name>:<cost>` pairs (e.g. `rule:req-score:php-probe:20`, `rule:res-score:res-404:50`) |
-| `accumulated`  | JSON object string | yes | Per-rule hit counts accumulated in the GCRA breakdown hash at the moment of the block (e.g. `{"php-probe":3,"high-ua":1}`). `""` when the breakdown hash is empty or Redis returned nil (e.g. `blocklist`/`penalty` blocks, or audit disabled). |
+| `accumulated`  | JSON object string | yes | Per-rule hit counts accumulated in the GCRA breakdown hash at the moment of the block, keyed by the same `rule:<phase>-score:<name>` strings used by the scorer (e.g. `{"rule:req-score:php-probe":3,"rule:req-score:high-ua":1}` or `{"rule:res-score:res-404":2}`). `""` when the breakdown hash is empty or Redis returned nil (e.g. `blocklist`/`penalty` blocks, or audit disabled). |
 | `reason`       | string  | request only | `block` / `penalty` / `gcra` — which arm of the GCRA script fired (omitted on response-phase entries) |
 | `retry_after`  | int (ms) | request only | Suggested cooldown for the client; same value used for the local cache TTL |
 
