@@ -69,6 +69,20 @@ symlink:
 	@docker exec wordpress bash /opt/scripts/link-dev-packages.sh
 	@echo "✓ Symlinks created"
 
+# Unit tests (no external dependencies)
+test-firewall:
+	@echo "Running Lua firewall tests"
+	@docker build -f nginx.local.dockerfile --target test -t test-firewall .
+	@# Start Redis - only if it is not already running.
+	$(eval REDIS_WAS_RUNNING := $(shell docker compose ps --status running redis 2>/dev/null | grep -q redis && echo yes || echo no))
+	@if [ "$(REDIS_WAS_RUNNING)" = "no" ]; then docker compose up -d redis && sleep 1; fi
+	docker run --rm \
+		--network hale-platform_default \
+		-e REDIS_DB=1 \
+		-e REDIS_HOST=redis \
+		test-firewall
+	@if [ "$(REDIS_WAS_RUNNING)" = "no" ]; then docker compose stop redis; fi
+
 # Remove all dangling <none> images
 none: clean
 

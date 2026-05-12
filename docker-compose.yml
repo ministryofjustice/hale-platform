@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: nginx.local.dockerfile
+      target: nginx
     ports:
       - 8080:8080
       - 443:443
@@ -13,7 +14,8 @@ services:
       - ./dev:/mnt/dev:delegated
       - ./opt/nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
       - ./opt/nginx/localwordpress.conf:/usr/local/openresty/nginx/conf/conf.d/localwordpress.conf
-      - ./opt/scripts/firewall.lua:/usr/local/openresty/nginx/lua/firewall.lua
+      - ./opt/lua/firewall.lua:/usr/local/openresty/nginx/lua/firewall.lua
+      - ./opt/lua/firewall:/usr/local/openresty/nginx/lua/firewall
       - ./bin/certs:/etc/nginx/certs/self-signed/
     depends_on:
       - wordpress
@@ -77,11 +79,26 @@ services:
       PHP_DSN: "" # Sentry constant (not used locally)
       WP_SENTRY_ENV: ""
       ACF_PRO_LICENSE: ""
-      WP_CRON_INTERNAL_URL: "https://nginx"
+      NGINX_INTERNAL_URL: "https://nginx"
+      FIREWALL_ENABLED: ${FIREWALL_ENABLED:-false}
+      REDIS_SSL: "false"
   redis:
     image: redis:7-alpine
     profiles:
     - firewall
+    volumes:
+      - redis:/data
+  redis-insight:
+    image: redis/redisinsight:3.4
+    profiles:
+    - firewall
+    environment:
+      VIRTUAL_PORT: 5540
+      VIRTUAL_HOST: redis-insight.docker
+      RI_ACCEPT_TERMS_AND_CONDITIONS: true
+      RI_REDIS_HOST: redis
 volumes:
   database:
+    driver: local
+  redis:
     driver: local

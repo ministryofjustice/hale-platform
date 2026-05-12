@@ -1,0 +1,11 @@
+-- Busted configuration file (for Lua unit and integration tests)
+-- Run tests with: busted
+
+return {
+    default = {
+        ROOT = {"spec"},
+        pattern = "_spec",
+        verbose = true,
+        output = "utfTerminal"
+    }
+}
