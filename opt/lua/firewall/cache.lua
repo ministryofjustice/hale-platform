@@ -173,12 +173,13 @@ end
 -- Sends no HTTP response — callers (flush_cache endpoint, tests) do that.
 function _M.flush()
     _M.blocked_cache:flush_all()
-    local ok, err = rc_shared:incr("version", 1, 0)
-    if not ok then
+    -- shdict:incr returns (new_value, err); new_value is nil on failure.
+    local new_version, err = rc_shared:incr("version", 1, 0)
+    if not new_version then
         ngx.log(ngx.ERR, "[firewall] event=cache_flush_error err=", err)
         rc_shared:set("version", 1)
     else
-        ngx.log(ngx.NOTICE, "[firewall] event=cache_flush version=", ok)
+        ngx.log(ngx.NOTICE, "[firewall] event=cache_flush version=", new_version)
     end
     _rc_cache.expires = 0
 end
