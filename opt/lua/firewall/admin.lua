@@ -208,11 +208,9 @@ function _M.validate()
 
     -- cjson encodes empty Lua tables as objects by default; force list-typed
     -- payloads to serialise as JSON arrays.
-    for _, list_kind in ipairs({ "rules", "allowlist", "blocklist" }) do
-        if kind == list_kind and result.normalised then
-            if next(result.normalised) == nil then
-                result.normalised = cjson.empty_array
-            end
+    if (kind == "rules" or kind == "allowlist" or kind == "blocklist") and result.normalised then
+        if next(result.normalised) == nil then
+            result.normalised = cjson.empty_array
         end
     end
 

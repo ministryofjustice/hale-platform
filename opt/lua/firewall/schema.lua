@@ -470,10 +470,11 @@ end
 -- cjson decodes [] -> empty table and {} -> empty table, so we treat an
 -- empty table as "object" (callers reject empty config separately).
 local function _is_json_array(t)
-    if next(t) == nil then return false end
-    local n = 0
-    for _ in pairs(t) do n = n + 1 end
-    return n == #t and #t > 0
+    if #t == 0 then return false end
+    for k in pairs(t) do
+        if type(k) ~= "number" then return false end
+    end
+    return true
 end
 
 function _M.validate_rules_strict(raw)
