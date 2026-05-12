@@ -219,9 +219,15 @@ function _M.parse_config(raw)
     end
 
     -- audit_maxlen: positive integer, optional
-    local maxlen = tonumber(raw.audit_maxlen)
-    if maxlen ~= nil and maxlen > 0 then
-        out.audit_maxlen = math.floor(maxlen)
+    if raw.audit_maxlen ~= nil then
+        local maxlen = tonumber(raw.audit_maxlen)
+        if maxlen == nil or maxlen <= 0 then
+            table.insert(warnings,
+                "config.audit_maxlen must be a positive integer, got "
+                .. tostring(raw.audit_maxlen))
+        else
+            out.audit_maxlen = math.floor(maxlen)
+        end
     end
 
     -- mode: enforce | monitor | off, optional
