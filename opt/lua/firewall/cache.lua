@@ -10,7 +10,7 @@
 -- require(), so every caller in the same worker process shares the same
 -- module state. _rc_cache is a module-level upvalue; load_rules_and_config()
 -- reassigns it to a fresh table on each Redis refresh, and all accessor
--- functions (get_rules, is_allowed, is_blocked, flush) re-dereference it on
+-- functions (get_rules, is_allowed, is_blocked) re-dereference it on
 -- every call, so they always see the current version.
 -- ============================================================================
 
@@ -32,9 +32,15 @@ local _rc_cache    = {
     blocklist      = {},
     config         = nil,
     version        = -1,
-    expires        = 0,
 }
-local RC_CACHE_TTL = 60  -- seconds
+
+-- Redis key holding the cluster-wide cache invalidation counter. Bumped by
+-- any writer of firewall:rules / :config / :allowlist / :blocklist (PHP
+-- admin, ops scripts) to signal "rules/config changed, drop your local
+-- copy". Polled once per second per pod by the timer in firewall.init();
+-- the value is mirrored into rc_shared:get("cache_version") for hot-path
+-- comparison without per-request Redis I/O.
+local CACHE_VERSION_KEY = "firewall:cache_version"
 
 -- Shared dicts declared in nginx.conf.
 _M.blocked_cache = ngx.shared.firewall_cache
@@ -67,14 +73,19 @@ end
 
 
 -- Load and validate firewall:rules + firewall:config from Redis.
--- Per-worker cache keyed off a shared version counter so flush() propagates
--- invalidation to all workers at once. Validation warnings are logged at
--- most once per refresh window.
+--
+-- Cluster-wide invalidation works via firewall:cache_version in Redis:
+-- writers (PHP admin save, ops scripts) bump the
+-- counter; the per-pod timer in firewall.init() polls it once a second
+-- and mirrors the value into the rc_shared "cache_version" slot. Each
+-- worker compares that slot to its own _rc_cache.version on every call;
+-- a mismatch triggers a re-read from Redis.
+--
+-- Validation warnings are logged at most once per refresh.
 function _M.load_rules_and_config(red)
-    local now            = ngx.now()
-    local shared_version = rc_shared:get("version") or 0
+    local shared_version = rc_shared:get("cache_version") or 0
 
-    if _rc_cache.expires > now and _rc_cache.version == shared_version then
+    if _rc_cache.version == shared_version and _rc_cache.rules ~= nil then
         return _rc_cache.rules, _rc_cache.config
     end
 
@@ -131,11 +142,17 @@ function _M.load_rules_and_config(red)
         blocklist      = _parse_cidr_list(blocklist_strs),
         config         = gcra_config,
         version        = shared_version,
-        expires        = now + RC_CACHE_TTL,
     }
     ngx.log(ngx.NOTICE, "[firewall] event=rules_reload version=", shared_version,
             " rule_count=", rules and #rules or 0)
     return rules, gcra_config
+end
+
+
+-- Return the cache version currently mirrored into the per-pod shared dict.
+-- Used by the stats endpoint so tests can observe when a reload has occurred.
+function _M.get_cache_version()
+    return rc_shared:get("cache_version") or 0
 end
 
 
@@ -163,25 +180,25 @@ function _M.is_blocked(ip)
 end
 
 
--- Flush all cached state cluster-wide:
---   • clears the block-decision shared dict (firewall_cache)
---   • bumps the shared version counter so every worker re-reads rules/config
---     from Redis on its next request (otherwise the 60 s TTL would delay
---     propagation of rule/config edits)
---   • zeroes this worker's in-memory cache TTL so it re-reads immediately
+-- Mirror Redis-side cache_version into the per-pod shared dict.
+-- Called once per second by a background timer in firewall.init() (worker 0
+-- only, so the cost is one Redis GET per pod per second regardless of how
+-- many nginx workers or how much traffic). Hot-path code reads only
+-- rc_shared:get("cache_version") and pays no Redis I/O per request.
 --
--- Sends no HTTP response — callers (flush_cache endpoint, tests) do that.
-function _M.flush()
-    _M.blocked_cache:flush_all()
-    -- shdict:incr returns (new_value, err); new_value is nil on failure.
-    local new_version, err = rc_shared:incr("version", 1, 0)
-    if not new_version then
-        ngx.log(ngx.ERR, "[firewall] event=cache_flush_error err=", err)
-        rc_shared:set("version", 1)
-    else
-        ngx.log(ngx.NOTICE, "[firewall] event=cache_flush version=", new_version)
+-- Returns the value written, or nil + err on failure. The caller (timer)
+-- swallows errors: a failed poll just leaves the previous value in place
+-- and the next tick retries.
+function _M.poll_versions(red)
+    local v, err = red:get(CACHE_VERSION_KEY)
+    if not v then
+        return nil, err
     end
-    _rc_cache.expires = 0
+    if v == ngx.null then
+        v = 0
+    end
+    rc_shared:set("cache_version", tonumber(v) or 0)
+    return v
 end
 
 

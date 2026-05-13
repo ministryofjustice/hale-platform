@@ -7,9 +7,9 @@
 --   access_by_lua_block      { require("firewall").req()  }
 --   log_by_lua_block         { require("firewall").res()  }
 --
--- Admin endpoints (stats, flush-cache, validate, clear-penalties) live in
+-- Admin endpoints (stats, validate, clear-penalties) live in
 -- firewall.admin, dispatched via require("firewall.admin").handle_route().
--- Shared cache state (blocked_cache, load_rules_and_config, flush) lives in
+-- Shared cache state (blocked_cache, load_rules_and_config) lives in
 -- firewall.cache.
 -- ============================================================================
 
@@ -54,9 +54,31 @@ function _M.init()
         local red = redis_pool.connect()
         if red then
             cache.load_rules_and_config(red)
+            cache.poll_versions(red)
             redis_pool.release(red)
         end
     end)
+
+    -- Cluster-wide cache invalidation poller. One worker per pod (worker 0)
+    -- polls firewall:cache_version every second and mirrors it into
+    -- rc_shared so all workers in this pod see the change. Total cost:
+    -- one Redis GET per pod per second, regardless of worker count or
+    -- traffic. See firewall.cache.poll_versions for the protocol.
+    if ngx.worker.id() == 0 then
+        local ok, err = ngx.timer.every(1, function(premature)
+            if premature then return end
+            local red = redis_pool.connect()
+            if not red then return end
+            local _, poll_err = cache.poll_versions(red)
+            if poll_err then
+                ngx.log(ngx.WARN, "[firewall] event=version_poll_error err=", poll_err)
+            end
+            redis_pool.release(red)
+        end)
+        if not ok then
+            ngx.log(ngx.ERR, "[firewall] event=version_poll_schedule_error err=", err)
+        end
+    end
 end
 
 
