@@ -113,7 +113,7 @@ end
 -- "Operating modes" / "Design decisions".
 
 function _M.req()
-    if not FIREWALL_ENABLED then return end
+    if not FIREWALL_ENABLED then ngx.var.firewall_info = "disabled"; return end
 
     -- realip module has rewritten remote_addr from X-Forwarded-For.
     local ip = ngx.var.remote_addr
@@ -122,14 +122,15 @@ function _M.req()
     -- Runs before the shared-dict lookup and all Redis I/O. Uses the list
     -- populated at the last cache refresh; a cold worker (empty lists) fails
     -- open, consistent with rules/config on worker startup.
-    if cache.is_allowed(ip) then return end
-    if cache.is_blocked(ip) then ngx.exit(ngx.HTTP_FORBIDDEN) end
+    if cache.is_allowed(ip) then ngx.var.firewall_info = "allow"; return end
+    if cache.is_blocked(ip) then ngx.var.firewall_info = "block"; ngx.exit(ngx.HTTP_FORBIDDEN) end
 
     -- Fast path: 0 Redis ops while this IP is in an active block window.
     -- Value is the mode ("enforce" → 429, "monitor" → allow) so a mid-window
     -- mode flip does not retroactively reinterpret cached entries.
     local cached_mode = blocked_cache:get(CACHE_PREFIX .. ip)
     if cached_mode then
+        ngx.var.firewall_info = "cached"
         if cached_mode == "enforce" then
             ngx.exit(ngx.HTTP_TOO_MANY_REQUESTS)
         end
@@ -166,8 +167,9 @@ function _M.req()
             ngx_regex_match
         )
 
-        -- Surface cost to the access log via $firewall_cost (set in nginx.conf).
-        ngx.var.firewall_cost = tostring(request_cost)
+        -- Surface decision to the access log via $firewall_info (set in nginx.conf).
+        -- Integer string = GCRA cost scored; named string = early-exit reason.
+        ngx.var.firewall_info = tostring(request_cost)
 
         -- Mode comes from Redis (firewall:config) so it can flip cluster-wide
         -- without an nginx reload. Default "monitor" = safe rollout.
