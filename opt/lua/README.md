@@ -69,7 +69,7 @@ Access is restricted to loopback in production by a single `location ^~
 
 | Method | Path | Purpose | Caller |
 |---|---|---|---|
-| `GET`  | `/firewall/stats`            | JSON snapshot of rules, config, and live GCRA TATs | Ops, debug |
+| `GET`  | `/firewall/stats`            | JSON snapshot of rules, config, live GCRA TATs, and current `cache_version`/`penalties_version` counters | Ops, debug |
 | `GET`  | `/firewall/clear-penalties`  | Delete every `firewall:block:{ip}` whose value is `"gcra"` (manual bans untouched); increments `firewall:penalties_version` so every pod flushes its per-pod block cache within ~1 s | Ops |
 | `POST` | `/firewall/admin/validate?kind=rules\|config\|allowlist\|blocklist` | Strict schema check, body is the candidate JSON; **read-only, no Redis writes** | PHP admin form before save |
 
@@ -166,6 +166,7 @@ flowchart LR
 
     WP --> PHP
     PHP -- saveRulesAndNotify<br/>saveConfigAndNotify<br/>getRules/getConfig<br/>read audit<br/>INCR cache_version --> R
+    ADMIN -- read stats<br/>INCR penalties_version --> R
 ```
 
 **Three independent processes share state through Redis:**
@@ -228,9 +229,9 @@ audit on subsequent hits without re-reading config from Redis.
 ### 2. Slow path — score, rate-limit, decide
 
 If the fast path didn't short-circuit, the request is scored against rules
-loaded from Redis (with a 60 s per-worker cache) and a single atomic
-GCRA Lua script runs server-side in Redis. The script also checks the
-allow/block lists in the same round-trip.
+loaded from Redis (cached per-worker until `firewall:cache_version` advances)
+and a single atomic GCRA Lua script runs server-side in Redis. The script
+also checks the allow/block lists in the same round-trip.
 
 ```mermaid
 sequenceDiagram
@@ -241,7 +242,7 @@ sequenceDiagram
     participant C as Client
     participant U as upstream
 
-    N->>R: load rules + config<br/>(worker-cached 60s)
+    N->>R: load rules + config<br/>(worker-cached, version-counter invalidated)
     N->>N: cost.calculate(uri, ua, method, …)
     N->>R: EVALSHA gcra script<br/>(allow / block / gcra)
     alt allowed
@@ -685,13 +686,13 @@ Bring the stack up with the firewall enabled:
 make run-with-firewall
 ```
 
-Then:
+Then (run from `opt/lua/`):
 
 ```
-node --test opt/lua/firewall_e2e_test.js
+node --test firewall_e2e_test.js
 # or
-deno test --allow-net="hale.docker" --allow-read=./fixtures \
-  --unsafely-ignore-certificate-errors opt/lua/firewall_e2e_test.js
+deno test --allow-net="hale.docker" --allow-read="./fixtures" \
+  --allow-run=docker --unsafely-ignore-certificate-errors firewall_e2e_test.js
 ```
 
 Drop a CSV from Cloud Platform ingress logs into [fixtures/](fixtures/) 
