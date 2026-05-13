@@ -60,7 +60,7 @@ local defaults = require "firewall.defaults"
 --
 -- RETURNS:
 --   [allowed, retry_after, tat, accumulated_json, reason]
---   reason: "allow" | "block" | "gcra"
+--   reason: "allow" | "block" | "gcra" | "penalty"
 --   retry_after: ms until retry; 0 means permanent ban (no PTTL)
 --   accumulated_json only populated on GCRA block (for audit logging)
 --
