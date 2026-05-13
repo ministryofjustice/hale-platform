@@ -477,6 +477,16 @@ local function _is_json_array(t)
     return true
 end
 
+-- Classify the top-level type of a raw JSON string without decoding it.
+-- Returns "array", "object", or nil (unrecognised / empty body).
+-- Pure string operation — no cjson or ngx dependency.
+function _M.json_top_level_type(body)
+    local first_char = body:match("^%s*(.)")
+    if first_char == "[" then return "array" end
+    if first_char == "{" then return "object" end
+    return nil
+end
+
 function _M.validate_rules_strict(raw)
     if type(raw) ~= "table" then
         return _result(false, { "Rules must be a JSON array of rule objects." })
