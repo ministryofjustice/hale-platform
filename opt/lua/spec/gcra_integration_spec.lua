@@ -373,6 +373,31 @@ describe("GCRA allow/block list integration", function()
         assert.is_nil(tat)
     end)
 
+    -- penalty_ttl=0 means the operator has disabled automatic bans.
+    -- When GCRA blocks, the script must NOT write a block key.
+    -- FAILS with `config.penalty_ttl or default` because 0 is falsy in Lua
+    -- and silently becomes the default (600000ms), writing the ban anyway.
+    it("does not write block_key when penalty_ttl=0 (operator-disabled auto-ban)", function()
+        local config = {
+            emission_interval = 1000,
+            burst             = 5000,  -- 5 tokens
+            block_key         = block_key,
+            penalty_ttl       = 0,     -- explicitly disabled
+        }
+
+        -- Exhaust the bucket (5 allowed, 6th blocked)
+        for _ = 1, 5 do
+            gcra.check_direct(red, test_key, 1, config)
+        end
+        local ok, info = gcra.check_direct(red, test_key, 1, config)
+        assert.is_false(ok,          "sanity: 6th request should be blocked by GCRA")
+        assert.equals("gcra", info.reason)
+
+        -- The block key must NOT exist — penalty_ttl=0 means no auto-ban
+        local val = red:get(block_key)
+        assert.is_nil(val, "block_key must not be written when penalty_ttl=0")
+    end)
+
     it("returns reason='gcra' when neither allow nor block keys are set", function()
         local config = {
             emission_interval = 1000,
