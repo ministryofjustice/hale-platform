@@ -27,6 +27,7 @@ wp config set QM_ENABLE_CAPS_PANEL true --raw
 wp config set WP_CACHE true --raw
 wp config set ACF_PRO_LICENSE "\$_SERVER['ACF_PRO_LICENSE']" --raw
 wp config set NGINX_INTERNAL_URL "\$_SERVER['NGINX_INTERNAL_URL'] ?? 'http://127.0.0.1:8080'" --raw
+wp config set DISABLE_WP_CRON true --raw
 
 # https://github.com/stayallive/wp-sentry/tree/v7.1.0#configuration
 wp config set WP_SENTRY_PHP_DSN "\$_SERVER['PHP_DSN']" --raw
