@@ -214,7 +214,7 @@ async function postValidate(kind, body) {
 
 test("e2e: validate rules — accepts a valid ruleset", async () => {
   const { status, body } = await postValidate("rules", [
-    { name: "req-base", phase: "req", cost: 1, match: { has_query: false } },
+    { name: "req-base", phase: "req", cost: 1, match: {} },
     { name: "req-php-probe", phase: "req", cost: 20, match: { uri_pattern: "\\.php$" } },
     { name: "req-bad-bot", phase: "req", cost: 50, match: { ua_pattern: "zgrab|masscan" } },
     { name: "res-404", phase: "res", cost: 50, match: { status: 404 } },

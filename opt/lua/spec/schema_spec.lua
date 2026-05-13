@@ -443,11 +443,11 @@ describe("parse_rules", function()
         assert.is_truthy(warns[1]:find("match"))
     end)
 
-    it("skips rule with empty match (no predicates)", function()
+    it("accepts a rule with empty match (matches every request)", function()
         local raw = { { name = "x", phase = "req", cost = 1, match = {} } }
         local rules, warns = schema.parse_rules(raw)
-        assert.equals(0, #rules)
-        assert.is_truthy(warns[1]:find("predicate"))
+        assert.equals(1, #rules)
+        assert.equals(0, #warns)
     end)
 
     -- req-phase predicates ----------------------------------------------------
@@ -598,6 +598,13 @@ describe("validate_rules_strict", function()
         assert.equals(1, #r.normalised)
     end)
 
+    it("accepts a rule with empty match (matches every request)", function()
+        local r = schema.validate_rules_strict({ { name = "base", phase = "req", cost = 1, match = {} } })
+        assert.is_true(r.ok)
+        assert.equals(0, #r.errors)
+        assert.equals(1, #r.normalised)
+    end)
+
     it("promotes parse_rules warnings to errors", function()
         local r = schema.validate_rules_strict({ _req_rule("bad", -1) })
         assert.is_false(r.ok)
@@ -686,7 +693,6 @@ describe("validate_rules_strict — failing payloads", function()
         { name = "string cost",           payload = { { name = "x", phase = "req", cost = "5", match = { uri_pattern = "y" } } }, match = "cost" },
         { name = "missing match",         payload = { { name = "x", phase = "req", cost = 1 } },                              match = "match" },
         { name = "match not object",      payload = { { name = "x", phase = "req", cost = 1, match = "y" } },                 match = "match" },
-        { name = "empty match",           payload = { { name = "x", phase = "req", cost = 1, match = {} } },                  match = "predicate" },
         { name = "uri_pattern not string",payload = { _req_rule("x", 1, { uri_pattern = 5 }) },                                match = "uri_pattern" },
         { name = "ua_pattern not string", payload = { _req_rule("x", 1, { ua_pattern  = {} }) },                               match = "ua_pattern" },
         { name = "method not string",     payload = { _req_rule("x", 1, { method      = 1 }) },                                match = "method" },

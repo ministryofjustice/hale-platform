@@ -89,7 +89,7 @@
 --       "match": { ... }           -- REQUIRED. Predicate object. Keys allowed
 --                                  --   depend on the rule's phase (see below).
 --                                  --   Predicates within a single rule are
---                                  --   AND'd. At least one predicate required.
+--                                  --   AND'd. An empty {} matches every request.
 --     }
 --   ]
 --
@@ -327,13 +327,6 @@ local _PHASE_VALIDATORS = {
     res = _validate_res_match,
 }
 
--- Count entries in a table (works for non-sequential keys too).
-local function _count_keys(t)
-    local n = 0
-    for _ in pairs(t) do n = n + 1 end
-    return n
-end
-
 function _M.parse_rules(raw)
     local warnings = {}
 
@@ -407,15 +400,13 @@ function _M.parse_rules(raw)
             end
         end
 
-        -- match: required, table, at least one predicate, phase-validated
+        -- match: required, table, phase-validated. An empty match ({}) is
+        -- explicitly allowed and means "match every request" — useful for a
+        -- base cost rule that applies to all traffic.
         if not skip then
             if type(rule.match) ~= "table" then
                 table.insert(warnings,
                     label .. " missing or non-object match — skipping")
-                skip = true
-            elseif _count_keys(rule.match) == 0 then
-                table.insert(warnings,
-                    label .. " match must contain at least one predicate — skipping")
                 skip = true
             else
                 local validator = _PHASE_VALIDATORS[rule.phase]
