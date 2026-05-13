@@ -5,8 +5,13 @@
 --       content_by_lua_block { require("firewall.admin").handle_route() }
 --   }
 --
--- handle_route() dispatches to the four named endpoints below. None of these
+-- handle_route() dispatches to the named endpoints below. None of these
 -- functions are on the request hot path — see firewall.lua for init/req/res.
+--
+-- Cache invalidation is *not* an admin endpoint: writers (PHP admin, ops
+-- scripts) bump firewall:cache_version in Redis directly after writing
+-- rules/config; every nginx pod's background poller picks up the change
+-- within ~1 second. See firewall.cache for the protocol.
 --
 -- See README.md → "The firewall contract" for the HTTP surface, validate
 -- response shape, and trust/access-control model.
@@ -69,11 +74,13 @@ end
 
 -- /firewall/* dispatcher — routes all admin endpoints from a single nginx
 -- location block, keeping nginx config minimal and access control in one place.
+local _TEST_MODE = os.getenv("ENV") == "local"
+
 local _routes = {
     ["/firewall/stats"]            = function() _M.stats() end,
-    ["/firewall/flush-cache"]      = function() _M.flush_cache() end,
     ["/firewall/clear-penalties"]  = function() _M.clear_penalties() end,
     ["/firewall/admin/validate"]   = function() _M.validate() end,
+    ["/firewall/clear-rate-limits"] = function() _M.clear_rate_limits() end,
 }
 
 function _M.handle_route()
@@ -132,21 +139,12 @@ function _M.stats()
     redis_pool.release(red)
 
     ngx.say(cjson.encode({
-        enabled     = os.getenv("FIREWALL_ENABLED") ~= "false",
-        rules_count = rules and #rules or 0,
-        config      = config or gcra_module.DEFAULTS,
-        active_ips  = tat_data,
+        enabled       = os.getenv("FIREWALL_ENABLED") ~= "false",
+        cache_version = cache.get_cache_version(),
+        rules_count   = rules and #rules or 0,
+        config        = config or gcra_module.DEFAULTS,
+        active_ips    = tat_data,
     }))
-end
-
-
--- /firewall/flush-cache — clear local block cache and bump the shared
--- version counter so every worker re-reads rules/config from Redis.
--- Called by PHP after rule/config edits, and by the test suite.
-function _M.flush_cache()
-    cache.flush()
-    ngx.header.content_type = "application/json"
-    ngx.say('{"ok":true}')
 end
 
 
@@ -187,13 +185,6 @@ function _M.validate()
         return
     end
 
-    local expected_type = _KIND_TYPE[kind]
-    if schema.json_top_level_type(body) ~= expected_type then
-        ngx.status = 400
-        ngx.say(cjson.encode({ ok = false, errors = { "'" .. kind .. "' must be a JSON " .. expected_type .. "." } }))
-        return
-    end
-
     local decoded, decode_err = cjson.decode(body)
     if decoded == nil then
         ngx.status = 400
@@ -201,6 +192,13 @@ function _M.validate()
             ok = false,
             errors = { "Request body must be valid JSON: " .. tostring(decode_err) },
         }))
+        return
+    end
+
+    local expected_type = _KIND_TYPE[kind]
+    if schema.json_top_level_type(body) ~= expected_type then
+        ngx.status = 400
+        ngx.say(cjson.encode({ ok = false, errors = { "'" .. kind .. "' must be a JSON " .. expected_type .. "." } }))
         return
     end
 
@@ -273,6 +271,55 @@ function _M.clear_penalties()
             end
         end
     until cursor == "0"
+
+    redis_pool.release(red)
+    ngx.header.content_type = "application/json"
+    ngx.say('{"ok":true,"deleted":' .. deleted .. '}')
+end
+
+
+-- /firewall/clear-rate-limits — wipe all firewall:block:* and firewall:gcra:*
+-- keys so tests start from a clean state. Does NOT touch firewall:rules,
+-- :config, :allowlist, or :blocklist. Only available when ENV=local.
+function _M.clear_rate_limits()
+    if not _TEST_MODE then
+        ngx.status = 404
+        ngx.say('{"ok":false,"error":"not found"}')
+        return
+    end
+
+    local red = redis_pool.connect()
+    if not red then
+        ngx.status = 503
+        ngx.say('{"ok":false,"error":"redis unavailable"}')
+        return
+    end
+
+    local gcra_prefix = defaults.GCRA_KEY_PREFIX
+    local deleted = 0
+
+    for _, prefix in ipairs({ BLOCK_PREFIX, gcra_prefix }) do
+        local cursor = "0"
+        repeat
+            local res, err = red:scan(cursor, "MATCH", prefix .. "*", "COUNT", 100)
+            if not res then
+                ngx.log(ngx.ERR, "[firewall] clear_database scan error: ", err)
+                break
+            end
+            cursor = res[1]
+            local keys = res[2]
+            if keys and #keys > 0 then
+                for _, key in ipairs(keys) do
+                    red:del(key)
+                    deleted = deleted + 1
+                end
+            end
+        until cursor == "0"
+    end
+
+    -- Also flush the per-pod blocked_cache shared dict so nginx workers
+    -- don't serve stale ban decisions after the Redis keys are gone.
+    cache.blocked_cache:flush_all()
 
     redis_pool.release(red)
     ngx.header.content_type = "application/json"

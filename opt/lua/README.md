@@ -70,9 +70,14 @@ Access is restricted to loopback in production by a single `location ^~
 | Method | Path | Purpose | Caller |
 |---|---|---|---|
 | `GET`  | `/firewall/stats`            | JSON snapshot of rules, config, and live GCRA TATs | Ops, debug |
-| `GET`  | `/firewall/flush-cache`      | Bump shared version counter so all workers re-read rules/config; clears local block cache | PHP after every save; ops after manual Redis edits |
 | `GET`  | `/firewall/clear-penalties`  | Delete every `firewall:block:{ip}` whose value is `"gcra"` (manual bans untouched) | Ops |
 | `POST` | `/firewall/admin/validate?kind=rules\|config\|allowlist\|blocklist` | Strict schema check, body is the candidate JSON; **read-only, no Redis writes** | PHP admin form before save |
+
+Cache invalidation is **not** an admin endpoint. Writers (PHP admin save,
+ops scripts) bump `firewall:cache_version` in Redis directly after
+writing `firewall:rules`/`:config`/`:allowlist`/`:blocklist`; every nginx
+pod's background poller picks up the change within ~1 second. See
+[Per-pod rules cache + Redis-backed version counter](#per-pod-rules-cache--redis-backed-version-counter).
 
 ### 2. Redis keys
 
@@ -140,7 +145,7 @@ flowchart LR
       A[access_by_lua<br/>firewall.req]
       L[log_by_lua<br/>firewall.res]
       D[(shared dict<br/>firewall_cache<br/>firewall_rc_cache)]
-      ADMIN[/firewall/stats<br/>/firewall/flush-cache<br/>/firewall/clear-penalties/]
+      ADMIN[/firewall/stats<br/>/firewall/clear-penalties/]
     end
 
     subgraph Redis
@@ -160,9 +165,7 @@ flowchart LR
     L -- async timer --> R
 
     WP --> PHP
-    PHP -- saveRulesAndNotify<br/>saveConfigAndNotify<br/>getRules/getConfig<br/>read audit --> R
-    PHP -- GET flush-cache --> ADMIN
-    ADMIN -- bump version --> D
+    PHP -- saveRulesAndNotify<br/>saveConfigAndNotify<br/>getRules/getConfig<br/>read audit<br/>INCR cache_version --> R
 ```
 
 **Three independent processes share state through Redis:**
@@ -307,6 +310,7 @@ the same mode.
 | `firewall:block:{ip}` | string (`"1"` manual, `"gcra"` auto) | PHP/CLI + Lua | Lua script | Per-IP block flag; TTL = ban duration |
 | `firewall:gcra:{ip}` | string (TAT, ms epoch) | Lua script | Lua script | GCRA bucket state |
 | `firewall:gcra:{ip}:breakdown` | hash | Lua script | Lua script | Per-rule hit counts (audit only) |
+| `firewall:cache_version` | int | PHP/CLI | Lua | Cluster-wide cache invalidation counter; bump (`INCR`) after writing rules/config/allow/block to signal all pods to re-read |
 | `firewall:audit` | stream | Lua | PHP | Decision log, capped by `audit_maxlen` |
 
 The schema for `firewall:rules` and `firewall:config` is documented in the
@@ -349,7 +353,7 @@ There are **two switches** that affect whether the firewall runs:
 | Switch | Where | Effect | Use when |
 |---|---|---|---|
 | `FIREWALL_ENABLED` env var | nginx pod | When `false`, `req()` and `res()` return immediately. Zero overhead. | Emergency kill-switch; needs nginx restart to flip. |
-| `firewall:config.mode` | Redis | `enforce` blocks, `monitor` logs only, `off` skips GCRA but still runs the Lua module. | Normal operation; flips cluster-wide within 60 s (or instantly via `/firewall/flush-cache`). |
+| `firewall:config.mode` | Redis | `enforce` blocks, `monitor` logs only, `off` skips GCRA but still runs the Lua module. | Normal operation; flips cluster-wide within ~1 s of `INCR firewall:cache_version`. |
 
 **Mode precedence:** if `FIREWALL_ENABLED=false`, nothing runs regardless
 of `mode`. Otherwise `mode` takes effect.
@@ -451,11 +455,11 @@ Complete catalogue of events, by source file:
 
 | Level | `event=` | Fields | When |
 |---|---|---|---|
-| `NOTICE` | `rules_reload` | `version=` `rule_count=` | Fired once per worker each time the per-worker cache is refreshed from Redis (either the 60 s TTL expired or `/firewall/flush-cache` bumped the version counter). Correlate `version=` across workers to confirm a config change propagated everywhere. |
+| `NOTICE` | `rules_reload` | `version=` `rule_count=` | Fired once per worker each time the per-worker cache is refreshed from Redis (i.e. the per-pod poller observed a `firewall:cache_version` bump). Correlate `version=` across workers to confirm a config change propagated everywhere. |
 | `ERR`    | `json_decode_error` | `key=` `err=` | A Redis key (`firewall:rules`, `:config`, `:allowlist`, or `:blocklist`) contained invalid JSON. The affected list is treated as empty (fail-open). Indicates a bad direct write to Redis bypassing the admin validate endpoint. |
 | `WARN`   | `schema_warn` | `kind=rules\|config\|allowlist\|blocklist` + the warning text | A rule / config field / CIDR entry in Redis failed structural validation. The offending entry is dropped; the rest are kept. Should never fire in production — admin validate catches this before save. |
-| `NOTICE` | `cache_flush` | `version=` | The shared version counter was bumped by `/firewall/flush-cache`. All workers will reload on their next request. `version=` is the new counter value. |
-| `ERR`    | `cache_flush_error` | `err=` | The shared-dict version counter could not be incremented. Falls back to `set("version", 1)`. Indicates `firewall_rc_cache` shared dict is misconfigured. |
+| `NOTICE` | `cache_flush` | `version=` | The per-pod poller observed a new `firewall:cache_version` value in Redis. Workers will reload rules/config on their next request. `version=` is the new counter value. |
+| `WARN`    | `version_poll_error` | `err=` | The 1 s poller failed to read `firewall:cache_version` from Redis. The previous value remains in place; the next tick retries. |
 
 #### [firewall/cost.lua](firewall/cost.lua)
 
@@ -537,8 +541,8 @@ Given a 429 response, walk these in order:
 | File | Responsibility |
 |---|---|
 | [firewall.lua](firewall.lua) | **Hot path only.** Exports `init`, `req`, `res`. Called by `init_worker_by_lua_block`, `access_by_lua_block`, `log_by_lua_block`. |
-| [firewall/admin.lua](firewall/admin.lua) | Admin endpoints. Exports `handle_route`, `stats`, `flush_cache`, `validate`, `clear_penalties`. Called by `content_by_lua_block` in the `/firewall/*` location. |
-| [firewall/cache.lua](firewall/cache.lua) | Shared cache state: `blocked_cache` (shared dict), `load_rules_and_config` (per-worker TTL cache), `flush`. Required by both `firewall` and `firewall.admin`. |
+| [firewall/admin.lua](firewall/admin.lua) | Admin endpoints. Exports `handle_route`, `stats`, `validate`, `clear_penalties`. Called by `content_by_lua_block` in the `/firewall/*` location. |
+| [firewall/cache.lua](firewall/cache.lua) | Shared cache state: `blocked_cache` (shared dict), `load_rules_and_config` (per-worker cache, invalidated by Redis `firewall:cache_version`), `poll_versions`. Required by both `firewall` and `firewall.admin`. |
 | [firewall/cost.lua](firewall/cost.lua) | Pure function — score a request against rules. No `ngx.*` deps; unit-testable. |
 | [firewall/gcra.lua](firewall/gcra.lua) | GCRA algorithm + the Redis Lua script that runs server-side. EVALSHA + cache. |
 | [firewall/schema.lua](firewall/schema.lua) | Pure validators for `firewall:rules` and `firewall:config`. **Authoritative schema lives here.** Exposes `parse_*` (fail-soft, runtime) and `validate_*_strict` (fail-hard, admin path). |
@@ -575,9 +579,9 @@ The form POSTs the payload to `/firewall/admin/validate?kind=rules|config`
 first — the Lua schema in [firewall/schema.lua](firewall/schema.lua) is the
 single source of truth, so any error you see in the admin form is the
 same error the runtime parser would log. On success PHP writes the
-*normalised* payload to Redis (defaults applied, types coerced) and calls
-`/firewall/flush-cache` so all nginx workers re-read on their next
-request (otherwise it takes up to 60 s).
+*normalised* payload to Redis (defaults applied, types coerced) and
+`INCR firewall:cache_version`. Every nginx pod's background poller picks
+up the bump within ~1 s and signals its workers to re-read.
 
 ### Allow or block a CIDR range (or single IP)
 
@@ -603,8 +607,9 @@ Content-Type: application/json
 ["10.0.0.0/8"]
 ```
 
-After writing, call `GET /firewall/flush-cache` so all workers reload the
-lists immediately (otherwise the worker cache TTL is up to 60 s).
+After writing, `INCR firewall:cache_version` so all pods reload the
+lists within ~1 s (otherwise their existing copies stay valid until the
+next bump).
 
 ### Allow or block a single IP (GCRA-level)
 
@@ -620,8 +625,8 @@ SET firewall:block:1.2.3.4 1           # permanent manual ban
 DEL firewall:block:1.2.3.4
 ```
 
-After writing, call `GET /firewall/flush-cache` so all workers pick up the
-change immediately.
+After writing, `INCR firewall:cache_version` so all pods pick up the
+change within ~1 s.
 
 ### Inspect state
 
@@ -638,7 +643,7 @@ change immediately.
 
 ```
 SET firewall:config '{"mode":"enforce", ...}'
-GET /firewall/flush-cache              # propagate immediately to all workers
+INCR firewall:cache_version            # propagate cluster-wide within ~1 s
 ```
 
 ### Clear automatic penalties (manual bans untouched)
@@ -727,8 +732,7 @@ Three reasons, in order of importance:
 The cached *value* is the mode that decided the block (`enforce` /
 `monitor`), not a boolean. A mode flip mid-window therefore does not
 retroactively change cached entries — they keep behaving as their original
-mode said until the TTL expires. Use `/firewall/flush-cache` for an
-immediate cluster-wide reset.
+mode said until the TTL expires.
 
 ### Why response-phase scoring runs in a timer
 
@@ -762,13 +766,19 @@ returns early. The site stays up; the firewall is effectively off until
 Redis returns. This is preferred over fail-closed because a Redis outage
 should not be a site outage.
 
-### Per-worker rules cache + cross-worker version counter
+### Per-pod rules cache + Redis-backed version counter
 
-Each nginx worker caches decoded rules/config for 60 s. A shared-dict
-counter lets `/firewall/flush-cache` invalidate all workers at once: each
-worker compares the version on its next request and re-reads if it
-changed. Without this, a config change would propagate worker-by-worker
-over up to 60 s with stale and fresh requests interleaved.
+Each nginx pod runs a single background timer (in worker 0) that polls
+`firewall:cache_version` from Redis once per second and mirrors the
+value into a per-pod shared dict (`firewall_rc_cache`). Every worker
+compares that value to its own in-memory copy on each request and
+re-reads `firewall:rules`/`:config`/`:allowlist`/`:blocklist` from Redis
+when they differ.
+
+Writers (PHP admin save, ops scripts) bump the counter via
+`INCR firewall:cache_version` after writing. Total cost: one Redis `GET`
+per pod per second, regardless of worker count or traffic. Propagation
+latency: ~1 s cluster-wide.
 
 ### Schema validation lives in Lua, exposed over HTTP
 
@@ -794,8 +804,8 @@ Why an HTTP endpoint instead of a duplicated PHP validator:
 What this design intentionally does *not* do (yet):
 
 - It does not move Redis writes into nginx. PHP still owns the `SET` and
-  the follow-up call to `/firewall/flush-cache`. A future phase could
-  fold validate + write + flush into a single atomic admin endpoint, but
+  the follow-up `INCR firewall:cache_version`. A future phase could
+  fold validate + write + bump into a single atomic admin endpoint, but
   that change has more surface area for less marginal value than killing
   the duplicated validator does.
 - It does not move runtime reads off PHP. The PHP class still talks
@@ -816,7 +826,7 @@ location ^~ /firewall/ {
 ```
 
 `handle_route()` in [firewall/admin.lua](firewall/admin.lua) inspects `ngx.var.uri` and dispatches
-to `stats()`, `flush_cache()`, `clear_penalties()`, or `validate()`. An
+to `stats()`, `clear_penalties()`, or `validate()`. An
 unrecognised path gets a 404 JSON response.
 
 Why not a separate `location =` block per endpoint:

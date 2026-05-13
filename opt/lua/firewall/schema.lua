@@ -57,8 +57,6 @@
 --                                      --     "monitor" — log/audit "would-block" events but allow the request
 --                                      --     "off"     — skip GCRA entirely (still cheaper than disabling Lua)
 --                                      --   Default: "monitor"  (safe rollout)
---                                      --   Note: changes propagate within RC_CACHE_TTL (60s),
---                                      --   or instantly via /firewall/flush-cache.
 --   }
 --
 -- ----------------------------------------------------------------------------
