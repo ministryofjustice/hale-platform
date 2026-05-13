@@ -60,7 +60,7 @@ local defaults = require "firewall.defaults"
 --
 -- RETURNS:
 --   [allowed, retry_after, tat, accumulated_json, reason]
---   reason: "allow" | "block" | "gcra"
+--   reason: "allow" | "block" | "gcra" | "penalty"
 --   retry_after: ms until retry; 0 means permanent ban (no PTTL)
 --   accumulated_json only populated on GCRA block (for audit logging)
 --
@@ -149,7 +149,7 @@ else
     -- Value "gcra" marks it as an automatic penalty (vs a manual admin ban).
     -- NX ensures we do not overwrite a longer-lived manual ban.
     local actual_retry_after = math.ceil(allow_at - now)
-    if penalty_ttl > 0 then
+    if penalty_ttl > 0 and block_key ~= "" then
         redis.call('SET', block_key, 'gcra', 'PX', penalty_ttl, 'NX')
         actual_retry_after = penalty_ttl
     end

@@ -13,7 +13,8 @@ RUN apk update && \
     apk add less \
     vim \
     mariadb-client \
-    htop
+    htop \
+    ca-certificates
 
 # Install PHPRedis build dependencies
 RUN apk add --no-cache --virtual .build-deps pcre-dev $PHPIZE_DEPS

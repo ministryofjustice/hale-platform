@@ -1,7 +1,7 @@
 // E2E tests compatible with both Node.js (18+) and Deno (2.0+).
 // No package.json or node_modules needed.
 // Node:  node --test firewall_e2e_test.js
-// Deno:  deno test --allow-net="hale.docker" --allow-read="./fixtures" --unsafely-ignore-certificate-errors firewall_e2e_test.js
+// Deno:  deno test --allow-net="hale.docker" --allow-read="./fixtures" --allow-run=docker --unsafely-ignore-certificate-errors firewall_e2e_test.js
 //
 // Prerequisites
 // -------------
@@ -115,22 +115,31 @@ async function sendRequest(ip, opts = {}) {
   });
 }
 
-async function flushNginxCache() {
-  const res = await fetch(`${FIREWALL_URL}/firewall/flush-cache`, fetchOpts);
+async function resetRateLimitState() {
+  const res = await fetch(`${FIREWALL_URL}/firewall/clear-rate-limits`, fetchOpts);
   await res.body?.cancel();
 }
 
-async function clearPenaltyBlocks() {
-  const res = await fetch(
-    `${FIREWALL_URL}/firewall/clear-penalties`,
-    fetchOpts,
-  );
-  await res.body?.cancel();
-}
-
-async function resetFirewall() {
-  await flushNginxCache();
-  await clearPenaltyBlocks();
+// ---------------------------------------------------------------------------
+// Redis helper — runs redis-cli inside the Docker container so the test file
+// needs no Redis client dependency and no exposed Redis port.  Requires the
+// Docker daemon to be running locally (same prerequisite as the firewall).
+//
+// Returns the trimmed stdout string.  Redis GET on a missing key returns the
+// literal string "(nil)" from redis-cli; callers must handle that themselves.
+//
+// Deno: requires --allow-run=docker (added to the run command above).
+// ---------------------------------------------------------------------------
+async function redisCmd(...args) {
+  const argv = ["docker", "exec", "hale-platform-redis-1", "redis-cli", ...args];
+  if (isDeno) {
+    const cmd = new Deno.Command(argv[0], { args: argv.slice(1) });
+    const { stdout } = await cmd.output();
+    return new TextDecoder().decode(stdout).trim();
+  }
+  const { execFile } = await import("node:child_process");
+  const { promisify } = await import("node:util");
+  return (await promisify(execFile)(argv[0], argv.slice(1))).stdout.trim();
 }
 
 // ---------------------------------------------------------------------------
@@ -138,7 +147,7 @@ async function resetFirewall() {
 // ---------------------------------------------------------------------------
 
 test("e2e: normal GET request returns 200", async () => {
-  await resetFirewall();
+  await resetRateLimitState();
   const res = await sendRequest("10.3.0.1");
   assert.equal(res.status, 200, "clean request should be allowed");
   await res.body?.cancel();
@@ -150,10 +159,34 @@ test("e2e: /firewall/stats endpoint returns 200", async () => {
   await res.body?.cancel();
 });
 
-test("e2e: /firewall/flush-cache endpoint returns 200", async () => {
-  const res = await fetch(`${FIREWALL_URL}/firewall/flush-cache`);
-  assert.equal(res.status, 200, "/flush-cache/firewall should always respond");
-  await res.body?.cancel();
+test("e2e: clear-rate-limits returns ok:true and unblocks a rate-limited IP", async () => {
+  const ip = "10.3.0.6";
+  await resetRateLimitState();
+
+  // Pre-condition: drive the IP to 429 so there is state to clear.
+  let got429 = false;
+  for (let i = 0; i < 60; i++) {
+    const res = await sendRequest(ip, { ua: "YisouSpider" });
+    const s = res.status;
+    await res.body?.cancel();
+    if (s === 429) { got429 = true; break; }
+  }
+  assert.ok(got429, "IP should be rate-limited before clear (pre-condition)");
+
+  // Call the endpoint explicitly and assert the response shape.
+  const clearRes = await fetch(`${FIREWALL_URL}/firewall/clear-rate-limits`, fetchOpts);
+  const clearBody = await clearRes.json();
+  assert.equal(clearRes.status, 200);
+  assert.ok(clearBody.ok, `expected ok:true, got: ${JSON.stringify(clearBody)}`);
+  assert.ok(
+    clearBody.deleted > 0,
+    `expected at least one key deleted, got deleted=${clearBody.deleted}`,
+  );
+
+  // The IP should now be allowed again.
+  const after = await sendRequest(ip);
+  assert.equal(after.status, 200, "IP should be unblocked after clear-rate-limits");
+  await after.body?.cancel();
 });
 
 // ---------------------------------------------------------------------------
@@ -256,7 +289,7 @@ test("e2e: validate rules — rejects non-array body", async () => {
   const { status, body } = await postValidate("rules", {
     name: "x", phase: "req", cost: 1, match: { method: "GET" },
   });
-  assert.equal(status, 200);
+  assert.equal(status, 400);
   assert.ok(!body.ok);
   assert.ok(body.errors.some((e) => e.includes("array")));
 });
@@ -308,7 +341,7 @@ test("e2e: validate allowlist — rejects an invalid CIDR", async () => {
 
 test("e2e: validate allowlist — rejects a non-array body", async () => {
   const { status, body } = await postValidate("allowlist", { cidr: "10.0.0.0/8" });
-  assert.equal(status, 200);
+  assert.equal(status, 400);
   assert.ok(!body.ok);
 });
 
@@ -384,7 +417,7 @@ test("e2e: validate — invalid JSON body returns 400", async () => {
 
 test("e2e: repeated YisouSpider requests are eventually rate-limited (429)", async () => {
   const ip = "10.3.0.2";
-  await resetFirewall();
+  await resetRateLimitState();
 
   // YisouSpider costs 51 per request (base 1 + yisou 50).
   // Under any reasonable GCRA config (burst <= 200 s, emission_interval <= 1000 ms)
@@ -408,7 +441,7 @@ test("e2e: repeated YisouSpider requests are eventually rate-limited (429)", asy
 test("e2e: rate limiting is per-IP — unrelated IPs are not affected", async () => {
   const spamIp = "10.3.0.3";
   const cleanIp = "10.3.0.4";
-  await resetFirewall();
+  await resetRateLimitState();
 
   // Drive spamIp into a blocked state
   for (let i = 0; i < 60; i++) {
@@ -429,7 +462,7 @@ test("e2e: rate limiting is per-IP — unrelated IPs are not affected", async ()
 
 test("e2e: JSP path probes are rate-limited quickly", async () => {
   const ip = "10.3.0.5";
-  await resetFirewall();
+  await resetRateLimitState();
 
   // JSP cost: base(1) + jsp rule(40) = 41 per request — exhausts burst in ~30-40 hits
   let got429 = false;
@@ -443,6 +476,106 @@ test("e2e: JSP path probes are rate-limited quickly", async () => {
     await res.body?.cancel();
   }
   assert.ok(got429, "IP probing JSP paths should be rate-limited");
+});
+
+// ---------------------------------------------------------------------------
+// Cache invalidation — version counter propagation
+// ---------------------------------------------------------------------------
+// INCRs firewall:cache_version directly in Redis and polls /firewall/stats
+// until the cache_version field advances.  Proves the 1 s background poller
+// fired and load_rules_and_config was triggered — no rule writes needed.
+// ---------------------------------------------------------------------------
+
+test("e2e: cache_version in stats advances when firewall:cache_version is incremented", async () => {
+  const before = await (await fetch(`${FIREWALL_URL}/firewall/stats`, fetchOpts)).json();
+
+  await redisCmd("INCR", "firewall:cache_version");
+
+  // Poll until the per-pod poller mirrors the new value into rc_shared and
+  // a stats call triggers load_rules_and_config.  The poller fires every 1 s;
+  // allow 3 s as headroom.
+  let after;
+  const deadline = Date.now() + 3000;
+  while (Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, 200));
+    after = await (await fetch(`${FIREWALL_URL}/firewall/stats`, fetchOpts)).json();
+    if (after.cache_version > before.cache_version) break;
+  }
+
+  assert.ok(
+    after.cache_version > before.cache_version,
+    `cache_version should have advanced within 3 s (before=${before.cache_version}, after=${after?.cache_version})`,
+  );
+});
+
+// ---------------------------------------------------------------------------
+// /firewall/clear-penalties — cluster-wide blocked_cache flush
+// ---------------------------------------------------------------------------
+
+test("e2e: penalties_version in stats advances after clear-penalties", async () => {
+  await resetRateLimitState();
+  const before = await (await fetch(`${FIREWALL_URL}/firewall/stats`, fetchOpts)).json();
+
+  const clearRes = await fetch(`${FIREWALL_URL}/firewall/clear-penalties`, fetchOpts);
+  await clearRes.body?.cancel();
+
+  // Poll until the per-pod poller mirrors the new penalties_version value.
+  // The poller fires every 1 s; allow 3 s as headroom.
+  let after;
+  const deadline = Date.now() + 3000;
+  while (Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, 200));
+    after = await (await fetch(`${FIREWALL_URL}/firewall/stats`, fetchOpts)).json();
+    if (after.penalties_version > before.penalties_version) break;
+  }
+
+  assert.ok(
+    after.penalties_version > before.penalties_version,
+    `penalties_version should have advanced within 3 s (before=${before.penalties_version}, after=${after?.penalties_version})`,
+  );
+});
+
+test("e2e: clear-penalties unblocks an auto-banned IP without touching manual bans", async () => {
+  const autoIp  = "10.3.1.1";
+  const manualIp = "10.3.1.2";
+  await resetRateLimitState();
+
+  // Place a manual ban (value "1") and an auto-ban (value "gcra") in Redis.
+  await redisCmd("SET", `firewall:block:${manualIp}`, "1");
+  await redisCmd("SET", `firewall:block:${autoIp}`,   "gcra");
+
+  const clearRes = await fetch(`${FIREWALL_URL}/firewall/clear-penalties`, fetchOpts);
+  const clearBody = await clearRes.json();
+  assert.equal(clearRes.status, 200);
+  assert.ok(clearBody.ok, `expected ok:true, got: ${JSON.stringify(clearBody)}`);
+  assert.ok(
+    clearBody.deleted >= 1,
+    `expected at least one key deleted, got deleted=${clearBody.deleted}`,
+  );
+
+  // Auto-ban key should be gone from Redis.
+  // redis-cli returns "" (empty) for a missing key in non-TTY mode, so use EXISTS.
+  const autoExists = await redisCmd("EXISTS", `firewall:block:${autoIp}`);
+  assert.equal(autoExists, "0", `firewall:block:${autoIp} should have been deleted`);
+
+  // Manual ban key must still exist.
+  const manualVal = await redisCmd("GET", `firewall:block:${manualIp}`);
+  assert.equal(manualVal, "1", `firewall:block:${manualIp} (manual ban) must be untouched`);
+
+  // Auto-banned IP should now be allowed through (blocked_cache flushed by poller).
+  // Poll briefly to give the 1 s poller time to fire.
+  let autoAllowed = false;
+  const deadline = Date.now() + 3000;
+  while (Date.now() < deadline) {
+    const res = await sendRequest(autoIp);
+    await res.body?.cancel();
+    if (res.status === 200) { autoAllowed = true; break; }
+    await new Promise((r) => setTimeout(r, 200));
+  }
+  assert.ok(autoAllowed, `auto-banned IP ${autoIp} should be allowed after clear-penalties`);
+
+  // Clean up the manual ban so later tests are unaffected.
+  await redisCmd("DEL", `firewall:block:${manualIp}`);
 });
 
 // ---------------------------------------------------------------------------
@@ -526,7 +659,7 @@ for (const fixturePath of fixtureFiles) {
   const fixtureName = fixturePath.split("/").pop();
 
   test(`e2e: fixture replay — ${fixtureName}`, async () => {
-    await resetFirewall();
+    await resetRateLimitState();
 
     const csv = await readFile(fixturePath);
     const H = {

@@ -6,6 +6,8 @@
 
 FROM openresty/openresty:alpine AS nginx
 
+ENV ENV=local
+
 # Install additional Alpine packages
 RUN apk update && apk add curl ca-certificates
 

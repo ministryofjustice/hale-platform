@@ -57,8 +57,6 @@
 --                                      --     "monitor" — log/audit "would-block" events but allow the request
 --                                      --     "off"     — skip GCRA entirely (still cheaper than disabling Lua)
 --                                      --   Default: "monitor"  (safe rollout)
---                                      --   Note: changes propagate within RC_CACHE_TTL (60s),
---                                      --   or instantly via /firewall/flush-cache.
 --   }
 --
 -- ----------------------------------------------------------------------------
@@ -475,6 +473,16 @@ local function _is_json_array(t)
         if type(k) ~= "number" then return false end
     end
     return true
+end
+
+-- Classify the top-level type of a raw JSON string without decoding it.
+-- Returns "array", "object", or nil (unrecognised / empty body).
+-- Pure string operation — no cjson or ngx dependency.
+function _M.json_top_level_type(body)
+    local first_char = body:match("^%s*(.)")
+    if first_char == "[" then return "array" end
+    if first_char == "{" then return "object" end
+    return nil
 end
 
 function _M.validate_rules_strict(raw)

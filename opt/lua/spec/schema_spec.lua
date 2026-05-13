@@ -917,3 +917,23 @@ describe("validate_blocklist_strict", function()
         assert.is_false(r.ok)
     end)
 end)
+
+describe("schema.json_top_level_type", function()
+    it("returns 'array' for '[...]'", function()
+        assert.equals("array", schema.json_top_level_type("[]"))
+    end)
+
+    it("returns 'object' for '{...}'", function()
+        assert.equals("object", schema.json_top_level_type("{}"))
+    end)
+
+    it("returns nil for unrecognised input", function()
+        assert.is_nil(schema.json_top_level_type("null"))
+        assert.is_nil(schema.json_top_level_type(""))
+    end)
+
+    it("tolerates leading whitespace", function()
+        assert.equals("array",  schema.json_top_level_type("  \n  []"))
+        assert.equals("object", schema.json_top_level_type("  \n  {}"))
+    end)
+end)
