@@ -105,6 +105,7 @@ function _M.connect()
         local auth_ok, auth_err = red:auth(REDIS_AUTH)
         if not auth_ok then
             ngx.log(ngx.ERR, "[redis] auth failed (fail-open): ", auth_err)
+            red:close()
             return nil
         end
     end
@@ -115,6 +116,7 @@ function _M.connect()
         local sel_ok, sel_err = red:select(REDIS_DB)
         if not sel_ok then
             ngx.log(ngx.ERR, "[redis] select db failed (fail-open): ", sel_err)
+            red:close()
             return nil
         end
     end
