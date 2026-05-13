@@ -388,16 +388,23 @@ server block:
 log_format main '$remote_addr - $remote_user [$time_local] '
                 '"$request" $status $body_bytes_sent '
                 '"$http_referer" "$http_user_agent" '
-                'fw_cost=$firewall_cost cache=$upstream_cache_status';
+                'fw_info=$firewall_info cache=$upstream_cache_status';
 access_log /dev/stdout main;
 ```
 
-The firewall contributes one field: **`fw_cost=N`**, the GCRA cost charged
-on this request. Set in `firewall.req()` via `ngx.var.firewall_cost =
-tostring(request_cost)` after rule scoring. Values:
+The firewall contributes one field: **`fw_info`**, set in `firewall.req()`
+via `ngx.var.firewall_info`. The value is either a numeric cost string or a
+named reason:
 
-- `fw_cost=0` — no rules matched (or firewall disabled / fast-path cache hit before scoring ran).
-- `fw_cost=N` (N > 0) — sum of costs of all matching `req`-phase rules.
+| Value | Meaning |
+|---|---|
+| `-` | Lua never ran — request handled by a non-PHP location (static file, `/firewall/` admin) |
+| `disabled` | `FIREWALL_ENABLED=false` kill-switch is set |
+| `allow` | CIDR allowlist hit — request bypassed all firewall logic |
+| `block` | CIDR blocklist hit — 403 returned without Redis I/O |
+| `cached` | Fast-path shared-dict hit — block decision replayed from previous scoring |
+| `0` | Scored; no rules matched |
+| `N` (integer > 0) | Sum of costs of all matching `req`-phase rules |
 
 Response-phase (`res`) costs do **not** appear in the access log — by the
 time `log_by_lua` runs, the line has already been formatted. They appear
@@ -530,7 +537,7 @@ XLEN firewall:audit
 
 Given a 429 response, walk these in order:
 
-1. **Access log** for the request: confirm `fw_cost=N` (req-phase score).
+1. **Access log** for the request: confirm `fw_info=N` (req-phase score). Named values (`allow`, `block`, `cached`, `disabled`) explain why scoring was skipped.
 2. **Audit stream** filtered to the IP: `XREVRANGE firewall:audit + - COUNT 100` then grep. The `trigger`, `reason`, and `cost` fields fully explain the decision.
 3. **Error log** filtered to the IP: `grep 'event=block.*ip=<ip>'` shows the corresponding INFO line and any preceding ERR (e.g. `event=audit_write_failed` means the audit row may be missing).
 
@@ -638,7 +645,7 @@ change within ~1 s.
 | Dry-run schema check on a payload | `POST /firewall/admin/validate?kind=rules\|config\|allowlist\|blocklist` with the JSON body |
 | Recent decisions | WordPress admin → audit table, or `XREVRANGE firewall:audit + - COUNT 50` |
 | Currently active blocks | `KEYS firewall:block:*` then `PTTL` per key |
-| nginx access log | `fw_cost=N` field on every line shows the rule total |
+| nginx access log | `fw_info` field on every line — integer cost or named reason (see [Access log](#1-nginx-access-log)) |
 | Browse Redis keys interactively (local only) | http://redis-insight.docker — RedisInsight UI shipped with the local Docker stack |
 
 ### Flip mode without a deploy
