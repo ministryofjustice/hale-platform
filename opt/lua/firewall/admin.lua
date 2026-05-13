@@ -24,6 +24,15 @@ local cjson         = require "cjson.safe"
 local BLOCK_PREFIX = defaults.BLOCK_KEY_PREFIX
 local CACHE_PREFIX = defaults.BLOCKED_CACHE_PREFIX
 
+-- Expected top-level JSON type for each validate kind.
+-- Adding a new kind only requires updating this table.
+local _KIND_TYPE = {
+    rules     = "array",
+    allowlist = "array",
+    blocklist = "array",
+    config    = "object",
+}
+
 
 -- Compile-check every PCRE pattern field on a normalised ruleset. Returns
 -- a list of human-readable error strings (empty when all patterns are valid).
@@ -175,6 +184,13 @@ function _M.validate()
             ok = false,
             errors = { "Request body is empty." },
         }))
+        return
+    end
+
+    local expected_type = _KIND_TYPE[kind]
+    if schema.json_top_level_type(body) ~= expected_type then
+        ngx.status = 400
+        ngx.say(cjson.encode({ ok = false, errors = { "'" .. kind .. "' must be a JSON " .. expected_type .. "." } }))
         return
     end
 
