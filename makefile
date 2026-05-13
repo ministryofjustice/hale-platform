@@ -7,16 +7,18 @@
 # Default target - show help
 help:
 	@echo "Available commands:"
-	@echo "  make run          - Start the Docker containers"
-	@echo "  make down         - Stop and remove Docker containers"
-	@echo "  make build        - Build Docker images and install dependencies"
-	@echo "  make shell        - Open bash shell in WordPress container"
-	@echo "  make logs         - View Docker container logs"
-	@echo "  make restart      - Restart all containers"
-	@echo "  make clone-repos  - Clone all MoJ repositories into dev/ folder"
-	@echo "  make symlink      - Create symlinks for dev packages"
-	@echo "  make clean        - Remove dangling Docker images"
-	@echo "  make none         - Remove dangling <none> images (alias for clean)"
+	@echo "  make run               - Start the Docker containers"
+	@echo "  make run-with-firewall - Run, with firewall config and dependencies"
+	@echo "  make down              - Stop and remove Docker containers"
+	@echo "  make build             - Build Docker images and install dependencies"
+	@echo "  make shell             - Open bash shell in WordPress container"
+	@echo "  make logs              - View Docker container logs"
+	@echo "  make restart           - Restart all containers"
+	@echo "  make clone-repos       - Clone all MoJ repositories into dev/ folder"
+	@echo "  make symlink           - Create symlinks for dev packages"
+	@echo "  make test-firewall     - Lint and test firewall scripts"
+	@echo "  make clean             - Remove dangling Docker images"
+	@echo "  make none              - Remove dangling <none> images (alias for clean)"
 
 # Run site using Docker
 run:
@@ -69,19 +71,11 @@ symlink:
 	@docker exec wordpress bash /opt/scripts/link-dev-packages.sh
 	@echo "✓ Symlinks created"
 
-# Unit tests (no external dependencies)
+# Lint and test firewall scripts
 test-firewall:
-	@echo "Running Lua firewall tests"
-	@docker build -f nginx.local.dockerfile --target test -t test-firewall .
-	@# Start Redis - only if it is not already running.
-	$(eval REDIS_WAS_RUNNING := $(shell docker compose ps --status running redis 2>/dev/null | grep -q redis && echo yes || echo no))
-	@if [ "$(REDIS_WAS_RUNNING)" = "no" ]; then docker compose up -d redis && sleep 1; fi
-	docker run --rm \
-		--network hale-platform_default \
-		-e REDIS_DB=1 \
-		-e REDIS_HOST=redis \
-		test-firewall
-	@if [ "$(REDIS_WAS_RUNNING)" = "no" ]; then docker compose stop redis; fi
+	@echo "Linting and testing firewall scripts..."
+	@chmod +x bin/local-test-firewall.sh
+	@./bin/local-test-firewall.sh
 
 # Remove all dangling <none> images
 none: clean
