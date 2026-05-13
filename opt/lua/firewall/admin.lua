@@ -26,8 +26,9 @@ local defaults      = require "firewall.defaults"
 local cache         = require "firewall.cache"
 local cjson         = require "cjson.safe"
 
-local BLOCK_PREFIX = defaults.BLOCK_KEY_PREFIX
-local CACHE_PREFIX = defaults.BLOCKED_CACHE_PREFIX
+local BLOCK_PREFIX            = defaults.BLOCK_KEY_PREFIX
+local CACHE_PREFIX            = defaults.BLOCKED_CACHE_PREFIX
+local PENALTIES_VERSION_KEY   = defaults.PENALTIES_VERSION_KEY
 
 -- Expected top-level JSON type for each validate kind.
 -- Adding a new kind only requires updating this table.
@@ -139,11 +140,12 @@ function _M.stats()
     redis_pool.release(red)
 
     ngx.say(cjson.encode({
-        enabled       = os.getenv("FIREWALL_ENABLED") ~= "false",
-        cache_version = cache.get_cache_version(),
-        rules_count   = rules and #rules or 0,
-        config        = config or gcra_module.DEFAULTS,
-        active_ips    = tat_data,
+        enabled            = os.getenv("FIREWALL_ENABLED") ~= "false",
+        cache_version      = cache.get_cache_version(),
+        penalties_version  = cache.get_penalties_version(),
+        rules_count        = rules and #rules or 0,
+        config             = config or gcra_module.DEFAULTS,
+        active_ips         = tat_data,
     }))
 end
 
@@ -272,6 +274,7 @@ function _M.clear_penalties()
         end
     until cursor == "0"
 
+    red:incr(PENALTIES_VERSION_KEY)
     redis_pool.release(red)
     ngx.header.content_type = "application/json"
     ngx.say('{"ok":true,"deleted":' .. deleted .. '}')

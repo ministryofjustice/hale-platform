@@ -16,9 +16,10 @@
 
 local _M = {}
 
-local schema = require "firewall.schema"
-local cidr   = require "firewall.cidr"
-local cjson  = require "cjson.safe"
+local defaults = require "firewall.defaults"
+local schema   = require "firewall.schema"
+local cidr     = require "firewall.cidr"
+local cjson    = require "cjson.safe"
 
 -- Per-worker in-memory cache of decoded rules + config.
 -- `rules_by_phase` is the lookup table the request and response hot paths
@@ -40,7 +41,12 @@ local _rc_cache    = {
 -- copy". Polled once per second per pod by the timer in firewall.init();
 -- the value is mirrored into rc_shared:get("cache_version") for hot-path
 -- comparison without per-request Redis I/O.
-local CACHE_VERSION_KEY = "firewall:cache_version"
+local CACHE_VERSION_KEY     = defaults.CACHE_VERSION_KEY
+local PENALTIES_VERSION_KEY = defaults.PENALTIES_VERSION_KEY
+
+-- Last penalties_version seen by this worker's poller. Initialised to -1 so
+-- the very first poll (warm-up) does not trigger a spurious flush.
+local _last_penalties_version = -1
 
 -- Shared dicts declared in nginx.conf.
 _M.blocked_cache = ngx.shared.firewall_cache
@@ -180,25 +186,48 @@ function _M.is_blocked(ip)
 end
 
 
--- Mirror Redis-side cache_version into the per-pod shared dict.
+-- Mirror Redis-side version counters into the per-pod shared dict.
 -- Called once per second by a background timer in firewall.init() (worker 0
--- only, so the cost is one Redis GET per pod per second regardless of how
+-- only, so the cost is one Redis MGET per pod per second regardless of how
 -- many nginx workers or how much traffic). Hot-path code reads only
 -- rc_shared:get("cache_version") and pays no Redis I/O per request.
 --
--- Returns the value written, or nil + err on failure. The caller (timer)
--- swallows errors: a failed poll just leaves the previous value in place
--- and the next tick retries.
+-- When penalties_version advances the per-pod blocked_cache shared dict is
+-- flushed so all workers immediately stop serving stale auto-ban decisions.
+-- ngx.shared dicts are cross-worker, so one flush from worker 0 covers all.
+--
+-- Returns the cache_version value written, or nil + err on failure. The
+-- caller (timer) swallows errors: a failed poll leaves the previous value in
+-- place and the next tick retries.
 function _M.poll_versions(red)
-    local v, err = red:get(CACHE_VERSION_KEY)
-    if not v then
+    local results, err = red:mget(CACHE_VERSION_KEY, PENALTIES_VERSION_KEY)
+    if not results then
         return nil, err
     end
-    if v == ngx.null then
-        v = 0
+
+    local cv = results[1]
+    local pv = results[2]
+    if cv == ngx.null or cv == nil then cv = 0 else cv = tonumber(cv) or 0 end
+    if pv == ngx.null or pv == nil then pv = 0 else pv = tonumber(pv) or 0 end
+
+    rc_shared:set("cache_version",     cv)
+    rc_shared:set("penalties_version", pv)
+
+    if _last_penalties_version ~= -1 and pv ~= _last_penalties_version then
+        _M.blocked_cache:flush_all()
+        ngx.log(ngx.NOTICE, "[firewall] event=penalties_flush version=", pv)
     end
-    rc_shared:set("cache_version", tonumber(v) or 0)
-    return v
+    _last_penalties_version = pv
+
+    return cv
+end
+
+
+-- Return the penalties version currently mirrored into the per-pod shared
+-- dict. Used by the stats endpoint so tests can observe when a flush has
+-- occurred.
+function _M.get_penalties_version()
+    return rc_shared:get("penalties_version") or 0
 end
 
 

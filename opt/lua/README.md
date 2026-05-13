@@ -70,7 +70,7 @@ Access is restricted to loopback in production by a single `location ^~
 | Method | Path | Purpose | Caller |
 |---|---|---|---|
 | `GET`  | `/firewall/stats`            | JSON snapshot of rules, config, and live GCRA TATs | Ops, debug |
-| `GET`  | `/firewall/clear-penalties`  | Delete every `firewall:block:{ip}` whose value is `"gcra"` (manual bans untouched) | Ops |
+| `GET`  | `/firewall/clear-penalties`  | Delete every `firewall:block:{ip}` whose value is `"gcra"` (manual bans untouched); increments `firewall:penalties_version` so every pod flushes its per-pod block cache within ~1 s | Ops |
 | `POST` | `/firewall/admin/validate?kind=rules\|config\|allowlist\|blocklist` | Strict schema check, body is the candidate JSON; **read-only, no Redis writes** | PHP admin form before save |
 
 Cache invalidation is **not** an admin endpoint. Writers (PHP admin save,
@@ -311,6 +311,7 @@ the same mode.
 | `firewall:gcra:{ip}` | string (TAT, ms epoch) | Lua script | Lua script | GCRA bucket state |
 | `firewall:gcra:{ip}:breakdown` | hash | Lua script | Lua script | Per-rule hit counts (audit only) |
 | `firewall:cache_version` | int | PHP/CLI | Lua | Cluster-wide cache invalidation counter; bump (`INCR`) after writing rules/config/allow/block to signal all pods to re-read |
+| `firewall:penalties_version` | int | Lua (`/firewall/clear-penalties`) | Lua | Cluster-wide penalty-cache invalidation counter; bumped by `clear_penalties()` after deleting auto-ban keys; every pod's poller flushes `blocked_cache` when the value advances |
 | `firewall:audit` | stream | Lua | PHP | Decision log, capped by `audit_maxlen` |
 
 The schema for `firewall:rules` and `firewall:config` is documented in the
@@ -458,8 +459,8 @@ Complete catalogue of events, by source file:
 | `NOTICE` | `rules_reload` | `version=` `rule_count=` | Fired once per worker each time the per-worker cache is refreshed from Redis (i.e. the per-pod poller observed a `firewall:cache_version` bump). Correlate `version=` across workers to confirm a config change propagated everywhere. |
 | `ERR`    | `json_decode_error` | `key=` `err=` | A Redis key (`firewall:rules`, `:config`, `:allowlist`, or `:blocklist`) contained invalid JSON. The affected list is treated as empty (fail-open). Indicates a bad direct write to Redis bypassing the admin validate endpoint. |
 | `WARN`   | `schema_warn` | `kind=rules\|config\|allowlist\|blocklist` + the warning text | A rule / config field / CIDR entry in Redis failed structural validation. The offending entry is dropped; the rest are kept. Should never fire in production — admin validate catches this before save. |
-| `NOTICE` | `cache_flush` | `version=` | The per-pod poller observed a new `firewall:cache_version` value in Redis. Workers will reload rules/config on their next request. `version=` is the new counter value. |
-| `WARN`    | `version_poll_error` | `err=` | The 1 s poller failed to read `firewall:cache_version` from Redis. The previous value remains in place; the next tick retries. |
+| `NOTICE` | `penalties_flush` | `version=` | The per-pod poller observed a new `firewall:penalties_version` value in Redis (set by `/firewall/clear-penalties`). The per-pod `blocked_cache` shared dict was flushed so all workers immediately stop serving stale auto-ban 429s. |
+| `WARN`    | `version_poll_error` | `err=` | The 1 s poller failed to read version counters from Redis. The previous values remain in place; the next tick retries. |
 
 #### [firewall/cost.lua](firewall/cost.lua)
 
@@ -652,6 +653,11 @@ INCR firewall:cache_version            # propagate cluster-wide within ~1 s
 GET /firewall/clear-penalties
 ```
 
+Deletes every `firewall:block:{ip}` key whose value is `"gcra"` (auto-ban)
+and increments `firewall:penalties_version`. Every pod's background poller
+picks up the bump within ~1 s and flushes its per-pod `blocked_cache` so
+all workers stop serving stale 429s cluster-wide.
+
 ### Disable everything immediately
 
 Set `FIREWALL_ENABLED=false` in the nginx Helm values and redeploy. This is
@@ -769,16 +775,22 @@ should not be a site outage.
 ### Per-pod rules cache + Redis-backed version counter
 
 Each nginx pod runs a single background timer (in worker 0) that polls
-`firewall:cache_version` from Redis once per second and mirrors the
-value into a per-pod shared dict (`firewall_rc_cache`). Every worker
-compares that value to its own in-memory copy on each request and
-re-reads `firewall:rules`/`:config`/`:allowlist`/`:blocklist` from Redis
-when they differ.
+`firewall:cache_version` and `firewall:penalties_version` from Redis once
+per second (one `MGET`) and mirrors the values into a per-pod shared dict
+(`firewall_rc_cache`). Every worker compares `cache_version` to its own
+in-memory copy on each request and re-reads
+`firewall:rules`/`:config`/`:allowlist`/`:blocklist` from Redis when they
+differ. When `penalties_version` advances, worker 0 calls
+`blocked_cache:flush_all()` immediately — because `ngx.shared` dicts are
+cross-worker, this single call clears stale auto-ban decisions for every
+worker in the pod.
 
-Writers (PHP admin save, ops scripts) bump the counter via
-`INCR firewall:cache_version` after writing. Total cost: one Redis `GET`
-per pod per second, regardless of worker count or traffic. Propagation
-latency: ~1 s cluster-wide.
+Writers bump the counters:
+- `INCR firewall:cache_version` — PHP admin save, ops scripts, after writing rules/config.
+- `INCR firewall:penalties_version` — `clear_penalties()` after deleting auto-ban keys.
+
+Total cost: one Redis `MGET` (two keys) per pod per second, regardless of
+worker count or traffic. Propagation latency: ~1 s cluster-wide.
 
 ### Schema validation lives in Lua, exposed over HTTP
 

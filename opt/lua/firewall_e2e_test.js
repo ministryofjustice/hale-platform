@@ -509,6 +509,76 @@ test("e2e: cache_version in stats advances when firewall:cache_version is increm
 });
 
 // ---------------------------------------------------------------------------
+// /firewall/clear-penalties — cluster-wide blocked_cache flush
+// ---------------------------------------------------------------------------
+
+test("e2e: penalties_version in stats advances after clear-penalties", async () => {
+  await resetRateLimitState();
+  const before = await (await fetch(`${FIREWALL_URL}/firewall/stats`, fetchOpts)).json();
+
+  const clearRes = await fetch(`${FIREWALL_URL}/firewall/clear-penalties`, fetchOpts);
+  await clearRes.body?.cancel();
+
+  // Poll until the per-pod poller mirrors the new penalties_version value.
+  // The poller fires every 1 s; allow 3 s as headroom.
+  let after;
+  const deadline = Date.now() + 3000;
+  while (Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, 200));
+    after = await (await fetch(`${FIREWALL_URL}/firewall/stats`, fetchOpts)).json();
+    if (after.penalties_version > before.penalties_version) break;
+  }
+
+  assert.ok(
+    after.penalties_version > before.penalties_version,
+    `penalties_version should have advanced within 3 s (before=${before.penalties_version}, after=${after?.penalties_version})`,
+  );
+});
+
+test("e2e: clear-penalties unblocks an auto-banned IP without touching manual bans", async () => {
+  const autoIp  = "10.3.1.1";
+  const manualIp = "10.3.1.2";
+  await resetRateLimitState();
+
+  // Place a manual ban (value "1") and an auto-ban (value "gcra") in Redis.
+  await redisCmd("SET", `firewall:block:${manualIp}`, "1");
+  await redisCmd("SET", `firewall:block:${autoIp}`,   "gcra");
+
+  const clearRes = await fetch(`${FIREWALL_URL}/firewall/clear-penalties`, fetchOpts);
+  const clearBody = await clearRes.json();
+  assert.equal(clearRes.status, 200);
+  assert.ok(clearBody.ok, `expected ok:true, got: ${JSON.stringify(clearBody)}`);
+  assert.ok(
+    clearBody.deleted >= 1,
+    `expected at least one key deleted, got deleted=${clearBody.deleted}`,
+  );
+
+  // Auto-ban key should be gone from Redis.
+  // redis-cli returns "" (empty) for a missing key in non-TTY mode, so use EXISTS.
+  const autoExists = await redisCmd("EXISTS", `firewall:block:${autoIp}`);
+  assert.equal(autoExists, "0", `firewall:block:${autoIp} should have been deleted`);
+
+  // Manual ban key must still exist.
+  const manualVal = await redisCmd("GET", `firewall:block:${manualIp}`);
+  assert.equal(manualVal, "1", `firewall:block:${manualIp} (manual ban) must be untouched`);
+
+  // Auto-banned IP should now be allowed through (blocked_cache flushed by poller).
+  // Poll briefly to give the 1 s poller time to fire.
+  let autoAllowed = false;
+  const deadline = Date.now() + 3000;
+  while (Date.now() < deadline) {
+    const res = await sendRequest(autoIp);
+    await res.body?.cancel();
+    if (res.status === 200) { autoAllowed = true; break; }
+    await new Promise((r) => setTimeout(r, 200));
+  }
+  assert.ok(autoAllowed, `auto-banned IP ${autoIp} should be allowed after clear-penalties`);
+
+  // Clean up the manual ban so later tests are unaffected.
+  await redisCmd("DEL", `firewall:block:${manualIp}`);
+});
+
+// ---------------------------------------------------------------------------
 // CSV fixture replay
 // ---------------------------------------------------------------------------
 // Place one or more CSV files in opt/lua/fixtures/ with the headers below to
