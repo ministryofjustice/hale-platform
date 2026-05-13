@@ -330,8 +330,8 @@ Each entry in `firewall:rules` is `{name, phase, cost, match}`:
 - **`cost`** — required integer in `0..99999`. `0` = audit-only (matches
   appear in the breakdown but add no tokens); a value `>=` bucket
   capacity guarantees a block on first match.
-- **`match`** — required object, at least one predicate. Predicate keys
-  are phase-specific:
+- **`match`** — required object. An empty `{}` matches every request.
+  Predicate keys are phase-specific:
   - **req** — `uri_pattern` / `ua_pattern` / `query_pattern` (PCRE,
     case-insensitive), `method` (exact, case-sensitive), `has_query`
     (boolean). Predicates within a rule are AND'd.
