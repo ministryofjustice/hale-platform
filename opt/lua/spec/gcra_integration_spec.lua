@@ -24,6 +24,16 @@ local function create_redis_client()
         error("Failed to connect to Redis at " .. redis_host .. ":" .. redis_port .. ": " .. (err or "unknown"))
     end
 
+    local redis_db = tonumber(os.getenv("REDIS_DB")) or 0
+    if redis_db ~= 0 then
+        local db_str = tostring(redis_db)
+        tcp:send("*2\r\n$6\r\nSELECT\r\n$" .. #db_str .. "\r\n" .. db_str .. "\r\n")
+        local sel_line = tcp:receive("*l")
+        if not sel_line or sel_line:sub(1, 1) ~= "+" then
+            error("Redis SELECT " .. redis_db .. " failed: " .. (sel_line or "no response"))
+        end
+    end
+
     -- Parse Redis response
     local function parse_response()
         local line = tcp:receive("*l")
