@@ -230,6 +230,16 @@ function _M.validate()
         end
     end
 
+    -- Guarantee the documented shape: errors is always a JSON array (never {}),
+    -- and normalised is always present in the response (null when ok is false,
+    -- never omitted).
+    if type(result.errors) == "table" and next(result.errors) == nil then
+        result.errors = cjson.empty_array
+    end
+    if result.normalised == nil then
+        result.normalised = cjson.null
+    end
+
     ngx.say(cjson.encode(result))
 end
 
