@@ -230,6 +230,16 @@ function _M.validate()
         end
     end
 
+    -- Guarantee the documented shape: errors is always a JSON array (never {}),
+    -- and normalised is always present in the response (null when ok is false,
+    -- never omitted).
+    if type(result.errors) == "table" and next(result.errors) == nil then
+        result.errors = cjson.empty_array
+    end
+    if result.normalised == nil then
+        result.normalised = cjson.null
+    end
+
     ngx.say(cjson.encode(result))
 end
 
@@ -238,6 +248,8 @@ end
 -- value is "gcra" (i.e. written automatically by GCRA penalty). Manual admin
 -- bans (value "1") are left intact. Admin/test path only.
 function _M.clear_penalties()
+    ngx.header.content_type = "application/json"
+
     local red = redis_pool.connect()
     if not red then
         ngx.status = 503
@@ -276,7 +288,6 @@ function _M.clear_penalties()
 
     red:incr(PENALTIES_VERSION_KEY)
     redis_pool.release(red)
-    ngx.header.content_type = "application/json"
     ngx.say('{"ok":true,"deleted":' .. deleted .. '}')
 end
 
@@ -285,6 +296,8 @@ end
 -- keys so tests start from a clean state. Does NOT touch firewall:rules,
 -- :config, :allowlist, or :blocklist. Only available when ENV=local.
 function _M.clear_rate_limits()
+    ngx.header.content_type = "application/json"
+
     if not _TEST_MODE then
         ngx.status = 404
         ngx.say('{"ok":false,"error":"not found"}')
@@ -325,7 +338,6 @@ function _M.clear_rate_limits()
     cache.blocked_cache:flush_all()
 
     redis_pool.release(red)
-    ngx.header.content_type = "application/json"
     ngx.say('{"ok":true,"deleted":' .. deleted .. '}')
 end
 

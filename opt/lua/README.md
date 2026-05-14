@@ -72,6 +72,7 @@ Access is restricted to loopback in production by a single `location ^~
 | `GET`  | `/firewall/stats`            | JSON snapshot of rules, config, live GCRA TATs, and current `cache_version`/`penalties_version` counters | Ops, debug |
 | `GET`  | `/firewall/clear-penalties`  | Delete every `firewall:block:{ip}` whose value is `"gcra"` (manual bans untouched); increments `firewall:penalties_version` so every pod flushes its per-pod block cache within ~1 s | Ops |
 | `POST` | `/firewall/admin/validate?kind=rules\|config\|allowlist\|blocklist` | Strict schema check, body is the candidate JSON; **read-only, no Redis writes** | PHP admin form before save |
+| `GET`  | `/firewall/clear-rate-limits`  | **Local/test only (`ENV=local`).** Wipe all `firewall:block:*` and `firewall:gcra:*` keys and flush the per-pod `blocked_cache` shared dict. Returns 404 in any other environment. | E2e tests (`resetRateLimitState`) |
 
 Cache invalidation is **not** an admin endpoint. Writers (PHP admin save,
 ops scripts) bump `firewall:cache_version` in Redis directly after
@@ -88,8 +89,13 @@ PHP hardcodes the same strings; if you rename one, update both sides.
 
 ### 3. Audit stream fields (`firewall:audit`)
 
-Written by `firewall.req()` (request-time blocks) and the `firewall.res()`
+Written by `firewall.req()` for GCRA/penalty/per-IP-block decisions and by the `firewall.res()`
 response-phase timer. Read by the WordPress admin audit table.
+
+**Not written** for CIDR allowlist hits (the request bypasses all firewall logic) or CIDR
+blocklist hits (the request exits with 403 before the GCRA/audit path runs). Those decisions
+are visible in the nginx access log (`fw_info=allow` / `fw_info=block`) but produce no audit
+row. If you need a record of CIDR-blocked traffic, use the access log.
 
 | Field | Type | Always present | Meaning |
 |---|---|---|---|
@@ -97,8 +103,8 @@ response-phase timer. Read by the WordPress admin audit table.
 | `blocked_at`   | int (ms epoch) | yes | When the block decision was taken |
 | `cost`         | int  | yes | GCRA cost charged on this request |
 | `mode`         | string  | yes | `enforce` or `monitor` — mode in force at the moment of the block |
-| `trigger`      | string  | yes | What caused the block: `blocklist`, `penalty`, or comma-separated `rule:<phase>-score:<name>:<cost>` pairs (e.g. `rule:req-score:php-probe:20`, `rule:res-score:res-404:50`) |
-| `accumulated`  | JSON object string | yes | Per-rule hit counts accumulated in the GCRA breakdown hash at the moment of the block, keyed by the same `rule:<phase>-score:<name>` strings used by the scorer (e.g. `{"rule:req-score:php-probe":3,"rule:req-score:high-ua":1}` or `{"rule:res-score:res-404":2}`). `""` when the breakdown hash is empty or Redis returned nil (e.g. `blocklist`/`penalty` blocks, or audit disabled). |
+| `trigger`      | string  | yes | What caused the block: `ip-block`, `penalty`, or comma-separated `rule:<phase>-score:<name>:<cost>` pairs (e.g. `rule:req-score:php-probe:20`, `rule:res-score:res-404:50`). `ip-block` means the per-IP `firewall:block:{ip}` key is set (manual or time-limited ban) — distinct from the CIDR `firewall:blocklist`, whose hits exit with 403 before the audit path and are never written to the stream. |
+| `accumulated`  | JSON object string | yes | Per-rule hit counts accumulated in the GCRA breakdown hash at the moment of the block, keyed by the same `rule:<phase>-score:<name>` strings used by the scorer (e.g. `{"rule:req-score:php-probe":3,"rule:req-score:high-ua":1}` or `{"rule:res-score:res-404":2}`). `""` when the breakdown hash is empty or Redis returned nil (e.g. `ip-block`/`penalty` blocks, or audit disabled). |
 | `reason`       | string  | request only | `block` / `penalty` / `gcra` — which arm of the GCRA script fired (omitted on response-phase entries) |
 | `retry_after`  | int (ms) | request only | Suggested cooldown for the client; same value used for the local cache TTL |
 
@@ -535,11 +541,15 @@ XLEN firewall:audit
 
 ### Quick reference — "why was this request blocked?"
 
-Given a 429 response, walk these in order:
+Given a **429** response, walk these in order:
 
 1. **Access log** for the request: confirm `fw_info=N` (req-phase score). Named values (`allow`, `block`, `cached`, `disabled`) explain why scoring was skipped.
 2. **Audit stream** filtered to the IP: `XREVRANGE firewall:audit + - COUNT 100` then grep. The `trigger`, `reason`, and `cost` fields fully explain the decision.
 3. **Error log** filtered to the IP: `grep 'event=block.*ip=<ip>'` shows the corresponding INFO line and any preceding ERR (e.g. `event=audit_write_failed` means the audit row may be missing).
+
+Given a **403** response (`fw_info=block` in the access log), the IP matched the CIDR
+`firewall:blocklist`. These decisions exit before the audit path — the **access log is the
+only record**. No audit stream entry is written.
 
 ---
 
@@ -550,7 +560,7 @@ Given a 429 response, walk these in order:
 | File | Responsibility |
 |---|---|
 | [firewall.lua](firewall.lua) | **Hot path only.** Exports `init`, `req`, `res`. Called by `init_worker_by_lua_block`, `access_by_lua_block`, `log_by_lua_block`. |
-| [firewall/admin.lua](firewall/admin.lua) | Admin endpoints. Exports `handle_route`, `stats`, `validate`, `clear_penalties`. Called by `content_by_lua_block` in the `/firewall/*` location. |
+| [firewall/admin.lua](firewall/admin.lua) | Admin endpoints. Exports `handle_route`, `stats`, `validate`, `clear_penalties`, `clear_rate_limits`. Called by `content_by_lua_block` in the `/firewall/*` location. |
 | [firewall/cache.lua](firewall/cache.lua) | Shared cache state: `blocked_cache` (shared dict), `load_rules_and_config` (per-worker cache, invalidated by Redis `firewall:cache_version`), `poll_versions`. Required by both `firewall` and `firewall.admin`. |
 | [firewall/cost.lua](firewall/cost.lua) | Pure function — score a request against rules. No `ngx.*` deps; unit-testable. |
 | [firewall/gcra.lua](firewall/gcra.lua) | GCRA algorithm + the Redis Lua script that runs server-side. EVALSHA + cache. |
@@ -692,6 +702,10 @@ Bring the stack up with the firewall enabled:
 ```
 make run-with-firewall
 ```
+
+The e2e tests call `GET /firewall/clear-rate-limits` before each stateful test to wipe
+all `firewall:block:*` and `firewall:gcra:*` keys and flush the per-pod `blocked_cache`.
+This endpoint is only available when `ENV=local` and returns 404 in production.
 
 Then (run from `opt/lua/`):
 
