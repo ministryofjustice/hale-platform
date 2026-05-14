@@ -72,6 +72,7 @@ Access is restricted to loopback in production by a single `location ^~
 | `GET`  | `/firewall/stats`            | JSON snapshot of rules, config, live GCRA TATs, and current `cache_version`/`penalties_version` counters | Ops, debug |
 | `GET`  | `/firewall/clear-penalties`  | Delete every `firewall:block:{ip}` whose value is `"gcra"` (manual bans untouched); increments `firewall:penalties_version` so every pod flushes its per-pod block cache within ~1 s | Ops |
 | `POST` | `/firewall/admin/validate?kind=rules\|config\|allowlist\|blocklist` | Strict schema check, body is the candidate JSON; **read-only, no Redis writes** | PHP admin form before save |
+| `GET`  | `/firewall/clear-rate-limits`  | **Local/test only (`ENV=local`).** Wipe all `firewall:block:*` and `firewall:gcra:*` keys and flush the per-pod `blocked_cache` shared dict. Returns 404 in any other environment. | E2e tests (`resetRateLimitState`) |
 
 Cache invalidation is **not** an admin endpoint. Writers (PHP admin save,
 ops scripts) bump `firewall:cache_version` in Redis directly after
@@ -550,7 +551,7 @@ Given a 429 response, walk these in order:
 | File | Responsibility |
 |---|---|
 | [firewall.lua](firewall.lua) | **Hot path only.** Exports `init`, `req`, `res`. Called by `init_worker_by_lua_block`, `access_by_lua_block`, `log_by_lua_block`. |
-| [firewall/admin.lua](firewall/admin.lua) | Admin endpoints. Exports `handle_route`, `stats`, `validate`, `clear_penalties`. Called by `content_by_lua_block` in the `/firewall/*` location. |
+| [firewall/admin.lua](firewall/admin.lua) | Admin endpoints. Exports `handle_route`, `stats`, `validate`, `clear_penalties`, `clear_rate_limits`. Called by `content_by_lua_block` in the `/firewall/*` location. |
 | [firewall/cache.lua](firewall/cache.lua) | Shared cache state: `blocked_cache` (shared dict), `load_rules_and_config` (per-worker cache, invalidated by Redis `firewall:cache_version`), `poll_versions`. Required by both `firewall` and `firewall.admin`. |
 | [firewall/cost.lua](firewall/cost.lua) | Pure function — score a request against rules. No `ngx.*` deps; unit-testable. |
 | [firewall/gcra.lua](firewall/gcra.lua) | GCRA algorithm + the Redis Lua script that runs server-side. EVALSHA + cache. |
@@ -692,6 +693,10 @@ Bring the stack up with the firewall enabled:
 ```
 make run-with-firewall
 ```
+
+The e2e tests call `GET /firewall/clear-rate-limits` before each stateful test to wipe
+all `firewall:block:*` and `firewall:gcra:*` keys and flush the per-pod `blocked_cache`.
+This endpoint is only available when `ENV=local` and returns 404 in production.
 
 Then (run from `opt/lua/`):
 
