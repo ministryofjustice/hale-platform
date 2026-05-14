@@ -181,7 +181,7 @@ function _M.req()
 
         -- info.reason ∈ {allow, block, penalty, gcra}
         --   allow   = allowlist hit (no TAT update, clean bypass)
-        --   block   = manual blocklist hit
+        --   block   = manual per-IP block key hit (firewall:block:{ip})
         --   penalty = automatic ban written by an earlier GCRA block
         --   gcra    = live GCRA decision against the bucket
         local allowed, info = gcra_module.check(red, ip, request_cost, gcra_config, breakdown)
@@ -213,7 +213,7 @@ function _M.req()
 
             local trigger
             if info.reason == "block" then
-                trigger = "blocklist"
+                trigger = "ip-block"
             elseif info.reason == "penalty" then
                 trigger = "penalty"
             else
