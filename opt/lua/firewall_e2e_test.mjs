@@ -1,38 +1,37 @@
-// E2E tests compatible with both Node.js (18+) and Deno (2.0+).
+// E2E tests for Node.js (18+).
 // No package.json or node_modules needed.
-// Node:  node --test firewall_e2e_test.mjs
-// Deno:  deno test --allow-net="hale.docker" --allow-read="./fixtures" --allow-run=docker --unsafely-ignore-certificate-errors firewall_e2e_test.mjs
+// Run: node --test firewall_e2e_test.mjs
 //
 // Prerequisites
 // -------------
 // 1. dory up                  — starts the local DNS proxy so hale.docker resolves
 // 2. make run-with-firewall   — starts nginx, WordPress, Redis and loads the firewall
+// 3. Seed rules in Redis     — the firewall defaults to monitor mode with no rules;
+//    open http://redis-insight.docker and create these two string keys:
 //
-// If the connectivity check at the top of this file fails, the remaining tests
-// are skipped automatically.  Check that both prerequisites are met first.
+//    firewall:rules
+//      [{"name":"req-base","phase":"req","cost":1,"match":{}},
+//       {"name":"req-yisou","phase":"req","cost":50,"match":{"ua_pattern":"YisouSpider"}},
+//       {"name":"req-jsp","phase":"req","cost":40,"match":{"uri_pattern":"\\.jsp$"}}]
+//
+//    firewall:config
+//      {"mode":"enforce"}
+//
+//    Then increment firewall:cache_version to trigger an immediate reload.
 
-const isDeno = typeof Deno !== "undefined";
+// Allow our self-signed https cert.
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
-const { test, assert } = await (async () => {
-  if (isDeno) {
-    const { assert: denoOk, assertEquals } = await import("jsr:@std/assert");
-    return {
-      test: (name, fn) => Deno.test(name, fn),
-      assert: { equal: assertEquals, ok: denoOk },
-    };
-  }
-  const { test } = await import("node:test");
-  const { default: assert } = await import("node:assert/strict");
-  return { test, assert };
-})();
+const { test } = await import("node:test");
+const { default: assert } = await import("node:assert/strict");
 
 const FIREWALL_URL = "https://hale.docker";
 
-const fetchClient = isDeno
-  ? Deno.createHttpClient({ allowHost: true })
-  : undefined;
-
-const fetchOpts = fetchClient ? { client: fetchClient } : {};
+// Redis connection — defaults to host.docker.internal:6379.
+// Docker Desktop adds host.docker.internal to /etc/hosts on the Mac host too,
+// so this resolves correctly whether node runs natively or inside a container.
+// Override with:  REDIS_URL=host:port node --test firewall_e2e_test.mjs
+const [_redisHost, _redisPort = "6379"] = (process.env.REDIS_URL ?? "127.0.0.1:6379").split(":");
 
 // ---------------------------------------------------------------------------
 // Connectivity pre-check — must pass before any other test runs
@@ -45,7 +44,6 @@ let _firewallReachable = false;
 
 try {
   const probe = await fetch(`${FIREWALL_URL}/firewall/stats`, {
-    ...fetchOpts,
     signal: AbortSignal.timeout(5000),
   });
   await probe.body?.cancel();
@@ -54,6 +52,7 @@ try {
   }
   _firewallReachable = true;
 } catch (e) {
+  console.error(e);
   console.error(`
 ╔══════════════════════════════════════════════════════════════════╗
 ║  FIREWALL NOT REACHABLE — test results will be inaccurate        ║
@@ -80,7 +79,6 @@ test(
       // the error message appears in the test output, not just on stderr.
       try {
         const res = await fetch(`${FIREWALL_URL}/firewall/stats`, {
-          ...fetchOpts,
           signal: AbortSignal.timeout(5000),
         });
         await res.body?.cancel();
@@ -104,10 +102,8 @@ test(
 async function sendRequest(ip, opts = {}) {
   const { method = "GET", path = "/", ua = "normal-browser" } = opts;
   return await fetch(`${FIREWALL_URL}${path}`, {
-    ...fetchOpts,
     method,
     headers: {
-      Host: "hale.docker",
       "X-Forwarded-For": ip,
       "X-Forwarded-Proto": "https",
       "User-Agent": ua,
@@ -116,30 +112,50 @@ async function sendRequest(ip, opts = {}) {
 }
 
 async function resetRateLimitState() {
-  const res = await fetch(`${FIREWALL_URL}/firewall/clear-rate-limits`, fetchOpts);
+  const res = await fetch(`${FIREWALL_URL}/firewall/clear-rate-limits`);
   await res.body?.cancel();
 }
 
 // ---------------------------------------------------------------------------
-// Redis helper — runs redis-cli inside the Docker container so the test file
-// needs no Redis client dependency and no exposed Redis port.  Requires the
-// Docker daemon to be running locally (same prerequisite as the firewall).
+// Minimal RESP2 Redis client — talks directly to Redis over TCP.
+// No docker binary or redis-cli needed.
 //
-// Returns the trimmed stdout string.  Redis GET on a missing key returns the
-// literal string "(nil)" from redis-cli; callers must handle that themselves.
-//
-// Deno: requires --allow-run=docker (added to the run command above).
+// Returns the response as a string: integers and simple strings as-is,
+// bulk strings as their value, nil bulk strings ($-1) as "".
+// Redis errors throw.
 // ---------------------------------------------------------------------------
 async function redisCmd(...args) {
-  const argv = ["docker", "exec", "hale-platform-redis-1", "redis-cli", ...args];
-  if (isDeno) {
-    const cmd = new Deno.Command(argv[0], { args: argv.slice(1) });
-    const { stdout } = await cmd.output();
-    return new TextDecoder().decode(stdout).trim();
-  }
-  const { execFile } = await import("node:child_process");
-  const { promisify } = await import("node:util");
-  return (await promisify(execFile)(argv[0], argv.slice(1))).stdout.trim();
+  const { createConnection } = await import("node:net");
+  return new Promise((resolve, reject) => {
+    const cmd =
+      `*${args.length}\r\n` +
+      args.map((a) => `$${Buffer.byteLength(String(a))}\r\n${a}\r\n`).join("");
+    const sock = createConnection({ host: _redisHost, port: Number(_redisPort) });
+    let buf = "";
+    sock.setEncoding("utf8");
+    sock.on("connect", () => sock.write(cmd));
+    sock.on("data", (chunk) => {
+      buf += chunk;
+      const type = buf[0];
+      if (type === "+" || type === "-" || type === ":") {
+        const end = buf.indexOf("\r\n");
+        if (end === -1) return;
+        sock.destroy();
+        if (type === "-") return reject(new Error(buf.slice(1, end)));
+        resolve(buf.slice(1, end));
+      } else if (type === "$") {
+        const firstCrlf = buf.indexOf("\r\n");
+        if (firstCrlf === -1) return;
+        const len = parseInt(buf.slice(1, firstCrlf), 10);
+        if (len === -1) { sock.destroy(); return resolve(""); }
+        const dataStart = firstCrlf + 2;
+        if (buf.length < dataStart + len + 2) return;
+        sock.destroy();
+        resolve(buf.slice(dataStart, dataStart + len));
+      }
+    });
+    sock.on("error", reject);
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -154,12 +170,12 @@ test("e2e: normal GET request returns 200", async () => {
 });
 
 test("e2e: /firewall/stats endpoint returns 200", async () => {
-  const res = await fetch(`${FIREWALL_URL}/firewall/stats`, fetchOpts);
+  const res = await fetch(`${FIREWALL_URL}/firewall/stats`);
   assert.equal(res.status, 200, "/firewall/stats should always respond");
   await res.body?.cancel();
 });
 
-test("e2e: clear-rate-limits returns ok:true and unblocks a rate-limited IP", async () => {
+test("e2e: /firewall/clear-rate-limits returns ok:true and unblocks a rate-limited IP", async () => {
   const ip = "10.3.0.6";
   await resetRateLimitState();
 
@@ -174,7 +190,7 @@ test("e2e: clear-rate-limits returns ok:true and unblocks a rate-limited IP", as
   assert.ok(got429, "IP should be rate-limited before clear (pre-condition)");
 
   // Call the endpoint explicitly and assert the response shape.
-  const clearRes = await fetch(`${FIREWALL_URL}/firewall/clear-rate-limits`, fetchOpts);
+  const clearRes = await fetch(`${FIREWALL_URL}/firewall/clear-rate-limits`);
   const clearBody = await clearRes.json();
   assert.equal(clearRes.status, 200);
   assert.ok(clearBody.ok, `expected ok:true, got: ${JSON.stringify(clearBody)}`);
@@ -202,7 +218,6 @@ async function postValidate(kind, body) {
   const res = await fetch(
     `${FIREWALL_URL}/firewall/admin/validate?kind=${kind}`,
     {
-      ...fetchOpts,
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: typeof body === "string" ? body : JSON.stringify(body),
@@ -365,7 +380,6 @@ test("e2e: validate — unknown kind returns 400", async () => {
   const res = await fetch(
     `${FIREWALL_URL}/firewall/admin/validate?kind=unknown`,
     {
-      ...fetchOpts,
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: "[]",
@@ -378,7 +392,6 @@ test("e2e: validate — unknown kind returns 400", async () => {
 
 test("e2e: validate — missing kind parameter returns 400", async () => {
   const res = await fetch(`${FIREWALL_URL}/firewall/admin/validate`, {
-    ...fetchOpts,
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: "[]",
@@ -391,7 +404,7 @@ test("e2e: validate — missing kind parameter returns 400", async () => {
 test("e2e: validate — empty body returns 400", async () => {
   const res = await fetch(
     `${FIREWALL_URL}/firewall/admin/validate?kind=rules`,
-    { ...fetchOpts, method: "POST" },
+    { method: "POST" },
   );
   const json = await res.json();
   assert.equal(res.status, 400);
@@ -402,7 +415,6 @@ test("e2e: validate — invalid JSON body returns 400", async () => {
   const res = await fetch(
     `${FIREWALL_URL}/firewall/admin/validate?kind=rules`,
     {
-      ...fetchOpts,
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: "{not valid json",
@@ -487,18 +499,18 @@ test("e2e: JSP path probes are rate-limited quickly", async () => {
 // ---------------------------------------------------------------------------
 
 test("e2e: cache_version in stats advances when firewall:cache_version is incremented", async () => {
-  const before = await (await fetch(`${FIREWALL_URL}/firewall/stats`, fetchOpts)).json();
+  const before = await (await fetch(`${FIREWALL_URL}/firewall/stats`)).json();
 
   await redisCmd("INCR", "firewall:cache_version");
 
-  // Poll until the per-pod poller mirrors the new value into rc_shared and
+  // Poll until the background poller mirrors the new value into rc_shared and
   // a stats call triggers load_rules_and_config.  The poller fires every 1 s;
   // allow 3 s as headroom.
   let after;
   const deadline = Date.now() + 3000;
   while (Date.now() < deadline) {
     await new Promise((r) => setTimeout(r, 200));
-    after = await (await fetch(`${FIREWALL_URL}/firewall/stats`, fetchOpts)).json();
+    after = await (await fetch(`${FIREWALL_URL}/firewall/stats`)).json();
     if (after.cache_version > before.cache_version) break;
   }
 
@@ -514,18 +526,18 @@ test("e2e: cache_version in stats advances when firewall:cache_version is increm
 
 test("e2e: penalties_version in stats advances after clear-penalties", async () => {
   await resetRateLimitState();
-  const before = await (await fetch(`${FIREWALL_URL}/firewall/stats`, fetchOpts)).json();
+  const before = await (await fetch(`${FIREWALL_URL}/firewall/stats`)).json();
 
-  const clearRes = await fetch(`${FIREWALL_URL}/firewall/clear-penalties`, fetchOpts);
+  const clearRes = await fetch(`${FIREWALL_URL}/firewall/clear-penalties`);
   await clearRes.body?.cancel();
 
-  // Poll until the per-pod poller mirrors the new penalties_version value.
+  // Poll until the background poller mirrors the new penalties_version value.
   // The poller fires every 1 s; allow 3 s as headroom.
   let after;
   const deadline = Date.now() + 3000;
   while (Date.now() < deadline) {
     await new Promise((r) => setTimeout(r, 200));
-    after = await (await fetch(`${FIREWALL_URL}/firewall/stats`, fetchOpts)).json();
+    after = await (await fetch(`${FIREWALL_URL}/firewall/stats`)).json();
     if (after.penalties_version > before.penalties_version) break;
   }
 
@@ -544,7 +556,7 @@ test("e2e: clear-penalties unblocks an auto-banned IP without touching manual ba
   await redisCmd("SET", `firewall:block:${manualIp}`, "1");
   await redisCmd("SET", `firewall:block:${autoIp}`,   "gcra");
 
-  const clearRes = await fetch(`${FIREWALL_URL}/firewall/clear-penalties`, fetchOpts);
+  const clearRes = await fetch(`${FIREWALL_URL}/firewall/clear-penalties`);
   const clearBody = await clearRes.json();
   assert.equal(clearRes.status, 200);
   assert.ok(clearBody.ok, `expected ok:true, got: ${JSON.stringify(clearBody)}`);
@@ -628,18 +640,10 @@ async function findFixtureCsvFiles() {
   const files = [];
   const dir = new URL("fixtures/", import.meta.url).pathname;
   try {
-    if (isDeno) {
-      for await (const entry of Deno.readDir(dir)) {
-        if (entry.isFile && entry.name.endsWith(".csv")) {
-          files.push(`${dir}${entry.name}`);
-        }
-      }
-    } else {
-      const { readdir } = await import("node:fs/promises");
-      const entries = await readdir(dir);
-      for (const name of entries) {
-        if (name.endsWith(".csv")) files.push(`${dir}/${name}`);
-      }
+    const { readdir } = await import("node:fs/promises");
+    const entries = await readdir(dir);
+    for (const name of entries) {
+      if (name.endsWith(".csv")) files.push(`${dir}/${name}`);
     }
   } catch (e) {
     console.error(`[fixtures] failed to read dir "${dir}":`, e.message);
@@ -648,7 +652,6 @@ async function findFixtureCsvFiles() {
 }
 
 async function readFile(path) {
-  if (isDeno) return await Deno.readTextFile(path);
   const { readFile: nodeReadFile } = await import("node:fs/promises");
   return await nodeReadFile(path, "utf8");
 }
@@ -705,7 +708,6 @@ for (const fixturePath of fixtureFiles) {
       lastTimestamp = isNaN(ts) ? lastTimestamp : ts;
 
       const res = await fetch(`${FIREWALL_URL}${row[H.uri] || "/"}`, {
-        ...fetchOpts,
         redirect: "manual",
         method: row[H.method] || "GET",
         headers: {
