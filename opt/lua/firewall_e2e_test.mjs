@@ -1,7 +1,7 @@
 // E2E tests compatible with both Node.js (18+) and Deno (2.0+).
 // No package.json or node_modules needed.
-// Node:  node --test firewall_e2e_test.js
-// Deno:  deno test --allow-net="hale.docker" --allow-read="./fixtures" --allow-run=docker --unsafely-ignore-certificate-errors firewall_e2e_test.js
+// Node:  node --test firewall_e2e_test.mjs
+// Deno:  deno test --allow-net="hale.docker" --allow-read="./fixtures" --allow-run=docker --unsafely-ignore-certificate-errors firewall_e2e_test.mjs
 //
 // Prerequisites
 // -------------
