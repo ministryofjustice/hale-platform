@@ -964,12 +964,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/govwind.git",
-                "reference": "bac91e0d0e8d1567923ad1808696b3dc497383c8"
+                "reference": "9dc00510cd0a305e8741ec373f0aa0cc0a3837d1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/bac91e0d0e8d1567923ad1808696b3dc497383c8",
-                "reference": "bac91e0d0e8d1567923ad1808696b3dc497383c8",
+                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/9dc00510cd0a305e8741ec373f0aa0cc0a3837d1",
+                "reference": "9dc00510cd0a305e8741ec373f0aa0cc0a3837d1",
                 "shasum": ""
             },
             "default-branch": true,
@@ -979,7 +979,7 @@
                 "source": "https://github.com/ministryofjustice/govwind/tree/main",
                 "issues": "https://github.com/ministryofjustice/govwind/issues"
             },
-            "time": "2026-05-14T10:25:18+00:00"
+            "time": "2026-05-15T08:45:23+00:00"
         },
         {
             "name": "ministryofjustice/hale",
@@ -1105,12 +1105,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/website-builder-blocks.git",
-                "reference": "63c2ce6b7b8fd9d288d287ad6cc501bbb2f01111"
+                "reference": "1d8892c037746403bfb9dce69dc77fa79a3652ae"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/63c2ce6b7b8fd9d288d287ad6cc501bbb2f01111",
-                "reference": "63c2ce6b7b8fd9d288d287ad6cc501bbb2f01111",
+                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/1d8892c037746403bfb9dce69dc77fa79a3652ae",
+                "reference": "1d8892c037746403bfb9dce69dc77fa79a3652ae",
                 "shasum": ""
             },
             "require-dev": {
@@ -1138,7 +1138,7 @@
                 "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/main",
                 "issues": "https://github.com/ministryofjustice/website-builder-blocks/issues"
             },
-            "time": "2026-05-08T08:17:46+00:00"
+            "time": "2026-05-15T08:35:19+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
