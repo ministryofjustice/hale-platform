@@ -569,7 +569,7 @@ only record**. No audit stream entry is written.
 | [firewall/cidr.lua](firewall/cidr.lua) | Pure IPv4 CIDR matching. No `ngx.*` deps; unit-testable. `parse(entry)` → `{net, host_count}` or nil. `contains(parsed_list, ip)` → bool. Bare IPs treated as /32. |
 | [firewall/redis.lua](firewall/redis.lua) | Connection pool, fail-open. Reads `REDIS_*` env. |
 | [spec/](spec/) | busted unit + integration tests (run with `make test-firewall`). |
-| [firewall_e2e_test.js](firewall_e2e_test.js) | Node/Deno e2e tests + CSV fixture replay against a running stack. |
+| [firewall_e2e_test.mjs](firewall_e2e_test.mjs) | Node.js e2e tests + CSV fixture replay against a running stack. |
 | [fixtures/](fixtures/) | CSV replay inputs from Ingress log exports. |
 
 ### nginx (`opt/nginx/`)
@@ -695,7 +695,7 @@ Builds the `test` stage of [nginx.local.dockerfile](../../nginx.local.dockerfile
 runs busted with `REDIS_DB=1` against the dev Redis container so it does
 not collide with anything live.
 
-### End-to-end (Node or Deno, slow, against a running stack)
+### End-to-end (Node.js, slow, against a running stack)
 
 Bring the stack up with the firewall enabled:
 
@@ -710,11 +710,11 @@ This endpoint is only available when `ENV=local` and returns 404 in production.
 Then (run from `opt/lua/`):
 
 ```
-node --test firewall_e2e_test.js
-# or
-deno test --allow-net="hale.docker" --allow-read="./fixtures" \
-  --allow-run=docker --unsafely-ignore-certificate-errors firewall_e2e_test.js
+node --test firewall_e2e_test.mjs
 ```
+
+Redis is reached at `127.0.0.1:6379` by default. Override with
+`REDIS_URL=host:port` if needed.
 
 Drop a CSV from Cloud Platform ingress logs into [fixtures/](fixtures/) 
 to replay real traffic against the firewall — the test discovers them
