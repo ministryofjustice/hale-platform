@@ -29,4 +29,4 @@ fi
 # Execute the modified entrypoint from /tmp — deliberately NOT writing back to
 # /usr/local/bin/ so the original stays pristine across container stop/start cycles.
 chmod +x /tmp/docker-entrypoint.sh
-exec /tmp/docker-entrypoint.sh "$@"
+exec /tmp/docker-entrypoint.sh "php-fpm"
