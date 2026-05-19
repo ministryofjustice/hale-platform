@@ -34,6 +34,7 @@ COPY opt/php/wp-cron-multisite.php /usr/src/wordpress/wp-cron-multisite.php
 # Setup WordPress multisite and network
 COPY opt/scripts/hale-entrypoint.sh /usr/local/bin/
 COPY opt/scripts/config.sh /usr/local/bin/
+COPY opt/scripts/startup-patch.sh /usr/local/bin/
 
 # Generated Composer and NPM compiled artifacts (plugins, themes, CSS, JS)
 # The WP offical Docker image expects files to be in /usr/src/wordpress
@@ -50,11 +51,13 @@ RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 # Create new user to run the container as non-root
 RUN adduser --disabled-password hale -u 1002 \
     && chown -R hale:hale /var/www/html \
+    && chown -R hale:hale /usr/src/wordpress \
     && chown hale:hale /usr/local/bin/docker-entrypoint.sh
 
 # Make multisite scripts executable
 RUN chmod +x /usr/local/bin/hale-entrypoint.sh \
-    && chmod +x /usr/local/bin/config.sh
+    && chmod +x /usr/local/bin/config.sh \
+    && chmod +x /usr/local/bin/startup-patch.sh
 
 # Create the uploads folder
 RUN mkdir -p /usr/src/wordpress/wp-content/uploads
