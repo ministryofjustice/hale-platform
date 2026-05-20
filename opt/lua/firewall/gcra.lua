@@ -32,6 +32,10 @@
 --   - https://www.youtube.com/watch?v=HqAjClwTBy0
 --     "Distributed Rate Limiter with Redis & Lua | GCRA Algorithm Demo" —
 --     walks through the same Redis+Lua pattern this module uses.
+--   - https://liliace.dev/posts/intuition-of-the-gcra
+--     "Intuition of the GCRA" an explainer of GCRA that starts with a rudimentary
+--     rate limit bucket, with a guided step by step progression to leaky bucket 
+--     and virtual leaky bucket.
 -- ============================================================================
 
 local _M = {}
