@@ -192,13 +192,17 @@ function _M.req()
 
         -- here, handle the case where allowed is false
 
-        -- retry_after is ms; 0 from a "block" reason = permanent ban,
-        -- and shared_dict :set(_, _, 0) means "no expiry".
+        -- Convert retry_after (milliseconds from GCRA/block) to seconds for
+        -- the shared-dict TTL. Manual IP blocks carry retry_after = 0 as a
+        -- sentinel for "indefinite" — ngx.shared.DICT:set with TTL 0 means
+        -- no expiry, which is the desired behaviour. The branch makes that
+        -- intent explicit; without it math.ceil(0 / 1000) = 0 would produce
+        -- the same result, but silently and confusingly.
         local cache_ttl
         if info.reason == "block" and info.retry_after == 0 then
-            cache_ttl = 0
+            cache_ttl = 0  -- permanent ban; shared-dict entry never expires
         else
-            cache_ttl = math.ceil(info.retry_after / 1000)
+            cache_ttl = math.ceil(info.retry_after / 1000)  -- ms → s, round up so cache never expires before the rate-limit window
         end
 
         -- Cache the decision under the current mode so the fast path
