@@ -202,7 +202,8 @@ function _M.req()
         if info.reason == "block" and info.retry_after == 0 then
             cache_ttl = 0  -- permanent ban; shared-dict entry never expires
         else
-            cache_ttl = math.ceil(info.retry_after / 1000)  -- ms → s, round up so cache never expires before the rate-limit window
+            -- ms → s, round up so cache never expires before the rate-limit window
+            cache_ttl = math.ceil(info.retry_after / 1000)
         end
 
         -- Cache the decision under the current mode so the fast path
