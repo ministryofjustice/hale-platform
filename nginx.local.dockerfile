@@ -1,4 +1,12 @@
-FROM openresty/openresty:alpine
+####################################################
+# Local OpenResty (nginx + lua) server
+# Equivalent to nginx.dockerfile but with local
+# WordPress config.
+# ##################################################
+
+FROM openresty/openresty:1.29.2.4-alpine AS nginx
+
+ENV ENV=local
 
 # Install additional Alpine packages
 RUN apk add --no-cache curl ca-certificates
@@ -19,7 +27,8 @@ RUN mkdir -p /usr/local/openresty/nginx/logs \
 # Copy configuration, Lua module and error pages
 COPY opt/nginx/nginx.conf          /usr/local/openresty/nginx/conf/nginx.conf
 COPY opt/nginx/localwordpress.conf /usr/local/openresty/nginx/conf/conf.d/
-COPY opt/scripts/firewall.lua      /usr/local/openresty/nginx/lua/firewall.lua
+COPY opt/lua/firewall.lua          /usr/local/openresty/nginx/lua/firewall.lua
+COPY opt/lua/firewall              /usr/local/openresty/nginx/lua/firewall
 COPY opt/nginx/error-pages/        /usr/local/openresty/nginx/html/error-pages/
 
 # Switch to non-root user (numeric UID for consistency with production)
@@ -30,3 +39,32 @@ EXPOSE 8080
 
 # Start in the foreground
 CMD ["/usr/local/openresty/bin/openresty", "-g", "daemon off;"]
+
+
+####################################################
+# Lua lint and test suite image
+# luarocks, busted, and luasocket (needed for
+# integration specs that connect to Redis directly).
+# ##################################################
+
+FROM openresty/openresty:1.29.2.4-alpine AS test
+
+RUN apk add --no-cache \
+        lua5.1-dev \
+        luarocks5.1 \
+        gcc \
+        musl-dev \
+        openssl-dev \
+    && luarocks-5.1 install luasec \
+    && luarocks-5.1 install busted \
+    && luarocks-5.1 install luasocket \
+    && luarocks-5.1 install lua-cjson \
+    && luarocks-5.1 install luacheck \
+    && apk del gcc musl-dev lua5.1-dev openssl-dev \
+    && rm -rf /root/.cache
+
+WORKDIR /app
+
+COPY opt/lua/  .
+
+ENTRYPOINT ["/bin/sh", "-c", "luacheck . && busted"]

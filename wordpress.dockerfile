@@ -13,7 +13,18 @@ RUN apk update && \
     apk add less \
     vim \
     mariadb-client \
-    htop
+    htop \
+    ca-certificates
+
+# Install PHPRedis build dependencies
+RUN apk add --no-cache --virtual .build-deps pcre-dev $PHPIZE_DEPS
+
+# Install and enable PHPRedis
+RUN pecl install redis \
+    && docker-php-ext-enable redis
+
+# Delete PHPRedis build dependencies
+RUN apk del .build-deps
 
 # Install wp-cli
 RUN curl -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
