@@ -87,6 +87,10 @@ on:
         required: true
       auth0-env-domain:
         required: true
+      redis-auth:
+        required: true
+      redis-host:
+        required: true
 
 jobs:
   buildImage:
@@ -101,13 +105,13 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Config Credentials
-        uses: aws-actions/configure-aws-credentials@ec61189d14ec14c8efccab744f656cffd0e33f37 # v6.1.0
+        uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6.1.1
         with:
           role-to-assume: ${{ secrets.ecr-role }}
           aws-region: ${{ secrets.ecr-region }}
 
       - name: Login to ECR
-        uses: aws-actions/amazon-ecr-login@19d944daaa35f0fa1d3f7f8af1d3f2e5de25c5b7 # v2.1.4
+        uses: aws-actions/amazon-ecr-login@fa648b43de3d4d023bcb3f89ed6940096949c419 # v2.1.5
         id: login-ecr
         with:
           mask-password: "true"
@@ -150,7 +154,7 @@ jobs:
             ${{ runner.os }}-composer-
 
       - name: Set PHP min version
-        uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f # v2.37.0
+        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # v2.37.1
         with:
           php-version: 8.4
 
@@ -266,6 +270,8 @@ jobs:
           --set secrets.auth0envclientsecret=${{ secrets.auth0-env-client-secret }} \
           --set secrets.auth0envdomain=${{ secrets.auth0-env-domain }} \
           --set secrets.acftoken=${{ secrets.acf-token }} \
+          --set secrets.redisauth=${{ secrets.redis-auth }} \
+          --set secrets.redishost=${{ secrets.redis-host }} \
           --set alertSecrets.slackWebhookUrl=${{ secrets.alert-slack-webhook-url }} \
           --set configmap.envtype=${{ vars.ENV_TYPE }} \
           --set configmap.sentrydns=${{ vars.PHP_DSN }} \

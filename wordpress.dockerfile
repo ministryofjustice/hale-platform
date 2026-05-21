@@ -13,7 +13,18 @@ RUN apk update && \
     apk add less \
     vim \
     mariadb-client \
-    htop
+    htop \
+    ca-certificates
+
+# Install PHPRedis build dependencies
+RUN apk add --no-cache --virtual .build-deps pcre-dev $PHPIZE_DEPS
+
+# Install and enable PHPRedis
+RUN pecl install redis \
+    && docker-php-ext-enable redis
+
+# Delete PHPRedis build dependencies
+RUN apk del .build-deps
 
 # Install wp-cli
 RUN curl -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
@@ -34,6 +45,7 @@ COPY opt/php/wp-cron-multisite.php /usr/src/wordpress/wp-cron-multisite.php
 # Setup WordPress multisite and network
 COPY opt/scripts/hale-entrypoint.sh /usr/local/bin/
 COPY opt/scripts/config.sh /usr/local/bin/
+COPY opt/scripts/startup-patch.sh /usr/local/bin/
 
 # Generated Composer and NPM compiled artifacts (plugins, themes, CSS, JS)
 # The WP offical Docker image expects files to be in /usr/src/wordpress
@@ -50,11 +62,13 @@ RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 # Create new user to run the container as non-root
 RUN adduser --disabled-password hale -u 1002 \
     && chown -R hale:hale /var/www/html \
+    && chown -R hale:hale /usr/src/wordpress \
     && chown hale:hale /usr/local/bin/docker-entrypoint.sh
 
 # Make multisite scripts executable
 RUN chmod +x /usr/local/bin/hale-entrypoint.sh \
-    && chmod +x /usr/local/bin/config.sh
+    && chmod +x /usr/local/bin/config.sh \
+    && chmod +x /usr/local/bin/startup-patch.sh
 
 # Create the uploads folder
 RUN mkdir -p /usr/src/wordpress/wp-content/uploads

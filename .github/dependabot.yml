@@ -16,3 +16,19 @@ updates:
       github-actions:
         patterns:
           - "*"
+
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "00:24"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    labels:
+      - "chore"
+      - "docker"
+    groups:
+      docker-packages:
+        patterns:
+          - "*"

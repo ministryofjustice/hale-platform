@@ -48,6 +48,13 @@ dev/mu-plugins/*
 dev/plugins/*
 dev/themes/*
 
+
+############################
+# Test fixtures
+############################
+opt/lua/fixtures/*
+!opt/lua/fixtures/example.csv
+
 # Track empty directories
 !dev/mu-plugins/.gitkeep
 !dev/plugins/.gitkeep

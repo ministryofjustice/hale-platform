@@ -1,0 +1,38 @@
+name: Test
+on:
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  tests:
+    name: Run Lua Firewall Tests
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd #v4.0.0
+
+      - name: Build test image
+        uses: docker/build-push-action@c56af957549030174b10d6867f20e78cfd7debc5 #v6.5.0
+        with:
+          file: nginx.local.dockerfile
+          target: test
+          load: true
+          tags: test-firewall
+          cache-from: type=gha,scope=lua-test
+          cache-to: type=gha,mode=max,scope=lua-test
+
+      - name: Run tests
+        run: |
+          docker run --rm \
+            --network host \
+            -e REDIS_HOST=localhost \
+            -e REDIS_DB=1 \
+            test-firewall

@@ -57,6 +57,8 @@ jobs:
       s3-uploads-bucket-url: ${{ secrets.S3_UPLOADS_BUCKET_URL }}
       s3-uploads-object-acl: ${{ secrets.S3_UPLOADS_OBJECT_ACL }}
       cloudfront-distribution-id: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+      redis-auth: ${{ secrets.REDIS_AUTH }}
+      redis-host: ${{ secrets.REDIS_HOST }}
       alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
       wb-config: ${{ secrets.WB_CONFIG}}
 
@@ -102,6 +104,8 @@ jobs:
       s3-uploads-bucket-url: ${{ secrets.S3_UPLOADS_BUCKET_URL }}
       s3-uploads-object-acl: ${{ secrets.S3_UPLOADS_OBJECT_ACL }}
       cloudfront-distribution-id: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+      redis-auth: ${{ secrets.REDIS_AUTH }}
+      redis-host: ${{ secrets.REDIS_HOST }}
       alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
       auth0-env-client-id: ${{ secrets.AUTH0_ENV_CLIENT_ID }}
       auth0-env-client-secret: ${{ secrets.AUTH0_ENV_CLIENT_SECRET }}
@@ -150,6 +154,8 @@ jobs:
       s3-uploads-bucket-url: ${{ secrets.S3_UPLOADS_BUCKET_URL }}
       s3-uploads-object-acl: ${{ secrets.S3_UPLOADS_OBJECT_ACL }}
       cloudfront-distribution-id: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+      redis-auth: ${{ secrets.REDIS_AUTH }}
+      redis-host: ${{ secrets.REDIS_HOST }}
       alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
       wb-config: ${{ secrets.WB_CONFIG}}
       auth0-env-client-id: ${{ secrets.AUTH0_ENV_CLIENT_ID }}
@@ -199,6 +205,8 @@ jobs:
       s3-uploads-bucket-url: ${{ secrets.S3_UPLOADS_BUCKET_URL }}
       s3-uploads-object-acl: ${{ secrets.S3_UPLOADS_OBJECT_ACL }}
       cloudfront-distribution-id: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+      redis-auth: ${{ secrets.REDIS_AUTH }}
+      redis-host: ${{ secrets.REDIS_HOST }}
       alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
       wb-config: ${{ secrets.WB_CONFIG}}
       auth0-env-client-id: ${{ secrets.AUTH0_ENV_CLIENT_ID }}
