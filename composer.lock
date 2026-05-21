@@ -1011,12 +1011,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale-components.git",
-                "reference": "26559e8676a429a4d525ee74397fa43f7ca48447"
+                "reference": "ec0ebd4206af9a1feb8476c13f2fd0a56a456f01"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/26559e8676a429a4d525ee74397fa43f7ca48447",
-                "reference": "26559e8676a429a4d525ee74397fa43f7ca48447",
+                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/ec0ebd4206af9a1feb8476c13f2fd0a56a456f01",
+                "reference": "ec0ebd4206af9a1feb8476c13f2fd0a56a456f01",
                 "shasum": ""
             },
             "require": {
@@ -1031,7 +1031,7 @@
                 "source": "https://github.com/ministryofjustice/hale-components/tree/add-lua-firewall-management",
                 "issues": "https://github.com/ministryofjustice/hale-components/issues"
             },
-            "time": "2026-05-21T15:46:55+00:00"
+            "time": "2026-05-21T16:05:11+00:00"
         },
         {
             "name": "ministryofjustice/hale-dash",
