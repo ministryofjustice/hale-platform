@@ -131,6 +131,10 @@
     "wpackagist-plugin/wp-force-login": "^5.0",
     "wpackagist-plugin/wp-sentry-integration": "^8.0",
     "wpackagist-plugin/wps-hide-login": "^1.0",
+    "wpackagist-plugin/cms-tree-page-view": "^1.6.8",
+    "wpackagist-plugin/revisionary": "^3.5.16",
+    "wpackagist-plugin/simple-definition-list-blocks": "6.0.1",
+    "wpackagist-plugin/wp-document-revisions": "^3.6.1",
     "wpengine/advanced-custom-fields-pro": "^6.0"
   },
   "require-dev": {
