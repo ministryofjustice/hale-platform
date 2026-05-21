@@ -39,6 +39,7 @@ themes=(
     "ministryofjustice/hale-dash"
     "ministryofjustice/hale-showcase"
     "ministryofjustice/ppo"
+    "ministryofjustice/justice"
 )
 
 mu_plugins=(
