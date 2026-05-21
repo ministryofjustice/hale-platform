@@ -93,6 +93,9 @@ link_if_exists "$DEV_ROOT/themes/hale-showcase" \
 link_if_exists "$DEV_ROOT/themes/ppo" \
     "$WP_ROOT/themes/ppo"
 
+link_if_exists "$DEV_ROOT/themes/justice" \
+    "$WP_ROOT/themes/ppo"
+
 ####################
 # SUMMARY
 ####################
