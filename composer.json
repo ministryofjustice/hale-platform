@@ -67,6 +67,10 @@
     },
     {
       "type": "vcs",
+      "url": "https://github.com/ministryofjustice/justice.git"
+    },
+    {
+      "type": "vcs",
       "url": "https://github.com/ministryofjustice/website-builder-blocks.git"
     },
     {
@@ -98,6 +102,7 @@
     "composer/installers": "^v2.0",
     "ministryofjustice/cookie-compliance": "1.0.3",
     "ministryofjustice/govwind": "dev-main",
+    "ministryofjustice/justice": "dev-main",
     "ministryofjustice/hale": "4.34.0",
     "ministryofjustice/hale-components": "1.15.2",
     "ministryofjustice/hale-dash": "2.0.0",
