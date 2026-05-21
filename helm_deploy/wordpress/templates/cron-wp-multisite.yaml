@@ -11,6 +11,8 @@ spec:
   failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
+      # Jobs usually complete in ~20s; fail any job still running after 120s.
+      activeDeadlineSeconds: 120
       ttlSecondsAfterFinished: 100
       template:
         spec:
