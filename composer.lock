@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ba125489094c7dac7af9e26e6514b749",
+    "content-hash": "9b6d2209a0e89418d2787ad503ededae",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -965,12 +965,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/govwind.git",
-                "reference": "91038ae3b770511c0b57f2ac97abb647dfdccfbc"
+                "reference": "88b7a4a6cc0dfa7ae16838c6b4894ddc51ced6d8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/91038ae3b770511c0b57f2ac97abb647dfdccfbc",
-                "reference": "91038ae3b770511c0b57f2ac97abb647dfdccfbc",
+                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/88b7a4a6cc0dfa7ae16838c6b4894ddc51ced6d8",
+                "reference": "88b7a4a6cc0dfa7ae16838c6b4894ddc51ced6d8",
                 "shasum": ""
             },
             "default-branch": true,
@@ -980,7 +980,7 @@
                 "source": "https://github.com/ministryofjustice/govwind/tree/main",
                 "issues": "https://github.com/ministryofjustice/govwind/issues"
             },
-            "time": "2026-05-20T15:23:16+00:00"
+            "time": "2026-05-21T14:32:19+00:00"
         },
         {
             "name": "ministryofjustice/hale",
@@ -1128,12 +1128,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/website-builder-blocks.git",
-                "reference": "1d8892c037746403bfb9dce69dc77fa79a3652ae"
+                "reference": "d109bb3e3cef639d60eb7aa5b85e58965d9b8961"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/1d8892c037746403bfb9dce69dc77fa79a3652ae",
-                "reference": "1d8892c037746403bfb9dce69dc77fa79a3652ae",
+                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/d109bb3e3cef639d60eb7aa5b85e58965d9b8961",
+                "reference": "d109bb3e3cef639d60eb7aa5b85e58965d9b8961",
                 "shasum": ""
             },
             "require-dev": {
@@ -1161,7 +1161,7 @@
                 "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/main",
                 "issues": "https://github.com/ministryofjustice/website-builder-blocks/issues"
             },
-            "time": "2026-05-15T08:35:19+00:00"
+            "time": "2026-05-21T14:32:09+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
@@ -3324,6 +3324,24 @@
             "homepage": "https://wordpress.org/plugins/classic-editor/"
         },
         {
+            "name": "wpackagist-plugin/cms-tree-page-view",
+            "version": "1.6.8",
+            "source": {
+                "type": "svn",
+                "url": "https://plugins.svn.wordpress.org/cms-tree-page-view/",
+                "reference": "tags/1.6.8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://downloads.wordpress.org/plugin/cms-tree-page-view.1.6.8.zip"
+            },
+            "require": {
+                "composer/installers": "^1.0 || ^2.0"
+            },
+            "type": "wordpress-plugin",
+            "homepage": "https://wordpress.org/plugins/cms-tree-page-view/"
+        },
+        {
             "name": "wpackagist-plugin/ewww-image-optimizer",
             "version": "8.6.0",
             "source": {
@@ -3414,6 +3432,24 @@
             "homepage": "https://wordpress.org/plugins/remove-category-url/"
         },
         {
+            "name": "wpackagist-plugin/revisionary",
+            "version": "3.8.1",
+            "source": {
+                "type": "svn",
+                "url": "https://plugins.svn.wordpress.org/revisionary/",
+                "reference": "tags/3.8.1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://downloads.wordpress.org/plugin/revisionary.3.8.1.zip"
+            },
+            "require": {
+                "composer/installers": "^1.0 || ^2.0"
+            },
+            "type": "wordpress-plugin",
+            "homepage": "https://wordpress.org/plugins/revisionary/"
+        },
+        {
             "name": "wpackagist-plugin/safe-svg",
             "version": "2.4.0",
             "source": {
@@ -3450,6 +3486,24 @@
             "homepage": "https://wordpress.org/plugins/simple-301-redirects/"
         },
         {
+            "name": "wpackagist-plugin/simple-definition-list-blocks",
+            "version": "6.0.1",
+            "source": {
+                "type": "svn",
+                "url": "https://plugins.svn.wordpress.org/simple-definition-list-blocks/",
+                "reference": "tags/6.0.1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://downloads.wordpress.org/plugin/simple-definition-list-blocks.6.0.1.zip"
+            },
+            "require": {
+                "composer/installers": "^1.0 || ^2.0"
+            },
+            "type": "wordpress-plugin",
+            "homepage": "https://wordpress.org/plugins/simple-definition-list-blocks/"
+        },
+        {
             "name": "wpackagist-plugin/unconfirmed",
             "version": "1.3.7",
             "source": {
@@ -3484,6 +3538,24 @@
             },
             "type": "wordpress-plugin",
             "homepage": "https://wordpress.org/plugins/wordpress-seo/"
+        },
+        {
+            "name": "wpackagist-plugin/wp-document-revisions",
+            "version": "3.8.1",
+            "source": {
+                "type": "svn",
+                "url": "https://plugins.svn.wordpress.org/wp-document-revisions/",
+                "reference": "tags/3.8.1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://downloads.wordpress.org/plugin/wp-document-revisions.3.8.1.zip"
+            },
+            "require": {
+                "composer/installers": "^1.0 || ^2.0"
+            },
+            "type": "wordpress-plugin",
+            "homepage": "https://wordpress.org/plugins/wp-document-revisions/"
         },
         {
             "name": "wpackagist-plugin/wp-force-login",
