@@ -4,7 +4,7 @@
 # WordPress config.
 # ##################################################
 
-FROM openresty/openresty:1.29.2.4-alpine AS nginx
+FROM openresty/openresty:1.29.2.5-alpine AS nginx
 
 ENV ENV=local
 
@@ -47,7 +47,7 @@ CMD ["/usr/local/openresty/bin/openresty", "-g", "daemon off;"]
 # integration specs that connect to Redis directly).
 # ##################################################
 
-FROM openresty/openresty:1.29.2.4-alpine AS test
+FROM openresty/openresty:1.29.2.5-alpine AS test
 
 RUN apk add --no-cache \
         lua5.1-dev \
