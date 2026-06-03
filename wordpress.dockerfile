@@ -39,6 +39,7 @@ RUN addgroup -g 1001 wp \
 
 # Add PHP multsite supporting files
 COPY opt/php/load.php /usr/src/wordpress/wp-content/mu-plugins/load.php
+COPY opt/php/wpdr-document-upload-dir.php /usr/src/wordpress/wp-content/mu-plugins/wpdr-document-upload-dir.php
 COPY opt/php/application.php /usr/src/wordpress/wp-content/mu-plugins/application.php
 COPY opt/php/error-handling.php /usr/src/wordpress/error-handling.php
 COPY opt/php/www.conf /usr/local/etc/php-fpm.d/www.conf
