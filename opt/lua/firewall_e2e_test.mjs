@@ -590,6 +590,137 @@ test("e2e: clear-penalties unblocks an auto-banned IP without touching manual ba
   await redisCmd("DEL", `firewall:block:${manualIp}`);
 });
 
+test("e2e: clear-penalties also clears GCRA TAT so IP isn't instantly re-banned", async () => {
+  // Regression: previously clear-penalties only deleted firewall:block:{ip}.
+  // The GCRA TAT key (firewall:gcra:{ip}) survived with its overflowed value,
+  // so the next request from the IP would fail GCRA and immediately re-write
+  // the block key — silently undoing the admin action. The fix also deletes
+  // firewall:gcra:{ip} and firewall:gcra:{ip}:breakdown.
+  const ip = "10.3.2.1";
+  await resetRateLimitState();
+
+  // Drive the IP into an auto-ban via real GCRA — this populates the TAT.
+  let banned = false;
+  for (let i = 0; i < 60; i++) {
+    const res = await sendRequest(ip, { ua: "YisouSpider" });
+    await res.body?.cancel();
+    if (res.status === 429) { banned = true; break; }
+  }
+  assert.ok(banned, "test setup: IP should have been auto-banned");
+
+  // Confirm both keys exist before clearing.
+  const blockBefore = await redisCmd("EXISTS", `firewall:block:${ip}`);
+  const tatBefore   = await redisCmd("EXISTS", `firewall:gcra:${ip}`);
+  assert.equal(blockBefore, "1", "block key should exist after auto-ban");
+  assert.equal(tatBefore,   "1", "TAT key should exist after auto-ban");
+
+  const clearRes = await fetch(`${FIREWALL_URL}/firewall/clear-penalties`);
+  await clearRes.body?.cancel();
+  assert.equal(clearRes.status, 200);
+
+  // Both keys should be gone.
+  const blockAfter = await redisCmd("EXISTS", `firewall:block:${ip}`);
+  const tatAfter   = await redisCmd("EXISTS", `firewall:gcra:${ip}`);
+  assert.equal(blockAfter, "0", "block key should be deleted by clear-penalties");
+  assert.equal(tatAfter,   "0", "TAT key should be deleted by clear-penalties (regression)");
+
+  // The IP should be allowed through and STAY allowed — i.e. it should not be
+  // re-banned by the very next request reading a stale TAT. Send several
+  // normal-UA requests after the poller has flushed blocked_cache.
+  let allowed = false;
+  const deadline = Date.now() + 3000;
+  while (Date.now() < deadline) {
+    const res = await sendRequest(ip);
+    await res.body?.cancel();
+    if (res.status === 200) { allowed = true; break; }
+    await new Promise((r) => setTimeout(r, 200));
+  }
+  assert.ok(allowed, `IP ${ip} should be allowed after clear-penalties (not re-banned via stale TAT)`);
+
+  // And the block key must still be absent — confirming GCRA didn't re-write it.
+  const blockFinal = await redisCmd("EXISTS", `firewall:block:${ip}`);
+  assert.equal(blockFinal, "0", "block key must not be re-written by GCRA on the next request");
+});
+
+// ---------------------------------------------------------------------------
+// /firewall/clear-penalties?ip=x.x.x.x — single-IP variant
+// ---------------------------------------------------------------------------
+
+test("e2e: clear-penalties?ip rejects invalid IPs with 400", async () => {
+  for (const bad of ["not-an-ip", "999.1.1.1", "1.2.3", "1.2.3.4.5", "", "*"]) {
+    const res = await fetch(
+      `${FIREWALL_URL}/firewall/clear-penalties?ip=${encodeURIComponent(bad)}`,
+    );
+    const body = await res.json();
+    assert.equal(res.status, 400, `ip="${bad}" should yield 400, got ${res.status}`);
+    assert.equal(body.ok, false);
+    assert.equal(body.error, "invalid ip");
+  }
+});
+
+test("e2e: clear-penalties?ip returns 404 when the IP is not banned", async () => {
+  const ip = "10.3.3.1";
+  await redisCmd("DEL", `firewall:block:${ip}`);
+
+  const res = await fetch(`${FIREWALL_URL}/firewall/clear-penalties?ip=${ip}`);
+  const body = await res.json();
+  assert.equal(res.status, 404);
+  assert.equal(body.ok, false);
+  assert.equal(body.error, "not banned");
+  assert.equal(body.deleted, 0);
+});
+
+test("e2e: clear-penalties?ip returns 409 for a manual ban and leaves it intact", async () => {
+  const ip = "10.3.3.2";
+  await redisCmd("SET", `firewall:block:${ip}`, "1");
+
+  const res = await fetch(`${FIREWALL_URL}/firewall/clear-penalties?ip=${ip}`);
+  const body = await res.json();
+  assert.equal(res.status, 409);
+  assert.equal(body.ok, false);
+  assert.equal(body.deleted, 0);
+
+  // Manual ban key MUST still exist — single-IP clear must never touch it.
+  const stillExists = await redisCmd("EXISTS", `firewall:block:${ip}`);
+  assert.equal(stillExists, "1", "manual ban must not be deleted by clear-penalties");
+
+  await redisCmd("DEL", `firewall:block:${ip}`);
+});
+
+test("e2e: clear-penalties?ip clears an auto-ban (and only that IP)", async () => {
+  const target  = "10.3.3.3";
+  const bystanderAuto   = "10.3.3.4";
+  const bystanderManual = "10.3.3.5";
+  await resetRateLimitState();
+  await redisCmd("SET", `firewall:block:${target}`,           "gcra");
+  await redisCmd("SET", `firewall:gcra:${target}`,            "9999999999999");
+  await redisCmd("HSET", `firewall:gcra:${target}:breakdown`, "rule:req-score:base", "1");
+  await redisCmd("SET", `firewall:block:${bystanderAuto}`,    "gcra");
+  await redisCmd("SET", `firewall:block:${bystanderManual}`,  "1");
+
+  const res = await fetch(`${FIREWALL_URL}/firewall/clear-penalties?ip=${target}`);
+  const body = await res.json();
+  assert.equal(res.status, 200);
+  assert.equal(body.ok, true);
+  assert.equal(body.deleted, 1);
+
+  // All three keys for the target IP must be gone.
+  assert.equal(await redisCmd("EXISTS", `firewall:block:${target}`),           "0");
+  assert.equal(await redisCmd("EXISTS", `firewall:gcra:${target}`),            "0",
+    "TAT key must be deleted so the IP isn't re-banned on its next request");
+  assert.equal(await redisCmd("EXISTS", `firewall:gcra:${target}:breakdown`),  "0");
+
+  // Bystanders must NOT be affected.
+  assert.equal(await redisCmd("EXISTS", `firewall:block:${bystanderAuto}`),   "1",
+    "another IP's auto-ban must not be touched by single-IP clear");
+  assert.equal(await redisCmd("GET",    `firewall:block:${bystanderManual}`), "1",
+    "a manual ban on a different IP must not be touched");
+
+  // Cleanup.
+  await redisCmd("DEL", `firewall:block:${bystanderAuto}`);
+  await redisCmd("DEL", `firewall:block:${bystanderManual}`);
+});
+
 // ---------------------------------------------------------------------------
 // CSV fixture replay
 // ---------------------------------------------------------------------------
