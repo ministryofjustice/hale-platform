@@ -311,7 +311,7 @@ function _M.clear_penalties()
         -- can't outlive the Redis state on this worker.
         cache.blocked_cache:delete(CACHE_PREFIX .. ip)
         if not reply then
-            ngx.log(ngx.ERR, "clear-penalties: redis DEL failed for ", ip, ": ", err)
+            ngx.log(ngx.ERR, "[firewall] event=clear_penalties_del_failed ip=", ip, " err=", err)
             return 0
         end
         -- DEL returns the number of keys actually removed (0..3). Treat any
