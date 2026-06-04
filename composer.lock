@@ -1246,12 +1246,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-s3-uploads.git",
-                "reference": "c125a018b423caa7877dc793c7e02ec7f56dddf7"
+                "reference": "035ce6d3db35627e09b93c43acba2ffb38ec4147"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/wp-s3-uploads/zipball/c125a018b423caa7877dc793c7e02ec7f56dddf7",
-                "reference": "c125a018b423caa7877dc793c7e02ec7f56dddf7",
+                "url": "https://api.github.com/repos/ministryofjustice/wp-s3-uploads/zipball/035ce6d3db35627e09b93c43acba2ffb38ec4147",
+                "reference": "035ce6d3db35627e09b93c43acba2ffb38ec4147",
                 "shasum": ""
             },
             "require": {
@@ -1281,7 +1281,7 @@
                 "issues": "https://github.com/humanmade/s3-uploads/issues",
                 "source": "https://github.com/humanmade/s3-uploads"
             },
-            "time": "2026-06-04T11:55:50+00:00"
+            "time": "2026-06-04T12:54:09+00:00"
         },
         {
             "name": "mtdowling/jmespath.php",
