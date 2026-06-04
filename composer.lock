@@ -1015,12 +1015,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale-components.git",
-                "reference": "400e749a4674e287f87ce31744fd3bc5eddaaea0"
+                "reference": "5109229421edd8bdf28ab83cfd08b07a23b267ec"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/400e749a4674e287f87ce31744fd3bc5eddaaea0",
-                "reference": "400e749a4674e287f87ce31744fd3bc5eddaaea0",
+                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/5109229421edd8bdf28ab83cfd08b07a23b267ec",
+                "reference": "5109229421edd8bdf28ab83cfd08b07a23b267ec",
                 "shasum": ""
             },
             "require": {
@@ -1035,7 +1035,7 @@
                 "source": "https://github.com/ministryofjustice/hale-components/tree/add-lua-firewall-management",
                 "issues": "https://github.com/ministryofjustice/hale-components/issues"
             },
-            "time": "2026-06-04T10:46:56+00:00"
+            "time": "2026-06-04T11:35:07+00:00"
         },
         {
             "name": "ministryofjustice/hale-dash",
@@ -1246,12 +1246,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-s3-uploads.git",
-                "reference": "e7b48b6f722d513300a62b5fd32eaceae8ade096"
+                "reference": "d38af286cda81f36fd9d7ec9a259a04fabe6c6b4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/wp-s3-uploads/zipball/e7b48b6f722d513300a62b5fd32eaceae8ade096",
-                "reference": "e7b48b6f722d513300a62b5fd32eaceae8ade096",
+                "url": "https://api.github.com/repos/ministryofjustice/wp-s3-uploads/zipball/d38af286cda81f36fd9d7ec9a259a04fabe6c6b4",
+                "reference": "d38af286cda81f36fd9d7ec9a259a04fabe6c6b4",
                 "shasum": ""
             },
             "require": {
@@ -1281,7 +1281,7 @@
                 "issues": "https://github.com/humanmade/s3-uploads/issues",
                 "source": "https://github.com/humanmade/s3-uploads"
             },
-            "time": "2026-06-04T11:17:32+00:00"
+            "time": "2026-06-04T11:40:03+00:00"
         },
         {
             "name": "mtdowling/jmespath.php",
