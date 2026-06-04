@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "020e0cf4d5615cf2cb597e66b0a5b500",
+    "content-hash": "843c0aa859ea6b9e74ad1002e148c787",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -115,16 +115,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.384.1",
+            "version": "3.384.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "d8a2701c5616b9c4eb034f7ed834c53350f48af6"
+                "reference": "a6c85b3a1f5f8327076291040329214b3a2caf2b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/d8a2701c5616b9c4eb034f7ed834c53350f48af6",
-                "reference": "d8a2701c5616b9c4eb034f7ed834c53350f48af6",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/a6c85b3a1f5f8327076291040329214b3a2caf2b",
+                "reference": "a6c85b3a1f5f8327076291040329214b3a2caf2b",
                 "shasum": ""
             },
             "require": {
@@ -206,9 +206,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.384.1"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.384.2"
             },
-            "time": "2026-06-03T05:46:25+00:00"
+            "time": "2026-06-03T18:07:33+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -969,12 +969,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/govwind.git",
-                "reference": "54f68d181d38001fe91a91e585b042f5ee97bde8"
+                "reference": "c5c432becb2ee0cf9cdfeaf4277a1c594fc79229"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/54f68d181d38001fe91a91e585b042f5ee97bde8",
-                "reference": "54f68d181d38001fe91a91e585b042f5ee97bde8",
+                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/c5c432becb2ee0cf9cdfeaf4277a1c594fc79229",
+                "reference": "c5c432becb2ee0cf9cdfeaf4277a1c594fc79229",
                 "shasum": ""
             },
             "default-branch": true,
@@ -984,7 +984,7 @@
                 "source": "https://github.com/ministryofjustice/govwind/tree/main",
                 "issues": "https://github.com/ministryofjustice/govwind/issues"
             },
-            "time": "2026-06-02T13:01:41+00:00"
+            "time": "2026-06-03T16:15:48+00:00"
         },
         {
             "name": "ministryofjustice/hale",
@@ -1133,12 +1133,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/website-builder-blocks.git",
-                "reference": "886c9dc851d1be971a6cd38ccfe78449d2cd9d4d"
+                "reference": "e1816a0cc5738c1ee43ff0b8fc02ffca6186ad13"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/886c9dc851d1be971a6cd38ccfe78449d2cd9d4d",
-                "reference": "886c9dc851d1be971a6cd38ccfe78449d2cd9d4d",
+                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/e1816a0cc5738c1ee43ff0b8fc02ffca6186ad13",
+                "reference": "e1816a0cc5738c1ee43ff0b8fc02ffca6186ad13",
                 "shasum": ""
             },
             "require-dev": {
@@ -1166,7 +1166,7 @@
                 "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/main",
                 "issues": "https://github.com/ministryofjustice/website-builder-blocks/issues"
             },
-            "time": "2026-05-22T10:22:07+00:00"
+            "time": "2026-06-03T16:16:16+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
@@ -1242,16 +1242,16 @@
         },
         {
             "name": "ministryofjustice/wp-s3-uploads",
-            "version": "2.0.0",
+            "version": "dev-image-transparent-fix",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-s3-uploads.git",
-                "reference": "03cf4ccd0639110d44fd497e3ccba3f170d4bd29"
+                "reference": "448efa5dd7129dd1e61056ef86695bd2b2a8489b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/wp-s3-uploads/zipball/03cf4ccd0639110d44fd497e3ccba3f170d4bd29",
-                "reference": "03cf4ccd0639110d44fd497e3ccba3f170d4bd29",
+                "url": "https://api.github.com/repos/ministryofjustice/wp-s3-uploads/zipball/448efa5dd7129dd1e61056ef86695bd2b2a8489b",
+                "reference": "448efa5dd7129dd1e61056ef86695bd2b2a8489b",
                 "shasum": ""
             },
             "require": {
@@ -1281,7 +1281,7 @@
                 "issues": "https://github.com/humanmade/s3-uploads/issues",
                 "source": "https://github.com/humanmade/s3-uploads"
             },
-            "time": "2025-10-08T08:26:11+00:00"
+            "time": "2026-06-04T09:53:10+00:00"
         },
         {
             "name": "mtdowling/jmespath.php",
@@ -3988,7 +3988,8 @@
         "ministryofjustice/hale-components": 20,
         "ministryofjustice/justice": 20,
         "ministryofjustice/ppo": 20,
-        "ministryofjustice/website-builder-blocks": 20
+        "ministryofjustice/website-builder-blocks": 20,
+        "ministryofjustice/wp-s3-uploads": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,
