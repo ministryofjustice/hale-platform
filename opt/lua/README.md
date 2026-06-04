@@ -180,7 +180,7 @@ flowchart LR
 | Process | Role | Lives in |
 |---|---|---|
 | nginx (Lua) | Request hot path: scoring, rate-limit, block | `opt/lua/` |
-| WordPress (PHP) | Admin UI: edit rules/config, view audit | `dev/mu-plugins/hale-components/inc/firewall.php` |
+| WordPress (PHP) | Admin UI: edit rules/config, view audit | `hale-components/inc/firewall.php` |
 | Redis | Shared state | external (ElastiCache in prod, container locally) |
 
 Redis is the **only** coupling between Lua and PHP. They never talk

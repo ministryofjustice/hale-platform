@@ -302,13 +302,21 @@ function _M.clear_penalties()
     -- block key — making the admin action a no-op for any recently-banned IP.
     local gcra_prefix = defaults.GCRA_KEY_PREFIX
     local function _clear_one(ip)
-        red:del(
+        local reply, err = red:del(
             BLOCK_PREFIX .. ip,
             gcra_prefix .. ip,
             gcra_prefix .. ip .. ":breakdown"
         )
+        -- Always drop the local LRU entry so a stale "blocked" decision
+        -- can't outlive the Redis state on this worker.
         cache.blocked_cache:delete(CACHE_PREFIX .. ip)
-        return 1
+        if not reply then
+            ngx.log(ngx.ERR, "clear-penalties: redis DEL failed for ", ip, ": ", err)
+            return 0
+        end
+        -- DEL returns the number of keys actually removed (0..3). Treat any
+        -- non-zero as "we cleared something for this IP".
+        return reply > 0 and 1 or 0
     end
 
     local deleted = 0
