@@ -70,7 +70,7 @@ Access is restricted to loopback in production by a single `location ^~
 | Method | Path | Purpose | Caller |
 |---|---|---|---|
 | `GET`  | `/firewall/stats`            | JSON snapshot of rules, config, live GCRA TATs, and current `cache_version`/`penalties_version` counters | Ops, debug |
-| `GET`  | `/firewall/clear-penalties`  | Delete every `firewall:block:{ip}` whose value is `"gcra"` (manual bans untouched); increments `firewall:penalties_version` so every pod flushes its per-pod block cache within ~1 s | Ops |
+| `GET`  | `/firewall/clear-penalties[?ip=x.x.x.x]`  | Clear auto-bans (`firewall:block:{ip}` with value `"gcra"`). For each IP cleared also deletes the matching `firewall:gcra:{ip}` (TAT) and `firewall:gcra:{ip}:breakdown` keys so the IP starts with a fresh GCRA bucket. With `?ip=` clears one IP (`404` if not banned, `409` if it's a manual ban); without `?ip=` scans and clears all. Manual bans are never touched in either mode. Increments `firewall:penalties_version` so every pod flushes its per-pod block cache within ~1 s | Ops |
 | `POST` | `/firewall/admin/validate?kind=rules\|config\|allowlist\|blocklist` | Strict schema check, body is the candidate JSON; **read-only, no Redis writes** | PHP admin form before save |
 | `GET`  | `/firewall/clear-rate-limits`  | **Local/test only (`ENV=local`).** Wipe all `firewall:block:*` and `firewall:gcra:*` keys and flush the per-pod `blocked_cache` shared dict. Returns 404 in any other environment. | E2e tests (`resetRateLimitState`) |
 
@@ -580,12 +580,13 @@ only record**. No audit stream entry is written.
 | `wordpress.conf` | Production server block. `access_by_lua_block { firewall.req() }`, `log_by_lua_block { firewall.res() }`. `location ^~ /firewall/` restricted to loopback — dispatches all admin endpoints via `firewall.admin.handle_route()`. |
 | `localwordpress.conf` | Local-dev equivalent. Same structure, no loopback restriction on `/firewall/`. |
 
-### PHP (`dev/mu-plugins/hale-components/inc/`)
+### PHP (`hale-components/inc/`)
 
 | File | Responsibility |
 |---|---|
-| `firewall.php` | `Firewall` class: form handlers, Redis client, audit reader. Delegates schema validation to `/firewall/admin/validate`. |
-| `parts/firewall-status.php` | The admin view rendered on the network dashboard. |
+| `network-dashboard.php` | Registers the network admin page (`Settings → Hale Network Dashboard`) and includes the firewall view. |
+| `lua-firewall-controller.php` | Controller layer: Redis client (`hc_firewall_redis_*`), config/mode/list/rules getters, `admin-post` form handlers (`hc_firewall_handle_update_mode`, `_update_list`, `_update_rules`, `_clear_penalties`, `_clear_penalty_ip`), and Redis readers for the blocked IPs table (`hc_firewall_get_active_blocks`) and audit stream (`hc_firewall_get_audit_entries`). Delegates schema validation to `/firewall/admin/validate`; proxies clear actions through `/firewall/clear-penalties`. |
+| `parts/lua-firewall.php` | The admin view rendered on the network dashboard: mode selector, allow/block list editors, rules editor, blocked IPs table with per-row Unblock + View Audit buttons, audit history table, manual IP lookup form. |
 
 ---
 
