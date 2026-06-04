@@ -666,6 +666,24 @@ SET firewall:config '{"mode":"enforce", ...}'
 INCR firewall:cache_version            # propagate cluster-wide within ~1 s
 ```
 
+**Locked out of WordPress?** If a mis-configured firewall is blocking
+legitimate admin traffic, you can flip the mode from WP-CLI inside the
+WordPress container without touching Redis directly. This re-uses the same
+validate → write → version-bump path as the admin UI:
+
+```sh
+# Stop enforcing — auto-bans are still recorded but no longer served as 429s.
+wp lua-firewall mode monitor
+
+# Or turn the firewall off entirely.
+wp lua-firewall mode off
+```
+
+Prints `Success: Firewall mode set to <mode>.` and exits 0 on success, or
+`Error: <validator message>` and exits non-zero on failure. All nginx pods
+pick up the change within ~1 s via the `firewall:cache_version` poller —
+no restart needed.
+
 ### Clear automatic penalties (manual bans untouched)
 
 ```
@@ -681,6 +699,9 @@ all workers stop serving stale 429s cluster-wide.
 
 Set `FIREWALL_ENABLED=false` in the nginx Helm values and redeploy. This is
 the only switch that requires a restart.
+
+For a faster, no-deploy alternative when admins are locked out, see the
+WP-CLI snippet under [Flip mode without a deploy](#flip-mode-without-a-deploy).
 
 ---
 
