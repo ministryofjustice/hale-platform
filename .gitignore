@@ -60,3 +60,5 @@ opt/lua/fixtures/*
 !dev/plugins/.gitkeep
 !dev/themes/.gitkeep
 
+# AI
+.claude
