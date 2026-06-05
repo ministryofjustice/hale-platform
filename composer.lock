@@ -115,16 +115,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.384.1",
+            "version": "3.384.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "d8a2701c5616b9c4eb034f7ed834c53350f48af6"
+                "reference": "9d3538b3f113cd66b3220f7e37e3d0ff1e0713e7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/d8a2701c5616b9c4eb034f7ed834c53350f48af6",
-                "reference": "d8a2701c5616b9c4eb034f7ed834c53350f48af6",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/9d3538b3f113cd66b3220f7e37e3d0ff1e0713e7",
+                "reference": "9d3538b3f113cd66b3220f7e37e3d0ff1e0713e7",
                 "shasum": ""
             },
             "require": {
@@ -206,9 +206,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.384.1"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.384.3"
             },
-            "time": "2026-06-03T05:46:25+00:00"
+            "time": "2026-06-04T18:11:21+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -969,12 +969,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/govwind.git",
-                "reference": "c5c432becb2ee0cf9cdfeaf4277a1c594fc79229"
+                "reference": "1ad269d6b7892e925086b0dd8450aff01017f9bd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/c5c432becb2ee0cf9cdfeaf4277a1c594fc79229",
-                "reference": "c5c432becb2ee0cf9cdfeaf4277a1c594fc79229",
+                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/1ad269d6b7892e925086b0dd8450aff01017f9bd",
+                "reference": "1ad269d6b7892e925086b0dd8450aff01017f9bd",
                 "shasum": ""
             },
             "default-branch": true,
@@ -984,7 +984,7 @@
                 "source": "https://github.com/ministryofjustice/govwind/tree/main",
                 "issues": "https://github.com/ministryofjustice/govwind/issues"
             },
-            "time": "2026-06-03T16:15:48+00:00"
+            "time": "2026-06-05T15:23:03+00:00"
         },
         {
             "name": "ministryofjustice/hale",
@@ -1110,12 +1110,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/website-builder-blocks.git",
-                "reference": "e1816a0cc5738c1ee43ff0b8fc02ffca6186ad13"
+                "reference": "6bec9b1b12369f85293b39f048a861516bf8f6c1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/e1816a0cc5738c1ee43ff0b8fc02ffca6186ad13",
-                "reference": "e1816a0cc5738c1ee43ff0b8fc02ffca6186ad13",
+                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/6bec9b1b12369f85293b39f048a861516bf8f6c1",
+                "reference": "6bec9b1b12369f85293b39f048a861516bf8f6c1",
                 "shasum": ""
             },
             "require-dev": {
@@ -1143,7 +1143,7 @@
                 "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/main",
                 "issues": "https://github.com/ministryofjustice/website-builder-blocks/issues"
             },
-            "time": "2026-06-03T16:16:16+00:00"
+            "time": "2026-06-05T15:22:05+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
@@ -3308,15 +3308,15 @@
         },
         {
             "name": "wpackagist-plugin/ewww-image-optimizer",
-            "version": "8.7.0",
+            "version": "8.7.1",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/ewww-image-optimizer/",
-                "reference": "tags/8.7.0"
+                "reference": "tags/8.7.1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/ewww-image-optimizer.8.7.0.zip"
+                "url": "https://downloads.wordpress.org/plugin/ewww-image-optimizer.8.7.1.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
