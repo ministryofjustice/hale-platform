@@ -70,7 +70,7 @@ Access is restricted to loopback in production by a single `location ^~
 | Method | Path | Purpose | Caller |
 |---|---|---|---|
 | `GET`  | `/firewall/stats`            | JSON snapshot of rules, config, live GCRA TATs, and current `cache_version`/`penalties_version` counters | Ops, debug |
-| `GET`  | `/firewall/clear-penalties`  | Delete every `firewall:block:{ip}` whose value is `"gcra"` (manual bans untouched); increments `firewall:penalties_version` so every pod flushes its per-pod block cache within ~1 s | Ops |
+| `GET`  | `/firewall/clear-penalties[?ip=x.x.x.x]`  | Clear auto-bans (`firewall:block:{ip}` with value `"gcra"`). For each IP cleared also deletes the matching `firewall:gcra:{ip}` (TAT) and `firewall:gcra:{ip}:breakdown` keys so the IP starts with a fresh GCRA bucket. With `?ip=` clears one IP (`404` if not banned, `409` if it's a manual ban); without `?ip=` scans and clears all. Manual bans are never touched in either mode. Increments `firewall:penalties_version` so every pod flushes its per-pod block cache within ~1 s | Ops |
 | `POST` | `/firewall/admin/validate?kind=rules\|config\|allowlist\|blocklist` | Strict schema check, body is the candidate JSON; **read-only, no Redis writes** | PHP admin form before save |
 | `GET`  | `/firewall/clear-rate-limits`  | **Local/test only (`ENV=local`).** Wipe all `firewall:block:*` and `firewall:gcra:*` keys and flush the per-pod `blocked_cache` shared dict. Returns 404 in any other environment. | E2e tests (`resetRateLimitState`) |
 
@@ -180,7 +180,7 @@ flowchart LR
 | Process | Role | Lives in |
 |---|---|---|
 | nginx (Lua) | Request hot path: scoring, rate-limit, block | `opt/lua/` |
-| WordPress (PHP) | Admin UI: edit rules/config, view audit | `dev/mu-plugins/hale-components/inc/firewall.php` |
+| WordPress (PHP) | Admin UI: edit rules/config, view audit | `hale-components/inc/firewall.php` |
 | Redis | Shared state | external (ElastiCache in prod, container locally) |
 
 Redis is the **only** coupling between Lua and PHP. They never talk
@@ -580,12 +580,13 @@ only record**. No audit stream entry is written.
 | `wordpress.conf` | Production server block. `access_by_lua_block { firewall.req() }`, `log_by_lua_block { firewall.res() }`. `location ^~ /firewall/` restricted to loopback — dispatches all admin endpoints via `firewall.admin.handle_route()`. |
 | `localwordpress.conf` | Local-dev equivalent. Same structure, no loopback restriction on `/firewall/`. |
 
-### PHP (`dev/mu-plugins/hale-components/inc/`)
+### PHP (`hale-components/inc/`)
 
 | File | Responsibility |
 |---|---|
-| `firewall.php` | `Firewall` class: form handlers, Redis client, audit reader. Delegates schema validation to `/firewall/admin/validate`. |
-| `parts/firewall-status.php` | The admin view rendered on the network dashboard. |
+| `network-dashboard.php` | Registers the network admin page (`Settings → Hale Network Dashboard`) and includes the firewall view. |
+| `lua-firewall-controller.php` | Controller layer: Redis client (`hc_firewall_redis_*`), config/mode/list/rules getters, `admin-post` form handlers (`hc_firewall_handle_update_mode`, `_update_list`, `_update_rules`, `_clear_penalties`, `_clear_penalty_ip`), and Redis readers for the blocked IPs table (`hc_firewall_get_active_blocks`) and audit stream (`hc_firewall_get_audit_entries`). Delegates schema validation to `/firewall/admin/validate`; proxies clear actions through `/firewall/clear-penalties`. |
+| `parts/lua-firewall.php` | The admin view rendered on the network dashboard: mode selector, allow/block list editors, rules editor, blocked IPs table with per-row Unblock + View Audit buttons, audit history table, manual IP lookup form. |
 
 ---
 
@@ -665,6 +666,24 @@ SET firewall:config '{"mode":"enforce", ...}'
 INCR firewall:cache_version            # propagate cluster-wide within ~1 s
 ```
 
+**Locked out of WordPress?** If a mis-configured firewall is blocking
+legitimate admin traffic, you can flip the mode from WP-CLI inside the
+WordPress container without touching Redis directly. This re-uses the same
+validate → write → version-bump path as the admin UI:
+
+```sh
+# Stop enforcing — auto-bans are still recorded but no longer served as 429s.
+wp lua-firewall mode monitor
+
+# Or turn the firewall off entirely.
+wp lua-firewall mode off
+```
+
+Prints `Success: Firewall mode set to <mode>.` and exits 0 on success, or
+`Error: <validator message>` and exits non-zero on failure. All nginx pods
+pick up the change within ~1 s via the `firewall:cache_version` poller —
+no restart needed.
+
 ### Clear automatic penalties (manual bans untouched)
 
 ```
@@ -680,6 +699,9 @@ all workers stop serving stale 429s cluster-wide.
 
 Set `FIREWALL_ENABLED=false` in the nginx Helm values and redeploy. This is
 the only switch that requires a restart.
+
+For a faster, no-deploy alternative when admins are locked out, see the
+WP-CLI snippet under [Flip mode without a deploy](#flip-mode-without-a-deploy).
 
 ---
 

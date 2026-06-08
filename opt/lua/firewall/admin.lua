@@ -244,11 +244,43 @@ function _M.validate()
 end
 
 
--- /firewall/clear-penalties — delete every firewall:block:{ip} key whose
--- value is "gcra" (i.e. written automatically by GCRA penalty). Manual admin
--- bans (value "1") are left intact. Admin/test path only.
+-- /firewall/clear-penalties — clear auto-bans (firewall:block:{ip} with
+-- value "gcra"). Manual admin bans (value "1") are left intact in both modes.
+--
+-- Two modes:
+--   ?ip=x.x.x.x  — clear a single IP's auto-ban (404 if the key is missing,
+--                  409 if it's a manual ban). Wired up to the per-row Unblock
+--                  button in the WP network-admin firewall UI.
+--   (no query)   — scan and clear every auto-ban. Wired up to the
+--                  "Clear all auto-bans" admin button.
+--
+-- Either mode bumps firewall:penalties_version so every pod flushes its
+-- blocked_cache within ~1 s.
 function _M.clear_penalties()
     ngx.header.content_type = "application/json"
+
+    -- Optional ?ip=x.x.x.x for single-IP clear. Strict IPv4 validation
+    -- prevents key injection (e.g. ?ip=*, ?ip=foo:bar) since the value is
+    -- spliced directly into Redis key names below.
+    local args = ngx.req.get_uri_args()
+    local ip_arg = args.ip
+    if ip_arg ~= nil then
+        if type(ip_arg) ~= "string"
+            or not ngx.re.match(ip_arg, [[^(\d{1,3}\.){3}\d{1,3}$]], "jo")
+        then
+            ngx.status = 400
+            ngx.say('{"ok":false,"error":"invalid ip"}')
+            return
+        end
+        -- Octet range check (regex above only enforces 1-3 digit groups).
+        for octet in ip_arg:gmatch("(%d+)") do
+            if tonumber(octet) > 255 then
+                ngx.status = 400
+                ngx.say('{"ok":false,"error":"invalid ip"}')
+                return
+            end
+        end
+    end
 
     local red = redis_pool.connect()
     if not red then
@@ -257,34 +289,82 @@ function _M.clear_penalties()
         return
     end
 
-    -- SCAN (cursor-paged, non-blocking) instead of KEYS (O(N), blocks Redis).
-    -- TYPE=string filters to firewall:block:{ip} entries directly so we don't
-    -- GET keys we're not going to touch. Mirrors the SCAN pattern in _M.stats().
-    local deleted = 0
-    local cursor = "0"
-    repeat
-        local res, scan_err = red:scan(cursor,
-            "MATCH", BLOCK_PREFIX .. "*",
-            "COUNT", 100,
-            "TYPE",  "string")
-        if not res then
-            ngx.log(ngx.ERR, "[firewall] failed to scan block keys: ", scan_err)
-            break
+    -- Shared helper: delete the auto-ban triple for one IP. Returns 1 if
+    -- something was deleted, 0 otherwise. Caller is responsible for the
+    -- penalties_version bump (we do it once at the end, not per IP).
+    --
+    -- For each auto-ban we delete THREE keys:
+    --   firewall:block:{ip}            — the ban itself
+    --   firewall:gcra:{ip}             — the TAT (token bucket state)
+    --   firewall:gcra:{ip}:breakdown   — the per-rule hit counts
+    -- If we only delete the block key, the next request from that IP would
+    -- read the still-overflowed TAT, fail GCRA, and immediately re-write the
+    -- block key — making the admin action a no-op for any recently-banned IP.
+    local gcra_prefix = defaults.GCRA_KEY_PREFIX
+    local function _clear_one(ip)
+        local reply, err = red:del(
+            BLOCK_PREFIX .. ip,
+            gcra_prefix .. ip,
+            gcra_prefix .. ip .. ":breakdown"
+        )
+        -- Always drop the local LRU entry so a stale "blocked" decision
+        -- can't outlive the Redis state on this worker.
+        cache.blocked_cache:delete(CACHE_PREFIX .. ip)
+        if not reply then
+            ngx.log(ngx.ERR, "[firewall] event=clear_penalties_del_failed ip=", ip, " err=", err)
+            return 0
         end
-        cursor = res[1]
-        local keys = res[2]
-        if keys and #keys > 0 then
-            for _, key in ipairs(keys) do
-                local val = red:get(key)
-                if val == "gcra" then
-                    red:del(key)
-                    local ip = key:sub(#BLOCK_PREFIX + 1)
-                    cache.blocked_cache:delete(CACHE_PREFIX .. ip)
-                    deleted = deleted + 1
+        -- DEL returns the number of keys actually removed (0..3). Treat any
+        -- non-zero as "we cleared something for this IP".
+        return reply > 0 and 1 or 0
+    end
+
+    local deleted = 0
+
+    if ip_arg then
+        -- Single-IP mode: check the block key value before touching anything,
+        -- so we can distinguish 404 (no ban) from 409 (manual ban — refuse).
+        local val = red:get(BLOCK_PREFIX .. ip_arg)
+        if val == nil or val == ngx.null then
+            redis_pool.release(red)
+            ngx.status = 404
+            ngx.say('{"ok":false,"error":"not banned","deleted":0}')
+            return
+        end
+        if val ~= "gcra" then
+            redis_pool.release(red)
+            ngx.status = 409
+            ngx.say('{"ok":false,"error":"manual ban — use the blocklist UI","deleted":0}')
+            return
+        end
+        deleted = _clear_one(ip_arg)
+    else
+        -- Bulk mode: SCAN (cursor-paged, non-blocking) instead of KEYS (O(N),
+        -- blocks Redis). TYPE=string filters to firewall:block:{ip} entries
+        -- directly so we don't GET keys we're not going to touch. Mirrors the
+        -- SCAN pattern in _M.stats().
+        local cursor = "0"
+        repeat
+            local res, scan_err = red:scan(cursor,
+                "MATCH", BLOCK_PREFIX .. "*",
+                "COUNT", 100,
+                "TYPE",  "string")
+            if not res then
+                ngx.log(ngx.ERR, "[firewall] failed to scan block keys: ", scan_err)
+                break
+            end
+            cursor = res[1]
+            local keys = res[2]
+            if keys and #keys > 0 then
+                for _, key in ipairs(keys) do
+                    local val = red:get(key)
+                    if val == "gcra" then
+                        deleted = deleted + _clear_one(key:sub(#BLOCK_PREFIX + 1))
+                    end
                 end
             end
-        end
-    until cursor == "0"
+        until cursor == "0"
+    end
 
     red:incr(PENALTIES_VERSION_KEY)
     redis_pool.release(red)
