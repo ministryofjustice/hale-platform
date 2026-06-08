@@ -12,6 +12,8 @@ FROM --platform=linux/amd64 wordpress:6.9.4-php8.4-fpm-alpine
 RUN apk update && \
     apk add less \
     vim \
+    hunspell \
+    hunspell-en-gb \
     mariadb-client \
     htop \
     ca-certificates
