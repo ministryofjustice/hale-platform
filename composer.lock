@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "843c0aa859ea6b9e74ad1002e148c787",
+    "content-hash": "7a1d2fe8bc7bb80128e7b84e856d548b",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -1011,16 +1011,16 @@
         },
         {
             "name": "ministryofjustice/hale-components",
-            "version": "dev-add-lua-firewall-management",
+            "version": "1.15.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale-components.git",
-                "reference": "b52981172ad84555c763df2d42bb0e019d934b35"
+                "reference": "a0ccef3769436b617afea4488233127f55290d48"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/b52981172ad84555c763df2d42bb0e019d934b35",
-                "reference": "b52981172ad84555c763df2d42bb0e019d934b35",
+                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/a0ccef3769436b617afea4488233127f55290d48",
+                "reference": "a0ccef3769436b617afea4488233127f55290d48",
                 "shasum": ""
             },
             "require": {
@@ -1032,10 +1032,10 @@
                 "wordpress"
             ],
             "support": {
-                "source": "https://github.com/ministryofjustice/hale-components/tree/add-lua-firewall-management",
+                "source": "https://github.com/ministryofjustice/hale-components/tree/1.15.3",
                 "issues": "https://github.com/ministryofjustice/hale-components/issues"
             },
-            "time": "2026-06-04T11:51:21+00:00"
+            "time": "2026-06-09T09:41:13+00:00"
         },
         {
             "name": "ministryofjustice/hale-dash",
@@ -3985,7 +3985,6 @@
     "stability-flags": {
         "ministryofjustice/govwind": 20,
         "ministryofjustice/hale": 20,
-        "ministryofjustice/hale-components": 20,
         "ministryofjustice/justice": 20,
         "ministryofjustice/ppo": 20,
         "ministryofjustice/website-builder-blocks": 20,
