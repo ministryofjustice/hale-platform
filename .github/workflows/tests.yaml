@@ -22,6 +22,7 @@ jobs:
       - name: Build test image
         uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf #v6.5.0
         with:
+          context: .
           file: nginx.local.dockerfile
           target: test
           load: true
