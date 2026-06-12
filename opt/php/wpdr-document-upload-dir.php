@@ -13,15 +13,13 @@
  * the container. Filtering the site option short-circuits that lookup.
  *
  * Only active when s3-uploads is in play (non-local environments,
- * matching the gate in mu-plugins/load.php) and WP Document Revisions
- * is loaded.
+ * matching the gate in mu-plugins/load.php). The filter only takes effect
+ * when something reads the document_upload_directory site option, which in
+ * practice is only WP Document Revisions, so no explicit plugin check is
+ * needed.
  */
 
-if (
-    defined('S3_UPLOADS_BUCKET') &&
-    S3_UPLOADS_BUCKET &&
-    getenv('WP_ENVIRONMENT_TYPE') !== 'local'
-) {
+if (defined('S3_UPLOADS_BUCKET') && S3_UPLOADS_BUCKET) {
     add_filter(
         'pre_site_option_document_upload_directory',
         fn () => 's3://' . S3_UPLOADS_BUCKET . '/uploads/sites/%site_id%'
