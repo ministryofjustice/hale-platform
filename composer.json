@@ -105,7 +105,7 @@
     "ministryofjustice/justice": "dev-main",
     "ministryofjustice/hale": "4.34.0",
     "ministryofjustice/hale-components": "1.15.3",
-    "ministryofjustice/hale-dash": "2.1.0",
+    "ministryofjustice/hale-dash": "2.1.1",
     "ministryofjustice/hale-showcase": "1.1.10",
     "ministryofjustice/ppo": "dev-main",
     "ministryofjustice/website-builder-blocks": "dev-main",
