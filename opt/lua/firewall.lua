@@ -132,6 +132,10 @@ function _M.req()
     if cached_mode then
         ngx.var.firewall_info = "cached"
         if cached_mode == "enforce" then
+            local ttl = blocked_cache:ttl(CACHE_PREFIX .. ip)
+            if ttl and ttl > 0 then
+                ngx.header["Retry-After"] = ttl
+            end
             ngx.exit(ngx.HTTP_TOO_MANY_REQUESTS)
         end
         return
@@ -149,6 +153,7 @@ function _M.req()
     -- inside the protected block; call ngx.exit() after.
     local red
     local blocked = false
+    local retry_after_secs = 0
     local ok, err = pcall(function()
         red = redis_pool.connect()
         if not red then return end  -- fail-open
@@ -255,6 +260,7 @@ function _M.req()
 
         if mode == "enforce" then
             blocked = true
+            retry_after_secs = cache_ttl
         end
     end)
 
@@ -263,6 +269,9 @@ function _M.req()
         ngx.log(ngx.ERR, "[firewall] event=req_error err=", err)
     elseif blocked then
         -- ngx.exit() here is outside pcall and cannot be swallowed.
+        if retry_after_secs and retry_after_secs > 0 then
+            ngx.header["Retry-After"] = retry_after_secs
+        end
         ngx.exit(ngx.HTTP_TOO_MANY_REQUESTS)
     end
 end
