@@ -3631,15 +3631,15 @@
         },
         {
             "name": "wpackagist-plugin/ewww-image-optimizer",
-            "version": "8.7.1",
+            "version": "8.7.2",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/ewww-image-optimizer/",
-                "reference": "tags/8.7.1"
+                "reference": "tags/8.7.2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/ewww-image-optimizer.8.7.1.zip"
+                "url": "https://downloads.wordpress.org/plugin/ewww-image-optimizer.8.7.2.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
