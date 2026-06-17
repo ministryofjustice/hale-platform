@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "88d746444ff38f377e7bca4fe2fb3da8",
+    "content-hash": "7a1d2fe8bc7bb80128e7b84e856d548b",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -1085,25 +1085,26 @@
         },
         {
             "name": "ministryofjustice/justice",
-            "version": "dev-sentry-fix",
+            "version": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/justice.git",
-                "reference": "71717bcc6f0a7a2274e07b077dea6c7c0c34a484"
+                "reference": "43b671ab78d2ba8e150112ae724305d69a5f5cdd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/justice/zipball/71717bcc6f0a7a2274e07b077dea6c7c0c34a484",
-                "reference": "71717bcc6f0a7a2274e07b077dea6c7c0c34a484",
+                "url": "https://api.github.com/repos/ministryofjustice/justice/zipball/43b671ab78d2ba8e150112ae724305d69a5f5cdd",
+                "reference": "43b671ab78d2ba8e150112ae724305d69a5f5cdd",
                 "shasum": ""
             },
+            "default-branch": true,
             "type": "wordpress-theme",
             "description": "Justice GovUK theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/justice/tree/sentry-fix",
+                "source": "https://github.com/ministryofjustice/justice/tree/main",
                 "issues": "https://github.com/ministryofjustice/justice/issues"
             },
-            "time": "2026-06-17T11:13:47+00:00"
+            "time": "2026-06-17T09:43:02+00:00"
         },
         {
             "name": "ministryofjustice/ppo",
