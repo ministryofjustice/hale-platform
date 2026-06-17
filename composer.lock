@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "207fc239a0d9b2c4459e3a272ac5206c",
+    "content-hash": "7a1d2fe8bc7bb80128e7b84e856d548b",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -1089,12 +1089,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/justice.git",
-                "reference": "170e5e9a3bd634ae2a1598b4a106d14070a504b2"
+                "reference": "6c45855df329f6fdbc88e0a2c6606ec5f833e1f4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/justice/zipball/170e5e9a3bd634ae2a1598b4a106d14070a504b2",
-                "reference": "170e5e9a3bd634ae2a1598b4a106d14070a504b2",
+                "url": "https://api.github.com/repos/ministryofjustice/justice/zipball/6c45855df329f6fdbc88e0a2c6606ec5f833e1f4",
+                "reference": "6c45855df329f6fdbc88e0a2c6606ec5f833e1f4",
                 "shasum": ""
             },
             "default-branch": true,
@@ -1104,7 +1104,7 @@
                 "source": "https://github.com/ministryofjustice/justice/tree/main",
                 "issues": "https://github.com/ministryofjustice/justice/issues"
             },
-            "time": "2026-06-17T09:43:02+00:00"
+            "time": "2026-06-17T12:25:09+00:00"
         },
         {
             "name": "ministryofjustice/ppo",
