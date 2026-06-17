@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7a1d2fe8bc7bb80128e7b84e856d548b",
+    "content-hash": "207fc239a0d9b2c4459e3a272ac5206c",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -1089,12 +1089,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/justice.git",
-                "reference": "43b671ab78d2ba8e150112ae724305d69a5f5cdd"
+                "reference": "170e5e9a3bd634ae2a1598b4a106d14070a504b2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/justice/zipball/43b671ab78d2ba8e150112ae724305d69a5f5cdd",
-                "reference": "43b671ab78d2ba8e150112ae724305d69a5f5cdd",
+                "url": "https://api.github.com/repos/ministryofjustice/justice/zipball/170e5e9a3bd634ae2a1598b4a106d14070a504b2",
+                "reference": "170e5e9a3bd634ae2a1598b4a106d14070a504b2",
                 "shasum": ""
             },
             "default-branch": true,
