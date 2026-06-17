@@ -1088,12 +1088,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/justice.git",
-                "reference": "ef1da41dc419ead6d9720c0bc0d61e225df85076"
+                "reference": "6b901d764a3ffbc599fb10469953a8456b4c60ba"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/justice/zipball/ef1da41dc419ead6d9720c0bc0d61e225df85076",
-                "reference": "ef1da41dc419ead6d9720c0bc0d61e225df85076",
+                "url": "https://api.github.com/repos/ministryofjustice/justice/zipball/6b901d764a3ffbc599fb10469953a8456b4c60ba",
+                "reference": "6b901d764a3ffbc599fb10469953a8456b4c60ba",
                 "shasum": ""
             },
             "default-branch": true,
@@ -1103,7 +1103,7 @@
                 "source": "https://github.com/ministryofjustice/justice/tree/main",
                 "issues": "https://github.com/ministryofjustice/justice/issues"
             },
-            "time": "2026-06-17T12:50:07+00:00"
+            "time": "2026-06-17T17:15:52+00:00"
         },
         {
             "name": "ministryofjustice/ppo",
