@@ -111,7 +111,7 @@ jobs:
           aws-region: ${{ secrets.ecr-region }}
 
       - name: Login to ECR
-        uses: aws-actions/amazon-ecr-login@fa648b43de3d4d023bcb3f89ed6940096949c419 # v2.1.5
+        uses: aws-actions/amazon-ecr-login@d539f0932e70871a027e9d5a9d8fc38589180a64 # v2.1.6
         id: login-ecr
         with:
           mask-password: "true"
@@ -154,7 +154,7 @@ jobs:
             ${{ runner.os }}-composer-
 
       - name: Set PHP min version
-        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # v2.37.1
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2.37.2
         with:
           php-version: 8.4
 
