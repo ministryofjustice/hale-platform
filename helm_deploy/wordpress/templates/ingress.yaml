@@ -17,6 +17,7 @@ metadata:
         log,\
         tag:github_team=hale-platform,\
         tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }}"
+
       # Set WAF Config for Authenticated Users
       SecRule REQUEST_HEADERS:Cookie "@contains WB_CONFIG={{ .Values.secrets.wbconfig }}"
         "id:1001,\
@@ -28,6 +29,32 @@ metadata:
         ctl:ruleEngine=DetectionOnly"
       # Exclude posthog cookie
       SecRuleUpdateTargetById 942290 "!REQUEST_COOKIES:/^ph_phc_.*_posthog$/"
+
+      # --- www.justice.gov.uk only rules ---
+
+      # Block POST requests on www.justice.gov.uk
+      SecRule REQUEST_HEADERS:Host "@streq www.justice.gov.uk" "id:300140,phase:1,log,deny,t:none,chain"
+      SecRule REQUEST_METHOD "@streq POST" "t:none"
+
+      # Allow only specific parameters on search requests,
+      # this applies to all users, regardless of logged in state.
+      SecRule REQUEST_HEADERS:Host "@streq www.justice.gov.uk" "id:100100,phase:1,deny,log,t:none,chain"
+      SecRule REQUEST_URI "@rx ^/search(?:$|/|\?)" "chain"
+      SecRule ARGS_GET_NAMES "!@rx ^(?:s|section|organisation|audience|type|parent|post_types|redirected|orderby)(?:\[[^\]]*\])?$" ""
+
+      # 301 redirect requests (NOT under /search) that include ANY query string
+      # to the same path without the query.
+      # - Declare the 301 redirect
+      # - Only apply to www.justice.gov.uk
+      # - Exclude /search* from this behavior
+      # - Only do this when there IS a query string (i.e., at least one GET param)
+      # - Require that at least one param name is NOT in the allowlist
+      #   (requests with only s, parent, ver, auth0, code, state params pass through)
+      SecRule REQUEST_URI "@rx ^/([^?]*)" "id:300130,phase:1,log,redirect:/%{TX.1},status:301,capture,t:none,chain"
+      SecRule REQUEST_HEADERS:Host "@streq www.justice.gov.uk" "t:none,chain"
+      SecRule REQUEST_URI "!@rx ^/search(?:$|/|\?)" "t:none,chain"
+      SecRule &ARGS_GET_NAMES "@gt 0" "t:none,chain"
+      SecRule ARGS_GET_NAMES "!@rx ^(?:s|parent|ver|auth0|code|state)(?:\[[^\]]*\])?$" "t:none"
     nginx.ingress.kubernetes.io/server-snippet: |
       location = /.well-known/security.txt {
         auth_basic off;
