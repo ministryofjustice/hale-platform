@@ -144,6 +144,10 @@ configmap:
   sentrydns: ""
   firewall:
     enabled: "true"
+  # Full-page cache (OpenResty + Redis). Ships dark: enable per environment.
+  pagecache:
+    enabled: "false"
+    ttl: "300"
 
 
 ## @param secrets passed in via GitActions

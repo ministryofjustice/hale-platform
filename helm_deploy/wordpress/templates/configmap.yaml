@@ -9,6 +9,8 @@ data:
   S3_UPLOADS_USE_INSTANCE_PROFILE: {{ .Values.configmap.s3useprofile | quote }}
   PHP_DSN: {{ .Values.configmap.sentrydns }}
   FIREWALL_ENABLED: {{ .Values.configmap.firewall.enabled | quote }}
+  PAGECACHE_ENABLED: {{ .Values.configmap.pagecache.enabled | quote }}
+  PAGECACHE_TTL: {{ .Values.configmap.pagecache.ttl | quote }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -16,3 +18,5 @@ metadata:
   name: hale-nginx-config-{{ .Release.Revision }}
 data:
   FIREWALL_ENABLED: {{ .Values.configmap.firewall.enabled | quote }}
+  PAGECACHE_ENABLED: {{ .Values.configmap.pagecache.enabled | quote }}
+  PAGECACHE_TTL: {{ .Values.configmap.pagecache.ttl | quote }}

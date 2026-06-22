@@ -16,6 +16,7 @@ services:
       - ./opt/nginx/localwordpress.conf:/usr/local/openresty/nginx/conf/conf.d/localwordpress.conf
       - ./opt/lua/firewall.lua:/usr/local/openresty/nginx/lua/firewall.lua
       - ./opt/lua/firewall:/usr/local/openresty/nginx/lua/firewall
+      - ./opt/lua/pagecache:/usr/local/openresty/nginx/lua/pagecache
       - ./bin/certs:/etc/nginx/certs/self-signed/
     depends_on:
       - wordpress
@@ -24,6 +25,7 @@ services:
       VIRTUAL_HOST: hale.docker
       VIRTUAL_PORT: 443
       FIREWALL_ENABLED: ${FIREWALL_ENABLED:-false}
+      PAGECACHE_ENABLED: ${PAGECACHE_ENABLED:-false}
       REDIS_SSL: "false"
   mariadb:
     container_name: mariadb
@@ -81,11 +83,13 @@ services:
       ACF_PRO_LICENSE: ""
       NGINX_INTERNAL_URL: "https://nginx"
       FIREWALL_ENABLED: ${FIREWALL_ENABLED:-false}
+      PAGECACHE_ENABLED: ${PAGECACHE_ENABLED:-false}
       REDIS_SSL: "false"
   redis:
     image: redis:7-alpine
     profiles:
     - firewall
+    - pagecache
     ports:
       - 127.0.0.1:6379:6379
     volumes:
@@ -94,6 +98,7 @@ services:
     image: redis/redisinsight:3.4
     profiles:
     - firewall
+    - pagecache
     environment:
       VIRTUAL_PORT: 5540
       VIRTUAL_HOST: redis-insight.docker
