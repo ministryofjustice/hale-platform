@@ -994,22 +994,22 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale.git",
-                "reference": "ee5f383157a4be676f6b01561750bf1ea7edf42d"
+                "reference": "06c4a3f52f824246c0fe84f93012fc6b7b0ff9f9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/ee5f383157a4be676f6b01561750bf1ea7edf42d",
-                "reference": "ee5f383157a4be676f6b01561750bf1ea7edf42d",
+                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/06c4a3f52f824246c0fe84f93012fc6b7b0ff9f9",
+                "reference": "06c4a3f52f824246c0fe84f93012fc6b7b0ff9f9",
                 "shasum": ""
             },
             "default-branch": true,
             "type": "wordpress-theme",
             "description": "Hale theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/hale/tree/4.34.0",
+                "source": "https://github.com/ministryofjustice/hale/tree/4.34.1",
                 "issues": "https://github.com/ministryofjustice/hale/issues"
             },
-            "time": "2026-05-11T14:25:13+00:00"
+            "time": "2026-06-22T15:56:46+00:00"
         },
         {
             "name": "ministryofjustice/hale-components",
@@ -3998,5 +3998,5 @@
         "php": ">=8.0"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
