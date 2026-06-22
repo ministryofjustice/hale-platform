@@ -23,6 +23,7 @@ COPY opt/nginx/wordpress.conf      /usr/local/openresty/nginx/conf/conf.d/
 COPY opt/nginx/justice/            /usr/local/openresty/nginx/conf/justice/
 COPY opt/lua/firewall.lua          /usr/local/openresty/nginx/lua/firewall.lua
 COPY opt/lua/firewall              /usr/local/openresty/nginx/lua/firewall
+COPY opt/lua/pagecache             /usr/local/openresty/nginx/lua/pagecache
 COPY opt/nginx/error-pages/        /usr/local/openresty/nginx/html/error-pages/
 
 # Switch to non-root user (must use numeric UID for K8s runAsNonRoot verification)
