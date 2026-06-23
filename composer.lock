@@ -8,6 +8,7 @@
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
+<<<<<<< Updated upstream
             "version": "7.1.0",
             "source": {
                 "type": "git",
@@ -18,6 +19,18 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/alphagov/notifications-php-client/zipball/09608eb9d5a8638b25f1725ff037378cf40508c4",
                 "reference": "09608eb9d5a8638b25f1725ff037378cf40508c4",
+=======
+            "version": "7.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/alphagov/notifications-php-client.git",
+                "reference": "9e9b52272e352426e6bc913addd0683dee428fe9"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/alphagov/notifications-php-client/zipball/9e9b52272e352426e6bc913addd0683dee428fe9",
+                "reference": "9e9b52272e352426e6bc913addd0683dee428fe9",
+>>>>>>> Stashed changes
                 "shasum": ""
             },
             "require": {
@@ -55,9 +68,15 @@
             "description": "PHP client for GOV.UK Notifications",
             "support": {
                 "issues": "https://github.com/alphagov/notifications-php-client/issues",
+<<<<<<< Updated upstream
                 "source": "https://github.com/alphagov/notifications-php-client/tree/7.1.0"
             },
             "time": "2026-06-09T07:53:34+00:00"
+=======
+                "source": "https://github.com/alphagov/notifications-php-client/tree/7.0.0"
+            },
+            "time": "2026-02-18T10:10:35+00:00"
+>>>>>>> Stashed changes
         },
         {
             "name": "aws/aws-crt-php",
@@ -115,6 +134,7 @@
         },
         {
             "name": "aws/aws-sdk-php",
+<<<<<<< Updated upstream
             "version": "3.386.1",
             "source": {
                 "type": "git",
@@ -125,6 +145,18 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/e36bc0e97e82d68acc92b9e06f5dc544913d819a",
                 "reference": "e36bc0e97e82d68acc92b9e06f5dc544913d819a",
+=======
+            "version": "3.369.37",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/aws/aws-sdk-php.git",
+                "reference": "bc599ce989b101ee630d5e1a1aeda387632df47b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/bc599ce989b101ee630d5e1a1aeda387632df47b",
+                "reference": "bc599ce989b101ee630d5e1a1aeda387632df47b",
+>>>>>>> Stashed changes
                 "shasum": ""
             },
             "require": {
@@ -206,9 +238,15 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
+<<<<<<< Updated upstream
                 "source": "https://github.com/aws/aws-sdk-php/tree/3.386.1"
             },
             "time": "2026-06-23T01:24:07+00:00"
+=======
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.369.37"
+            },
+            "time": "2026-02-18T19:16:34+00:00"
+>>>>>>> Stashed changes
         },
         {
             "name": "clue/stream-filter",
@@ -424,6 +462,7 @@
         },
         {
             "name": "firebase/php-jwt",
+<<<<<<< Updated upstream
             "version": "v7.1.0",
             "source": {
                 "type": "git",
@@ -434,6 +473,18 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/googleapis/php-jwt/zipball/b374a5d1a4f1f67fadc2165cdb284645945e2fc0",
                 "reference": "b374a5d1a4f1f67fadc2165cdb284645945e2fc0",
+=======
+            "version": "v7.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/firebase/php-jwt.git",
+                "reference": "5645b43af647b6947daac1d0f659dd1fbe8d3b65"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/firebase/php-jwt/zipball/5645b43af647b6947daac1d0f659dd1fbe8d3b65",
+                "reference": "5645b43af647b6947daac1d0f659dd1fbe8d3b65",
+>>>>>>> Stashed changes
                 "shasum": ""
             },
             "require": {
@@ -483,10 +534,17 @@
                 "php"
             ],
             "support": {
+<<<<<<< Updated upstream
                 "issues": "https://github.com/googleapis/php-jwt/issues",
                 "source": "https://github.com/googleapis/php-jwt/tree/v7.1.0"
             },
             "time": "2026-06-11T17:54:14+00:00"
+=======
+                "issues": "https://github.com/firebase/php-jwt/issues",
+                "source": "https://github.com/firebase/php-jwt/tree/v7.0.2"
+            },
+            "time": "2025-12-16T22:17:28+00:00"
+>>>>>>> Stashed changes
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -971,12 +1029,21 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/govwind.git",
+<<<<<<< Updated upstream
                 "reference": "05e78eaede027a1c200843e4028ae141c96a4a4e"
             },
             "dist": {
                 "type": "zip",
                 "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/05e78eaede027a1c200843e4028ae141c96a4a4e",
                 "reference": "05e78eaede027a1c200843e4028ae141c96a4a4e",
+=======
+                "reference": "607dd38ee83bafcf16409b622422872e26f16af2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/607dd38ee83bafcf16409b622422872e26f16af2",
+                "reference": "607dd38ee83bafcf16409b622422872e26f16af2",
+>>>>>>> Stashed changes
                 "shasum": ""
             },
             "default-branch": true,
@@ -986,7 +1053,11 @@
                 "source": "https://github.com/ministryofjustice/govwind/tree/1.0.0",
                 "issues": "https://github.com/ministryofjustice/govwind/issues"
             },
+<<<<<<< Updated upstream
             "time": "2026-06-19T15:20:48+00:00"
+=======
+            "time": "2026-02-16T12:29:38+00:00"
+>>>>>>> Stashed changes
         },
         {
             "name": "ministryofjustice/hale",
@@ -1112,12 +1183,21 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/website-builder-blocks.git",
+<<<<<<< Updated upstream
                 "reference": "bfa8f080cb357b9b0266ffa8c86a4ae567f5c656"
             },
             "dist": {
                 "type": "zip",
                 "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/bfa8f080cb357b9b0266ffa8c86a4ae567f5c656",
                 "reference": "bfa8f080cb357b9b0266ffa8c86a4ae567f5c656",
+=======
+                "reference": "34ce287ba32beed4fd4068a7210817fbbbe77e7d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/34ce287ba32beed4fd4068a7210817fbbbe77e7d",
+                "reference": "34ce287ba32beed4fd4068a7210817fbbbe77e7d",
+>>>>>>> Stashed changes
                 "shasum": ""
             },
             "require-dev": {
@@ -1144,7 +1224,11 @@
                 "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/prototype-d3-graph-block",
                 "issues": "https://github.com/ministryofjustice/website-builder-blocks/issues"
             },
+<<<<<<< Updated upstream
             "time": "2026-06-23T09:58:09+00:00"
+=======
+            "time": "2026-02-18T09:52:13+00:00"
+>>>>>>> Stashed changes
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
@@ -3309,6 +3393,7 @@
         },
         {
             "name": "wpackagist-plugin/ewww-image-optimizer",
+<<<<<<< Updated upstream
             "version": "8.7.2",
             "source": {
                 "type": "svn",
@@ -3318,6 +3403,17 @@
             "dist": {
                 "type": "zip",
                 "url": "https://downloads.wordpress.org/plugin/ewww-image-optimizer.8.7.2.zip"
+=======
+            "version": "8.4.0",
+            "source": {
+                "type": "svn",
+                "url": "https://plugins.svn.wordpress.org/ewww-image-optimizer/",
+                "reference": "tags/8.4.0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://downloads.wordpress.org/plugin/ewww-image-optimizer.8.4.0.zip"
+>>>>>>> Stashed changes
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -3327,6 +3423,7 @@
         },
         {
             "name": "wpackagist-plugin/microsoft-clarity",
+<<<<<<< Updated upstream
             "version": "0.10.26",
             "source": {
                 "type": "svn",
@@ -3336,6 +3433,17 @@
             "dist": {
                 "type": "zip",
                 "url": "https://downloads.wordpress.org/plugin/microsoft-clarity.0.10.26.zip"
+=======
+            "version": "0.10.16",
+            "source": {
+                "type": "svn",
+                "url": "https://plugins.svn.wordpress.org/microsoft-clarity/",
+                "reference": "tags/0.10.16"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://downloads.wordpress.org/plugin/microsoft-clarity.0.10.16.zip"
+>>>>>>> Stashed changes
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
