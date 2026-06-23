@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e6462a3d3b13e655027803dde0e47439",
+    "content-hash": "e5b6ddc692013ccb5f0981a922660ce7",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -1108,23 +1108,22 @@
         },
         {
             "name": "ministryofjustice/website-builder-blocks",
-            "version": "dev-main",
+            "version": "dev-prototype-d3-graph-block",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/website-builder-blocks.git",
-                "reference": "58ed60f29bba86fb5fd3efc4d782927995d3388e"
+                "reference": "bfa8f080cb357b9b0266ffa8c86a4ae567f5c656"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/58ed60f29bba86fb5fd3efc4d782927995d3388e",
-                "reference": "58ed60f29bba86fb5fd3efc4d782927995d3388e",
+                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/bfa8f080cb357b9b0266ffa8c86a4ae567f5c656",
+                "reference": "bfa8f080cb357b9b0266ffa8c86a4ae567f5c656",
                 "shasum": ""
             },
             "require-dev": {
                 "composer/composer": "*",
                 "squizlabs/php_codesniffer": "*"
             },
-            "default-branch": true,
             "type": "wordpress-plugin",
             "scripts": {
                 "phpcs-config-set": [
@@ -1142,10 +1141,10 @@
             ],
             "description": "WP plugin that adds addtional blocks.",
             "support": {
-                "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/main",
+                "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/prototype-d3-graph-block",
                 "issues": "https://github.com/ministryofjustice/website-builder-blocks/issues"
             },
-            "time": "2026-06-23T09:28:49+00:00"
+            "time": "2026-06-23T09:58:09+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",

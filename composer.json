@@ -103,7 +103,7 @@
     "ministryofjustice/hale-dash": "2.1.0",
     "ministryofjustice/hale-showcase": "1.1.10",
     "ministryofjustice/ppo": "dev-main",
-    "ministryofjustice/website-builder-blocks": "dev-main",
+    "ministryofjustice/website-builder-blocks": "dev-prototype-d3-graph-block",
     "ministryofjustice/wp-gov-uk-notify": "1.0.4",
     "ministryofjustice/wp-moj-blocks": "3.19.5",
     "ministryofjustice/wp-s3-uploads": "2.0.0",
