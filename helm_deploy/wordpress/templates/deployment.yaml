@@ -50,7 +50,7 @@ spec:
                 name: hale-wp-config-{{ .Release.Revision }}
             - secretRef:
                 name: hale-wp-secrets-{{ .Release.Revision }}
-          {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
+          {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") (eq .Values.configmap.envtype "demo") }}
           readinessProbe:
             exec:
               command:
@@ -97,7 +97,7 @@ spec:
                 name: hale-nginx-config-{{ .Release.Revision }}
             - secretRef:
                 name: hale-nginx-secrets-{{ .Release.Revision }}
-          {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
+          {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") (eq .Values.configmap.envtype "demo") }}
           readinessProbe:
             exec:
               command:
