@@ -14,10 +14,19 @@
 -- Fail-open everywhere: any Redis problem just means PHP serves the request.
 --
 -- KEY SCHEME (must match the WP purge mu-plugin):
---   pagecache:v{version}:{host}:{request_uri}
+--   pagecache:v{version}:{host}:{request_uri}          content key
+--   pagecache:fence:{host}:{request_uri}                purge fence (no version)
 --   - {host} isolates multisite sites; {version} bumps for an instant mass flush.
 --   - scheme is deliberately omitted: TLS is terminated upstream, so the scheme
 --     nginx sees can differ from what WordPress sees. Host + path is canonical.
+--
+-- PURGE/WRITE RACE: a request that MISSes can still be mid-render when an
+-- editor publishes and the purge plugin deletes that path's cache entry.
+-- The deferred Redis write (after the response is sent) would otherwise
+-- re-cache that now-stale render straight into the just-purged key. The
+-- fence key closes this: the purge stamps it with the current Redis time,
+-- and the deferred write only commits if no fence was stamped at/after the
+-- time this request started rendering (see write_to_redis/CAS_WRITE_SCRIPT).
 -- ============================================================================
 
 local redis_pool = require "pagecache.redis"
@@ -75,6 +84,25 @@ local function build_key(red)
     return PREFIX .. "v" .. ver .. ":" .. ngx.var.host .. ":" .. ngx.var.request_uri
 end
 
+-- Fence key for this path. Unversioned and shared with the WP purge plugin,
+-- which must build this exact same key from $host/$path.
+local function build_fence_key()
+    return PREFIX .. "fence:" .. ngx.var.host .. ":" .. ngx.var.request_uri
+end
+
+-- Atomic check-and-write: refuse to cache a render if a purge fence for this
+-- path was stamped at or after the time this request started rendering.
+-- That means a purge happened mid-render, so the buffered body may be stale.
+local CAS_WRITE_SCRIPT = [[
+local fence = redis.call('GET', KEYS[2])
+if fence and tonumber(fence) and tonumber(ARGV[3])
+   and tonumber(fence) >= tonumber(ARGV[3]) then
+    return 0
+end
+redis.call('SETEX', KEYS[1], ARGV[1], ARGV[2])
+return 1
+]]
+
 
 -- ============================================================================
 -- fetch(): access phase. Serve a HIT, or flag the request to be stored on MISS.
@@ -89,9 +117,19 @@ function _M.fetch()
     local key  = build_key(red)
     local blob = red:get(key)
     if blob == ngx.null or not blob then
+        -- Snapshot Redis's own clock (not local wall-clock - avoids drift
+        -- across pods) so the deferred write can tell if a purge landed
+        -- after this request started rendering.
+        local time_ok, time_res = pcall(function() return red:time() end)
+        local started = nil
+        if time_ok and type(time_res) == "table" and time_res[1] then
+            started = tostring(time_res[1]) .. "." .. tostring(time_res[2] or "0")
+        end
         redis_pool.release(red)
-        ngx.ctx.pc_key   = key                           -- remember for store phase
-        ngx.ctx.pc_store = true
+        ngx.ctx.pc_key     = key                         -- remember for store phase
+        ngx.ctx.pc_fence   = build_fence_key()
+        ngx.ctx.pc_started = started
+        ngx.ctx.pc_store   = true
         set_status("miss")
         return
     end
@@ -155,13 +193,32 @@ end
 
 
 -- Timer callback: the actual Redis write (cosockets are allowed in timers).
-local function write_to_redis(premature, key, ct, body)
+--
+-- Fenced write: if `started` is set, the write only commits when no purge
+-- fence for this path was stamped at or after `started`. A fence at/after
+-- that time means a purge happened mid-render, so `body` may be stale -
+-- the write is silently dropped rather than re-caching old content.
+-- Check + write happen in one EVAL so there's no gap between them.
+local function write_to_redis(premature, key, fence_key, started, ct, body)
     if premature then return end
     local red = redis_pool.connect()
     if not red then return end
-    -- SETEX guarantees a TTL on every key -> eligible for volatile-lru eviction,
-    -- so the shared instance can never evict the firewall's persistent keys.
-    red:setex(key, TTL, ct .. "\n" .. body)
+
+    local value = ct .. "\n" .. body
+    if started and fence_key then
+        -- SETEX guarantees a TTL on every key -> eligible for volatile-lru
+        -- eviction, so the shared instance can never evict the firewall's
+        -- persistent keys. (Done inside the script too - see CAS_WRITE_SCRIPT.)
+        local ok, err = red:eval(CAS_WRITE_SCRIPT, 2, key, fence_key, TTL, value, started)
+        if not ok then
+            ngx.log(ngx.ERR, "[pagecache] fenced write failed: ", err)
+        end
+    else
+        -- No snapshot time available (e.g. Redis TIME failed earlier) -
+        -- fall back to an unfenced write rather than dropping the cache
+        -- entirely. Rare; only happens on a partial Redis failure.
+        red:setex(key, TTL, value)
+    end
     redis_pool.release(red)
 end
 
@@ -175,7 +232,8 @@ function _M.store()
     if body == "" then return end
 
     local ok, err = ngx.timer.at(0, write_to_redis,
-        ngx.ctx.pc_key, ngx.ctx.pc_ct or DEFAULT_CT, body)
+        ngx.ctx.pc_key, ngx.ctx.pc_fence, ngx.ctx.pc_started,
+        ngx.ctx.pc_ct or DEFAULT_CT, body)
     if not ok then
         ngx.log(ngx.ERR, "[pagecache] store timer failed: ", err)
     end

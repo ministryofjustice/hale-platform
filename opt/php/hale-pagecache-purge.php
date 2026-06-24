@@ -57,7 +57,18 @@ function hale_pagecache_path($url): string
 }
 
 /**
- * DELETE the page-cache keys for the given paths on the current site.
+ * DELETE the page-cache keys for the given paths on the current site, and
+ * stamp a purge fence for each path so an in-flight request that started
+ * rendering before this purge can't re-cache stale content afterward.
+ *
+ * RACE THIS CLOSES: a request can MISS and start rendering a path right
+ * before an editor publishes. The Lua cache layer writes that render to
+ * Redis asynchronously, *after* the response is already sent - which can
+ * land after this DEL runs and silently undo the purge with stale HTML.
+ * The fence key (pagecache:fence:{host}:{path}, stamped with Redis's own
+ * clock) lets that deferred write check "was this path purged after I
+ * started?" and skip its own write if so. See opt/lua/pagecache/init.lua
+ * (write_to_redis / CAS_WRITE_SCRIPT) for the other half of this.
  *
  * Fail-soft: any Redis error is logged and swallowed so a cache problem can
  * never block an editor from publishing.
@@ -98,9 +109,33 @@ function hale_pagecache_purge_paths(array $paths): void
         $version  = (int) ($redis->get('pagecache:version') ?: 0);
         $hostname = wp_parse_url(home_url(), PHP_URL_HOST);   // multisite: scope to this site
 
+        // Fence TTL must outlive the slowest realistic PHP render so a
+        // very slow in-flight request can still be fenced out. 60s is
+        // comfortably above normal render times; raise it if pages are
+        // known to render slower than that.
+        $fenceTtl = (int) (getenv('PAGECACHE_FENCE_TTL') ?: 60);
+
+        // Redis's own clock, not the web server's wall-clock - avoids
+        // clock drift between this PHP host and the OpenResty pods.
+        $time       = $redis->rawCommand('TIME');
+        $fenceValue = (is_array($time) && isset($time[0]))
+            ? $time[0] . '.' . ($time[1] ?? '0')
+            : null;
+
         foreach ($paths as $path) {
-            // Must match the Lua key scheme: pagecache:v{ver}:{host}:{uri}
-            $redis->del("pagecache:v{$version}:{$hostname}:{$path}");
+            // Must match the Lua key schemes:
+            //   content key -> pagecache:v{ver}:{host}:{uri}
+            //   fence key   -> pagecache:fence:{host}:{uri}   (unversioned)
+            $contentKey = "pagecache:v{$version}:{$hostname}:{$path}";
+            $fenceKey   = "pagecache:fence:{$hostname}:{$path}";
+
+            if (null !== $fenceValue) {
+                $redis->set($fenceKey, $fenceValue, ['EX' => $fenceTtl]);
+            } else {
+                error_log('pagecache purge: Redis TIME unavailable, fence not set for ' . $path);
+            }
+
+            $redis->del($contentKey);
         }
 
         $redis->close();
