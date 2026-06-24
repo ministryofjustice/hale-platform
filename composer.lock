@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "97d3a0f3cad74116a0b729b4c4cfda70",
+    "content-hash": "7a1d2fe8bc7bb80128e7b84e856d548b",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -490,22 +490,22 @@
         },
         {
             "name": "guzzlehttp/guzzle",
-            "version": "7.12.2",
+            "version": "7.12.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/guzzle.git",
-                "reference": "1289bf2975291b73e29e9422da675c87f56d28f1"
+                "reference": "9aa17bcdd777ee31df9fc83c337ca4ca2340def3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/1289bf2975291b73e29e9422da675c87f56d28f1",
-                "reference": "1289bf2975291b73e29e9422da675c87f56d28f1",
+                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/9aa17bcdd777ee31df9fc83c337ca4ca2340def3",
+                "reference": "9aa17bcdd777ee31df9fc83c337ca4ca2340def3",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "guzzlehttp/promises": "^2.5",
-                "guzzlehttp/psr7": "^2.12.1",
+                "guzzlehttp/psr7": "^2.12.3",
                 "php": "^7.2.5 || ^8.0",
                 "psr/http-client": "^1.0",
                 "symfony/deprecation-contracts": "^2.5 || ^3.0",
@@ -598,7 +598,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/guzzle/issues",
-                "source": "https://github.com/guzzle/guzzle/tree/7.12.2"
+                "source": "https://github.com/guzzle/guzzle/tree/7.12.3"
             },
             "funding": [
                 {
@@ -614,7 +614,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-06-23T13:08:19+00:00"
+            "time": "2026-06-23T15:29:02+00:00"
         },
         {
             "name": "guzzlehttp/promises",
@@ -990,25 +990,26 @@
         },
         {
             "name": "ministryofjustice/hale",
-            "version": "dev-test",
+            "version": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale.git",
-                "reference": "09bbb0e3a9f974b805ebcb7ac5180e040689b6b1"
+                "reference": "c4bf309ce789bac0ea35c02052dbe396b44ac443"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/09bbb0e3a9f974b805ebcb7ac5180e040689b6b1",
-                "reference": "09bbb0e3a9f974b805ebcb7ac5180e040689b6b1",
+                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/c4bf309ce789bac0ea35c02052dbe396b44ac443",
+                "reference": "c4bf309ce789bac0ea35c02052dbe396b44ac443",
                 "shasum": ""
             },
+            "default-branch": true,
             "type": "wordpress-theme",
             "description": "Hale theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/hale/tree/test",
+                "source": "https://github.com/ministryofjustice/hale/tree/4.34.2",
                 "issues": "https://github.com/ministryofjustice/hale/issues"
             },
-            "time": "2026-06-23T15:24:56+00:00"
+            "time": "2026-06-23T14:22:02+00:00"
         },
         {
             "name": "ministryofjustice/hale-components",
