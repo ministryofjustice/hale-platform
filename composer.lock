@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7a1d2fe8bc7bb80128e7b84e856d548b",
+    "content-hash": "f3054aa57a3dfcbccad40c6d1e68bdb0",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -1013,16 +1013,16 @@
         },
         {
             "name": "ministryofjustice/hale-components",
-            "version": "1.15.3",
+            "version": "dev-disable-user-api",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale-components.git",
-                "reference": "a0ccef3769436b617afea4488233127f55290d48"
+                "reference": "68b16a0c34ec322e0c54d96eda7a58152b2f58b6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/a0ccef3769436b617afea4488233127f55290d48",
-                "reference": "a0ccef3769436b617afea4488233127f55290d48",
+                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/68b16a0c34ec322e0c54d96eda7a58152b2f58b6",
+                "reference": "68b16a0c34ec322e0c54d96eda7a58152b2f58b6",
                 "shasum": ""
             },
             "require": {
@@ -1034,10 +1034,10 @@
                 "wordpress"
             ],
             "support": {
-                "source": "https://github.com/ministryofjustice/hale-components/tree/1.15.3",
+                "source": "https://github.com/ministryofjustice/hale-components/tree/disable-user-api",
                 "issues": "https://github.com/ministryofjustice/hale-components/issues"
             },
-            "time": "2026-06-09T09:41:13+00:00"
+            "time": "2026-06-25T08:49:10+00:00"
         },
         {
             "name": "ministryofjustice/hale-dash",
@@ -1089,12 +1089,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/justice.git",
-                "reference": "6b901d764a3ffbc599fb10469953a8456b4c60ba"
+                "reference": "0abdaba443265a89261fc86a10ff4a73b2a3d079"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/justice/zipball/6b901d764a3ffbc599fb10469953a8456b4c60ba",
-                "reference": "6b901d764a3ffbc599fb10469953a8456b4c60ba",
+                "url": "https://api.github.com/repos/ministryofjustice/justice/zipball/0abdaba443265a89261fc86a10ff4a73b2a3d079",
+                "reference": "0abdaba443265a89261fc86a10ff4a73b2a3d079",
                 "shasum": ""
             },
             "default-branch": true,
@@ -1104,7 +1104,7 @@
                 "source": "https://github.com/ministryofjustice/justice/tree/main",
                 "issues": "https://github.com/ministryofjustice/justice/issues"
             },
-            "time": "2026-06-17T17:15:52+00:00"
+            "time": "2026-06-25T08:24:58+00:00"
         },
         {
             "name": "ministryofjustice/ppo",
@@ -3987,6 +3987,7 @@
     "stability-flags": {
         "ministryofjustice/govwind": 20,
         "ministryofjustice/hale": 20,
+        "ministryofjustice/hale-components": 20,
         "ministryofjustice/justice": 20,
         "ministryofjustice/ppo": 20,
         "ministryofjustice/website-builder-blocks": 20,
@@ -3998,5 +3999,5 @@
         "php": ">=8.0"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }
