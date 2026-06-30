@@ -1135,12 +1135,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/website-builder-blocks.git",
-                "reference": "58ed60f29bba86fb5fd3efc4d782927995d3388e"
+                "reference": "9f43248adc48b0a7d1a69a1f8d6d7bf2d681f5ac"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/58ed60f29bba86fb5fd3efc4d782927995d3388e",
-                "reference": "58ed60f29bba86fb5fd3efc4d782927995d3388e",
+                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/9f43248adc48b0a7d1a69a1f8d6d7bf2d681f5ac",
+                "reference": "9f43248adc48b0a7d1a69a1f8d6d7bf2d681f5ac",
                 "shasum": ""
             },
             "require-dev": {
@@ -1165,10 +1165,10 @@
             ],
             "description": "WP plugin that adds addtional blocks.",
             "support": {
-                "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/main",
+                "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/2.0.1",
                 "issues": "https://github.com/ministryofjustice/website-builder-blocks/issues"
             },
-            "time": "2026-06-23T09:28:49+00:00"
+            "time": "2026-06-30T15:40:57+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
@@ -3999,5 +3999,5 @@
         "php": ">=8.0"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
