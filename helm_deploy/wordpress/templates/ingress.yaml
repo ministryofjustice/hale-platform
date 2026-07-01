@@ -81,6 +81,9 @@ spec:
   - hosts:
     - {{ .Values.domain }}
     secretName: websitebuilder-{{ .Values.configmap.envtype }}-cert
+  - hosts:
+    - migrate.websitebuilder.services.gov.uk
+    secretName: websitebuilder-migrate-cert
 {{- end }}
 {{- if eq .Values.configmap.envtype "prod" }}
   {{- range .Values.ingress.hosts }}
@@ -91,6 +94,16 @@ spec:
 {{- end }}
   rules:
     - host: {{ .Values.domain }}
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: wordpress
+                port:
+                  number: 8080
+    - host: migrate.websitebuilder.services.gov.uk
       http:
         paths:
           - path: /
