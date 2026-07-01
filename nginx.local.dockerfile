@@ -4,7 +4,7 @@
 # WordPress config.
 # ##################################################
 
-FROM openresty/openresty:1.29.2.4-alpine AS nginx
+FROM openresty/openresty:1.31.1.1-alpine AS nginx
 
 ENV ENV=local
 
@@ -47,21 +47,21 @@ CMD ["/usr/local/openresty/bin/openresty", "-g", "daemon off;"]
 # integration specs that connect to Redis directly).
 # ##################################################
 
-FROM openresty/openresty:1.29.2.4-alpine AS test
+FROM openresty/openresty:1.31.1.1-alpine-fat AS test
 
-RUN apk add --no-cache \
-        lua5.1-dev \
-        luarocks5.1 \
-        gcc \
-        musl-dev \
-        openssl-dev \
-    && luarocks-5.1 install luasec \
-    && luarocks-5.1 install busted \
-    && luarocks-5.1 install luasocket \
-    && luarocks-5.1 install lua-cjson \
-    && luarocks-5.1 install luacheck \
-    && apk del gcc musl-dev lua5.1-dev openssl-dev \
+# The -alpine-fat image already ships LuaRocks built against OpenResty's
+# bundled LuaJIT 2.1 at /usr/local/openresty/luajit/bin/luarocks.
+# See: https://github.com/openresty/docker-openresty#luarocks
+RUN apk add --no-cache --virtual .build-deps gcc musl-dev openssl-dev \
+    && /usr/local/openresty/luajit/bin/luarocks install luasec \
+    && /usr/local/openresty/luajit/bin/luarocks install busted \
+    && /usr/local/openresty/luajit/bin/luarocks install luasocket \
+    && /usr/local/openresty/luajit/bin/luarocks install lua-cjson \
+    && /usr/local/openresty/luajit/bin/luarocks install luacheck \
+    && apk del .build-deps \
     && rm -rf /root/.cache
+
+ENV PATH="/usr/local/openresty/luajit/bin:${PATH}"
 
 WORKDIR /app
 
