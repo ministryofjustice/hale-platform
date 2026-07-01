@@ -290,6 +290,8 @@ ingress:
       certName: victimscode-cert
     - name: websitebuilder.service.justice.gov.uk
       certName: websitebuilder-cert
+    - name: migrate.websitebuilder.service.justice.gov.uk
+      certName: websitebuilder-migrate-cert
 
     # www entries
     - name: www.advance-into-justice.service.justice.gov.uk
@@ -366,3 +368,4 @@ ingress:
       certName: victimscode-www-cert
     - name: www.websitebuilder.service.justice.gov.uk
       certName: websitebuilder-www-cert
+
