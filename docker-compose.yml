@@ -16,7 +16,7 @@ services:
       # by the wordpress container entrypoint on first start.
       - wpcore:/var/www/html
       - ./wordpress/wp-content:/var/www/html/wp-content
-      - ./dev:/mnt/dev:delegated
+      - ./dev:/mnt/dev
       - ./opt/nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
       - ./opt/nginx/localwordpress.conf:/usr/local/openresty/nginx/conf/conf.d/localwordpress.conf
       - ./opt/lua/firewall.lua:/usr/local/openresty/nginx/lua/firewall.lua
@@ -55,8 +55,8 @@ services:
     volumes:
       - wpcore:/var/www/html
       - ./wordpress/wp-content:/var/www/html/wp-content
-      - ./dev:/mnt/dev:delegated
-      - ./opt/scripts:/opt/scripts:delegated
+      - ./dev:/mnt/dev
+      - ./opt/scripts:/opt/scripts
       - ./opt/php/php-local.ini:/usr/local/etc/php/conf.d/zz-local.ini
     depends_on:
       - mariadb
@@ -113,5 +113,5 @@ volumes:
   # WordPress core files, shared between nginx and wordpress containers.
   # Removed by bin/local-build.sh on rebuild so a new image repopulates core.
   wpcore:
-    name: hale-platform_wpcore
+    name: hale-platform_wpcore
     driver: local
