@@ -5,8 +5,8 @@
 # ##################################################
 # Build multisite
 # Latest images at https://hub.docker.com/_/wordpress
-# No platform pin: local image matches host architecture (arm64 on Apple
-# Silicon) to avoid emulation. Production (wordpress.dockerfile) stays amd64.
+# No platform pin here: let docker-compose.yml (or `docker compose --platform`)
+# control the target architecture for local builds. Production (wordpress.dockerfile) stays amd64.
 FROM wordpress:6.9.4-php8.4-fpm-alpine
 
 # Install additional Alpine packages
