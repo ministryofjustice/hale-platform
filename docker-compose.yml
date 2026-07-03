@@ -113,4 +113,5 @@ volumes:
   # WordPress core files, shared between nginx and wordpress containers.
   # Removed by bin/local-build.sh on rebuild so a new image repopulates core.
   wpcore:
+    name: hale-platform_wpcore
     driver: local
