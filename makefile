@@ -2,8 +2,7 @@
 ### Local build config
 ####################################################
 
-.PHONY: run down build shell none clone-repos symlink logs restart clean help
-
+.PHONY: run down build shell none clone-repos symlink logs restart clean help test-firewall
 # Default target - show help
 help:
 	@echo "Available commands:"
