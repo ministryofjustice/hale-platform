@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f3054aa57a3dfcbccad40c6d1e68bdb0",
+    "content-hash": "63541a6275fadefc7f8c36b845b500bb",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -115,16 +115,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.386.1",
+            "version": "3.387.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "e36bc0e97e82d68acc92b9e06f5dc544913d819a"
+                "reference": "dac6a19ffc71e6d100f06098e7df58f2e27103f9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/e36bc0e97e82d68acc92b9e06f5dc544913d819a",
-                "reference": "e36bc0e97e82d68acc92b9e06f5dc544913d819a",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/dac6a19ffc71e6d100f06098e7df58f2e27103f9",
+                "reference": "dac6a19ffc71e6d100f06098e7df58f2e27103f9",
                 "shasum": ""
             },
             "require": {
@@ -206,9 +206,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.386.1"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.387.2"
             },
-            "time": "2026-06-23T01:24:07+00:00"
+            "time": "2026-07-02T18:06:18+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -490,16 +490,16 @@
         },
         {
             "name": "guzzlehttp/guzzle",
-            "version": "7.12.3",
+            "version": "7.13.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/guzzle.git",
-                "reference": "9aa17bcdd777ee31df9fc83c337ca4ca2340def3"
+                "reference": "bcd989ad36c92d42a3715379af91f2defee5b8dd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/9aa17bcdd777ee31df9fc83c337ca4ca2340def3",
-                "reference": "9aa17bcdd777ee31df9fc83c337ca4ca2340def3",
+                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/bcd989ad36c92d42a3715379af91f2defee5b8dd",
+                "reference": "bcd989ad36c92d42a3715379af91f2defee5b8dd",
                 "shasum": ""
             },
             "require": {
@@ -517,8 +517,8 @@
             "require-dev": {
                 "bamarni/composer-bin-plugin": "^1.8.2",
                 "ext-curl": "*",
-                "guzzle/client-integration-tests": "3.0.2",
-                "guzzlehttp/test-server": "^0.5.1",
+                "guzzle/client-integration-tests": "3.0.3",
+                "guzzlehttp/test-server": "^0.6",
                 "php-http/message-factory": "^1.1",
                 "phpunit/phpunit": "^8.5.52 || ^9.6.34",
                 "psr/log": "^1.1 || ^2.0 || ^3.0"
@@ -598,7 +598,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/guzzle/issues",
-                "source": "https://github.com/guzzle/guzzle/tree/7.12.3"
+                "source": "https://github.com/guzzle/guzzle/tree/7.13.2"
             },
             "funding": [
                 {
@@ -614,7 +614,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-06-23T15:29:02+00:00"
+            "time": "2026-07-05T19:00:11+00:00"
         },
         {
             "name": "guzzlehttp/promises",
@@ -939,31 +939,32 @@
         },
         {
             "name": "ministryofjustice/cookie-compliance",
-            "version": "1.0.3",
+            "version": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/cookie-compliance.git",
-                "reference": "d66de5cf23785c7c088502dcee811c36a9fcbaf7"
+                "reference": "a8a2e2676dbede7c09ad241b9eacf0ca4f789d25"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/cookie-compliance/zipball/d66de5cf23785c7c088502dcee811c36a9fcbaf7",
-                "reference": "d66de5cf23785c7c088502dcee811c36a9fcbaf7",
+                "url": "https://api.github.com/repos/ministryofjustice/cookie-compliance/zipball/a8a2e2676dbede7c09ad241b9eacf0ca4f789d25",
+                "reference": "a8a2e2676dbede7c09ad241b9eacf0ca4f789d25",
                 "shasum": ""
             },
             "require": {
                 "composer/installers": "~1.0 || ^2.0"
             },
+            "default-branch": true,
             "type": "wordpress-plugin",
             "description": "Functions that are commonly used across the Hale Platform",
             "keywords": [
                 "wordpress"
             ],
             "support": {
-                "source": "https://github.com/ministryofjustice/cookie-compliance/tree/1.0.3",
+                "source": "https://github.com/ministryofjustice/cookie-compliance/tree/1.1.1",
                 "issues": "https://github.com/ministryofjustice/cookie-compliance/issues"
             },
-            "time": "2025-11-19T11:09:34+00:00"
+            "time": "2026-05-05T09:53:58+00:00"
         },
         {
             "name": "ministryofjustice/govwind",
@@ -971,12 +972,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/govwind.git",
-                "reference": "705bef654ab17fd60ad6eadce6b752c8a39ac545"
+                "reference": "2b95c336430a2b9041377c491d9a1c077d6262ad"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/705bef654ab17fd60ad6eadce6b752c8a39ac545",
-                "reference": "705bef654ab17fd60ad6eadce6b752c8a39ac545",
+                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/2b95c336430a2b9041377c491d9a1c077d6262ad",
+                "reference": "2b95c336430a2b9041377c491d9a1c077d6262ad",
                 "shasum": ""
             },
             "default-branch": true,
@@ -986,7 +987,7 @@
                 "source": "https://github.com/ministryofjustice/govwind/tree/main",
                 "issues": "https://github.com/ministryofjustice/govwind/issues"
             },
-            "time": "2026-06-23T10:55:15+00:00"
+            "time": "2026-06-29T14:53:05+00:00"
         },
         {
             "name": "ministryofjustice/hale",
@@ -1013,57 +1014,59 @@
         },
         {
             "name": "ministryofjustice/hale-components",
-            "version": "dev-disable-user-api",
+            "version": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale-components.git",
-                "reference": "68b16a0c34ec322e0c54d96eda7a58152b2f58b6"
+                "reference": "1542d2786b216afbc4161623114769064f5985c2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/68b16a0c34ec322e0c54d96eda7a58152b2f58b6",
-                "reference": "68b16a0c34ec322e0c54d96eda7a58152b2f58b6",
+                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/1542d2786b216afbc4161623114769064f5985c2",
+                "reference": "1542d2786b216afbc4161623114769064f5985c2",
                 "shasum": ""
             },
             "require": {
                 "composer/installers": "~1.0 || ^2.0"
             },
+            "default-branch": true,
             "type": "wordpress-plugin",
             "description": "Functions that are commonly used across the Hale Platform",
             "keywords": [
                 "wordpress"
             ],
             "support": {
-                "source": "https://github.com/ministryofjustice/hale-components/tree/disable-user-api",
+                "source": "https://github.com/ministryofjustice/hale-components/tree/main",
                 "issues": "https://github.com/ministryofjustice/hale-components/issues"
             },
-            "time": "2026-06-25T08:49:10+00:00"
+            "time": "2026-06-25T09:43:22+00:00"
         },
         {
             "name": "ministryofjustice/hale-dash",
-            "version": "1.1.8",
+            "version": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale-dash.git",
-                "reference": "1b13cf8addb5776e7c356aa3c861931a197559d2"
+                "reference": "6f1187cfa835ec92224f90d82d063848418b069a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale-dash/zipball/1b13cf8addb5776e7c356aa3c861931a197559d2",
-                "reference": "1b13cf8addb5776e7c356aa3c861931a197559d2",
+                "url": "https://api.github.com/repos/ministryofjustice/hale-dash/zipball/6f1187cfa835ec92224f90d82d063848418b069a",
+                "reference": "6f1187cfa835ec92224f90d82d063848418b069a",
                 "shasum": ""
             },
+            "default-branch": true,
             "type": "wordpress-theme",
             "description": "Hale Dash theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/hale-dash/tree/1.1.8",
+                "source": "https://github.com/ministryofjustice/hale-dash/tree/2.1.3",
                 "issues": "https://github.com/ministryofjustice/hale-dash/issues"
             },
-            "time": "2025-04-04T14:56:18+00:00"
+            "time": "2026-07-06T08:58:42+00:00"
         },
         {
             "name": "ministryofjustice/hale-showcase",
-            "version": "1.1.10",
+            "version": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale-showcase.git",
@@ -1075,6 +1078,7 @@
                 "reference": "1a9764d4de55d339a0a23d7678ab6d43cdcb0033",
                 "shasum": ""
             },
+            "default-branch": true,
             "type": "wordpress-theme",
             "description": "Hale Showcase theme",
             "support": {
@@ -1135,12 +1139,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/website-builder-blocks.git",
-                "reference": "9f43248adc48b0a7d1a69a1f8d6d7bf2d681f5ac"
+                "reference": "7721ba554d6b5e6721d6c1796046aba0b7d6895d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/9f43248adc48b0a7d1a69a1f8d6d7bf2d681f5ac",
-                "reference": "9f43248adc48b0a7d1a69a1f8d6d7bf2d681f5ac",
+                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/7721ba554d6b5e6721d6c1796046aba0b7d6895d",
+                "reference": "7721ba554d6b5e6721d6c1796046aba0b7d6895d",
                 "shasum": ""
             },
             "require-dev": {
@@ -1165,10 +1169,10 @@
             ],
             "description": "WP plugin that adds addtional blocks.",
             "support": {
-                "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/2.0.1",
+                "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/2.0.2",
                 "issues": "https://github.com/ministryofjustice/website-builder-blocks/issues"
             },
-            "time": "2026-06-30T15:40:57+00:00"
+            "time": "2026-07-06T09:22:58+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
@@ -1204,22 +1208,23 @@
         },
         {
             "name": "ministryofjustice/wp-moj-blocks",
-            "version": "3.19.5",
+            "version": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-moj-blocks.git",
-                "reference": "4ad6237ea9e67a480ebc8a5aa879173193943d47"
+                "reference": "e64759a678294e70f37c205ae71d91209d783835"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/wp-moj-blocks/zipball/4ad6237ea9e67a480ebc8a5aa879173193943d47",
-                "reference": "4ad6237ea9e67a480ebc8a5aa879173193943d47",
+                "url": "https://api.github.com/repos/ministryofjustice/wp-moj-blocks/zipball/e64759a678294e70f37c205ae71d91209d783835",
+                "reference": "e64759a678294e70f37c205ae71d91209d783835",
                 "shasum": ""
             },
             "require-dev": {
                 "composer/composer": "*",
                 "squizlabs/php_codesniffer": "*"
             },
+            "default-branch": true,
             "type": "wordpress-plugin",
             "scripts": {
                 "phpcs-config-set": [
@@ -1237,29 +1242,30 @@
             ],
             "description": "WP plugin that adds addtional blocks.",
             "support": {
-                "source": "https://github.com/ministryofjustice/wp-moj-blocks/tree/3.19.5",
+                "source": "https://github.com/ministryofjustice/wp-moj-blocks/tree/main",
                 "issues": "https://github.com/ministryofjustice/wp-moj-blocks/issues"
             },
-            "time": "2026-01-26T13:48:12+00:00"
+            "time": "2026-04-15T14:12:10+00:00"
         },
         {
             "name": "ministryofjustice/wp-s3-uploads",
-            "version": "dev-image-transparent-fix",
+            "version": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-s3-uploads.git",
-                "reference": "035ce6d3db35627e09b93c43acba2ffb38ec4147"
+                "reference": "9b984544185f0dd76436f8556e162630dbd3e272"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/wp-s3-uploads/zipball/035ce6d3db35627e09b93c43acba2ffb38ec4147",
-                "reference": "035ce6d3db35627e09b93c43acba2ffb38ec4147",
+                "url": "https://api.github.com/repos/ministryofjustice/wp-s3-uploads/zipball/9b984544185f0dd76436f8556e162630dbd3e272",
+                "reference": "9b984544185f0dd76436f8556e162630dbd3e272",
                 "shasum": ""
             },
             "require": {
                 "aws/aws-sdk-php": "~3.18",
                 "composer/installers": "~1.0 || ^2.0"
             },
+            "default-branch": true,
             "type": "wordpress-plugin",
             "autoload": {
                 "classmap": [
@@ -1283,7 +1289,7 @@
                 "issues": "https://github.com/humanmade/s3-uploads/issues",
                 "source": "https://github.com/humanmade/s3-uploads"
             },
-            "time": "2026-06-04T12:54:09+00:00"
+            "time": "2026-06-22T11:28:41+00:00"
         },
         {
             "name": "mtdowling/jmespath.php",
@@ -2465,16 +2471,16 @@
         },
         {
             "name": "symfony/deprecation-contracts",
-            "version": "v3.7.0",
+            "version": "v3.7.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/deprecation-contracts.git",
-                "reference": "50f59d1f3ca46d41ac911f97a78626b6756af35b"
+                "reference": "f3202fa1b5097b0af062dc978b32ecf63404e31d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/deprecation-contracts/zipball/50f59d1f3ca46d41ac911f97a78626b6756af35b",
-                "reference": "50f59d1f3ca46d41ac911f97a78626b6756af35b",
+                "url": "https://api.github.com/repos/symfony/deprecation-contracts/zipball/f3202fa1b5097b0af062dc978b32ecf63404e31d",
+                "reference": "f3202fa1b5097b0af062dc978b32ecf63404e31d",
                 "shasum": ""
             },
             "require": {
@@ -2512,7 +2518,7 @@
             "description": "A generic function and convention to trigger deprecation notices",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/deprecation-contracts/tree/v3.7.0"
+                "source": "https://github.com/symfony/deprecation-contracts/tree/v3.7.1"
             },
             "funding": [
                 {
@@ -2532,7 +2538,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-04-13T15:52:40+00:00"
+            "time": "2026-06-05T06:23:12+00:00"
         },
         {
             "name": "symfony/filesystem",
@@ -2607,16 +2613,16 @@
         },
         {
             "name": "symfony/http-client",
-            "version": "v7.4.13",
+            "version": "v7.4.14",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-client.git",
-                "reference": "e8a112b8415707265a7e614278136a9d92989a6a"
+                "reference": "f6bc6b5a54ff5afac4725cacec9bf2f52eb15920"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-client/zipball/e8a112b8415707265a7e614278136a9d92989a6a",
-                "reference": "e8a112b8415707265a7e614278136a9d92989a6a",
+                "url": "https://api.github.com/repos/symfony/http-client/zipball/f6bc6b5a54ff5afac4725cacec9bf2f52eb15920",
+                "reference": "f6bc6b5a54ff5afac4725cacec9bf2f52eb15920",
                 "shasum": ""
             },
             "require": {
@@ -2684,7 +2690,7 @@
                 "http"
             ],
             "support": {
-                "source": "https://github.com/symfony/http-client/tree/v7.4.13"
+                "source": "https://github.com/symfony/http-client/tree/v7.4.14"
             },
             "funding": [
                 {
@@ -2704,20 +2710,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-24T09:57:54+00:00"
+            "time": "2026-06-16T11:50:14+00:00"
         },
         {
             "name": "symfony/http-client-contracts",
-            "version": "v3.7.0",
+            "version": "v3.7.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-client-contracts.git",
-                "reference": "4a2d00c37651c0bdc2b9e1c773487a8bf4edb12d"
+                "reference": "41fc42d276aeff21192465331ebbab7d83a743c0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-client-contracts/zipball/4a2d00c37651c0bdc2b9e1c773487a8bf4edb12d",
-                "reference": "4a2d00c37651c0bdc2b9e1c773487a8bf4edb12d",
+                "url": "https://api.github.com/repos/symfony/http-client-contracts/zipball/41fc42d276aeff21192465331ebbab7d83a743c0",
+                "reference": "41fc42d276aeff21192465331ebbab7d83a743c0",
                 "shasum": ""
             },
             "require": {
@@ -2766,7 +2772,7 @@
                 "standards"
             ],
             "support": {
-                "source": "https://github.com/symfony/http-client-contracts/tree/v3.7.0"
+                "source": "https://github.com/symfony/http-client-contracts/tree/v3.7.1"
             },
             "funding": [
                 {
@@ -2786,7 +2792,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-03-06T13:17:50+00:00"
+            "time": "2026-06-05T06:23:12+00:00"
         },
         {
             "name": "symfony/options-resolver",
@@ -3258,16 +3264,16 @@
         },
         {
             "name": "symfony/service-contracts",
-            "version": "v3.7.0",
+            "version": "v3.7.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/service-contracts.git",
-                "reference": "d25d82433a80eba6aa0e6c24b61d7370d99e444a"
+                "reference": "c0a284bab1ed8aa0417e3d69250ab437739563a0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/service-contracts/zipball/d25d82433a80eba6aa0e6c24b61d7370d99e444a",
-                "reference": "d25d82433a80eba6aa0e6c24b61d7370d99e444a",
+                "url": "https://api.github.com/repos/symfony/service-contracts/zipball/c0a284bab1ed8aa0417e3d69250ab437739563a0",
+                "reference": "c0a284bab1ed8aa0417e3d69250ab437739563a0",
                 "shasum": ""
             },
             "require": {
@@ -3321,7 +3327,7 @@
                 "standards"
             ],
             "support": {
-                "source": "https://github.com/symfony/service-contracts/tree/v3.7.0"
+                "source": "https://github.com/symfony/service-contracts/tree/v3.7.1"
             },
             "funding": [
                 {
@@ -3341,7 +3347,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-03-28T09:44:51+00:00"
+            "time": "2026-06-16T09:55:08+00:00"
         },
         {
             "name": "tigitz/php-spellchecker",
@@ -3598,15 +3604,15 @@
         },
         {
             "name": "wpackagist-plugin/cms-tree-page-view",
-            "version": "1.6.8",
+            "version": "1.7.1",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/cms-tree-page-view/",
-                "reference": "tags/1.6.8"
+                "reference": "tags/1.7.1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/cms-tree-page-view.1.6.8.zip"
+                "url": "https://downloads.wordpress.org/plugin/cms-tree-page-view.1.7.1.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -3886,10 +3892,10 @@
         },
         {
             "name": "wpengine/advanced-custom-fields-pro",
-            "version": "6.8.4",
+            "version": "6.8.5",
             "dist": {
                 "type": "zip",
-                "url": "https://connect.advancedcustomfields.com/v2/plugins/composer_download?s=composer&p=pro&t=6.8.4"
+                "url": "https://connect.advancedcustomfields.com/v2/plugins/composer_download?s=composer&p=pro&t=6.8.5"
             },
             "require": {
                 "composer/installers": "~1.0 || ~2.0"
@@ -3985,12 +3991,16 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "ministryofjustice/cookie-compliance": 20,
         "ministryofjustice/govwind": 20,
         "ministryofjustice/hale": 20,
         "ministryofjustice/hale-components": 20,
+        "ministryofjustice/hale-dash": 20,
+        "ministryofjustice/hale-showcase": 20,
         "ministryofjustice/justice": 20,
         "ministryofjustice/ppo": 20,
         "ministryofjustice/website-builder-blocks": 20,
+        "ministryofjustice/wp-moj-blocks": 20,
         "ministryofjustice/wp-s3-uploads": 20
     },
     "prefer-stable": true,
@@ -3999,5 +4009,5 @@
         "php": ">=8.0"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }
