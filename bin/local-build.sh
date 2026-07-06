@@ -26,6 +26,12 @@ while true; do
                 rm -rf $DIR
             fi
 
+            # Remove the shared WP core volume so the entrypoint of the new
+            # image repopulates core files on next start. Containers must be
+            # stopped first or the volume is in use. DB volume is untouched.
+            docker compose --profile firewall down --remove-orphans 2>/dev/null
+            docker volume rm -f hale-platform_wpcore 2>/dev/null || true
+
             # Determine the path for the .env file and create file. Do not overwrite if .env exists.
             ENV_FILE_PATH="$(pwd)/.env"
 
