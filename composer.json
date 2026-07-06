@@ -105,7 +105,7 @@
     "ministryofjustice/hale": "dev-main",
     "ministryofjustice/justice": "dev-main",
     "ministryofjustice/hale-components": "dev-disable-user-api",
-    "ministryofjustice/hale-dash": "1.1.8",
+    "ministryofjustice/hale-dash": "dev-main",
     "ministryofjustice/hale-showcase": "1.1.10",
     "ministryofjustice/ppo": "dev-main",
     "ministryofjustice/website-builder-blocks": "dev-main",
