@@ -14,8 +14,9 @@
 -- Fail-open everywhere: any Redis problem just means PHP serves the request.
 --
 -- KEY SCHEME (must match the WP purge mu-plugin):
---   pagecache:v{version}:{host}:{request_uri}          content key
---   pagecache:fence:{host}:{request_uri}                purge fence (no version)
+--   pagecache:v{version}:{host}:{path}                  content key
+--   pagecache:fence:{host}:{path}                        purge fence (no version)
+--   - {path} is $request_uri minus any query portion (see cache_path()).
 --   - {host} isolates multisite sites; {version} bumps for an instant mass flush.
 --   - scheme is deliberately omitted: TLS is terminated upstream, so the scheme
 --     nginx sees can differ from what WordPress sees. Host + path is canonical.
@@ -78,16 +79,29 @@ local function request_cacheable()
     return true
 end
 
+-- Path used in cache keys: $request_uri with any query portion stripped.
+-- Only reachable with an EMPTY query ("/path?" - request_cacheable rejects
+-- non-empty $args), but "/path?" would otherwise key separately from
+-- "/path" and the WP purge plugin (which keys on path alone) could never
+-- delete it. $uri can't be used instead: it's already rewritten to
+-- /index.php by the permalink handling.
+local function cache_path()
+    local uri = ngx.var.request_uri or "/"
+    local q = uri:find("?", 1, true)
+    if q then uri = uri:sub(1, q - 1) end
+    return uri
+end
+
 local function build_key(red)
     local ver = red:get(VERSION_KEY)
     if ver == ngx.null or not ver then ver = "0" end
-    return PREFIX .. "v" .. ver .. ":" .. ngx.var.host .. ":" .. ngx.var.request_uri
+    return PREFIX .. "v" .. ver .. ":" .. ngx.var.host .. ":" .. cache_path()
 end
 
 -- Fence key for this path. Unversioned and shared with the WP purge plugin,
 -- which must build this exact same key from $host/$path.
 local function build_fence_key()
-    return PREFIX .. "fence:" .. ngx.var.host .. ":" .. ngx.var.request_uri
+    return PREFIX .. "fence:" .. ngx.var.host .. ":" .. cache_path()
 end
 
 -- Atomic check-and-write: refuse to cache a render if a purge fence for this
