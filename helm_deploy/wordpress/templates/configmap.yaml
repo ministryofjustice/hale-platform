@@ -22,3 +22,4 @@ data:
   PAGECACHE_ENABLED: {{ .Values.configmap.pagecache.enabled | quote }}
   PAGECACHE_TTL: {{ .Values.configmap.pagecache.ttl | quote }}
   PAGECACHE_DB: {{ .Values.configmap.pagecache.db | quote }}
+  PAGECACHE_MAX_BYTES: {{ .Values.configmap.pagecache.maxbytes | quote }}

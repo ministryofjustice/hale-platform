@@ -151,6 +151,8 @@ configmap:
     enabled: "false"
     ttl: "300"
     db: "1"
+    # Max response size the Lua cache will store, in bytes (nginx side only).
+    maxbytes: "2097152"
 
 
 ## @param secrets passed in via GitActions
