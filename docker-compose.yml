@@ -1,3 +1,10 @@
+# Env vars shared by every service that talks to the firewall / page cache.
+# Merged into each service's environment with `<<: *firewall-pagecache-env`.
+x-firewall-pagecache-env: &firewall-pagecache-env
+  FIREWALL_ENABLED: ${FIREWALL_ENABLED:-false}
+  PAGECACHE_ENABLED: ${PAGECACHE_ENABLED:-false}
+  REDIS_SSL: "false"
+
 services:
   nginx:
     container_name: nginx
@@ -26,11 +33,9 @@ services:
       - wordpress
       - mariadb
     environment:
+      <<: *firewall-pagecache-env
       VIRTUAL_HOST: hale.docker
       VIRTUAL_PORT: 443
-      FIREWALL_ENABLED: ${FIREWALL_ENABLED:-false}
-      PAGECACHE_ENABLED: ${PAGECACHE_ENABLED:-false}
-      REDIS_SSL: "false"
   mariadb:
     container_name: mariadb
     platform: linux/arm64
@@ -64,6 +69,7 @@ services:
     env_file:
       - .env
     environment:
+      <<: *firewall-pagecache-env
       WORDPRESS_DB_HOST: mariadb:3306
       WORDPRESS_DB_USER: wordpress
       WORDPRESS_DB_PASSWORD: wordpress
@@ -87,9 +93,6 @@ services:
       WP_SENTRY_ENV: ""
       ACF_PRO_LICENSE: ""
       NGINX_INTERNAL_URL: "https://nginx"
-      FIREWALL_ENABLED: ${FIREWALL_ENABLED:-false}
-      PAGECACHE_ENABLED: ${PAGECACHE_ENABLED:-false}
-      REDIS_SSL: "false"
   redis:
     image: redis:7-alpine
     profiles:
