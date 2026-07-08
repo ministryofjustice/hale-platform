@@ -107,7 +107,7 @@ function hale_pagecache_purge_paths(array $paths): void
         $redis->select((int) (getenv('PAGECACHE_DB') ?: 1));
 
         $version  = (int) ($redis->get('pagecache:version') ?: 0);
-        $hostname = wp_parse_url(home_url(), PHP_URL_HOST);   // multisite: scope to this site
+        $hostname = strtolower((string) wp_parse_url(home_url(), PHP_URL_HOST));   // multisite: scope to this site
 
         // Fence TTL must outlive the slowest realistic PHP render so a
         // very slow in-flight request can still be fenced out. 60s is
