@@ -124,7 +124,11 @@ return 1
 -- ============================================================================
 function _M.fetch()
     if not ENABLED then set_status("off"); return end
-    if not request_cacheable() then set_status("bypass"); return end
+    if not request_cacheable() then
+        ngx.header["X-Page-Cache"] = "BYPASS"
+        set_status("bypass")
+        return
+    end
 
     local red = redis_pool.connect()
     if not red then set_status("down"); return end       -- fail-open -> PHP
@@ -185,6 +189,7 @@ function _M.filter_headers()
         or cc:find("no%-cache") or cc:find("no%-store") or cc:find("private")
     then
         ngx.ctx.pc_store = false
+        ngx.header["X-Page-Cache"] = "BYPASS"
         set_status("bypass")   -- would otherwise log "miss", implying storeable
         return
     end
@@ -208,6 +213,7 @@ function _M.capture_body()
         if ngx.ctx.pc_len > MAX_BYTES then                -- too big: give up storing
             ngx.ctx.pc_store = false
             ngx.ctx.pc_buf = nil
+            -- headers already sent (X-Page-Cache: MISS) - too late to say BYPASS
             set_status("bypass")   -- would otherwise log "miss", implying storeable
             return
         end
