@@ -632,6 +632,23 @@ After writing, `INCR firewall:cache_version` so all pods reload the
 lists within ~1 s (otherwise their existing copies stay valid until the
 next bump).
 
+### Flush the entire page cache
+
+The page cache prefixes every content key with a version number read from
+`pagecache:version` (db1). Nothing in the codebase writes this key — bumping
+it is a manual, operator-only action:
+
+```
+# In the page cache db (PAGECACHE_DB, default 1)
+INCR pagecache:version
+```
+
+Every pod starts keying reads/writes under the new version immediately, so
+the whole cache MISSes at once — an instant site-wide flush with no key
+scanning. Old-version keys are not deleted; they simply expire via their
+TTL (`PAGECACHE_TTL`, default 300 s). Per-URL invalidation on publish is
+automatic (the WordPress purge mu-plugin) and does not involve this key.
+
 ### Allow or block a single IP (GCRA-level)
 
 For per-IP overrides that live inside the GCRA script rather than the

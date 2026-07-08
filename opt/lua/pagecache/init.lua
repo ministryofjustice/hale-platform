@@ -93,9 +93,10 @@ local function cache_path()
 end
 
 local function build_key(red)
-    local ver = red:get(VERSION_KEY)
-    if ver == ngx.null or not ver then ver = "0" end
-    return PREFIX .. "v" .. ver .. ":" .. ngx.var.host .. ":" .. cache_path()
+    -- Normalise to an integer: the PHP purge plugin does (int) on this same
+    -- value, and the two sides must derive identical keys from it.
+    local ver = tonumber(red:get(VERSION_KEY)) or 0
+    return PREFIX .. "v" .. math.floor(ver) .. ":" .. ngx.var.host .. ":" .. cache_path()
 end
 
 -- Fence key for this path. Unversioned and shared with the WP purge plugin,
