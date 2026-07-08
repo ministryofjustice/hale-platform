@@ -2,7 +2,7 @@
 # Merged into each service's environment with `<<: *firewall-pagecache-env`.
 x-firewall-pagecache-env: &firewall-pagecache-env
   FIREWALL_ENABLED: ${FIREWALL_ENABLED:-false}
-  PAGECACHE_ENABLED: ${PAGECACHE_ENABLED:-true}
+  PAGECACHE_ENABLED: ${PAGECACHE_ENABLED:-false}
   REDIS_SSL: "false"
 
 services:

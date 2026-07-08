@@ -2,12 +2,13 @@
 ### Local build config
 ####################################################
 
-.PHONY: run down build shell none clone-repos symlink logs restart clean help test-firewall
+.PHONY: run run-with-firewall run-with-pagecache down build shell none clone-repos symlink logs restart clean help test-firewall
 # Default target - show help
 help:
 	@echo "Available commands:"
 	@echo "  make run               - Start the Docker containers"
 	@echo "  make run-with-firewall - Run, with firewall config and dependencies"
+	@echo "  make run-with-pagecache - Run, with page cache config and dependencies"
 	@echo "  make down              - Stop and remove Docker containers"
 	@echo "  make build             - Build Docker images and install dependencies"
 	@echo "  make shell             - Open bash shell in WordPress container"
@@ -35,10 +36,18 @@ run-with-firewall:
 	@./bin/upload.sh
 	@echo "✓ Site is running"
 
+# Run site (start redis and enable page cache, firewall stays off) using Docker
+run-with-pagecache:
+	@echo "Starting Docker containers..."
+	PAGECACHE_ENABLED=true docker compose --profile pagecache up -d
+	@chmod +x bin/upload.sh
+	@./bin/upload.sh
+	@echo "✓ Site is running"
+
 # Shutdown site using Docker
 down:
 	@echo "Stopping Docker containers..."
-	docker compose --profile firewall down --remove-orphans
+	docker compose --profile firewall --profile pagecache down --remove-orphans
 	@echo "✓ Containers stopped"
 
 # Build all images on local machine
