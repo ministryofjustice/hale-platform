@@ -2,94 +2,120 @@
 ### Local build config
 ####################################################
 
-.PHONY: run run-with-firewall run-with-pagecache down build shell none clone-repos symlink logs restart clean help test-firewall
-# Default target - show help
-help:
+.PHONY: run run-with-firewall run-with-pagecache down down-firewall down-pagecache build shell none clone-repos symlink logs restart clean help test-firewall
+# Default target - list targets with their ## descriptions
+help: ## Show this help
 	@echo "Available commands:"
-	@echo "  make run               - Start the Docker containers"
-	@echo "  make run-with-firewall - Run, with firewall config and dependencies"
-	@echo "  make run-with-pagecache - Run, with page cache config and dependencies"
-	@echo "  make down              - Stop and remove Docker containers"
-	@echo "  make build             - Build Docker images and install dependencies"
-	@echo "  make shell             - Open bash shell in WordPress container"
-	@echo "  make logs              - View Docker container logs"
-	@echo "  make restart           - Restart all containers"
-	@echo "  make clone-repos       - Clone all MoJ repositories into dev/ folder"
-	@echo "  make symlink           - Create symlinks for dev packages"
-	@echo "  make test-firewall     - Lint and test firewall scripts"
-	@echo "  make clean             - Remove dangling Docker images"
-	@echo "  make none              - Remove dangling <none> images (alias for clean)"
+	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | \
+		awk 'BEGIN {FS = ":.*## "}; {printf "  make %-22s - %s\n", $$1, $$2}'
 
 # Run site using Docker
-run:
+run: ## Start the Docker containers
 	@echo "Starting Docker containers..."
 	docker compose up -d
-	@chmod +x bin/upload.sh
 	@./bin/upload.sh
 	@echo "✓ Site is running"
 
 # Run site (start redis and enable firewall) using Docker
-run-with-firewall:
+run-with-firewall: ## Run, with firewall config and dependencies
 	@echo "Starting Docker containers..."
 	FIREWALL_ENABLED=true docker compose --profile firewall up -d
-	@chmod +x bin/upload.sh
 	@./bin/upload.sh
 	@echo "✓ Site is running"
 
 # Run site (start redis and enable page cache, firewall stays off) using Docker
-run-with-pagecache:
+run-with-pagecache: ## Run, with page cache config and dependencies
 	@echo "Starting Docker containers..."
 	PAGECACHE_ENABLED=true docker compose --profile pagecache up -d
-	@chmod +x bin/upload.sh
 	@./bin/upload.sh
 	@echo "✓ Site is running"
 
+# Turn the firewall off: recreate the app containers with the flag unset
+# (preserving the page cache flag), and only stop the shared Redis extras
+# if the page cache isn't still using them.
+down-firewall: ## Turn off the firewall, site keeps running
+	@echo "Disabling firewall..."
+	@PC=$$(docker inspect nginx --format '{{range .Config.Env}}{{println .}}{{end}}' 2>/dev/null | grep '^PAGECACHE_ENABLED=' | cut -d= -f2); \
+	PC=$${PC:-false}; \
+	FIREWALL_ENABLED=false PAGECACHE_ENABLED=$$PC docker compose --profile firewall --profile pagecache up -d nginx wordpress; \
+	if [ "$$PC" = "true" ]; then \
+		echo "Page cache still enabled - leaving Redis running"; \
+	else \
+		docker compose --profile firewall --profile pagecache stop redis redis-insight; \
+	fi
+	@echo "✓ Firewall disabled"
+
+# Turn the page cache off: recreate the app containers with the flag unset
+# (preserving the firewall flag), and only stop the shared Redis extras
+# if the firewall isn't still using them.
+down-pagecache: ## Turn off the page cache, site keeps running
+	@echo "Disabling page cache..."
+	@FW=$$(docker inspect nginx --format '{{range .Config.Env}}{{println .}}{{end}}' 2>/dev/null | grep '^FIREWALL_ENABLED=' | cut -d= -f2); \
+	FW=$${FW:-false}; \
+	PAGECACHE_ENABLED=false FIREWALL_ENABLED=$$FW docker compose --profile firewall --profile pagecache up -d nginx wordpress; \
+	if [ "$$FW" = "true" ]; then \
+		echo "Firewall still enabled - leaving Redis running"; \
+	else \
+		docker compose --profile firewall --profile pagecache stop redis redis-insight; \
+	fi
+	@echo "✓ Page cache disabled"
+
 # Shutdown site using Docker
-down:
+down: ## Stop and remove Docker containers
 	@echo "Stopping Docker containers..."
 	docker compose --profile firewall --profile pagecache down --remove-orphans
 	@echo "✓ Containers stopped"
 
 # Build all images on local machine
-build:
+build: ## Build Docker images and install dependencies
 	@echo "Building Docker images..."
-	@chmod +x bin/local-build.sh
 	@./bin/local-build.sh
 
 # Shell into the WordPress container
-shell:
+shell: ## Open bash shell in WordPress container
 	@docker exec -it wordpress bash
 
 # View logs from all containers
-logs:
+logs: ## View Docker container logs
 	docker compose logs -f
 
-# Restart all containers
-restart: down run
+# Restart all containers, preserving the firewall/page cache flags
+# the running nginx container was started with (and their profiles).
+restart: ## Restart all containers, keeping firewall/page cache state
+	@FW=$$(docker inspect nginx --format '{{range .Config.Env}}{{println .}}{{end}}' 2>/dev/null | grep '^FIREWALL_ENABLED=' | cut -d= -f2); \
+	PC=$$(docker inspect nginx --format '{{range .Config.Env}}{{println .}}{{end}}' 2>/dev/null | grep '^PAGECACHE_ENABLED=' | cut -d= -f2); \
+	FW=$${FW:-false}; \
+	PC=$${PC:-false}; \
+	$(MAKE) down; \
+	PROFILES=""; \
+	if [ "$$FW" = "true" ]; then PROFILES="$$PROFILES --profile firewall"; fi; \
+	if [ "$$PC" = "true" ]; then PROFILES="$$PROFILES --profile pagecache"; fi; \
+	echo "Starting Docker containers..."; \
+	FIREWALL_ENABLED=$$FW PAGECACHE_ENABLED=$$PC docker compose $$PROFILES up -d; \
+	./bin/upload.sh; \
+	echo "✓ Site is running"
 
 # Clone all MoJ repositories
-clone-repos:
+clone-repos: ## Clone all MoJ repositories into dev/ folder
 	@echo "Cloning repositories..."
-	@chmod +x bin/clone-repos.sh
-	@bash bin/clone-repos.sh
+	@./bin/clone-repos.sh
 
 # Create symlinks for dev packages inside container
-symlink:
+symlink: ## Create symlinks for dev packages
 	@echo "Creating symlinks for dev packages..."
 	@docker exec wordpress bash /opt/scripts/link-dev-packages.sh
 	@echo "✓ Symlinks created"
 
 # Lint and test firewall scripts
-test-firewall:
+test-firewall: ## Lint and test firewall scripts
 	@echo "Linting and testing firewall scripts..."
-	@chmod +x bin/local-test-firewall.sh
 	@./bin/local-test-firewall.sh
 
 # Remove all dangling <none> images
-none: clean
+none: clean ## Remove dangling <none> images (alias for clean)
 
 # Clean up dangling images
-clean:
+clean: ## Remove dangling Docker images
 	@echo "Removing dangling Docker images..."
-	@docker images -f "dangling=true" -q | xargs -r docker rmi || echo "No dangling images to remove"
+	@docker image prune -f
 	@echo "✓ Cleanup complete"
