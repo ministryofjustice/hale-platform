@@ -145,9 +145,12 @@ configmap:
   firewall:
     enabled: "true"
   # Full-page cache (OpenResty + Redis). Ships dark: enable per environment.
+  # db is the logical Redis database, read by BOTH containers (nginx Lua
+  # cache and the WordPress purge hook) - they must always agree.
   pagecache:
     enabled: "false"
     ttl: "300"
+    db: "1"
 
 
 ## @param secrets passed in via GitActions

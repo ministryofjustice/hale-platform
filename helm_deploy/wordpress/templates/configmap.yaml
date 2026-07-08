@@ -11,6 +11,7 @@ data:
   FIREWALL_ENABLED: {{ .Values.configmap.firewall.enabled | quote }}
   PAGECACHE_ENABLED: {{ .Values.configmap.pagecache.enabled | quote }}
   PAGECACHE_TTL: {{ .Values.configmap.pagecache.ttl | quote }}
+  PAGECACHE_DB: {{ .Values.configmap.pagecache.db | quote }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -20,3 +21,4 @@ data:
   FIREWALL_ENABLED: {{ .Values.configmap.firewall.enabled | quote }}
   PAGECACHE_ENABLED: {{ .Values.configmap.pagecache.enabled | quote }}
   PAGECACHE_TTL: {{ .Values.configmap.pagecache.ttl | quote }}
+  PAGECACHE_DB: {{ .Values.configmap.pagecache.db | quote }}
