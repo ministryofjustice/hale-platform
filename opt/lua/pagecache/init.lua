@@ -137,7 +137,7 @@ function _M.fetch()
         -- after this request started rendering. Integer microseconds:
         -- "sec.usec" string concatenation would mis-order within a second
         -- ({1234, 5} -> "1234.5" reads as half a second, not 5us). Must
-        -- match the fence format in hale-pagecache-purge.php.
+        -- match the fence format in the hale-components purge module.
         local time_ok, time_res = pcall(function() return red:time() end)
         local started = nil
         if time_ok and type(time_res) == "table" and tonumber(time_res[1]) then
