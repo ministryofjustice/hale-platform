@@ -119,11 +119,15 @@ function _M.fetch()
     if blob == ngx.null or not blob then
         -- Snapshot Redis's own clock (not local wall-clock - avoids drift
         -- across pods) so the deferred write can tell if a purge landed
-        -- after this request started rendering.
+        -- after this request started rendering. Integer microseconds:
+        -- "sec.usec" string concatenation would mis-order within a second
+        -- ({1234, 5} -> "1234.5" reads as half a second, not 5us). Must
+        -- match the fence format in hale-pagecache-purge.php.
         local time_ok, time_res = pcall(function() return red:time() end)
         local started = nil
-        if time_ok and type(time_res) == "table" and time_res[1] then
-            started = tostring(time_res[1]) .. "." .. tostring(time_res[2] or "0")
+        if time_ok and type(time_res) == "table" and tonumber(time_res[1]) then
+            started = tostring(
+                tonumber(time_res[1]) * 1000000 + (tonumber(time_res[2]) or 0))
         end
         redis_pool.release(red)
         ngx.ctx.pc_key     = key                         -- remember for store phase
@@ -154,8 +158,11 @@ end
 function _M.filter_headers()
     if not ngx.ctx.pc_store then return end
 
+    -- Either header can be a table if PHP emitted it more than once.
     local ct = ngx.header["Content-Type"] or ""
     local cc = ngx.header["Cache-Control"] or ""
+    if type(ct) == "table" then ct = ct[1] or "" end
+    if type(cc) == "table" then cc = table.concat(cc, ", ") end
     if ngx.status ~= 200
         or not ct:find("text/html", 1, true)
         or ngx.header["Set-Cookie"]                       -- personalised response
@@ -188,6 +195,12 @@ function _M.capture_body()
             return
         end
         buf[#buf + 1] = chunk
+    end
+
+    -- Only a body that reached eof is complete. Without this, a client
+    -- abort mid-response would cache the truncated page for the full TTL.
+    if ngx.arg[2] then
+        ngx.ctx.pc_eof = true
     end
 end
 
@@ -227,7 +240,7 @@ end
 -- store(): log phase. Schedule the Redis write once the response is sent.
 -- ============================================================================
 function _M.store()
-    if not ngx.ctx.pc_store or not ngx.ctx.pc_buf then return end
+    if not ngx.ctx.pc_store or not ngx.ctx.pc_buf or not ngx.ctx.pc_eof then return end
     local body = table.concat(ngx.ctx.pc_buf)
     if body == "" then return end
 

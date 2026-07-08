@@ -724,7 +724,7 @@ test("e2e: clear-penalties?ip clears an auto-ban (and only that IP)", async () =
 // ---------------------------------------------------------------------------
 // CSV fixture replay
 // ---------------------------------------------------------------------------
-// Place one or more CSV files in opt/lua/fixtures/ with the headers below to
+// Place one or more CSV files in opt/lua/firewall/fixtures/ with the headers below to
 // replay real traffic logs against the firewall.  The test is skipped
 // automatically when no fixture files are found — no flags required.
 //

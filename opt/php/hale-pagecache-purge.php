@@ -117,9 +117,12 @@ function hale_pagecache_purge_paths(array $paths): void
 
         // Redis's own clock, not the web server's wall-clock - avoids
         // clock drift between this PHP host and the OpenResty pods.
+        // Integer microseconds: "sec.usec" concatenation would mis-order
+        // within a second (usec isn't zero-padded). Must match the
+        // snapshot format in opt/lua/pagecache/init.lua (fetch()).
         $time       = $redis->rawCommand('TIME');
         $fenceValue = (is_array($time) && isset($time[0]))
-            ? $time[0] . '.' . ($time[1] ?? '0')
+            ? (string) ((int) $time[0] * 1000000 + (int) ($time[1] ?? 0))
             : null;
 
         foreach ($paths as $path) {

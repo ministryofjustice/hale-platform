@@ -331,7 +331,7 @@ function _M.parse_rules(raw)
     local warnings = {}
 
     if raw == nil then
-        -- Absence of rules is a normal startup state; firewall.lua logs an
+        -- Absence of rules is a normal startup state; firewall/init.lua logs an
         -- ERR separately so callers can distinguish "missing" from "malformed".
         return nil, warnings
     end

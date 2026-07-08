@@ -369,7 +369,7 @@ of `mode`. Otherwise `mode` takes effect.
 **Why `monitor` shares the block cache with `enforce`:** so that the GCRA
 bucket evolves identically under both modes, which is what makes monitor an
 accurate predictor of what enforce *would* do. See the function-header
-comment on `_M.req` in [firewall.lua](firewall.lua) for the full reasoning.
+comment on `_M.req` in [firewall/init.lua](firewall/init.lua) for the full reasoning.
 
 ---
 
@@ -442,7 +442,7 @@ parse them without a custom regex per message type. The pattern is:
 
 Complete catalogue of events, by source file:
 
-#### [firewall.lua](firewall.lua) — request hot path
+#### [firewall/init.lua](firewall/init.lua) — request hot path
 
 | Level | `event=` | Fields | When |
 |---|---|---|---|
@@ -488,7 +488,7 @@ Complete catalogue of events, by source file:
 |---|---|---|
 | `ERR` | `[redis] connect failed (fail-open): <err>` | TCP connect to Redis failed. Caller returns early; firewall behaves as if disabled until Redis returns. |
 | `ERR` | `[redis] auth failed (fail-open): <err>` | `REDIS_AUTH` was set but `AUTH` was rejected. Fail-open. |
-| `ERR` | `[redis] select db failed (fail-open): <err>` | `SELECT <REDIS_DB>` failed. Fail-open. |
+| `ERR` | `[redis] select db failed (fail-open): <err>` | `SELECT <FIREWALL_DB>` failed. Fail-open. |
 
 #### [firewall/gcra.lua](firewall/gcra.lua)
 
@@ -559,7 +559,7 @@ only record**. No audit stream entry is written.
 
 | File | Responsibility |
 |---|---|
-| [firewall.lua](firewall.lua) | **Hot path only.** Exports `init`, `req`, `res`. Called by `init_worker_by_lua_block`, `access_by_lua_block`, `log_by_lua_block`. |
+| [firewall/init.lua](firewall/init.lua) | **Hot path only.** Exports `init`, `req`, `res`. Called by `init_worker_by_lua_block`, `access_by_lua_block`, `log_by_lua_block`. |
 | [firewall/admin.lua](firewall/admin.lua) | Admin endpoints. Exports `handle_route`, `stats`, `validate`, `clear_penalties`, `clear_rate_limits`. Called by `content_by_lua_block` in the `/firewall/*` location. |
 | [firewall/cache.lua](firewall/cache.lua) | Shared cache state: `blocked_cache` (shared dict), `load_rules_and_config` (per-worker cache, invalidated by Redis `firewall:cache_version`), `poll_versions`. Required by both `firewall` and `firewall.admin`. |
 | [firewall/cost.lua](firewall/cost.lua) | Pure function — score a request against rules. No `ngx.*` deps; unit-testable. |
@@ -567,10 +567,11 @@ only record**. No audit stream entry is written.
 | [firewall/schema.lua](firewall/schema.lua) | Pure validators for `firewall:rules` and `firewall:config`. **Authoritative schema lives here.** Exposes `parse_*` (fail-soft, runtime) and `validate_*_strict` (fail-hard, admin path). |
 | [firewall/defaults.lua](firewall/defaults.lua) | Single source of truth for constants (`GCRA_KEY_PREFIX` etc.) and GCRA tunable defaults. |
 | [firewall/cidr.lua](firewall/cidr.lua) | Pure IPv4 CIDR matching. No `ngx.*` deps; unit-testable. `parse(entry)` → `{net, host_count}` or nil. `contains(parsed_list, ip)` → bool. Bare IPs treated as /32. |
-| [firewall/redis.lua](firewall/redis.lua) | Connection pool, fail-open. Reads `REDIS_*` env. |
+| [redis_pool.lua](redis_pool.lua) | Shared Redis connection-pool factory (fail-open, per-db keepalive pools). Reads `REDIS_*` env. `new{db, pool_prefix, log_prefix}` builds a pool module. |
+| [firewall/redis.lua](firewall/redis.lua) | Thin wrapper: `redis_pool.new` bound to `FIREWALL_DB` (default 0), pool `firewall_db<N>`. |
 | [spec/](spec/) | busted unit + integration tests (run with `make test-firewall`). |
-| [firewall_e2e_test.mjs](firewall_e2e_test.mjs) | Node.js e2e tests + CSV fixture replay against a running stack. |
-| [fixtures/](fixtures/) | CSV replay inputs from Ingress log exports. |
+| [firewall_e2e_test.mjs](firewall/firewall_e2e_test.mjs) | Node.js e2e tests + CSV fixture replay against a running stack. |
+| [fixtures/](firewall/fixtures/) | CSV replay inputs from Ingress log exports. |
 
 ### nginx (`opt/nginx/`)
 
@@ -714,7 +715,7 @@ make test-firewall
 ```
 
 Builds the `test` stage of [nginx.local.dockerfile](../../nginx.local.dockerfile),
-runs busted with `REDIS_DB=1` against the dev Redis container so it does
+runs busted with `FIREWALL_DB=1` against the dev Redis container so it does
 not collide with anything live.
 
 ### End-to-end (Node.js, slow, against a running stack)
@@ -729,7 +730,7 @@ The e2e tests call `GET /firewall/clear-rate-limits` before each stateful test t
 all `firewall:block:*` and `firewall:gcra:*` keys and flush the per-pod `blocked_cache`.
 This endpoint is only available when `ENV=local` and returns 404 in production.
 
-Then (run from `opt/lua/`):
+Then (run from `opt/lua/firewall/`):
 
 ```
 node --test firewall_e2e_test.mjs
@@ -738,7 +739,7 @@ node --test firewall_e2e_test.mjs
 Redis is reached at `127.0.0.1:6379` by default. Override with
 `REDIS_URL=host:port` if needed.
 
-Drop a CSV from Cloud Platform ingress logs into [fixtures/](fixtures/) 
+Drop a CSV from Cloud Platform ingress logs into [fixtures/](firewall/fixtures/) 
 to replay real traffic against the firewall — the test discovers them
 automatically.
 

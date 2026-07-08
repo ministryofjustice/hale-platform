@@ -19,7 +19,6 @@ services:
       - ./dev:/mnt/dev
       - ./opt/nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
       - ./opt/nginx/localwordpress.conf:/usr/local/openresty/nginx/conf/conf.d/localwordpress.conf
-      - ./opt/lua/firewall.lua:/usr/local/openresty/nginx/lua/firewall.lua
       - ./opt/lua/firewall:/usr/local/openresty/nginx/lua/firewall
       - ./opt/lua/pagecache:/usr/local/openresty/nginx/lua/pagecache
       - ./bin/certs:/etc/nginx/certs/self-signed/

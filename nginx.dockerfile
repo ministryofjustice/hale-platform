@@ -21,7 +21,7 @@ RUN mkdir -p /usr/local/openresty/nginx/logs \
 COPY opt/nginx/nginx.conf          /usr/local/openresty/nginx/conf/nginx.conf
 COPY opt/nginx/wordpress.conf      /usr/local/openresty/nginx/conf/conf.d/
 COPY opt/nginx/justice/            /usr/local/openresty/nginx/conf/justice/
-COPY opt/lua/firewall.lua          /usr/local/openresty/nginx/lua/firewall.lua
+COPY opt/lua/redis_pool.lua        /usr/local/openresty/nginx/lua/redis_pool.lua
 COPY opt/lua/firewall              /usr/local/openresty/nginx/lua/firewall
 COPY opt/lua/pagecache             /usr/local/openresty/nginx/lua/pagecache
 COPY opt/nginx/error-pages/        /usr/local/openresty/nginx/html/error-pages/
