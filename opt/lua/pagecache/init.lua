@@ -185,6 +185,7 @@ function _M.filter_headers()
         or cc:find("no%-cache") or cc:find("no%-store") or cc:find("private")
     then
         ngx.ctx.pc_store = false
+        set_status("bypass")   -- would otherwise log "miss", implying storeable
         return
     end
     ngx.ctx.pc_ct = ct
@@ -207,6 +208,7 @@ function _M.capture_body()
         if ngx.ctx.pc_len > MAX_BYTES then                -- too big: give up storing
             ngx.ctx.pc_store = false
             ngx.ctx.pc_buf = nil
+            set_status("bypass")   -- would otherwise log "miss", implying storeable
             return
         end
         buf[#buf + 1] = chunk
