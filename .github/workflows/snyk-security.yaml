@@ -31,11 +31,13 @@ jobs:
         uses: snyk/actions/setup@9adf32b1121593767fc3c057af55b55db032dc04
 
       - name: Code (SAST) test
-        run: snyk code test --sarif > snyk-code.sarif || true
+        continue-on-error: true
+        run: snyk code test --sarif > snyk-code.sarif
 
       - name: Infrastructure as Code test
+        continue-on-error: true
         run: |
-          snyk iac test nginx.dockerfile wordpress.dockerfile helm_deploy/wordpress || true
+          snyk iac test nginx.dockerfile wordpress.dockerfile helm_deploy/wordpress
 
       - name: Set PHP min version
         uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f #v2.37.0
@@ -52,7 +54,8 @@ jobs:
           composer install --prefer-dist --no-progress --no-interaction --optimize-autoloader
 
       - name: PHP dependency test
-        run: snyk test --file=composer.lock --package-manager=composer || true
+        continue-on-error: true
+        run: snyk test --file=composer.lock --package-manager=composer
 
       - name: Build theme assets
         run: |
@@ -75,10 +78,11 @@ jobs:
       - name: Build WordPress image
         run: docker image build -t hale-platform-wordpress:snyk -f wordpress.dockerfile .
 
-      - name: Monitor container images
+      - name: Test container images
+        continue-on-error: true
         run: |
-          snyk container monitor hale-platform-nginx:snyk --file=nginx.dockerfile || true
-          snyk container monitor hale-platform-wordpress:snyk --file=wordpress.dockerfile || true
+          snyk container test hale-platform-nginx:snyk --file=nginx.dockerfile
+          snyk container test hale-platform-wordpress:snyk --file=wordpress.dockerfile
 
       - name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4.36.3
