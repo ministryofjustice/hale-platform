@@ -41,6 +41,7 @@ RUN addgroup -g 1001 wp \
 COPY opt/php/load.php /usr/src/wordpress/wp-content/mu-plugins/load.php
 COPY opt/php/wpdr-document-upload-dir.php /usr/src/wordpress/wp-content/mu-plugins/wpdr-document-upload-dir.php
 COPY opt/php/application.php /usr/src/wordpress/wp-content/mu-plugins/application.php
+COPY opt/php/wpdr-document-upload-dir.php /usr/src/wordpress/wp-content/mu-plugins/wpdr-document-upload-dir.php
 COPY opt/php/error-handling.php /usr/src/wordpress/error-handling.php
 COPY opt/php/www.conf /usr/local/etc/php-fpm.d/www.conf
 COPY opt/php/wp-cron-multisite.php /usr/src/wordpress/wp-cron-multisite.php
@@ -65,6 +66,7 @@ RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 # Create new user to run the container as non-root
 RUN adduser --disabled-password hale -u 1002 \
     && chown -R hale:hale /var/www/html \
+    && chown -R hale:hale /usr/src/wordpress \
     && chown hale:hale /usr/local/bin/docker-entrypoint.sh
 
 # Make multisite scripts executable

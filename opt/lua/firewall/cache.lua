@@ -1,7 +1,11 @@
 -- ============================================================================
 -- Per-worker rules/config cache and block-decision cache.
 --
+<<<<<<< HEAD
 -- Shared by firewall.lua (request hot path) and firewall.admin (admin
+=======
+-- Shared by firewall/init.lua (request hot path) and firewall.admin (admin
+>>>>>>> prototype-cache-lua-implementation
 -- endpoints). Extracting these here avoids a circular dependency: both
 -- modules can require("firewall.cache") independently; neither needs to
 -- require the other.

@@ -61,4 +61,5 @@ opt/lua/fixtures/*
 !dev/themes/.gitkeep
 
 # AI
+# Ignore claude files until we have a team agreed set of rules/settings
 .claude

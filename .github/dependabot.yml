@@ -1,0 +1,34 @@
+version: 2
+
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "00:12"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    labels:
+      - "chore"
+      - "github-actions"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "00:24"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    labels:
+      - "chore"
+      - "docker"
+    groups:
+      docker-packages:
+        patterns:
+          - "*"

@@ -22,6 +22,9 @@ wp config set S3_UPLOADS_REGION "\$_SERVER['S3_UPLOADS_REGION']" --raw
 wp config set S3_UPLOADS_BUCKET_URL "\$_SERVER['S3_UPLOADS_BUCKET_URL']" --raw
 wp config set S3_UPLOADS_OBJECT_ACL "\$_SERVER['S3_UPLOADS_OBJECT_ACL']" --raw
 wp config set S3_UPLOADS_USE_INSTANCE_PROFILE "\$_SERVER['S3_UPLOADS_USE_INSTANCE_PROFILE']" --raw
+wp config set AUTH0_ENV_CLIENT_ID "\$_SERVER['AUTH0_ENV_CLIENT_ID']" --raw
+wp config set AUTH0_ENV_CLIENT_SECRET "\$_SERVER['AUTH0_ENV_CLIENT_SECRET']" --raw
+wp config set AUTH0_ENV_DOMAIN "\$_SERVER['AUTH0_ENV_DOMAIN']" --raw
 wp config set CLOUDFRONT_DISTRIBUTION_ID "\$_SERVER['CLOUDFRONT_DISTRIBUTION_ID']" --raw
 wp config set QM_ENABLE_CAPS_PANEL true --raw
 wp config set WP_CACHE true --raw
@@ -44,7 +47,7 @@ wp config set REDIS_HOST "\$_SERVER['REDIS_HOST'] ?? 'redis'" --raw
 wp config set REDIS_PORT "\$_SERVER['REDIS_PORT'] ?? 6379" --raw
 wp config set REDIS_AUTH "\$_SERVER['REDIS_AUTH'] ?? ''" --raw
 wp config set REDIS_SSL "(\$_SERVER['REDIS_SSL'] ?? '') !== 'false'" --raw
-wp config set REDIS_DB "\$_SERVER['REDIS_DB'] ?? 0" --raw
+wp config set FIREWALL_DB "\$_SERVER['FIREWALL_DB'] ?? 0" --raw
 wp config set REDIS_TIMEOUT "\$_SERVER['REDIS_TIMEOUT'] ?? 200" --raw
 wp config set FIREWALL_ENABLED "(\$_SERVER['FIREWALL_ENABLED'] ?? '') !== 'false'" --raw
 

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Hale Firewall
 
 Per-IP request rate limiting that runs inside nginx (OpenResty) and shares
@@ -8,11 +9,41 @@ blocked and why.
 This README is the **single source of truth** for how the firewall is wired
 together. Per-file headers may go into more depth on particular concerns,
 but if you only read one document, read this one.
+=======
+# Hale OpenResty modules — Firewall & Page Cache
+
+Two independent subsystems run inside nginx (OpenResty) and share state via
+Redis:
+
+- **Firewall** ([firewall/](firewall/)) — per-IP request rate limiting.
+  Rules and config are edited from WordPress admin; decisions are taken on
+  the request hot path in Lua; an audit stream records what was blocked and
+  why. Redis **db0**.
+- **Page cache** ([pagecache/](pagecache/)) — full-page HTML cache. Serves
+  anonymous GET responses straight from Redis, skipping PHP entirely on a
+  HIT; invalidated per-URL by the WordPress purge mu-plugin on publish.
+  Redis **db1**.
+
+They share one connection-pool factory ([redis_pool.lua](redis_pool.lua))
+and nothing else: separate logical Redis databases, separate keepalive
+pools, separate kill-switches (`FIREWALL_ENABLED` / `PAGECACHE_ENABLED`).
+Both **fail open** — if Redis is down, the firewall is effectively off and
+the page cache falls through to PHP; a Redis outage must never take the
+site down.
+
+This README is the **single source of truth** for how both subsystems are
+wired together. Per-file headers may go into more depth on particular
+concerns, but if you only read one document, read this one.
+>>>>>>> prototype-cache-lua-implementation
 
 ---
 
 ## Contents
 
+<<<<<<< HEAD
+=======
+**Firewall**
+>>>>>>> prototype-cache-lua-implementation
 1. [What it does](#what-it-does)
 2. [The firewall contract](#the-firewall-contract)
 3. [Architecture at a glance](#architecture-at-a-glance)
@@ -23,10 +54,27 @@ but if you only read one document, read this one.
 8. [File map](#file-map)
 9. [How to operate](#how-to-operate)
 10. [How to test](#how-to-test)
+<<<<<<< HEAD
 11. [Design decisions](#design-decisions)
 
 ---
 
+=======
+
+**Page cache**
+
+11. [Page cache](#page-cache) — lifecycle, cacheability, Redis keys, purge
+    fence, configuration, observability, operating
+
+**Both**
+
+12. [Design decisions](#design-decisions)
+
+---
+
+# Firewall
+
+>>>>>>> prototype-cache-lua-implementation
 ## What it does
 
 For every incoming HTTP request:
@@ -180,7 +228,11 @@ flowchart LR
 | Process | Role | Lives in |
 |---|---|---|
 | nginx (Lua) | Request hot path: scoring, rate-limit, block | `opt/lua/` |
+<<<<<<< HEAD
 | WordPress (PHP) | Admin UI: edit rules/config, view audit | `dev/mu-plugins/hale-components/inc/firewall.php` |
+=======
+| WordPress (PHP) | Admin UI: edit rules/config, view audit | `hale-components/inc/firewall.php` |
+>>>>>>> prototype-cache-lua-implementation
 | Redis | Shared state | external (ElastiCache in prod, container locally) |
 
 Redis is the **only** coupling between Lua and PHP. They never talk
@@ -369,7 +421,11 @@ of `mode`. Otherwise `mode` takes effect.
 **Why `monitor` shares the block cache with `enforce`:** so that the GCRA
 bucket evolves identically under both modes, which is what makes monitor an
 accurate predictor of what enforce *would* do. See the function-header
+<<<<<<< HEAD
 comment on `_M.req` in [firewall.lua](firewall.lua) for the full reasoning.
+=======
+comment on `_M.req` in [firewall/init.lua](firewall/init.lua) for the full reasoning.
+>>>>>>> prototype-cache-lua-implementation
 
 ---
 
@@ -394,10 +450,19 @@ server block:
 log_format main '$remote_addr - $remote_user [$time_local] '
                 '"$request" $status $body_bytes_sent '
                 '"$http_referer" "$http_user_agent" '
+<<<<<<< HEAD
                 'fw_info=$firewall_info cache=$upstream_cache_status';
 access_log /dev/stdout main;
 ```
 
+=======
+                'fw_info=$firewall_info pc=$pagecache_status';
+access_log /dev/stdout main;
+```
+
+(`pc=` is the page cache's field — see [Page cache → Observability](#observability).)
+
+>>>>>>> prototype-cache-lua-implementation
 The firewall contributes one field: **`fw_info`**, set in `firewall.req()`
 via `ngx.var.firewall_info`. The value is either a numeric cost string or a
 named reason:
@@ -442,7 +507,11 @@ parse them without a custom regex per message type. The pattern is:
 
 Complete catalogue of events, by source file:
 
+<<<<<<< HEAD
 #### [firewall.lua](firewall.lua) — request hot path
+=======
+#### [firewall/init.lua](firewall/init.lua) — request hot path
+>>>>>>> prototype-cache-lua-implementation
 
 | Level | `event=` | Fields | When |
 |---|---|---|---|
@@ -488,7 +557,11 @@ Complete catalogue of events, by source file:
 |---|---|---|
 | `ERR` | `[redis] connect failed (fail-open): <err>` | TCP connect to Redis failed. Caller returns early; firewall behaves as if disabled until Redis returns. |
 | `ERR` | `[redis] auth failed (fail-open): <err>` | `REDIS_AUTH` was set but `AUTH` was rejected. Fail-open. |
+<<<<<<< HEAD
 | `ERR` | `[redis] select db failed (fail-open): <err>` | `SELECT <REDIS_DB>` failed. Fail-open. |
+=======
+| `ERR` | `[redis] select db failed (fail-open): <err>` | `SELECT <FIREWALL_DB>` failed. Fail-open. |
+>>>>>>> prototype-cache-lua-implementation
 
 #### [firewall/gcra.lua](firewall/gcra.lua)
 
@@ -559,7 +632,11 @@ only record**. No audit stream entry is written.
 
 | File | Responsibility |
 |---|---|
+<<<<<<< HEAD
 | [firewall.lua](firewall.lua) | **Hot path only.** Exports `init`, `req`, `res`. Called by `init_worker_by_lua_block`, `access_by_lua_block`, `log_by_lua_block`. |
+=======
+| [firewall/init.lua](firewall/init.lua) | **Hot path only.** Exports `init`, `req`, `res`. Called by `init_worker_by_lua_block`, `access_by_lua_block`, `log_by_lua_block`. |
+>>>>>>> prototype-cache-lua-implementation
 | [firewall/admin.lua](firewall/admin.lua) | Admin endpoints. Exports `handle_route`, `stats`, `validate`, `clear_penalties`, `clear_rate_limits`. Called by `content_by_lua_block` in the `/firewall/*` location. |
 | [firewall/cache.lua](firewall/cache.lua) | Shared cache state: `blocked_cache` (shared dict), `load_rules_and_config` (per-worker cache, invalidated by Redis `firewall:cache_version`), `poll_versions`. Required by both `firewall` and `firewall.admin`. |
 | [firewall/cost.lua](firewall/cost.lua) | Pure function — score a request against rules. No `ngx.*` deps; unit-testable. |
@@ -567,17 +644,32 @@ only record**. No audit stream entry is written.
 | [firewall/schema.lua](firewall/schema.lua) | Pure validators for `firewall:rules` and `firewall:config`. **Authoritative schema lives here.** Exposes `parse_*` (fail-soft, runtime) and `validate_*_strict` (fail-hard, admin path). |
 | [firewall/defaults.lua](firewall/defaults.lua) | Single source of truth for constants (`GCRA_KEY_PREFIX` etc.) and GCRA tunable defaults. |
 | [firewall/cidr.lua](firewall/cidr.lua) | Pure IPv4 CIDR matching. No `ngx.*` deps; unit-testable. `parse(entry)` → `{net, host_count}` or nil. `contains(parsed_list, ip)` → bool. Bare IPs treated as /32. |
+<<<<<<< HEAD
 | [firewall/redis.lua](firewall/redis.lua) | Connection pool, fail-open. Reads `REDIS_*` env. |
 | [spec/](spec/) | busted unit + integration tests (run with `make test-firewall`). |
 | [firewall_e2e_test.mjs](firewall_e2e_test.mjs) | Node.js e2e tests + CSV fixture replay against a running stack. |
 | [fixtures/](fixtures/) | CSV replay inputs from Ingress log exports. |
+=======
+| [redis_pool.lua](redis_pool.lua) | Shared Redis connection-pool factory (fail-open, per-db keepalive pools). Used by BOTH subsystems. Reads `REDIS_*` env. `new{db, pool_prefix, log_prefix}` builds a pool module. |
+| [firewall/redis.lua](firewall/redis.lua) | Thin wrapper: `redis_pool.new` bound to `FIREWALL_DB` (default 0), pool `firewall_db<N>`. |
+| [pagecache/init.lua](pagecache/init.lua) | Page cache hot path. Exports `fetch`, `filter_headers`, `capture_body`, `store` — one per nginx phase. See [Page cache](#page-cache). |
+| [pagecache/redis.lua](pagecache/redis.lua) | Thin wrapper: `redis_pool.new` bound to `PAGECACHE_DB` (default 1), pool `pagecache_db<N>`. |
+| [spec/](spec/) | busted unit + integration tests (run with `make test-firewall`; the lint pass covers the pagecache files too). |
+| [firewall_e2e_test.mjs](firewall/firewall_e2e_test.mjs) | Node.js e2e tests + CSV fixture replay against a running stack. |
+| [fixtures/](firewall/fixtures/) | CSV replay inputs from Ingress log exports. |
+>>>>>>> prototype-cache-lua-implementation
 
 ### nginx (`opt/nginx/`)
 
 | File | Responsibility |
 |---|---|
+<<<<<<< HEAD
 | `nginx.conf` | `lua_package_path`, shared dicts, `init_worker_by_lua_block`, `env FIREWALL_ENABLED`, log format. |
 | `wordpress.conf` | Production server block. `access_by_lua_block { firewall.req() }`, `log_by_lua_block { firewall.res() }`. `location ^~ /firewall/` restricted to loopback — dispatches all admin endpoints via `firewall.admin.handle_route()`. |
+=======
+| `nginx.conf` | `lua_package_path`, shared dicts, `init_worker_by_lua_block`, the `env` whitelist (`FIREWALL_*`, `PAGECACHE_*`, `REDIS_*`), log format (`fw_info=` + `pc=`). |
+| `wordpress.conf` | Production server block. Firewall: `access_by_lua_block { firewall.req() }`, `log_by_lua_block { firewall.res() }`; `location ^~ /firewall/` restricted to loopback — dispatches all admin endpoints via `firewall.admin.handle_route()`. Page cache: all four `*_by_lua` hooks in the PHP location (see [Page cache → Request lifecycle](#request-lifecycle)) plus the `$pagecache_status` map var. |
+>>>>>>> prototype-cache-lua-implementation
 | `localwordpress.conf` | Local-dev equivalent. Same structure, no loopback restriction on `/firewall/`. |
 
 ### PHP (`hale-components/inc/`)
@@ -666,6 +758,27 @@ SET firewall:config '{"mode":"enforce", ...}'
 INCR firewall:cache_version            # propagate cluster-wide within ~1 s
 ```
 
+<<<<<<< HEAD
+=======
+**Locked out of WordPress?** If a mis-configured firewall is blocking
+legitimate admin traffic, you can flip the mode from WP-CLI inside the
+WordPress container without touching Redis directly. This re-uses the same
+validate → write → version-bump path as the admin UI:
+
+```sh
+# Stop enforcing — auto-bans are still recorded but no longer served as 429s.
+wp lua-firewall mode monitor
+
+# Or turn the firewall off entirely.
+wp lua-firewall mode off
+```
+
+Prints `Success: Firewall mode set to <mode>.` and exits 0 on success, or
+`Error: <validator message>` and exits non-zero on failure. All nginx pods
+pick up the change within ~1 s via the `firewall:cache_version` poller —
+no restart needed.
+
+>>>>>>> prototype-cache-lua-implementation
 ### Clear automatic penalties (manual bans untouched)
 
 ```
@@ -682,6 +795,12 @@ all workers stop serving stale 429s cluster-wide.
 Set `FIREWALL_ENABLED=false` in the nginx Helm values and redeploy. This is
 the only switch that requires a restart.
 
+<<<<<<< HEAD
+=======
+For a faster, no-deploy alternative when admins are locked out, see the
+WP-CLI snippet under [Flip mode without a deploy](#flip-mode-without-a-deploy).
+
+>>>>>>> prototype-cache-lua-implementation
 ---
 
 ## How to test
@@ -693,7 +812,11 @@ make test-firewall
 ```
 
 Builds the `test` stage of [nginx.local.dockerfile](../../nginx.local.dockerfile),
+<<<<<<< HEAD
 runs busted with `REDIS_DB=1` against the dev Redis container so it does
+=======
+runs busted with `FIREWALL_DB=1` against the dev Redis container so it does
+>>>>>>> prototype-cache-lua-implementation
 not collide with anything live.
 
 ### End-to-end (Node.js, slow, against a running stack)
@@ -708,7 +831,11 @@ The e2e tests call `GET /firewall/clear-rate-limits` before each stateful test t
 all `firewall:block:*` and `firewall:gcra:*` keys and flush the per-pod `blocked_cache`.
 This endpoint is only available when `ENV=local` and returns 404 in production.
 
+<<<<<<< HEAD
 Then (run from `opt/lua/`):
+=======
+Then (run from `opt/lua/firewall/`):
+>>>>>>> prototype-cache-lua-implementation
 
 ```
 node --test firewall_e2e_test.mjs
@@ -717,15 +844,230 @@ node --test firewall_e2e_test.mjs
 Redis is reached at `127.0.0.1:6379` by default. Override with
 `REDIS_URL=host:port` if needed.
 
+<<<<<<< HEAD
 Drop a CSV from Cloud Platform ingress logs into [fixtures/](fixtures/) 
+=======
+Drop a CSV from Cloud Platform ingress logs into [fixtures/](firewall/fixtures/) 
+>>>>>>> prototype-cache-lua-implementation
 to replay real traffic against the firewall — the test discovers them
 automatically.
+
+---
+
+<<<<<<< HEAD
+## Design decisions
+
+These are recorded here rather than scattered through file headers.
+=======
+# Page cache
+
+Full-page HTML cache for anonymous traffic, implemented in
+[pagecache/init.lua](pagecache/init.lua). On a HIT, nginx serves the stored
+page straight from Redis in the access phase — PHP is never invoked. The
+cache lives in Redis (not nginx's per-pod `fastcgi_cache`, which it
+replaces) so it is shared across all pods and can be invalidated per-URL
+from WordPress.
+
+Like the firewall, it never talks to PHP directly: the Redis key scheme is
+the contract. The other side of that contract is the **WordPress purge
+mu-plugin** in the hale-components repo
+(`hale-components/inc/pagecache-purge.php`), which deletes keys and stamps
+purge fences when content is published.
+
+## Request lifecycle
+
+Wired into the `location ~ \.php$` block in
+[wordpress.conf](../nginx/wordpress.conf) /
+[localwordpress.conf](../nginx/localwordpress.conf) — four nginx phases,
+one exported function each:
+
+| Phase | Hook | Function | Job |
+|---|---|---|---|
+| access | `access_by_lua` | `fetch()` | Serve a HIT (`ngx.print` + exit, PHP skipped), or snapshot Redis time and flag the request to be stored on MISS |
+| header filter | `header_filter_by_lua` | `filter_headers()` | Confirm the *response* is safe to store; emit `X-Page-Cache` |
+| body filter | `body_filter_by_lua` | `capture_body()` | Buffer the HTML chunks; enforce `PAGECACHE_MAX_BYTES`; record eof. No cosockets allowed in this phase, so no Redis I/O here |
+| log | `log_by_lua` | `store()` | Schedule the Redis write in a 0-delay timer (timer contexts allow cosockets), after the response has been sent |
+
+## What gets cached
+
+**The request is eligible** (`request_cacheable()`) only if all of:
+
+- method is `GET`;
+- query string is empty (any query → assumed dynamic);
+- URI matches none of the bypass patterns: `/wp-admin`, `/wp-login`,
+  `/wp-json`, `/xmlrpc.php`, `wp-cron`, `/feed`, `sitemap`;
+- no personalisation cookie: `wordpress_logged_in`, `wordpress_<hash>`,
+  `comment_author`, `wp-postpass`, `wordpress_no_cache`.
+
+**The response is storeable** (`filter_headers()` + `capture_body()`) only
+if all of:
+
+- status is 200;
+- `Content-Type` contains `text/html`;
+- no `Set-Cookie` header (personalised response);
+- no `Content-Encoding` header (bodies are stored uncompressed only);
+- `Cache-Control` contains none of `no-cache` / `no-store` / `private` —
+  so PHP can veto caching per-page with a single header;
+- body stays under `PAGECACHE_MAX_BYTES`;
+- the body reached **eof** — a client abort mid-response must not cache a
+  truncated page for the full TTL.
+
+Everything else falls through to PHP untouched.
+
+## Data model (Redis keys, db1)
+
+| Key | Type | Writer | Reader | Purpose |
+|---|---|---|---|---|
+| `pagecache:v{version}:{host}:{path}` | string, TTL = `PAGECACHE_TTL` | Lua (deferred write); deleted by PHP purge | Lua | Cached page: `"<content-type>\n<body>"` (split on first newline) |
+| `pagecache:fence:{host}:{path}` | string (integer microseconds from Redis `TIME`), TTL = `PAGECACHE_FENCE_TTL` | PHP purge plugin | Lua CAS script | Purge fence — blocks a stale in-flight render from re-caching (see below) |
+| `pagecache:version` | int | **Operator only** (`INCR`) | Lua + PHP | Site-wide flush counter, embedded in every content key |
+
+Key anatomy:
+
+- `{path}` is `$request_uri` with any query portion stripped (`cache_path()`).
+  `$uri` can't be used — the permalink rewrite has already turned it into
+  `/index.php`.
+- `{host}` isolates multisite sites from each other.
+- The scheme is deliberately omitted: TLS terminates upstream, so the
+  scheme nginx sees can differ from what WordPress sees. Host + path is
+  canonical.
+- `{version}` comes from `pagecache:version`, normalised to an integer on
+  **both** sides (Lua `math.floor`, PHP `(int)`) so they derive identical
+  keys.
+
+Everything the page cache writes goes through `SETEX`, so every key has a
+TTL and is eligible for `volatile-lru` eviction — on a shared Redis
+instance the cache can never cause eviction of the firewall's persistent
+keys.
+
+## The purge/write race (fence keys)
+
+The cache write is deferred until after the response is sent, which opens
+a race: a request MISSes, PHP starts rendering, an editor publishes and
+the purge plugin deletes that path's key — then the deferred write lands
+and re-caches the now-stale render into the just-purged key, for the full
+TTL.
+
+The fence closes it:
+
+1. On MISS, `fetch()` snapshots **Redis's own clock** (`TIME`, converted
+   to integer microseconds — not local wall-clock, which drifts across
+   pods) as the render start time.
+2. On publish, the purge plugin `DEL`s the content key **and** stamps
+   `pagecache:fence:{host}:{path}` with the current Redis time.
+3. The deferred write runs a check-and-write `EVAL`
+   (`CAS_WRITE_SCRIPT`): if a fence exists with a timestamp **at or
+   after** the render start time, the write is silently dropped. Check and
+   write happen in one script, so there is no gap between them.
+
+The fence value format (integer microseconds) is a **lockstep contract**
+with the PHP purge module — `"sec.usec"` string concatenation was
+rejected because it mis-orders within a second (`{1234, 5}` →
+`"1234.5"` reads as half a second, not 5 µs). If the format changes, both
+repos must ship together (a brief mixed-format window is tolerable: the
+fence TTL is 60 s).
+
+If Redis `TIME` failed on the MISS, the write falls back to an unfenced
+`SETEX` — a rare partial-failure mode, preferred over never caching.
+
+## Configuration (env vars)
+
+All read once at module load; all must be in the `env` whitelist in
+[nginx.conf](../nginx/nginx.conf) or `os.getenv` returns nothing.
+
+| Var | Default | Meaning |
+|---|---|---|
+| `PAGECACHE_ENABLED` | unset (off) | Kill-switch. Must be exactly the string `true`. Needs an nginx restart to flip. |
+| `PAGECACHE_TTL` | `300` | Content key TTL, seconds. Also the worst-case staleness if a purge is missed. |
+| `PAGECACHE_MAX_BYTES` | `2097152` (2 MiB) | Bodies larger than this are never stored. |
+| `PAGECACHE_DB` | `1` | Logical Redis db. **Must match the WP purge plugin's value** — it reads the same env var with the same default; if they diverge, purges silently stop working. |
+| `PAGECACHE_FENCE_TTL` | `60` | Fence key TTL, seconds. Read by the PHP purge plugin only. |
+
+Connection settings (`REDIS_HOST`, `REDIS_PORT`, `REDIS_AUTH`,
+`REDIS_SSL`, `REDIS_POOL_SIZE`, `REDIS_KEEPALIVE_MS`) are shared with the
+firewall and documented in [redis_pool.lua](redis_pool.lua).
+
+## Observability
+
+**Response header `X-Page-Cache`** — visible in browser devtools/curl:
+
+| Value | Meaning |
+|---|---|
+| `HIT` | Served from Redis; PHP never ran |
+| `MISS` | Served by PHP; response was storeable and will be written to Redis |
+| `BYPASS` | Not cacheable — either the request (method/query/URI/cookie) or the response (status/headers) disqualified it |
+| *absent* | Cache is off (`PAGECACHE_ENABLED` unset), Redis is down, or the location isn't wired |
+
+One edge: a body that exceeds `PAGECACHE_MAX_BYTES` mid-stream still shows
+`MISS` (headers were already sent) but is not stored — the access log says
+`bypass`.
+
+**Access log field `pc=`** — `$pagecache_status`, set via `set_status()`:
+
+| Value | Meaning |
+|---|---|
+| `hit` / `miss` / `bypass` | As per the header above (and `bypass` covers the too-big edge case correctly) |
+| `off` | `PAGECACHE_ENABLED` is not `true` |
+| `down` | Redis connect failed — request failed open to PHP |
+| `-` | Lua never ran (non-PHP location) |
+
+**Error log** — prefixed `[pagecache]`: `fenced write failed: <err>`
+(the CAS EVAL errored), `store timer failed: <err>` (`ngx.timer.at`
+refused, typically out of timers). Connection errors appear with the same
+`[pagecache]` prefix via the pool's `log_prefix`.
+
+## How to operate
+
+### Turn it on / off
+
+Locally: `make run-with-pagecache` / `make down-pagecache` (preserves the
+firewall's state). In production: set `PAGECACHE_ENABLED` in the nginx
+Helm values and redeploy — like `FIREWALL_ENABLED`, it needs a restart.
+
+### Flush the entire cache
+
+Content keys embed a version number read from `pagecache:version`.
+Nothing in the codebase writes this key — bumping it is a manual,
+operator-only action:
+
+```
+# In the page cache db (PAGECACHE_DB, default 1)
+INCR pagecache:version
+```
+
+Every pod starts keying reads/writes under the new version immediately, so
+the whole cache MISSes at once — an instant site-wide flush with no key
+scanning. Old-version keys are not deleted; they expire via their TTL.
+
+### Purge a single URL
+
+Automatic: the WP purge mu-plugin does it on publish/update. Manual:
+
+```
+# In db1 — delete the content key for the current version
+DEL pagecache:v0:example.hale.docker:/some/page/
+```
+
+(Deleting without stamping a fence is fine for a manual purge — the fence
+only matters for the publish-while-rendering race.)
+
+### Inspect state
+
+| What | How |
+|---|---|
+| What's cached right now | `redis-cli -n 1 --scan --match 'pagecache:v*'` |
+| Current version counter | `redis-cli -n 1 GET pagecache:version` (nil = 0) |
+| Live fences | `redis-cli -n 1 --scan --match 'pagecache:fence:*'` |
+| Per-request decision | `X-Page-Cache` response header, or `pc=` in the access log |
+| Browse keys interactively (local only) | http://redis-insight.docker — select db1 |
 
 ---
 
 ## Design decisions
 
 These are recorded here rather than scattered through file headers.
+Firewall decisions first, then page cache, then shared.
+>>>>>>> prototype-cache-lua-implementation
 
 ### Why GCRA, not a sliding-window counter
 
@@ -788,12 +1130,52 @@ with `phase: "res"` (see "Rule schema" above). For example:
 Adding a new status is one rule entry in `firewall:rules`; no application
 logic changes.
 
+<<<<<<< HEAD
 ### Fail-open everywhere
 
 If Redis is unreachable, `redis.connect()` returns `nil` and every caller
 returns early. The site stays up; the firewall is effectively off until
 Redis returns. This is preferred over fail-closed because a Redis outage
 should not be a site outage.
+=======
+### Why Redis for the page cache, not nginx's fastcgi_cache
+
+`fastcgi_cache` is per-pod: each of N pods builds its own copy, each
+misses independently after a deploy, and there is no way for WordPress to
+purge a URL across all pods on publish. A Redis-backed cache is filled
+once cluster-wide, and the purge mu-plugin's single `DEL` invalidates
+everywhere at once. The cost — one Redis round-trip on the HIT path
+instead of a local disk read — buys correct multi-pod invalidation.
+
+### Why the page cache write is deferred to a timer
+
+Same constraint as the firewall's response-phase scoring: the body is
+captured in `body_filter_by_lua` and the write scheduled from
+`log_by_lua`, and neither phase allows cosocket (Redis) I/O. A 0-delay
+timer does. The bonus is that the client never waits on the cache write —
+it happens after the response is fully sent. The price is the
+purge/write race, which the fence key closes (see
+[The purge/write race](#the-purgewrite-race-fence-keys)).
+
+### Why separate Redis databases (firewall db0, page cache db1)
+
+Blast-radius isolation on a shared instance. A page-cache `FLUSHDB` (a
+legitimate ops action) can never wipe firewall rules, bans, or audit
+history; a firewall test run pointed at db1 can't collide with live data.
+Each wrapper gets its own keepalive pool name (`firewall_db0`,
+`pagecache_db1`) so a pooled socket `SELECT`ed on one db is never handed
+to a caller expecting the other, and `redis_pool` re-`SELECT`s on every
+checkout regardless. The index is env-tunable per subsystem
+(`FIREWALL_DB`, `PAGECACHE_DB`); the page cache's value must match the WP
+purge plugin's (same env var, same default).
+
+### Fail-open everywhere
+
+If Redis is unreachable, `connect()` returns `nil` and every caller
+returns early. The site stays up: the firewall is effectively off and the
+page cache falls through to PHP until Redis returns. This is preferred
+over fail-closed because a Redis outage should not be a site outage.
+>>>>>>> prototype-cache-lua-implementation
 
 ### Per-pod rules cache + Redis-backed version counter
 

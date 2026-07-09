@@ -9,7 +9,7 @@ FROM openresty/openresty:1.31.1.1-alpine AS nginx
 ENV ENV=local
 
 # Install additional Alpine packages
-RUN apk update && apk add curl ca-certificates
+RUN apk add --no-cache curl ca-certificates
 
 # Create non-root user (UID/GID 1002 to match org standard)
 RUN addgroup -g 1002 -S hale \
@@ -27,8 +27,9 @@ RUN mkdir -p /usr/local/openresty/nginx/logs \
 # Copy configuration, Lua module and error pages
 COPY opt/nginx/nginx.conf          /usr/local/openresty/nginx/conf/nginx.conf
 COPY opt/nginx/localwordpress.conf /usr/local/openresty/nginx/conf/conf.d/
-COPY opt/lua/firewall.lua          /usr/local/openresty/nginx/lua/firewall.lua
+COPY opt/lua/redis_pool.lua        /usr/local/openresty/nginx/lua/redis_pool.lua
 COPY opt/lua/firewall              /usr/local/openresty/nginx/lua/firewall
+COPY opt/lua/pagecache             /usr/local/openresty/nginx/lua/pagecache
 COPY opt/nginx/error-pages/        /usr/local/openresty/nginx/html/error-pages/
 
 # Switch to non-root user (numeric UID for consistency with production)
@@ -47,21 +48,21 @@ CMD ["/usr/local/openresty/bin/openresty", "-g", "daemon off;"]
 # integration specs that connect to Redis directly).
 # ##################################################
 
-FROM openresty/openresty:1.31.1.1-alpine-fat AS test
+FROM openresty/openresty:1.29.2.4-alpine AS test
 
-# The -alpine-fat image already ships LuaRocks built against OpenResty's
-# bundled LuaJIT 2.1 at /usr/local/openresty/luajit/bin/luarocks.
-# See: https://github.com/openresty/docker-openresty#luarocks
-RUN apk add --no-cache --virtual .build-deps gcc musl-dev openssl-dev \
-    && /usr/local/openresty/luajit/bin/luarocks install luasec \
-    && /usr/local/openresty/luajit/bin/luarocks install busted \
-    && /usr/local/openresty/luajit/bin/luarocks install luasocket \
-    && /usr/local/openresty/luajit/bin/luarocks install lua-cjson \
-    && /usr/local/openresty/luajit/bin/luarocks install luacheck \
-    && apk del .build-deps \
+RUN apk add --no-cache \
+    lua5.1-dev \
+    luarocks5.1 \
+    gcc \
+    musl-dev \
+    openssl-dev \
+    && luarocks-5.1 install luasec \
+    && luarocks-5.1 install busted \
+    && luarocks-5.1 install luasocket \
+    && luarocks-5.1 install lua-cjson \
+    && luarocks-5.1 install luacheck \
+    && apk del gcc musl-dev lua5.1-dev openssl-dev \
     && rm -rf /root/.cache
-
-ENV PATH="/usr/local/openresty/luajit/bin:${PATH}"
 
 WORKDIR /app
 

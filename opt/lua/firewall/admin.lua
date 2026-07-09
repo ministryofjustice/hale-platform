@@ -6,7 +6,11 @@
 --   }
 --
 -- handle_route() dispatches to the named endpoints below. None of these
+<<<<<<< HEAD
 -- functions are on the request hot path — see firewall.lua for init/req/res.
+=======
+-- functions are on the request hot path — see firewall/init.lua for init/req/res.
+>>>>>>> prototype-cache-lua-implementation
 --
 -- Cache invalidation is *not* an admin endpoint: writers (PHP admin, ops
 -- scripts) bump firewall:cache_version in Redis directly after writing
@@ -302,13 +306,30 @@ function _M.clear_penalties()
     -- block key — making the admin action a no-op for any recently-banned IP.
     local gcra_prefix = defaults.GCRA_KEY_PREFIX
     local function _clear_one(ip)
+<<<<<<< HEAD
         red:del(
+=======
+        local reply, err = red:del(
+>>>>>>> prototype-cache-lua-implementation
             BLOCK_PREFIX .. ip,
             gcra_prefix .. ip,
             gcra_prefix .. ip .. ":breakdown"
         )
+<<<<<<< HEAD
         cache.blocked_cache:delete(CACHE_PREFIX .. ip)
         return 1
+=======
+        -- Always drop the local LRU entry so a stale "blocked" decision
+        -- can't outlive the Redis state on this worker.
+        cache.blocked_cache:delete(CACHE_PREFIX .. ip)
+        if not reply then
+            ngx.log(ngx.ERR, "[firewall] event=clear_penalties_del_failed ip=", ip, " err=", err)
+            return 0
+        end
+        -- DEL returns the number of keys actually removed (0..3). Treat any
+        -- non-zero as "we cleared something for this IP".
+        return reply > 0 and 1 or 0
+>>>>>>> prototype-cache-lua-implementation
     end
 
     local deleted = 0

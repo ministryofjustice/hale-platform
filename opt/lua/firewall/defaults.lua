@@ -2,7 +2,11 @@
 -- Single source of truth for firewall constants and default config values.
 --
 -- Required by:
+<<<<<<< HEAD
 --   firewall.lua          — ALLOW_KEY_PREFIX, BLOCK_KEY_PREFIX,
+=======
+--   firewall/init.lua     — ALLOW_KEY_PREFIX, BLOCK_KEY_PREFIX,
+>>>>>>> prototype-cache-lua-implementation
 --                           AUDIT_STREAM, BLOCKED_CACHE_PREFIX
 --   firewall.cache        — CACHE_VERSION_KEY, PENALTIES_VERSION_KEY
 --   firewall.admin        — BLOCK_KEY_PREFIX, BLOCKED_CACHE_PREFIX,
