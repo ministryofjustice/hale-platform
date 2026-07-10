@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3d0d5d08eb185564558d6ce307dd1f2e",
+    "content-hash": "9e34a0cbdb04c492d96da468a9b53ddb",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -990,25 +990,26 @@
         },
         {
             "name": "ministryofjustice/hale",
-            "version": "dev-cookie-banner-fix",
+            "version": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale.git",
-                "reference": "1981bb9835a4d7c1233deab43d4e5305ac7584ba"
+                "reference": "c4bf309ce789bac0ea35c02052dbe396b44ac443"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/1981bb9835a4d7c1233deab43d4e5305ac7584ba",
-                "reference": "1981bb9835a4d7c1233deab43d4e5305ac7584ba",
+                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/c4bf309ce789bac0ea35c02052dbe396b44ac443",
+                "reference": "c4bf309ce789bac0ea35c02052dbe396b44ac443",
                 "shasum": ""
             },
+            "default-branch": true,
             "type": "wordpress-theme",
             "description": "Hale theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/hale/tree/cookie-banner-fix",
+                "source": "https://github.com/ministryofjustice/hale/tree/4.34.2",
                 "issues": "https://github.com/ministryofjustice/hale/issues"
             },
-            "time": "2026-07-10T07:34:31+00:00"
+            "time": "2026-06-23T14:22:02+00:00"
         },
         {
             "name": "ministryofjustice/hale-components",
