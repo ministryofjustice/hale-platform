@@ -6,7 +6,7 @@
 --   }
 --
 -- handle_route() dispatches to the named endpoints below. None of these
--- functions are on the request hot path — see firewall.lua for init/req/res.
+-- functions are on the request hot path — see firewall/init.lua for init/req/res.
 --
 -- Cache invalidation is *not* an admin endpoint: writers (PHP admin, ops
 -- scripts) bump firewall:cache_version in Redis directly after writing
