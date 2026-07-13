@@ -148,7 +148,7 @@ configmap:
   # db is the logical Redis database, read by BOTH containers (nginx Lua
   # cache and the WordPress purge hook) - they must always agree.
   pagecache:
-    enabled: "false"
+    enabled: "true"
     ttl: "300"
     db: "1"
     # Max response size the Lua cache will store, in bytes (nginx side only).
