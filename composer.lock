@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "840efad1d753d8219955985baf7eca1e",
+    "content-hash": "ca13115608009e8b4291211ebb5acaed",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -1041,25 +1041,26 @@
         },
         {
             "name": "ministryofjustice/hale-dash",
-            "version": "2.1.0",
+            "version": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale-dash.git",
-                "reference": "54c77c821c9f64552be311ad55d5379f5449094a"
+                "reference": "26470fa5aa315682deb12f2d144486cf17dfd10f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale-dash/zipball/54c77c821c9f64552be311ad55d5379f5449094a",
-                "reference": "54c77c821c9f64552be311ad55d5379f5449094a",
+                "url": "https://api.github.com/repos/ministryofjustice/hale-dash/zipball/26470fa5aa315682deb12f2d144486cf17dfd10f",
+                "reference": "26470fa5aa315682deb12f2d144486cf17dfd10f",
                 "shasum": ""
             },
+            "default-branch": true,
             "type": "wordpress-theme",
             "description": "Hale Dash theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/hale-dash/tree/2.1.0",
+                "source": "https://github.com/ministryofjustice/hale-dash/tree/2.1.4",
                 "issues": "https://github.com/ministryofjustice/hale-dash/issues"
             },
-            "time": "2026-06-15T10:49:32+00:00"
+            "time": "2026-07-13T11:18:20+00:00"
         },
         {
             "name": "ministryofjustice/hale-showcase",
@@ -1180,22 +1181,23 @@
         },
         {
             "name": "ministryofjustice/wp-moj-blocks",
-            "version": "3.19.5",
+            "version": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-moj-blocks.git",
-                "reference": "4ad6237ea9e67a480ebc8a5aa879173193943d47"
+                "reference": "e64759a678294e70f37c205ae71d91209d783835"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/wp-moj-blocks/zipball/4ad6237ea9e67a480ebc8a5aa879173193943d47",
-                "reference": "4ad6237ea9e67a480ebc8a5aa879173193943d47",
+                "url": "https://api.github.com/repos/ministryofjustice/wp-moj-blocks/zipball/e64759a678294e70f37c205ae71d91209d783835",
+                "reference": "e64759a678294e70f37c205ae71d91209d783835",
                 "shasum": ""
             },
             "require-dev": {
                 "composer/composer": "*",
                 "squizlabs/php_codesniffer": "*"
             },
+            "default-branch": true,
             "type": "wordpress-plugin",
             "scripts": {
                 "phpcs-config-set": [
@@ -1213,10 +1215,10 @@
             ],
             "description": "WP plugin that adds addtional blocks.",
             "support": {
-                "source": "https://github.com/ministryofjustice/wp-moj-blocks/tree/3.19.5",
+                "source": "https://github.com/ministryofjustice/wp-moj-blocks/tree/main",
                 "issues": "https://github.com/ministryofjustice/wp-moj-blocks/issues"
             },
-            "time": "2026-01-26T13:48:12+00:00"
+            "time": "2026-04-15T14:12:10+00:00"
         },
         {
             "name": "ministryofjustice/wp-s3-uploads",
@@ -3627,8 +3629,10 @@
         "ministryofjustice/govwind": 20,
         "ministryofjustice/hale": 20,
         "ministryofjustice/hale-components": 20,
+        "ministryofjustice/hale-dash": 20,
         "ministryofjustice/ppo": 20,
-        "ministryofjustice/website-builder-blocks": 20
+        "ministryofjustice/website-builder-blocks": 20,
+        "ministryofjustice/wp-moj-blocks": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,
