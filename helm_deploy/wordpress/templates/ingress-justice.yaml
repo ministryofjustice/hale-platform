@@ -1,0 +1,136 @@
+{{- if eq .Values.configmap.envtype "prod" }}
+# Dedicated Service for the canary backend.
+# The `wordpress` Service is already a NON-canary (primary) backend of the
+# hale-platform-ingress, and nginx-ingress will not let the same Service act as
+# both a primary and a canary upstream. This duplicate Service targets the same
+# pods but gives the canary its own distinct upstream so header/weight routing works.
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress-canary
+  labels:
+    app: wordpress
+spec:
+  ports:
+    - name: "8080"
+      port: 8080
+  selector:
+    app: wordpress
+    tier: frontend-c
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hale-platform-justice-ingress
+  annotations:
+    external-dns.alpha.kubernetes.io/set-identifier: hale-platform-justice-ingress-hale-platform-prod-green
+    external-dns.alpha.kubernetes.io/aws-weight: "100"
+    nginx.ingress.kubernetes.io/proxy-body-size: "400m"
+    nginx.ingress.kubernetes.io/enable-modsecurity: "true"
+    nginx.ingress.kubernetes.io/modsecurity-snippet: |
+      # Default WAF rules
+      SecRuleEngine On
+      SecDefaultAction 
+        "phase:2,\
+        pass,\
+        log,\
+        tag:github_team=hale-platform,\
+        tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }}"
+
+      # Set WAF Config for Authenticated Users
+      SecRule REQUEST_HEADERS:Cookie "@contains WB_CONFIG={{ .Values.secrets.wbconfig }}"
+        "id:1001,\
+        phase:1,\
+        allow,\
+        nolog,\
+        tag:github_team=hale-platform,\
+        tag:environment=hale-platform-{{ .Values.configmap.envtype }}-auth,\
+        ctl:ruleEngine=DetectionOnly"
+      # Exclude posthog cookie
+      SecRuleUpdateTargetById 942290 "!REQUEST_COOKIES:/^ph_phc_.*_posthog$/"
+
+      # --- www.justice.gov.uk only rules ---
+
+      # Block POST requests on www.justice.gov.uk
+      SecRule REQUEST_HEADERS:Host "@rx (?i)^www\.justice\.gov\.uk(?::\d+)?$" \
+        "id:300140,\
+        phase:1,\
+        log,\
+        deny,\
+        t:none,\
+        tag:github_team=hale-platform,\
+        tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }},\
+        chain"
+      SecRule REQUEST_METHOD "@streq POST" "t:none"
+
+      # Allow only specific parameters on search requests,
+      # this applies to all users, regardless of logged in state.
+      SecRule REQUEST_HEADERS:Host "@rx (?i)^www\.justice\.gov\.uk(?::\d+)?$" \
+        "id:100100,\
+        phase:1,\
+        deny,\
+        log,\
+        t:none,\
+        tag:github_team=hale-platform,\
+        tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }},\
+        chain"
+      SecRule REQUEST_URI "@rx ^/search(?:$|/|\?)" "chain"
+      SecRule ARGS_GET_NAMES "!@rx ^(?:s|section|organisation|audience|type|parent|post_types|redirected|orderby)(?:\[[^\]]*\])?$" ""
+
+      # 301 redirect requests (NOT under /search) that include ANY query string
+      # to the same path without the query.
+      # - Declare the 301 redirect
+      # - Only apply to www.justice.gov.uk
+      # - Exclude /search* from this behavior
+      # - Only do this when there IS a query string (i.e., at least one GET param)
+      # - Require that at least one param name is NOT in the allowlist
+      #   (requests with only s, parent, ver, auth0, code, state params pass through)
+      SecRule REQUEST_URI "@rx ^/([^?]*)" \
+        "id:300130,\
+        phase:1,\
+        log,\
+        redirect:/%{TX.1},\
+        status:301,\
+        capture,\
+        t:none,\
+        tag:github_team=hale-platform,\
+        tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }},\
+        chain"
+      SecRule REQUEST_HEADERS:Host "@rx (?i)^www\.justice\.gov\.uk(?::\d+)?$" "t:none,chain"
+      SecRule REQUEST_URI "!@rx ^/search(?:$|/|\?)" "t:none,chain"
+      SecRule &ARGS_GET_NAMES "@gt 0" "t:none,chain"
+      SecRule ARGS_GET_NAMES "!@rx ^(?:s|parent|ver|auth0|code|state)(?:\[[^\]]*\])?$" "t:none"
+    nginx.ingress.kubernetes.io/server-snippet: |
+      location = /.well-known/security.txt {
+        auth_basic off;
+        return 301 https://raw.githubusercontent.com/ministryofjustice/security-guidance/main/contact/vulnerability-disclosure-security.txt;
+      }
+    # Indicates that you intentionally want to allow duplicate hostnames.
+    allow-duplicate-host: "true"
+    # A comma-separated list of namespaces where duplicate hostnames are permitted.
+    # IMPORTANT: The value must be identical and in the same order on both Ingress objects.
+    allowed-duplicate-ns: "justice-gov-uk-production,hale-platform-prod"
+    # Marks the Ingress as part of a canary deployment.
+    nginx.ingress.kubernetes.io/canary: "true"
+    # Defines the traffic weight for the canary (NGINX level).
+    nginx.ingress.kubernetes.io/canary-weight: "0"
+    nginx.ingress.kubernetes.io/canary-by-cookie: 'X-Canary'
+    nginx.ingress.kubernetes.io/canary-by-header: 'X-Canary'
+spec:
+  ingressClassName: modsec
+  tls:
+  - hosts:
+    - www.justice.gov.uk
+    secretName: justice-www-cert
+  rules:
+    - host: www.justice.gov.uk
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: wordpress-canary
+                port:
+                  number: 8080
+{{- end }}
