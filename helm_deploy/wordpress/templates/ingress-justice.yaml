@@ -1,4 +1,23 @@
 {{- if eq .Values.configmap.envtype "prod" }}
+# Dedicated Service for the canary backend.
+# The `wordpress` Service is already a NON-canary (primary) backend of the
+# hale-platform-ingress, and nginx-ingress will not let the same Service act as
+# both a primary and a canary upstream. This duplicate Service targets the same
+# pods but gives the canary its own distinct upstream so header/weight routing works.
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress-canary
+spec:
+  selector:
+    app: wordpress
+    tier: frontend-c
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -111,7 +130,7 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: wordpress
+                name: wordpress-canary
                 port:
                   number: 8080
 {{- end }}
