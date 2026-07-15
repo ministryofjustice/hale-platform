@@ -994,12 +994,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale.git",
-                "reference": "be0629a8339822ce796ddc6931b9706ac9afecd3"
+                "reference": "1ca51b566cb3edcbf8d26ff350b7dd799fe44327"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/be0629a8339822ce796ddc6931b9706ac9afecd3",
-                "reference": "be0629a8339822ce796ddc6931b9706ac9afecd3",
+                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/1ca51b566cb3edcbf8d26ff350b7dd799fe44327",
+                "reference": "1ca51b566cb3edcbf8d26ff350b7dd799fe44327",
                 "shasum": ""
             },
             "type": "wordpress-theme",
@@ -1008,7 +1008,7 @@
                 "source": "https://github.com/ministryofjustice/hale/tree/listing-images",
                 "issues": "https://github.com/ministryofjustice/hale/issues"
             },
-            "time": "2026-07-15T08:24:15+00:00"
+            "time": "2026-07-15T12:24:08+00:00"
         },
         {
             "name": "ministryofjustice/hale-components",
