@@ -2,7 +2,7 @@
 ### Local build config
 ####################################################
 
-.PHONY: run run-with-firewall run-with-pagecache down down-firewall down-pagecache build shell none clone-repos symlink logs restart clean help test-firewall redis-cli redis-cli-local
+.PHONY: run run-with-firewall run-with-pagecache down down-firewall down-pagecache build shell none clone-repos symlink logs restart clean help test-firewall redis-cli redis-cli-local redis-cheatsheet
 # Default target - list targets with their ## descriptions
 help: ## Show this help
 	@echo "Available commands:"
@@ -83,7 +83,20 @@ redis-cli: ## Open redis-cli against ElastiCache in current kubectl namespace
 	@echo "Scaling up redis-cli pod in context $$(kubectl config current-context)..."; \
 	kubectl scale deployment/redis-cli --replicas=1; \
 	kubectl wait --for=condition=available deployment/redis-cli --timeout=90s; \
-	echo ""; \
+	$(MAKE) --no-print-directory redis-cheatsheet; \
+	kubectl exec -it deployment/redis-cli -- \
+		sh -c 'export REDISCLI_AUTH="$$REDIS_AUTH"; exec redis-cli -h "$$REDIS_HOST" --tls'; \
+	echo "Scaling redis-cli back down..."; \
+	kubectl scale deployment/redis-cli --replicas=0
+
+# Open a redis-cli shell in the local docker compose redis container (no auth).
+# Uses the compose service name so it works whatever the container is named.
+redis-cli-local: redis-cheatsheet ## Open redis-cli against local Docker Redis
+	@docker compose --profile firewall --profile pagecache exec redis redis-cli
+
+# Print the redis-cli cheat sheet (shared by redis-cli and redis-cli-local)
+redis-cheatsheet:
+	@echo ""; \
 	echo "=== General (db 0 = firewall, db 1 = page cache) ==="; \
 	echo ""; \
 	echo "  SELECT 1                                    - switch to page cache db"; \
@@ -107,15 +120,7 @@ redis-cli: ## Open redis-cli against ElastiCache in current kubectl namespace
 	echo "  GET firewall:rules                          - rules JSON (also firewall:config,"; \
 	echo "                                                firewall:allowlist, firewall:blocklist)"; \
 	echo "  XREVRANGE firewall:audit + - COUNT 10       - last 10 audit events"; \
-	echo ""; \
-	kubectl exec -it deployment/redis-cli -- \
-		sh -c 'export REDISCLI_AUTH="$$REDIS_AUTH"; exec redis-cli -h "$$REDIS_HOST" --tls'; \
-	echo "Scaling redis-cli back down..."; \
-	kubectl scale deployment/redis-cli --replicas=0
-
-# Open a redis-cli shell in the local docker compose redis container (no auth)
-redis-cli-local: ## Open redis-cli against local Docker Redis
-	@docker exec -it redis redis-cli
+	echo ""
 
 # View logs from all containers
 logs: ## View Docker container logs
