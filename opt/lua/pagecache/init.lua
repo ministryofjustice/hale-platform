@@ -92,11 +92,42 @@ local function cache_path()
     return uri
 end
 
+-- The version is cached per worker for VERSION_TTL seconds: it halves the
+-- Redis round-trips on every request, at the cost of a version bump (mass
+-- flush) taking up to VERSION_TTL to be seen by this worker. Per-URL purges
+-- are unaffected: they DEL the content key and stamp the unversioned fence,
+-- neither of which involves the version.
+local VERSION_TTL = 1
+local ver_cache, ver_cached_at = nil, 0
+
+local function get_version(red)
+    local now = ngx.now()
+    if ver_cache and (now - ver_cached_at) < VERSION_TTL then
+        return ver_cache
+    end
+    local res = red:get(VERSION_KEY)
+    if res == ngx.null then
+        -- Key absent (never bumped) = version 0. The PHP purge plugin's
+        -- (int) cast derives 0 from a missing key too. Cached like any
+        -- other value so the common no-bump state still skips the GET.
+        ver_cache, ver_cached_at = 0, now
+        return 0
+    end
+    local ver = tonumber(res)
+    if ver then
+        -- Normalise to an integer: the PHP purge plugin does (int) on this
+        -- same value, and the two sides must derive identical keys from it.
+        ver_cache, ver_cached_at = math.floor(ver), now
+        return ver_cache
+    end
+    -- GET errored (returned nil): keep the last-known version rather than
+    -- falling back to v0, which would miss everything and write entries
+    -- under a key no purge would ever touch.
+    return ver_cache or 0
+end
+
 local function build_key(red)
-    -- Normalise to an integer: the PHP purge plugin does (int) on this same
-    -- value, and the two sides must derive identical keys from it.
-    local ver = tonumber(red:get(VERSION_KEY)) or 0
-    return PREFIX .. "v" .. math.floor(ver) .. ":" .. ngx.var.host .. ":" .. cache_path()
+    return PREFIX .. "v" .. get_version(red) .. ":" .. ngx.var.host .. ":" .. cache_path()
 end
 
 -- Fence key for this path. Unversioned and shared with the WP purge plugin,
