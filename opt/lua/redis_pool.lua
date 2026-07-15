@@ -86,24 +86,33 @@ function _M.new(opts)
             return nil
         end
 
-        if REDIS_AUTH and REDIS_AUTH ~= "" then
-            local auth_ok, auth_err = red:auth(REDIS_AUTH)
-            if not auth_ok then
-                ngx.log(ngx.ERR, "[", log_prefix, "] auth failed (fail-open): ", auth_err)
-                red:close()
-                return nil
+        -- A socket reused from the keepalive pool has already been AUTHed and
+        -- SELECTed onto this db: the per-db pool name guarantees it, and a
+        -- failed handshake is close()d below, so it can never enter the pool.
+        -- Only a brand-new TCP connection pays the AUTH/SELECT round trips.
+        -- (get_reused_times() errors are treated as fresh — the handshake is
+        -- idempotent, so re-running it on a reused socket is merely wasteful,
+        -- never wrong.)
+        local reused = red:get_reused_times()
+        if (reused or 0) == 0 then
+            if REDIS_AUTH and REDIS_AUTH ~= "" then
+                local auth_ok, auth_err = red:auth(REDIS_AUTH)
+                if not auth_ok then
+                    ngx.log(ngx.ERR, "[", log_prefix, "] auth failed (fail-open): ", auth_err)
+                    red:close()
+                    return nil
+                end
             end
-        end
 
-        -- Select the logical database. Skipped for db0 (Redis default) to avoid
-        -- an unnecessary round-trip; safe because the named pool guarantees any
-        -- reused socket was SELECTed on this same db.
-        if db ~= 0 then
-            local sel_ok, sel_err = red:select(db)
-            if not sel_ok then
-                ngx.log(ngx.ERR, "[", log_prefix, "] select db failed (fail-open): ", sel_err)
-                red:close()
-                return nil
+            -- Select the logical database. Skipped for db0 (Redis default) to
+            -- avoid an unnecessary round-trip on fresh sockets too.
+            if db ~= 0 then
+                local sel_ok, sel_err = red:select(db)
+                if not sel_ok then
+                    ngx.log(ngx.ERR, "[", log_prefix, "] select db failed (fail-open): ", sel_err)
+                    red:close()
+                    return nil
+                end
             end
         end
 

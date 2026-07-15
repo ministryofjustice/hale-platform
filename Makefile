@@ -2,7 +2,7 @@
 ### Local build config
 ####################################################
 
-.PHONY: run run-with-firewall run-with-pagecache down down-firewall down-pagecache build shell none clone-repos symlink logs restart clean help test-firewall
+.PHONY: run run-with-firewall run-with-pagecache down down-firewall down-pagecache build shell none clone-repos symlink logs restart clean help test-firewall redis-cli redis-cli-local redis-cheatsheet
 # Default target - list targets with their ## descriptions
 help: ## Show this help
 	@echo "Available commands:"
@@ -74,6 +74,53 @@ build: ## Build Docker images and install dependencies
 # Shell into the WordPress container
 shell: ## Open bash shell in WordPress container
 	@docker exec -it wordpress bash
+
+# Open a redis-cli shell against the cloud ElastiCache instance: scale up
+# the redis-cli utility deployment (deployed by the wordpress chart with
+# 0 replicas, wired to the hale-nginx-secrets secret), shell in with
+# TLS + auth from the secret, then scale it back down on exit.
+redis-cli: ## Open redis-cli against ElastiCache in current kubectl namespace
+	@echo "Scaling up redis-cli pod in context $$(kubectl config current-context)..."; \
+	kubectl scale deployment/redis-cli --replicas=1; \
+	kubectl wait --for=condition=available deployment/redis-cli --timeout=90s; \
+	$(MAKE) --no-print-directory redis-cheatsheet; \
+	kubectl exec -it deployment/redis-cli -- \
+		sh -c 'export REDISCLI_AUTH="$$REDIS_AUTH"; exec redis-cli -h "$$REDIS_HOST" --tls'; \
+	echo "Scaling redis-cli back down..."; \
+	kubectl scale deployment/redis-cli --replicas=0
+
+# Open a redis-cli shell in the local docker compose redis container (no auth).
+# Uses the compose service name so it works whatever the container is named.
+redis-cli-local: redis-cheatsheet ## Open redis-cli against local Docker Redis
+	@docker compose --profile firewall --profile pagecache exec redis redis-cli
+
+# Print the redis-cli cheat sheet (shared by redis-cli and redis-cli-local)
+redis-cheatsheet:
+	@echo ""; \
+	echo "=== General (db 0 = firewall, db 1 = page cache) ==="; \
+	echo ""; \
+	echo "  SELECT 1                                    - switch to page cache db"; \
+	echo "  SELECT 0                                    - switch to firewall db"; \
+	echo "  INFO keyspace                               - key count per db"; \
+	echo "  DBSIZE                                      - total keys in current db"; \
+	echo "  INFO stats                                  - hits/misses/evictions"; \
+	echo ""; \
+	echo "=== Page cache (SELECT 1 first) ==="; \
+	echo ""; \
+	echo "  GET pagecache:version                       - current cache version"; \
+	echo "  SCAN 0 MATCH pagecache:* COUNT 100          - list cache keys (repeat with returned cursor)"; \
+	echo "  TTL pagecache:v<ver>:<host>:<path>          - seconds left for a page"; \
+	echo "  STRLEN pagecache:v<ver>:<host>:<path>       - cached page size in bytes"; \
+	echo "  EXPIRE pagecache:v<ver>:<host>:<path> 1     - evict one page"; \
+	echo ""; \
+	echo "=== Firewall (SELECT 0 first) ==="; \
+	echo ""; \
+	echo "  SCAN 0 MATCH firewall:block:* COUNT 100     - per-IP blocks (firewall:allow:* for bypasses)"; \
+	echo "  TTL firewall:block:<ip>                     - seconds left on a block"; \
+	echo "  GET firewall:rules                          - rules JSON (also firewall:config,"; \
+	echo "                                                firewall:allowlist, firewall:blocklist)"; \
+	echo "  XREVRANGE firewall:audit + - COUNT 10       - last 10 audit events"; \
+	echo ""
 
 # View logs from all containers
 logs: ## View Docker container logs
