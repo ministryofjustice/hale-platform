@@ -24,10 +24,11 @@
 --   enabled. Mirrors FIREWALL_ENABLED vs firewall:config.mode.
 --
 -- KEY SCHEME (must match the WP purge mu-plugin):
---   pagecache:v{version}:{host}:{path}                   content key
+--   pagecache:v{version}:{host}:{path}                  content key
 --   pagecache:fence:{host}:{path}                        purge fence (no version)
 --   pagecache:config                                     runtime mode (see above)
---   - value is "<content-type>\n<body>", split on the first newline.
+--   - value is the PC2 blob: allowlisted response headers + body (see
+--     encode_blob()); Yoast's X-Robots-Tag etc. survive a HIT that way.
 --   - {path} is $request_uri minus any query portion (see cache_path()).
 --   - {host} isolates multisite sites; {version} bumps for an instant mass flush.
 --   - scheme is deliberately omitted: TLS is terminated upstream, so the scheme
@@ -63,9 +64,20 @@ local DEFAULT_MODE = "active"
 
 -- Request URIs that must never be cached (admin, auth, API, cron, feeds...).
 -- request_uri is the ORIGINAL url, before the internal rewrite to index.php.
+-- Lua patterns (no '|' alternation), matched unanchored via uri:find(), so
+-- subdirectory-multisite prefixes ("/site1/wp-signup.php") still match.
+-- Feed/search/sitemap patterns are anchored enough that content slugs like
+-- /feedback/ or /research/ stay cacheable.
+-- /hale-wpms-2020/ is the wps-hide-login slug (platform-wide login path).
+-- Its responses are redirects/login pages that the filter_headers() guards
+-- (status 200 + Set-Cookie + no-cache) would refuse anyway; listing it here
+-- makes the intent explicit and skips the Redis lookup entirely.
 local BYPASS_URI = {
     "/wp%-admin", "/wp%-login", "/wp%-json", "/xmlrpc%.php",
-    "wp%-cron", "/feed", "sitemap",
+    "wp%-cron", "wp%-signup", "wp%-activate",
+    "/hale%-wpms%-2020",
+    "/feed/", "/feed$", "/comments/feed",
+    "sitemap[^/]*%.xml", "/search/", "/search$",
 }
 
 -- Request cookies that mean "personalised" — logged in, commenter, password.
@@ -73,6 +85,58 @@ local BYPASS_COOKIE = {
     "wordpress_logged_in", "wordpress_[a-f0-9]+", "comment_author",
     "wp%-postpass", "wordpress_no_cache",
 }
+
+-- Response headers (besides Content-Type) preserved into the cache blob and
+-- replayed on a HIT. A HIT skips PHP entirely, so any header not listed here
+-- is silently dropped from cached responses. Yoast SEO emits X-Robots-Tag
+-- (e.g. "noindex, follow") on pages excluded from indexing — losing it would
+-- let search engines index those pages. WP core emits Link (REST discovery,
+-- shortlink).
+local STORE_HEADERS = { "X-Robots-Tag", "Link" }
+
+-- Blob format v2: "PC2\n", one "Name: value" line per stored header
+-- (Content-Type always first), a blank line, then the body. Legacy blobs
+-- ("<content-type>\n<body>") are still readable; new writes are always PC2.
+-- An old worker reading a PC2 blob during a rolling deploy serves it wrongly
+-- for up to TTL — accepted, same tradeoff as the fence format changeover.
+local BLOB_MAGIC = "PC2\n"
+
+local function encode_blob(ct, hdrs, body)
+    local lines = { "PC2", "Content-Type: " .. ct }
+    for _, h in ipairs(hdrs or {}) do
+        lines[#lines + 1] = h[1] .. ": " .. h[2]
+    end
+    return table.concat(lines, "\n") .. "\n\n" .. body
+end
+
+-- Returns content-type, header list ({name, value} pairs) or nil, body.
+local function decode_blob(blob)
+    if blob:sub(1, 4) ~= BLOB_MAGIC then
+        -- Legacy format: "<content-type>\n<body>".
+        local nl = blob:find("\n", 1, true)
+        local ct = nl and blob:sub(1, nl - 1) or DEFAULT_CT
+        local body = nl and blob:sub(nl + 1) or blob
+        return ct, nil, body
+    end
+    local sep = blob:find("\n\n", 5, true)
+    if not sep then
+        -- No header/body separator: never written by encode_blob, so the
+        -- blob is corrupt. Serve the remainder as-is rather than erroring.
+        return DEFAULT_CT, nil, blob:sub(5)
+    end
+    local ct, hdrs = DEFAULT_CT, {}
+    for line in blob:sub(5, sep - 1):gmatch("[^\n]+") do
+        local name, value = line:match("^([^:]+):%s*(.*)$")
+        if name then
+            if name:lower() == "content-type" then
+                ct = value
+            else
+                hdrs[#hdrs + 1] = { name, value }
+            end
+        end
+    end
+    return ct, hdrs, blob:sub(sep + 2)
+end
 
 -- $pagecache_status is a map var (declared in the *.conf files), surfaced in the
 -- access log so HIT/MISS/BYPASS is visible per request.
@@ -267,12 +331,20 @@ function _M.fetch()
     end
     redis_pool.release(red)
 
-    -- Stored blob = "<content-type>\n<body>". Split on the first newline.
-    local nl   = blob:find("\n", 1, true)
-    local ct   = nl and blob:sub(1, nl - 1) or DEFAULT_CT
-    local body = nl and blob:sub(nl + 1) or blob
+    local ct, hdrs, body = decode_blob(blob)
 
     ngx.header["Content-Type"] = ct
+    for _, h in ipairs(hdrs or {}) do
+        local cur = ngx.header[h[1]]
+        if cur then
+            -- Same name stored more than once -> multi-value header.
+            if type(cur) ~= "table" then cur = { cur } end
+            cur[#cur + 1] = h[2]
+            ngx.header[h[1]] = cur
+        else
+            ngx.header[h[1]] = h[2]
+        end
+    end
     ngx.header["X-Page-Cache"] = "HIT"
     set_status("hit")
     ngx.print(body)
@@ -303,6 +375,20 @@ function _M.filter_headers()
         return
     end
     ngx.ctx.pc_ct = ct
+
+    -- Snapshot the allowlisted headers now; they're gone by the log phase
+    -- on some code paths and this is the last cheap place to read them.
+    local hdrs = {}
+    for _, name in ipairs(STORE_HEADERS) do
+        local v = ngx.header[name]
+        if type(v) == "table" then
+            for _, one in ipairs(v) do hdrs[#hdrs + 1] = { name, one } end
+        elseif v then
+            hdrs[#hdrs + 1] = { name, v }
+        end
+    end
+    ngx.ctx.pc_hdrs = hdrs
+
     ngx.header["X-Page-Cache"] = "MISS"
 end
 
@@ -344,12 +430,12 @@ end
 -- that time means a purge happened mid-render, so `body` may be stale -
 -- the write is silently dropped rather than re-caching old content.
 -- Check + write happen in one EVAL so there's no gap between them.
-local function write_to_redis(premature, key, fence_key, started, ct, body)
+local function write_to_redis(premature, key, fence_key, started, ct, hdrs, body)
     if premature then return end
     local red = redis_pool.connect()
     if not red then return end
 
-    local value = ct .. "\n" .. body
+    local value = encode_blob(ct, hdrs, body)
     if started and fence_key then
         -- SETEX guarantees a TTL on every key -> eligible for volatile-lru
         -- eviction, so the shared instance can never evict the firewall's
@@ -378,10 +464,14 @@ function _M.store()
 
     local ok, err = ngx.timer.at(0, write_to_redis,
         ngx.ctx.pc_key, ngx.ctx.pc_fence, ngx.ctx.pc_started,
-        ngx.ctx.pc_ct or DEFAULT_CT, body)
+        ngx.ctx.pc_ct or DEFAULT_CT, ngx.ctx.pc_hdrs, body)
     if not ok then
         ngx.log(ngx.ERR, "[pagecache] store timer failed: ", err)
     end
 end
+
+-- Exposed for tests only; not part of the module interface.
+_M._encode_blob = encode_blob
+_M._decode_blob = decode_blob
 
 return _M
