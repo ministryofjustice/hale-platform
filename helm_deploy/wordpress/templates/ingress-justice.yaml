@@ -113,7 +113,7 @@ metadata:
     # Marks the Ingress as part of a canary deployment.
     nginx.ingress.kubernetes.io/canary: "true"
     # Defines the traffic weight for the canary (NGINX level).
-    nginx.ingress.kubernetes.io/canary-weight: "0"
+    nginx.ingress.kubernetes.io/canary-weight: "100"
     nginx.ingress.kubernetes.io/canary-by-cookie: 'X-Canary'
     nginx.ingress.kubernetes.io/canary-by-header: 'X-Canary'
 spec:
