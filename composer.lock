@@ -1016,12 +1016,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale-components.git",
-                "reference": "f4496e5e4fa77069d1fb8dbb0ceb59ffb776efe4"
+                "reference": "8a20d5c12fd0043d755bd7bd7b1b0775709b2cf7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/f4496e5e4fa77069d1fb8dbb0ceb59ffb776efe4",
-                "reference": "f4496e5e4fa77069d1fb8dbb0ceb59ffb776efe4",
+                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/8a20d5c12fd0043d755bd7bd7b1b0775709b2cf7",
+                "reference": "8a20d5c12fd0043d755bd7bd7b1b0775709b2cf7",
                 "shasum": ""
             },
             "require": {
@@ -1034,10 +1034,10 @@
                 "wordpress"
             ],
             "support": {
-                "source": "https://github.com/ministryofjustice/hale-components/tree/1.17.1",
+                "source": "https://github.com/ministryofjustice/hale-components/tree/1.19.0",
                 "issues": "https://github.com/ministryofjustice/hale-components/issues"
             },
-            "time": "2026-07-13T14:34:04+00:00"
+            "time": "2026-07-20T14:01:52+00:00"
         },
         {
             "name": "ministryofjustice/hale-dash",
