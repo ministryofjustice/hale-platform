@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "815765de00ff4e2164b08e71eb4bd424",
+    "content-hash": "457f66dc5ea51f7209342ec1b17675db",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -1011,16 +1011,16 @@
         },
         {
             "name": "ministryofjustice/hale-components",
-            "version": "dev-cache-dashboard",
+            "version": "dev-disable-llm",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale-components.git",
-                "reference": "35885907136f955d74caa09d97b9b1ded1244edb"
+                "reference": "51c6bd0bbb60dfc1d3cb5a02a65c4cc9bc54589a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/35885907136f955d74caa09d97b9b1ded1244edb",
-                "reference": "35885907136f955d74caa09d97b9b1ded1244edb",
+                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/51c6bd0bbb60dfc1d3cb5a02a65c4cc9bc54589a",
+                "reference": "51c6bd0bbb60dfc1d3cb5a02a65c4cc9bc54589a",
                 "shasum": ""
             },
             "require": {
@@ -1032,10 +1032,10 @@
                 "wordpress"
             ],
             "support": {
-                "source": "https://github.com/ministryofjustice/hale-components/tree/cache-dashboard",
+                "source": "https://github.com/ministryofjustice/hale-components/tree/disable-llm",
                 "issues": "https://github.com/ministryofjustice/hale-components/issues"
             },
-            "time": "2026-07-16T09:11:04+00:00"
+            "time": "2026-07-21T15:32:06+00:00"
         },
         {
             "name": "ministryofjustice/hale-dash",
