@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3b50d12ea3a041af01383bc7dbdf9fc6",
+    "content-hash": "cad9fafc6b5a4f279592f1dc883ab5d8",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -1014,31 +1014,32 @@
         },
         {
             "name": "ministryofjustice/hale-components",
-            "version": "dev-disable-llm",
+            "version": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale-components.git",
-                "reference": "51c6bd0bbb60dfc1d3cb5a02a65c4cc9bc54589a"
+                "reference": "9ad46f98abec063974ebd65aa93b6be4a51c6e7b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/51c6bd0bbb60dfc1d3cb5a02a65c4cc9bc54589a",
-                "reference": "51c6bd0bbb60dfc1d3cb5a02a65c4cc9bc54589a",
+                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/9ad46f98abec063974ebd65aa93b6be4a51c6e7b",
+                "reference": "9ad46f98abec063974ebd65aa93b6be4a51c6e7b",
                 "shasum": ""
             },
             "require": {
                 "composer/installers": "~1.0 || ^2.0"
             },
+            "default-branch": true,
             "type": "wordpress-plugin",
             "description": "Functions that are commonly used across the Hale Platform",
             "keywords": [
                 "wordpress"
             ],
             "support": {
-                "source": "https://github.com/ministryofjustice/hale-components/tree/disable-llm",
+                "source": "https://github.com/ministryofjustice/hale-components/tree/1.19.1",
                 "issues": "https://github.com/ministryofjustice/hale-components/issues"
             },
-            "time": "2026-07-21T15:32:06+00:00"
+            "time": "2026-07-22T11:11:26+00:00"
         },
         {
             "name": "ministryofjustice/hale-dash",
