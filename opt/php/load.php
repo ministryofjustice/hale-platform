@@ -47,7 +47,3 @@ function wb_reformat_mu_plugin_urls($url, $path, $plugin)
 if (getenv('WP_ENVIRONMENT_TYPE') === 'local') {
     add_filter('plugins_url', 'wb_reformat_mu_plugin_urls', 10, 3);
 }
-
-add_filter('login_redirect', function ($redirect_to, $requested, $user) {
-    return home_url();
-}, 10, 3);
