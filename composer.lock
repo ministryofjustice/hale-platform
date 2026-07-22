@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a2d7fe57f8a60fec8a94941f84788c85",
+    "content-hash": "e420501c7fc4037697a7d08f3aaea0de",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -115,16 +115,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.388.9",
+            "version": "3.388.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "d537c1143942ba8b7a0203a20c223127b9ba7108"
+                "reference": "ee6462591ad92c79635fb453732a34f245787e0f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/d537c1143942ba8b7a0203a20c223127b9ba7108",
-                "reference": "d537c1143942ba8b7a0203a20c223127b9ba7108",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/ee6462591ad92c79635fb453732a34f245787e0f",
+                "reference": "ee6462591ad92c79635fb453732a34f245787e0f",
                 "shasum": ""
             },
             "require": {
@@ -206,9 +206,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.388.9"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.388.11"
             },
-            "time": "2026-07-17T18:11:29+00:00"
+            "time": "2026-07-21T18:08:14+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -1011,16 +1011,16 @@
         },
         {
             "name": "ministryofjustice/hale-components",
-            "version": "1.19.0",
+            "version": "1.19.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale-components.git",
-                "reference": "8a20d5c12fd0043d755bd7bd7b1b0775709b2cf7"
+                "reference": "9ad46f98abec063974ebd65aa93b6be4a51c6e7b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/8a20d5c12fd0043d755bd7bd7b1b0775709b2cf7",
-                "reference": "8a20d5c12fd0043d755bd7bd7b1b0775709b2cf7",
+                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/9ad46f98abec063974ebd65aa93b6be4a51c6e7b",
+                "reference": "9ad46f98abec063974ebd65aa93b6be4a51c6e7b",
                 "shasum": ""
             },
             "require": {
@@ -1032,10 +1032,10 @@
                 "wordpress"
             ],
             "support": {
-                "source": "https://github.com/ministryofjustice/hale-components/tree/1.19.0",
+                "source": "https://github.com/ministryofjustice/hale-components/tree/1.19.1",
                 "issues": "https://github.com/ministryofjustice/hale-components/issues"
             },
-            "time": "2026-07-20T14:01:52+00:00"
+            "time": "2026-07-22T11:11:26+00:00"
         },
         {
             "name": "ministryofjustice/hale-dash",
@@ -3649,15 +3649,15 @@
         },
         {
             "name": "wpackagist-plugin/microsoft-clarity",
-            "version": "0.10.26",
+            "version": "0.10.27",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/microsoft-clarity/",
-                "reference": "tags/0.10.26"
+                "reference": "tags/0.10.27"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/microsoft-clarity.0.10.26.zip"
+                "url": "https://downloads.wordpress.org/plugin/microsoft-clarity.0.10.27.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
