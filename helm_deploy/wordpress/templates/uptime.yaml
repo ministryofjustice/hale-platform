@@ -1,0 +1,64 @@
+{{- if eq .Values.configmap.envtype "prod" }}
+# Ad hoc website downtime monitor. Sits at zero replicas so it costs nothing at
+# rest; "make uptime-up" scales it to 1 and "make uptime-shell" execs into it.
+# The container just holds idle - all checks are run by hand from that shell.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: uptime
+  namespace: hale-platform-{{ .Values.configmap.envtype }}
+  labels:
+    app: uptime
+spec:
+  selector:
+    matchLabels:
+      app: uptime
+  replicas: {{ .Values.uptime.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: uptime
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+        - name: uptime
+          image: {{ .Values.uptime.image.repository }}
+          imagePullPolicy: {{ .Values.uptime.image.imagePullPolicy }}
+          volumeMounts:
+            - name: urls
+              mountPath: /etc/uptime
+              readOnly: true
+          resources:
+            limits:
+              cpu: {{ .Values.uptime.resources.limits.cpu }}
+              memory: {{ .Values.uptime.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.uptime.resources.requests.cpu }}
+              memory: {{ .Values.uptime.resources.requests.memory }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
+      volumes:
+        - name: urls
+          configMap:
+            name: uptime-urls
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: uptime-urls
+  namespace: hale-platform-{{ .Values.configmap.envtype }}
+  labels:
+    app: uptime
+data:
+  urls.txt: |
+{{- range .Values.uptime.urls }}
+    {{ . }}
+{{- end }}
+{{- end }}
