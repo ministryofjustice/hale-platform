@@ -58,7 +58,7 @@ metadata:
     app: uptime
 data:
   urls.txt: |
-{{- range .Values.uptime.urls }}
+{{ range .Values.uptime.urls }}
     {{ . }}
-{{- end }}
+{{ end }}
 {{- end }}
