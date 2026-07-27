@@ -4,7 +4,9 @@
 
 .PHONY: run down build shell none clone-repos symlink logs restart clean help test-firewall uptime-up uptime-shell uptime-down
 
-# Namespace the uptime monitor runs in. Only prod has an ECR repo for its image.
+# Namespace the uptime monitor runs in. Override per invocation, e.g.
+# "make uptime-up UPTIME_ENV=staging". Must be an env listed under uptime.envs
+# in helm_deploy/wordpress/values.yaml, otherwise the deployment is not there.
 UPTIME_ENV ?= prod
 UPTIME_NS = hale-platform-$(UPTIME_ENV)
 # Default target - show help
@@ -27,6 +29,7 @@ help:
 	@echo "  make uptime-up         - Spin up the uptime pod"
 	@echo "  make uptime-shell      - Open a shell in the uptime pod"
 	@echo "  make uptime-down       - Scale the uptime pod back to zero"
+	@echo "                           Add UPTIME_ENV=staging|demo|dev to pick namespace (default: prod)"
 
 # Run site using Docker
 run:

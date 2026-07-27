@@ -1,4 +1,4 @@
-{{- if eq .Values.configmap.envtype "prod" }}
+{{- if has .Values.configmap.envtype .Values.uptime.envs }}
 # Ad hoc website downtime monitor. Sits at zero replicas so it costs nothing at
 # rest; "make uptime-up" scales it to 1 and "make uptime-shell" execs into it.
 # The container just holds idle - all checks are run by hand from that shell.
