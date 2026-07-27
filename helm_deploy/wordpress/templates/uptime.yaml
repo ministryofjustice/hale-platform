@@ -20,6 +20,8 @@ spec:
         app: uptime
     spec:
       terminationGracePeriodSeconds: 0
+      serviceAccountName: hale-platform-{{ .Values.configmap.envtype }}-service
+      automountServiceAccountToken: false
       containers:
         - name: uptime
           image: {{ .Values.uptime.image.repository }}
