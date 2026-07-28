@@ -135,6 +135,54 @@ cron:
   wpK8sCron:
     enabled: true
 
+## @param Uptime availability monitor
+##
+## Ad hoc utility pod. Deployed scaled to zero so it costs nothing at rest -
+## spin it up with "make uptime-up", exec in with "make uptime-shell", and
+## shut it down again with "make uptime-down".
+##
+## Rendered only in the namespaces listed under "envs" below - the deployment is
+## skipped everywhere else.
+##
+## The image always comes from the prod namespace's ECR repo, defined in
+## cloud-platform-environments at
+## hale-platform-prod/resources/ecr-uptime-availability-monitor.tf, and is built
+## and pushed by the ministryofjustice/uptime-availability-monitor repo. There is
+## no per-namespace repo: the registry is account wide, so any hale-platform
+## namespace can pull the same prod image.
+uptime:
+  # Namespaces the monitor is deployed into, matched against configmap.envtype.
+  envs:
+    - prod
+    - staging
+    - demo
+    - dev
+
+  image:
+    repository: 754256621582.dkr.ecr.eu-west-2.amazonaws.com/jotw-content-devs/hale-platform-prod-uptime-availability-monitor-ecr:latest
+    imagePullPolicy: Always
+
+  # Scaled up on demand, so a helm release must never reset it to 1.
+  replicaCount: 0
+
+  # URL list mounted at /etc/uptime/urls.txt in the pod. The first entry is the
+  # default target: bare "uptime monitor" checks only it. Pass
+  # "-f /etc/uptime/urls.txt" (or pick 'a' in the menu) to check every URL.
+  urls:
+    - https://websitebuilder.service.justice.gov.uk
+    - https://dev.websitebuilder.service.justice.gov.uk
+    - https://demo.websitebuilder.service.justice.gov.uk
+    - https://staging.websitebuilder.service.justice.gov.uk
+    - https://www.justice.gov.uk
+
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
 ## @param Non-secret env variables
 ##
 configmap:
