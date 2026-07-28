@@ -173,6 +173,7 @@ uptime:
     - https://dev.websitebuilder.service.justice.gov.uk
     - https://demo.websitebuilder.service.justice.gov.uk
     - https://staging.websitebuilder.service.justice.gov.uk
+    - https://www.justice.gov.uk
 
   resources:
     limits:
