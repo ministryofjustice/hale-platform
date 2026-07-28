@@ -103,7 +103,7 @@
     "ministryofjustice/cookie-compliance": "dev-main",
     "ministryofjustice/govwind": "dev-main",
     "ministryofjustice/justice": "dev-main",
-    "ministryofjustice/hale": "dev-main",
+    "ministryofjustice/hale": "dev-font-fix",
     "ministryofjustice/hale-components": "dev-main",
     "ministryofjustice/hale-dash": "dev-main",
     "ministryofjustice/hale-showcase": "1.1.10",
