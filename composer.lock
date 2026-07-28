@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1031ddb64e7d26b05d423d01eca0a202",
+    "content-hash": "70818cfbff30636182555971b8f0b058",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -991,25 +991,25 @@
         },
         {
             "name": "ministryofjustice/hale",
-            "version": "dev-font-fix",
+            "version": "dev-fix-font-in-editor",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale.git",
-                "reference": "1378841384650d730ded611528329cd84a59a202"
+                "reference": "6345212907180ef5fd7ab30cc9b854678eba40ad"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/1378841384650d730ded611528329cd84a59a202",
-                "reference": "1378841384650d730ded611528329cd84a59a202",
+                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/6345212907180ef5fd7ab30cc9b854678eba40ad",
+                "reference": "6345212907180ef5fd7ab30cc9b854678eba40ad",
                 "shasum": ""
             },
             "type": "wordpress-theme",
             "description": "Hale theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/hale/tree/font-fix",
+                "source": "https://github.com/ministryofjustice/hale/tree/fix-font-in-editor",
                 "issues": "https://github.com/ministryofjustice/hale/issues"
             },
-            "time": "2026-07-28T11:59:35+00:00"
+            "time": "2026-07-28T13:50:18+00:00"
         },
         {
             "name": "ministryofjustice/hale-components",
