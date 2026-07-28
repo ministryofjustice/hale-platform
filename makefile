@@ -2,7 +2,7 @@
 ### Local build config
 ####################################################
 
-.PHONY: run down build shell none clone-repos symlink logs restart clean help test-firewall uptime-up uptime-shell uptime-down
+.PHONY: run down build shell none clone-repos symlink logs restart clean help test-firewall uptime-run uptime-down
 
 # Default target - show help
 help:
@@ -21,10 +21,9 @@ help:
 	@echo "  make none              - Remove dangling <none> images (alias for clean)"
 	@echo ""
 	@echo "Uptime monitor (runs in the cluster, scaled to zero at rest):"
-	@echo "  make uptime-up         - Spin up the uptime pod"
-	@echo "  make uptime-shell      - Open a shell in the uptime pod"
+	@echo "  make uptime-run        - Spin up the uptime pod and run the monitor"
 	@echo "  make uptime-down       - Scale the uptime pod back to zero"
-	@echo "                           Add UPTIME_ENV=staging|demo|dev to pick namespace (default: prod)"
+	@echo "                           Uses the current kubectl namespace context"
 
 # Run site using Docker
 run:
