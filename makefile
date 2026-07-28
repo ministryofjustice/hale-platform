@@ -4,11 +4,6 @@
 
 .PHONY: run down build shell none clone-repos symlink logs restart clean help test-firewall uptime-up uptime-shell uptime-down
 
-# Namespace the uptime monitor runs in. Override per invocation, e.g.
-# "make uptime-up UPTIME_ENV=staging". Must be an env listed under uptime.envs
-# in helm_deploy/wordpress/values.yaml, otherwise the deployment is not there.
-UPTIME_ENV ?= prod
-UPTIME_NS = hale-platform-$(UPTIME_ENV)
 # Default target - show help
 help:
 	@echo "Available commands:"
@@ -41,7 +36,7 @@ run:
 
 # Run site (start redis and enable firewall) using Docker
 run-with-firewall:
-	@echo "Starting Docker containers..."
+	@echo "Starting Docker containers"
 	FIREWALL_ENABLED=true docker compose --profile firewall up -d
 	@chmod +x bin/upload.sh
 	@./bin/upload.sh
@@ -49,13 +44,13 @@ run-with-firewall:
 
 # Shutdown site using Docker
 down:
-	@echo "Stopping Docker containers..."
+	@echo "Stopping Docker containers"
 	docker compose --profile firewall down --remove-orphans
 	@echo "✓ Containers stopped"
 
 # Build all images on local machine
 build:
-	@echo "Building Docker images..."
+	@echo "Building Docker images"
 	@chmod +x bin/local-build.sh
 	@./bin/local-build.sh
 
@@ -90,20 +85,16 @@ test-firewall:
 
 # Spin up the uptime monitor pod. It ships at zero replicas, and
 # imagePullPolicy is Always, so scaling up always pulls the current image.
-uptime-up:
-	@echo "Starting uptime monitor in $(UPTIME_NS)..."
-	@kubectl -n $(UPTIME_NS) scale deploy/uptime --replicas=1
-	@kubectl -n $(UPTIME_NS) rollout status deploy/uptime --timeout=2m
-	@echo "✓ Uptime monitor running - 'make uptime-shell' to use it"
-
-# Shell into the uptime pod, then run "uptime" for the interactive menu
-uptime-shell:
-	@kubectl -n $(UPTIME_NS) exec -it deploy/uptime -- sh
+uptime-run:
+	@echo "Starting uptime monitor"
+	@kubectl scale deploy/uptime --replicas=1
+	@kubectl rollout status deploy/uptime --timeout=2m
+	@kubectl exec -it deploy/uptime -- uptime
 
 # Scale back to zero when finished
 uptime-down:
-	@echo "Stopping uptime monitor in $(UPTIME_NS)..."
-	@kubectl -n $(UPTIME_NS) scale deploy/uptime --replicas=0
+	@echo "Stopping uptime monitor"
+	@kubectl scale deploy/uptime --replicas=0
 	@echo "✓ Uptime monitor stopped"
 
 # Remove all dangling <none> images
@@ -111,6 +102,6 @@ none: clean
 
 # Clean up dangling images
 clean:
-	@echo "Removing dangling Docker images..."
+	@echo "Removing dangling Docker images"
 	@docker images -f "dangling=true" -q | xargs -r docker rmi || echo "No dangling images to remove"
 	@echo "✓ Cleanup complete"
