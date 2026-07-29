@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f248ff7f1cc5f28d5d3bbd454218a121",
+    "content-hash": "5c20502467a55f1843d4902bee9db40b",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -990,25 +990,25 @@
         },
         {
             "name": "ministryofjustice/hale",
-            "version": "dev-listing-images",
+            "version": "dev-update-npm-deps",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale.git",
-                "reference": "2567851b31c0d622c6e0153ce32669a1deeb8afd"
+                "reference": "9874dbcf4433fe9eab4318a42688cc98f320143e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/2567851b31c0d622c6e0153ce32669a1deeb8afd",
-                "reference": "2567851b31c0d622c6e0153ce32669a1deeb8afd",
+                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/9874dbcf4433fe9eab4318a42688cc98f320143e",
+                "reference": "9874dbcf4433fe9eab4318a42688cc98f320143e",
                 "shasum": ""
             },
             "type": "wordpress-theme",
             "description": "Hale theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/hale/tree/listing-images",
+                "source": "https://github.com/ministryofjustice/hale/tree/update-npm-deps",
                 "issues": "https://github.com/ministryofjustice/hale/issues"
             },
-            "time": "2026-07-21T11:39:18+00:00"
+            "time": "2026-07-29T13:10:27+00:00"
         },
         {
             "name": "ministryofjustice/hale-components",
@@ -3641,5 +3641,5 @@
         "php": ">=8.0"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }

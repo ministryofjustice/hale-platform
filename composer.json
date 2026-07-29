@@ -98,7 +98,7 @@
     "composer/installers": "^v2.0",
     "ministryofjustice/cookie-compliance": "1.1.1",
     "ministryofjustice/govwind": "dev-main",
-    "ministryofjustice/hale": "dev-listing-images",
+    "ministryofjustice/hale": "dev-update-npm-deps",
     "ministryofjustice/hale-components": "dev-main",
     "ministryofjustice/hale-dash": "dev-main",
     "ministryofjustice/hale-showcase": "1.1.10",
