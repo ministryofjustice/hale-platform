@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "70818cfbff30636182555971b8f0b058",
+    "content-hash": "68499f6e54f75a102440ada8680f8f62",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -939,32 +939,31 @@
         },
         {
             "name": "ministryofjustice/cookie-compliance",
-            "version": "dev-main",
+            "version": "dev-add-justice-csp-compatibility",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/cookie-compliance.git",
-                "reference": "a8a2e2676dbede7c09ad241b9eacf0ca4f789d25"
+                "reference": "e4d930283f5de179818b0b1a69e496b9437abdee"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/cookie-compliance/zipball/a8a2e2676dbede7c09ad241b9eacf0ca4f789d25",
-                "reference": "a8a2e2676dbede7c09ad241b9eacf0ca4f789d25",
+                "url": "https://api.github.com/repos/ministryofjustice/cookie-compliance/zipball/e4d930283f5de179818b0b1a69e496b9437abdee",
+                "reference": "e4d930283f5de179818b0b1a69e496b9437abdee",
                 "shasum": ""
             },
             "require": {
                 "composer/installers": "~1.0 || ^2.0"
             },
-            "default-branch": true,
             "type": "wordpress-plugin",
             "description": "Functions that are commonly used across the Hale Platform",
             "keywords": [
                 "wordpress"
             ],
             "support": {
-                "source": "https://github.com/ministryofjustice/cookie-compliance/tree/1.1.1",
+                "source": "https://github.com/ministryofjustice/cookie-compliance/tree/add-justice-csp-compatibility",
                 "issues": "https://github.com/ministryofjustice/cookie-compliance/issues"
             },
-            "time": "2026-05-05T09:53:58+00:00"
+            "time": "2026-07-30T15:40:38+00:00"
         },
         {
             "name": "ministryofjustice/govwind",
@@ -4022,5 +4021,5 @@
         "php": ">=8.0"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
