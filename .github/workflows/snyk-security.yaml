@@ -1,0 +1,89 @@
+name: Snyk Security
+
+on:
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '12 8 * * 2'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  snyk:
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    runs-on: ubuntu-latest
+    env:
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 #v7.0.0
+
+      - name: Set up Snyk CLI
+        uses: snyk/actions/setup@9adf32b1121593767fc3c057af55b55db032dc04
+
+      - name: Code (SAST) test
+        continue-on-error: true
+        run: snyk code test --sarif > snyk-code.sarif
+
+      - name: Infrastructure as Code test
+        continue-on-error: true
+        run: |
+          snyk iac test nginx.dockerfile wordpress.dockerfile helm_deploy/wordpress
+
+      - name: Set PHP min version
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 #v2.37.2
+        with:
+          php-version: 8.4
+
+      - name: Configure Composer auth and install dependencies
+        run: |
+          if ! composer config --global --list | grep -q 'github.com'; then
+            composer config --global http-basic.github.com x-access-token ${{ secrets.GITHUB_TOKEN }}
+          fi
+          composer config --global http-basic.connect.advancedcustomfields.com ${{ secrets.ACF_USER }} ${{ secrets.ACF_PASSWORD }}
+          composer config --global http-basic.relevanssi.com ${{ secrets.RELEVANSSI_USER }} ${{ secrets.RELEVANSSI_PASSWORD }}
+          composer install --prefer-dist --no-progress --no-interaction --optimize-autoloader
+
+      - name: PHP dependency test
+        continue-on-error: true
+        run: snyk test --file=composer.lock --package-manager=composer
+
+      - name: Build theme assets
+        run: |
+          for theme in hale hale-dash hale-showcase ppo govwind justice; do
+            (
+              cd ./wordpress/wp-content/themes/$theme
+              if [ -f package-lock.json ]; then
+                npm ci --prefer-offline --no-audit
+              else
+                npm install --prefer-offline --no-audit
+              fi
+              npm run production --if-present
+            ) &
+          done
+          wait
+
+      - name: Build nginx image
+        run: docker image build -t hale-platform-nginx-prod:snyk -f nginx.dockerfile .
+
+      - name: Build WordPress image
+        run: docker image build -t hale-platform-wordpress-prod:snyk -f wordpress.dockerfile .
+
+      - name: Monitor container images
+        continue-on-error: true
+        run: |
+          snyk container monitor hale-platform-nginx-prod:snyk --file=nginx.dockerfile
+          snyk container monitor hale-platform-wordpress-prod:snyk --file=wordpress.dockerfile
+
+      - name: Upload result to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4.36.3
+        with:
+          sarif_file: snyk-code.sarif
