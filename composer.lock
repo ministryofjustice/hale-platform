@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a17b87ada6cf406c0a49f321e7f5e9e8",
+    "content-hash": "5e290f2a41134ff503494ff6a8d9c8e4",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -960,7 +960,7 @@
                 "wordpress"
             ],
             "support": {
-                "source": "https://github.com/ministryofjustice/cookie-compliance/tree/1.3.0",
+                "source": "https://github.com/ministryofjustice/cookie-compliance/tree/1.3.1",
                 "issues": "https://github.com/ministryofjustice/cookie-compliance/issues"
             },
             "time": "2026-07-30T09:39:24+00:00"
@@ -989,25 +989,25 @@
         },
         {
             "name": "ministryofjustice/hale",
-            "version": "4.34.7",
+            "version": "4.35.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale.git",
-                "reference": "b6c016c94407046205410c2565190fa9b2862ada"
+                "reference": "71212142111497eb289ae7e247d459ba2b526ae4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/b6c016c94407046205410c2565190fa9b2862ada",
-                "reference": "b6c016c94407046205410c2565190fa9b2862ada",
+                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/71212142111497eb289ae7e247d459ba2b526ae4",
+                "reference": "71212142111497eb289ae7e247d459ba2b526ae4",
                 "shasum": ""
             },
             "type": "wordpress-theme",
             "description": "Hale theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/hale/tree/4.34.7",
+                "source": "https://github.com/ministryofjustice/hale/tree/4.35.0",
                 "issues": "https://github.com/ministryofjustice/hale/issues"
             },
-            "time": "2026-07-27T15:52:57+00:00"
+            "time": "2026-07-30T11:22:49+00:00"
         },
         {
             "name": "ministryofjustice/hale-components",
@@ -3721,15 +3721,15 @@
         },
         {
             "name": "wpackagist-plugin/revisionary",
-            "version": "3.9.0",
+            "version": "3.9.2",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/revisionary/",
-                "reference": "tags/3.9.0"
+                "reference": "tags/3.9.2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/revisionary.3.9.0.zip"
+                "url": "https://downloads.wordpress.org/plugin/revisionary.3.9.2.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
