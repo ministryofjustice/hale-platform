@@ -115,16 +115,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.389.3",
+            "version": "3.390.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "09bbb4023a14316ff2c5e568301a382f7e3465f5"
+                "reference": "8026ec372223fb3ffa010b96ca14a1df329085f5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/09bbb4023a14316ff2c5e568301a382f7e3465f5",
-                "reference": "09bbb4023a14316ff2c5e568301a382f7e3465f5",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/8026ec372223fb3ffa010b96ca14a1df329085f5",
+                "reference": "8026ec372223fb3ffa010b96ca14a1df329085f5",
                 "shasum": ""
             },
             "require": {
@@ -206,9 +206,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.389.3"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.390.3"
             },
-            "time": "2026-07-29T18:09:38+00:00"
+            "time": "2026-08-03T18:28:24+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -971,22 +971,22 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/govwind.git",
-                "reference": "7ec2e38cffa67e50bbdb753db017c09b329c167b"
+                "reference": "4a4ee3edc2b732c7b251b6985ae5443defd03249"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/7ec2e38cffa67e50bbdb753db017c09b329c167b",
-                "reference": "7ec2e38cffa67e50bbdb753db017c09b329c167b",
+                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/4a4ee3edc2b732c7b251b6985ae5443defd03249",
+                "reference": "4a4ee3edc2b732c7b251b6985ae5443defd03249",
                 "shasum": ""
             },
             "default-branch": true,
             "type": "wordpress-theme",
             "description": "Govwind theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/govwind/tree/1.0.1",
+                "source": "https://github.com/ministryofjustice/govwind/tree/1.0.2",
                 "issues": "https://github.com/ministryofjustice/govwind/issues"
             },
-            "time": "2026-07-09T12:56:12+00:00"
+            "time": "2026-08-03T08:46:16+00:00"
         },
         {
             "name": "ministryofjustice/hale",
@@ -994,22 +994,22 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale.git",
-                "reference": "71212142111497eb289ae7e247d459ba2b526ae4"
+                "reference": "24e9fbc8b084b786613a8c4965c0d01dc8f0cc6b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/71212142111497eb289ae7e247d459ba2b526ae4",
-                "reference": "71212142111497eb289ae7e247d459ba2b526ae4",
+                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/24e9fbc8b084b786613a8c4965c0d01dc8f0cc6b",
+                "reference": "24e9fbc8b084b786613a8c4965c0d01dc8f0cc6b",
                 "shasum": ""
             },
             "default-branch": true,
             "type": "wordpress-theme",
             "description": "Hale theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/hale/tree/4.35.0",
+                "source": "https://github.com/ministryofjustice/hale/tree/4.35.1",
                 "issues": "https://github.com/ministryofjustice/hale/issues"
             },
-            "time": "2026-07-30T11:22:49+00:00"
+            "time": "2026-08-04T10:51:43+00:00"
         },
         {
             "name": "ministryofjustice/hale-components",
@@ -1137,12 +1137,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/website-builder-blocks.git",
-                "reference": "299ea03e9b32e5197c47fa00c1908fd675861117"
+                "reference": "27c062fe8895f74886a252b9d5fc85c3556a5722"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/299ea03e9b32e5197c47fa00c1908fd675861117",
-                "reference": "299ea03e9b32e5197c47fa00c1908fd675861117",
+                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/27c062fe8895f74886a252b9d5fc85c3556a5722",
+                "reference": "27c062fe8895f74886a252b9d5fc85c3556a5722",
                 "shasum": ""
             },
             "require-dev": {
@@ -1169,7 +1169,7 @@
                 "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/allowed-third-party-embed",
                 "issues": "https://github.com/ministryofjustice/website-builder-blocks/issues"
             },
-            "time": "2026-07-30T15:27:08+00:00"
+            "time": "2026-08-04T15:45:00+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
@@ -3906,10 +3906,10 @@
         },
         {
             "name": "wpengine/advanced-custom-fields-pro",
-            "version": "6.8.6",
+            "version": "6.8.7",
             "dist": {
                 "type": "zip",
-                "url": "https://connect.advancedcustomfields.com/v2/plugins/composer_download?s=composer&p=pro&t=6.8.6"
+                "url": "https://connect.advancedcustomfields.com/v2/plugins/composer_download?s=composer&p=pro&t=6.8.7"
             },
             "require": {
                 "composer/installers": "~1.0 || ~2.0"
