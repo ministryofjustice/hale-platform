@@ -115,16 +115,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.390.3",
+            "version": "3.390.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "8026ec372223fb3ffa010b96ca14a1df329085f5"
+                "reference": "51115bd27065e978c2a4cf297f8280d8c39e83da"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/8026ec372223fb3ffa010b96ca14a1df329085f5",
-                "reference": "8026ec372223fb3ffa010b96ca14a1df329085f5",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/51115bd27065e978c2a4cf297f8280d8c39e83da",
+                "reference": "51115bd27065e978c2a4cf297f8280d8c39e83da",
                 "shasum": ""
             },
             "require": {
@@ -206,9 +206,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.390.3"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.390.4"
             },
-            "time": "2026-08-03T18:28:24+00:00"
+            "time": "2026-08-04T18:52:58+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -1137,12 +1137,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/website-builder-blocks.git",
-                "reference": "27c062fe8895f74886a252b9d5fc85c3556a5722"
+                "reference": "0b5c75ac4a399ed2fa896fee62e9ddddecd3dad6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/27c062fe8895f74886a252b9d5fc85c3556a5722",
-                "reference": "27c062fe8895f74886a252b9d5fc85c3556a5722",
+                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/0b5c75ac4a399ed2fa896fee62e9ddddecd3dad6",
+                "reference": "0b5c75ac4a399ed2fa896fee62e9ddddecd3dad6",
                 "shasum": ""
             },
             "require-dev": {
@@ -1169,7 +1169,7 @@
                 "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/allowed-third-party-embed",
                 "issues": "https://github.com/ministryofjustice/website-builder-blocks/issues"
             },
-            "time": "2026-08-04T15:45:00+00:00"
+            "time": "2026-08-05T10:43:34+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
