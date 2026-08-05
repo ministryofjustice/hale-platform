@@ -32,7 +32,7 @@ RUN apk del .build-deps
 # Install a patched version of WordPress core, prior to release on Docker Hub.
 # Minimal implementation, edit the following 2 arguments directly.
 ARG PATCH_WORDPRESS_VERSION=""
-# Get value from https://wordpress.org/wordpress-<WORDPRESS_VERSION>.tar.gz.sha1
+# Get value from https://wordpress.org/wordpress-<WORDPRESS_VERSION>.tar.gz.sha1
 # Download and extract script from: https://github.com/docker-library/wordpress/blob/master/Dockerfile.template
 RUN set -ex; \
 	if [ -n "$PATCH_WORDPRESS_VERSION" ] && [ -n "$PATCH_WORDPRESS_SHA1" ]; then \
