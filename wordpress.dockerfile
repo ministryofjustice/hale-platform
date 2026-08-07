@@ -38,7 +38,6 @@ RUN set -ex; \
 	if [ -n "$PATCH_WORDPRESS_VERSION" ] && [ -n "$PATCH_WORDPRESS_SHA1" ]; then \
 		curl -o wordpress.tar.gz -fL "https://wordpress.org/wordpress-$PATCH_WORDPRESS_VERSION.tar.gz"; \
 		echo "$PATCH_WORDPRESS_SHA1 *wordpress.tar.gz" | sha1sum -c -; \
-		rm -rf /usr/src/wordpress; \
 		tar -xzf wordpress.tar.gz -C /usr/src/; \
 		rm wordpress.tar.gz; \
         chown -R www-data:www-data /usr/src/wordpress; \
