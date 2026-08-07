@@ -53,10 +53,6 @@ RUN addgroup -g 1001 wp \
     && adduser -G wp -g wp -s /bin/sh -D wp \
     && chown wp:wp /var/www/html
 
-# Create the non-root runtime user early so COPY --chown can assign ownership
-# at write time, avoiding a slow recursive chown over the whole tree later.
-RUN adduser --disabled-password hale -u 1002
-
 # Add PHP multsite supporting files
 COPY opt/php/load.php /usr/src/wordpress/wp-content/mu-plugins/load.php
 COPY opt/php/application.php /usr/src/wordpress/wp-content/mu-plugins/application.php
@@ -73,18 +69,18 @@ COPY opt/scripts/startup-patch.sh /usr/local/bin/
 # Generated Composer and NPM compiled artifacts (plugins, themes, CSS, JS)
 # The WP offical Docker image expects files to be in /usr/src/wordpress
 # but then will copy them over on launch of site to the /html directory.
-COPY --chown=hale:hale /wordpress/wp-content/plugins /usr/src/wordpress/wp-content/plugins
-COPY --chown=hale:hale /wordpress/wp-content/mu-plugins /usr/src/wordpress/wp-content/mu-plugins
-COPY --chown=hale:hale /wordpress/wp-content/themes /usr/src/wordpress/wp-content/themes
-COPY --chown=hale:hale /vendor /usr/src/wordpress/wp-content/vendor
+COPY /wordpress/wp-content/plugins /usr/src/wordpress/wp-content/plugins
+COPY /wordpress/wp-content/mu-plugins /usr/src/wordpress/wp-content/mu-plugins
+COPY /wordpress/wp-content/themes /usr/src/wordpress/wp-content/themes
+COPY /vendor /usr/src/wordpress/wp-content/vendor
 
 # Load default production php.ini file in
 # Custom php.ini additions for dev, staging & prod are done via k8s manifest
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
-# Set ownership for the non-root runtime user (hale created above).
-# /usr/src/wordpress content is already owned by hale via COPY --chown.
-RUN chown -R hale:hale /var/www/html \
+# Create new user to run the container as non-root
+RUN adduser --disabled-password hale -u 1002 \
+    && chown -R hale:hale /var/www/html \
     && chown hale:hale /usr/local/bin/docker-entrypoint.sh
 
 # Make multisite scripts executable
