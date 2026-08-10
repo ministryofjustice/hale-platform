@@ -36,7 +36,8 @@ jobs:
       - name: Infrastructure as Code test
         continue-on-error: true
         run: |
-          snyk iac test nginx.dockerfile wordpress.dockerfile helm_deploy/wordpress
+          snyk iac test nginx.dockerfile wordpress.dockerfile helm_deploy/wordpress \
+            --sarif-file-output=snyk-iac.sarif
 
       - name: Set PHP min version
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 #v2.37.2
@@ -54,7 +55,7 @@ jobs:
 
       - name: PHP dependency test
         continue-on-error: true
-        run: snyk test --file=composer.lock --package-manager=composer
+        run: snyk test --file=composer.lock --package-manager=composer --sarif-file-output=snyk-oss.sarif
 
       - name: Build theme assets
         run: |
@@ -83,7 +84,13 @@ jobs:
           snyk container monitor hale-platform-nginx-prod:snyk --file=nginx.dockerfile
           snyk container monitor hale-platform-wordpress-prod:snyk --file=wordpress.dockerfile
 
-      - name: Upload result to GitHub Code Scanning
+      - name: Test container images
+        continue-on-error: true
+        run: |
+          snyk container test hale-platform-nginx-prod:snyk --file=nginx.dockerfile --sarif-file-output=snyk-nginx.sarif
+          snyk container test hale-platform-wordpress-prod:snyk --file=wordpress.dockerfile --sarif-file-output=snyk-wordpress.sarif
+
+      - name: Upload results to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
         with:
-          sarif_file: snyk-code.sarif
+          sarif_file: .
