@@ -2,7 +2,9 @@ name: Snyk Security
 
 on:
   pull_request:
-    branches: [main]
+    branches:
+      - main
+
   schedule:
     - cron: '12 8 * * 2'
 
@@ -15,82 +17,346 @@ permissions:
 
 jobs:
   snyk:
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      issues: write
+
     env:
       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
     steps:
       - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up Snyk CLI
         uses: snyk/actions/setup@9adf32b1121593767fc3c057af55b55db032dc04
 
-      - name: Code (SAST) test
-        continue-on-error: true
-        run: snyk code test --sarif > snyk-code.sarif
+      # ------------------------------------------------------------
+      # Code / SAST
+      # ------------------------------------------------------------
 
-      - name: Infrastructure as Code test
+      - name: Test application code
         continue-on-error: true
         run: |
-          snyk iac test nginx.dockerfile wordpress.dockerfile helm_deploy/wordpress \
-            --sarif-file-output=snyk-iac.sarif
+          snyk code test \
+            --severity-threshold=high \
+            --json-file-output=snyk-code.json
+
+      # ------------------------------------------------------------
+      # Infrastructure as Code
+      # ------------------------------------------------------------
+
+      - name: Test infrastructure
+        continue-on-error: true
+        run: |
+          snyk iac test \
+            nginx.dockerfile \
+            wordpress.dockerfile \
+            helm_deploy/wordpress \
+            --severity-threshold=high \
+            --json-file-output=snyk-iac.json
+
+      # ------------------------------------------------------------
+      # PHP dependencies
+      # ------------------------------------------------------------
 
       - name: Set PHP min version
-        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 #v2.37.2
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2.37.2
         with:
           php-version: 8.4
 
-      - name: Configure Composer auth and install dependencies
+      - name: Configure Composer auth
         run: |
           if ! composer config --global --list | grep -q 'github.com'; then
-            composer config --global http-basic.github.com x-access-token ${{ secrets.GITHUB_TOKEN }}
+            composer config --global \
+              http-basic.github.com \
+              x-access-token \
+              "${{ secrets.GITHUB_TOKEN }}"
           fi
-          composer config --global http-basic.connect.advancedcustomfields.com ${{ secrets.ACF_USER }} ${{ secrets.ACF_PASSWORD }}
-          composer config --global http-basic.relevanssi.com ${{ secrets.RELEVANSSI_USER }} ${{ secrets.RELEVANSSI_PASSWORD }}
-          composer install --prefer-dist --no-progress --no-interaction --optimize-autoloader
 
-      - name: PHP dependency test
+          composer config --global \
+            http-basic.connect.advancedcustomfields.com \
+            "${{ secrets.ACF_USER }}" \
+            "${{ secrets.ACF_PASSWORD }}"
+
+          composer config --global \
+            http-basic.relevanssi.com \
+            "${{ secrets.RELEVANSSI_USER }}" \
+            "${{ secrets.RELEVANSSI_PASSWORD }}"
+
+      - name: Install Composer dependencies
+        run: |
+          composer install \
+            --prefer-dist \
+            --no-progress \
+            --no-interaction \
+            --optimize-autoloader
+
+      - name: Test PHP dependencies
         continue-on-error: true
-        run: snyk test --file=composer.lock --package-manager=composer --sarif-file-output=snyk-oss.sarif
+        run: |
+          snyk test \
+            --file=composer.lock \
+            --package-manager=composer \
+            --severity-threshold=high \
+            --json-file-output=snyk-oss.json
+
+      # ------------------------------------------------------------
+      # Theme assets
+      # ------------------------------------------------------------
 
       - name: Build theme assets
         run: |
           for theme in hale hale-dash hale-showcase ppo govwind justice; do
             (
-              cd ./wordpress/wp-content/themes/$theme
+              cd "./wordpress/wp-content/themes/$theme"
+
               if [ -f package-lock.json ]; then
                 npm ci --prefer-offline --no-audit
               else
                 npm install --prefer-offline --no-audit
               fi
+
               npm run production --if-present
             ) &
           done
+
           wait
 
+      # ------------------------------------------------------------
+      # Container images
+      # ------------------------------------------------------------
+
       - name: Build nginx image
-        run: docker image build -t hale-platform-nginx-prod:snyk -f nginx.dockerfile .
+        run: |
+          docker build \
+            -t hale-platform-nginx-prod:snyk \
+            -f nginx.dockerfile \
+            .
 
       - name: Build WordPress image
-        run: docker image build -t hale-platform-wordpress-prod:snyk -f wordpress.dockerfile .
+        run: |
+          docker build \
+            -t hale-platform-wordpress-prod:snyk \
+            -f wordpress.dockerfile \
+            .
 
+      - name: Test nginx container
+        continue-on-error: true
+        run: |
+          snyk container test \
+            hale-platform-nginx-prod:snyk \
+            --file=nginx.dockerfile \
+            --severity-threshold=high \
+            --json-file-output=snyk-nginx.json
+
+      - name: Test WordPress container
+        continue-on-error: true
+        run: |
+          snyk container test \
+            hale-platform-wordpress-prod:snyk \
+            --file=wordpress.dockerfile \
+            --severity-threshold=high \
+            --json-file-output=snyk-wordpress.json
+
+      # Monitoring is useful for Snyk's ongoing project monitoring,
+      # but doesn't need to run for every PR.
       - name: Monitor container images
+        if: github.event_name == 'schedule'
         continue-on-error: true
         run: |
-          snyk container monitor hale-platform-nginx-prod:snyk --file=nginx.dockerfile
-          snyk container monitor hale-platform-wordpress-prod:snyk --file=wordpress.dockerfile
+          snyk container monitor \
+            hale-platform-nginx-prod:snyk \
+            --file=nginx.dockerfile
 
-      - name: Test container images
-        continue-on-error: true
+          snyk container monitor \
+            hale-platform-wordpress-prod:snyk \
+            --file=wordpress.dockerfile
+
+      # ------------------------------------------------------------
+      # PR summary
+      # ------------------------------------------------------------
+
+      - name: Create PR security report
+        if: always() && github.event_name == 'pull_request'
+        shell: bash
         run: |
-          snyk container test hale-platform-nginx-prod:snyk --file=nginx.dockerfile --sarif-file-output=snyk-nginx.sarif
-          snyk container test hale-platform-wordpress-prod:snyk --file=wordpress.dockerfile --sarif-file-output=snyk-wordpress.sarif
+          set +e
 
-      - name: Upload results to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
-        with:
-          sarif_file: .
+          REPORT="snyk-report.md"
+
+          cat > "$REPORT" <<'EOF'
+          <!-- snyk-security-report -->
+
+          ## 🔐 Snyk Security
+
+          EOF
+
+          critical=0
+          high=0
+
+          count_severity() {
+            local file="$1"
+            local severity="$2"
+
+            if [ ! -f "$file" ]; then
+              echo 0
+              return
+            fi
+
+            jq \
+              --arg severity "$severity" \
+              '
+                [
+                  ..
+                  | objects
+                  | select(.severity? == $severity)
+                ]
+                | length
+              ' \
+              "$file" 2>/dev/null || echo 0
+          }
+
+          for file in \
+            snyk-code.json \
+            snyk-iac.json \
+            snyk-oss.json \
+            snyk-nginx.json \
+            snyk-wordpress.json
+          do
+            [ -f "$file" ] || continue
+
+            file_critical=$(count_severity "$file" "critical")
+            file_high=$(count_severity "$file" "high")
+
+            critical=$((critical + file_critical))
+            high=$((high + file_high))
+          done
+
+          {
+            echo "| Severity | Findings |"
+            echo "| --- | ---: |"
+            echo "| 🔴 Critical | $critical |"
+            echo "| 🟠 High | $high |"
+            echo
+
+            if [ "$critical" -eq 0 ] && [ "$high" -eq 0 ]; then
+              echo "### ✅ No High or Critical findings"
+              echo
+              echo "Snyk did not identify any High or Critical security findings."
+            else
+              echo "### ⚠️ Security findings detected"
+              echo
+              echo "**High or Critical vulnerabilities were found. Please review these findings before approving the PR.**"
+            fi
+          } >> "$REPORT"
+
+          add_findings() {
+            local name="$1"
+            local file="$2"
+
+            [ -f "$file" ] || return 0
+
+            findings=$(
+              jq -r '
+                [
+                  ..
+                  | objects
+                  | select(
+                      .severity? == "critical"
+                      or .severity? == "high"
+                    )
+                  | {
+                      severity: .severity,
+                      title: (
+                        .title
+                        // .issue
+                        // .id
+                        // "Unknown finding"
+                      ),
+                      location: (
+                        .packageName
+                        // .package
+                        // .resource
+                        // .targetFile
+                        // .filePath
+                        // "-"
+                      )
+                    }
+                ]
+                | unique_by(.severity, .title, .location)
+                | .[]
+                | "| \(.severity | ascii_upcase) | \(.title | gsub("\\|"; "\\\\|")) | \(.location | tostring | gsub("\\|"; "\\\\|")) |"
+              ' \
+              "$file" 2>/dev/null
+            )
+
+            [ -n "$findings" ] || return 0
+
+            {
+              echo
+              echo "<details>"
+              echo "<summary><strong>$name</strong></summary>"
+              echo
+              echo "| Severity | Finding | Package / resource |"
+              echo "| --- | --- | --- |"
+              echo "$findings"
+              echo
+              echo "</details>"
+            } >> "$REPORT"
+          }
+
+          add_findings "Code" snyk-code.json
+          add_findings "Infrastructure as Code" snyk-iac.json
+          add_findings "PHP dependencies" snyk-oss.json
+          add_findings "nginx container" snyk-nginx.json
+          add_findings "WordPress container" snyk-wordpress.json
+
+          {
+            echo
+            echo "---"
+            echo
+            echo "_This report is informational only and does not block this pull request._"
+          } >> "$REPORT"
+
+          cat "$REPORT"
+
+      - name: Update PR comment
+        if: always() && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          comment_id=$(
+            gh api \
+              "repos/$GH_REPO/issues/$PR_NUMBER/comments" \
+              --paginate \
+              --jq '
+                .[]
+                | select(
+                    .body
+                    | contains("<!-- snyk-security-report -->")
+                  )
+                | .id
+              ' \
+              | head -1
+          )
+
+          if [ -n "$comment_id" ]; then
+            echo "Updating existing Snyk comment"
+
+            gh api \
+              --method PATCH \
+              "repos/$GH_REPO/issues/comments/$comment_id" \
+              -F body=@snyk-report.md
+          else
+            echo "Creating Snyk comment"
+
+            gh api \
+              --method POST \
+              "repos/$GH_REPO/issues/$PR_NUMBER/comments" \
+              -F body=@snyk-report.md
+          fi
