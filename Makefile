@@ -2,7 +2,7 @@
 ### Local build config
 ####################################################
 
-.PHONY: run run-with-firewall run-with-pagecache down down-firewall down-pagecache build shell none clone-repos symlink logs restart clean help test-firewall redis-cli redis-cli-local redis-cheatsheet
+.PHONY: run run-with-firewall run-with-pagecache down down-firewall down-pagecache build shell none clone-repos symlink logs restart clean help test-firewall redis-cli redis-cli-local redis-cheatsheet uptime-run uptime-down
 # Default target - list targets with their ## descriptions
 help: ## Show this help
 	@echo "Available commands:"
@@ -157,6 +157,21 @@ symlink: ## Create symlinks for dev packages
 test-firewall: ## Lint and test firewall scripts
 	@echo "Linting and testing firewall scripts..."
 	@./bin/local-test-firewall.sh
+
+# Spin up the uptime monitor pod. It ships at zero replicas, and
+# imagePullPolicy is Always, so scaling up always pulls the current image.
+# Uses the current kubectl namespace context.
+uptime-run: ## Spin up the uptime pod and run the monitor
+	@echo "Starting uptime monitor"
+	@kubectl scale deploy/uptime --replicas=1
+	@kubectl rollout status deploy/uptime --timeout=2m
+	@kubectl exec -it deploy/uptime -- uptime
+
+# Scale back to zero when finished
+uptime-down: ## Scale the uptime pod back to zero
+	@echo "Stopping uptime monitor"
+	@kubectl scale deploy/uptime --replicas=0
+	@echo "✓ Uptime monitor stopped"
 
 # Remove all dangling <none> images
 none: clean ## Remove dangling <none> images (alias for clean)
