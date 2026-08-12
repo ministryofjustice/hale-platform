@@ -192,7 +192,8 @@ configmap:
   sentrydns: ""
   firewall:
     enabled: "true"
-  # Full-page cache (OpenResty + Redis). Ships dark: enable per environment.
+  # Full-page cache (OpenResty + Redis). On by default; override per
+  # environment here or with `--set configmap.pagecache.enabled=false`.
   # db is the logical Redis database, read by BOTH containers (nginx Lua
   # cache and the WordPress purge hook) - they must always agree.
   pagecache:

@@ -1,8 +1,12 @@
 # Env vars shared by every service that talks to the firewall / page cache.
 # Merged into each service's environment with `<<: *firewall-pagecache-env`.
+# Both flags can be overridden per-run from the shell, e.g.
+# `PAGECACHE_ENABLED=false make run`, or changed here to alter the default.
+# The page cache is on by default and needs Redis, which is why the redis
+# service is not profile-gated (redis-insight still is - it's optional).
 x-firewall-pagecache-env: &firewall-pagecache-env
   FIREWALL_ENABLED: ${FIREWALL_ENABLED:-false}
-  PAGECACHE_ENABLED: ${PAGECACHE_ENABLED:-false}
+  PAGECACHE_ENABLED: ${PAGECACHE_ENABLED:-true}
   REDIS_SSL: "false"
 
 services:
@@ -95,9 +99,6 @@ services:
       NGINX_INTERNAL_URL: "https://nginx"
   redis:
     image: redis:7-alpine
-    profiles:
-    - firewall
-    - pagecache
     ports:
       - 127.0.0.1:6379:6379
     volumes:
