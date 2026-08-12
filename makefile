@@ -1,0 +1,106 @@
+####################################################
+### Local build config
+####################################################
+
+.PHONY: run down build shell none clone-repos symlink logs restart clean help test-firewall uptime-run uptime-down
+
+# Default target - show help
+help:
+	@echo "Available commands:"
+	@echo "  make run               - Start the Docker containers"
+	@echo "  make run-with-firewall - Run, with firewall config and dependencies"
+	@echo "  make down              - Stop and remove Docker containers"
+	@echo "  make build             - Build Docker images and install dependencies"
+	@echo "  make shell             - Open bash shell in WordPress container"
+	@echo "  make logs              - View Docker container logs"
+	@echo "  make restart           - Restart all containers"
+	@echo "  make clone-repos       - Clone all MoJ repositories into dev/ folder"
+	@echo "  make symlink           - Create symlinks for dev packages"
+	@echo "  make test-firewall     - Lint and test firewall scripts"
+	@echo "  make clean             - Remove dangling Docker images"
+	@echo "  make none              - Remove dangling <none> images (alias for clean)"
+	@echo ""
+	@echo "Uptime monitor (runs in the cluster, scaled to zero at rest):"
+	@echo "  make uptime-run        - Spin up the uptime pod and run the monitor"
+	@echo "  make uptime-down       - Scale the uptime pod back to zero"
+	@echo "                           Uses the current kubectl namespace context"
+
+# Run site using Docker
+run:
+	@echo "Starting Docker containers..."
+	docker compose up -d
+	@chmod +x bin/upload.sh
+	@./bin/upload.sh
+	@echo "✓ Site is running"
+
+# Run site (start redis and enable firewall) using Docker
+run-with-firewall:
+	@echo "Starting Docker containers"
+	FIREWALL_ENABLED=true docker compose --profile firewall up -d
+	@chmod +x bin/upload.sh
+	@./bin/upload.sh
+	@echo "✓ Site is running"
+
+# Shutdown site using Docker
+down:
+	@echo "Stopping Docker containers"
+	docker compose --profile firewall down --remove-orphans
+	@echo "✓ Containers stopped"
+
+# Build all images on local machine
+build:
+	@echo "Building Docker images"
+	@chmod +x bin/local-build.sh
+	@./bin/local-build.sh
+
+# Shell into the WordPress container
+shell:
+	@docker exec -it wordpress bash
+
+# View logs from all containers
+logs:
+	docker compose logs -f
+
+# Restart all containers
+restart: down run
+
+# Clone all MoJ repositories
+clone-repos:
+	@echo "Cloning repositories..."
+	@chmod +x bin/clone-repos.sh
+	@bash bin/clone-repos.sh
+
+# Create symlinks for dev packages inside container
+symlink:
+	@echo "Creating symlinks for dev packages..."
+	@docker exec wordpress bash /opt/scripts/link-dev-packages.sh
+	@echo "✓ Symlinks created"
+
+# Lint and test firewall scripts
+test-firewall:
+	@echo "Linting and testing firewall scripts..."
+	@chmod +x bin/local-test-firewall.sh
+	@./bin/local-test-firewall.sh
+
+# Spin up the uptime monitor pod. It ships at zero replicas, and
+# imagePullPolicy is Always, so scaling up always pulls the current image.
+uptime-run:
+	@echo "Starting uptime monitor"
+	@kubectl scale deploy/uptime --replicas=1
+	@kubectl rollout status deploy/uptime --timeout=2m
+	@kubectl exec -it deploy/uptime -- uptime
+
+# Scale back to zero when finished
+uptime-down:
+	@echo "Stopping uptime monitor"
+	@kubectl scale deploy/uptime --replicas=0
+	@echo "✓ Uptime monitor stopped"
+
+# Remove all dangling <none> images
+none: clean
+
+# Clean up dangling images
+clean:
+	@echo "Removing dangling Docker images"
+	@docker images -f "dangling=true" -q | xargs -r docker rmi || echo "No dangling images to remove"
+	@echo "✓ Cleanup complete"
