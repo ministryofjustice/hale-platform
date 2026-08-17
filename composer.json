@@ -100,7 +100,7 @@
   ],
   "require": {
     "composer/installers": "^v2.0",
-    "ministryofjustice/cookie-compliance": "dev-add-justice-csp-compatibility",
+    "ministryofjustice/cookie-compliance": "dev-main",
     "ministryofjustice/govwind": "dev-main",
     "ministryofjustice/justice": "dev-main",
     "ministryofjustice/hale": "dev-main",
