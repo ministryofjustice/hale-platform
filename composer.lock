@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b4386938503f5366ff435bcdc491c4fc",
+    "content-hash": "da07e4901202f3a62e9b37f7623a152e",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -967,26 +967,25 @@
         },
         {
             "name": "ministryofjustice/govwind",
-            "version": "dev-main",
+            "version": "dev-ipa-colours",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/govwind.git",
-                "reference": "2191bebe9a98b5de0c2cdc2317de98454f3fbd98"
+                "reference": "b1dd0ed4822abdf3a560e114137df0610a4f9dae"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/2191bebe9a98b5de0c2cdc2317de98454f3fbd98",
-                "reference": "2191bebe9a98b5de0c2cdc2317de98454f3fbd98",
+                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/b1dd0ed4822abdf3a560e114137df0610a4f9dae",
+                "reference": "b1dd0ed4822abdf3a560e114137df0610a4f9dae",
                 "shasum": ""
             },
-            "default-branch": true,
             "type": "wordpress-theme",
             "description": "Govwind theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/govwind/tree/1.0.4",
+                "source": "https://github.com/ministryofjustice/govwind/tree/ipa-colours",
                 "issues": "https://github.com/ministryofjustice/govwind/issues"
             },
-            "time": "2026-08-14T15:02:22+00:00"
+            "time": "2026-08-17T15:00:42+00:00"
         },
         {
             "name": "ministryofjustice/hale",
@@ -3641,5 +3640,5 @@
         "php": ">=8.0"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
