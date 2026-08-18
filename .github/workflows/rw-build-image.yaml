@@ -6,6 +6,12 @@ on:
       environment:
         required: true
         type: string
+      # Scope of the post-deploy page-cache clear.
+      # One of: all | hale | govwind | none. See cd.yaml for descriptions.
+      pagecache-purge:
+        required: false
+        type: string
+        default: all
     secrets:
       ecr-role:
         required: true
@@ -279,3 +285,59 @@ jobs:
           --set domain=${{ secrets.domain }} \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_nginx-${{ github.sha }} \
           --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_wordpress-${{ github.sha }}
+
+      # The helm upgrade above has no --wait, so it returns as soon as the API
+      # server accepts the manifests - potentially with every pod still running
+      # the old image. Block until the rollout is genuinely done, otherwise an
+      # old pod can re-cache stale HTML immediately after the purge below.
+      - name: Wait for rollout to complete
+        if: inputs.pagecache-purge != 'none'
+        run: |
+          kubectl rollout status deployment/wordpress \
+            --namespace ${{ secrets.kube-namespace }} \
+            --timeout=10m
+
+      # Cached HTML references versioned asset URLs (?id=<hash>, from Laravel
+      # Mix). Mix versions by query string, not filename, so those URLs resolve
+      # to the NEWLY deployed CSS/JS - stale markup gets paired with new assets
+      # until the entry expires. Clearing here closes that window.
+      - name: Clear the full-page cache
+        if: inputs.pagecache-purge != 'none'
+        env:
+          SCOPE: ${{ inputs.pagecache-purge }}
+          NAMESPACE: ${{ secrets.kube-namespace }}
+        run: |
+          set -euo pipefail
+
+          case "$SCOPE" in
+            all)     WP_ARGS="purge-all" ;;
+            hale)    WP_ARGS="purge-theme hale" ;;
+            govwind) WP_ARGS="purge-theme govwind" ;;
+            *)       echo "::error::Unknown purge scope '$SCOPE'"; exit 1 ;;
+          esac
+
+          POD=$(kubectl get pods \
+            --namespace "$NAMESPACE" \
+            --selector app=wordpress,tier=frontend-c \
+            --field-selector status.phase=Running \
+            -o jsonpath='{.items[0].metadata.name}')
+
+          if [ -z "$POD" ]; then
+            echo "::error::No running wordpress pod found; cache not cleared."
+            exit 1
+          fi
+
+          # "wp pagecache" ships in hale-components. If this image predates it,
+          # warn rather than fail: the deploy itself already succeeded, and a
+          # missed purge is bounded by PAGECACHE_TTL (300s). Failing here would
+          # red-flag a good deploy - and on Staging it would block deployProd,
+          # which needs: deployStaging.
+          if ! kubectl exec --namespace "$NAMESPACE" "$POD" \
+                 --container wordpress -- wp cli has-command pagecache; then
+            echo "::warning::'wp pagecache' is not available in this image; cache not cleared. Stale pages will expire within PAGECACHE_TTL."
+            exit 0
+          fi
+
+          echo "Clearing page cache (scope: $SCOPE) via pod $POD"
+          kubectl exec --namespace "$NAMESPACE" "$POD" \
+            --container wordpress -- wp pagecache $WP_ARGS
