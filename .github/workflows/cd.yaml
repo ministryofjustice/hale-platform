@@ -9,15 +9,62 @@ on:
       - "demo"
 
 # ============================================================
+# Work out how much page cache to clear after this deploy
+# ============================================================
+# Put a label on the PR before merging:
+#
+#   purge:none      leave the cache alone
+#   purge:hale      clear sites using the Hale theme (incl. Hale Dash / Showcase)
+#   purge:govwind   clear sites using the Govwind theme
+#   (no label)      clear everything - always the safe outcome
+#
+# The push event carries no PR context, so the merge commit's SHA is used to
+# look the PR back up via the API.
+jobs:
+  resolveScope:
+    name: Resolve cache scope
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      scope: ${{ steps.resolve.outputs.scope }}
+    steps:
+      - name: Resolve
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          LABELS=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" \
+                     --jq '[.[].labels[].name] | join(" ")' 2>/dev/null || echo "")
+
+          # Most restrictive label wins, so an accidental double-label can
+          # never clear more than the developer asked for.
+          case " $LABELS " in
+            *" purge:none "*)    SCOPE=none ;;
+            *" purge:govwind "*) SCOPE=govwind ;;
+            *" purge:hale "*)    SCOPE=hale ;;
+            *)                   SCOPE=all ;;
+          esac
+
+          echo "scope=$SCOPE" >> "$GITHUB_OUTPUT"
+          echo "Page cache scope: $SCOPE (labels: ${LABELS:-none})"
+          echo "### Page cache scope: \`$SCOPE\`" >> "$GITHUB_STEP_SUMMARY"
+
+# ============================================================
 # Deployment jobs
 # ============================================================
-jobs:
   deployDev:
     name: Dev deployment
+    needs: resolveScope
     if: github.event.ref == 'refs/heads/dev'
     uses: ./.github/workflows/rw-build-image.yaml
     with:
       environment: Development
+      # Resolved from the merged PR's labels.
+      pagecache-purge: ${{ needs.resolveScope.outputs.scope }}
     secrets:
       ecr-role: ${{ secrets.DEV_ECR_ROLE_TO_ASSUME }}
       ecr-region: ${{ secrets.DEV_ECR_REGION }}
@@ -64,10 +111,13 @@ jobs:
 
   deployDemo:
     name: Demo deployment
+    needs: resolveScope
     if: github.event.ref == 'refs/heads/demo'
     uses: ./.github/workflows/rw-build-image.yaml
     with:
       environment: Demonstration
+      # Resolved from the merged PR's labels.
+      pagecache-purge: ${{ needs.resolveScope.outputs.scope }}
     secrets:
       ecr-role: ${{ secrets.DEMO_ECR_ROLE_TO_ASSUME }}
       ecr-region: ${{ secrets.DEMO_ECR_REGION }}
@@ -114,10 +164,13 @@ jobs:
 
   deployStaging:
     name: Staging deployment
+    needs: resolveScope
     if: github.event.ref == 'refs/heads/main'
     uses: ./.github/workflows/rw-build-image.yaml
     with:
       environment: Staging
+      # Resolved from the merged PR's labels.
+      pagecache-purge: ${{ needs.resolveScope.outputs.scope }}
     secrets:
       ecr-role: ${{ secrets.STAGING_ECR_ROLE_TO_ASSUME }}
       ecr-region: ${{ secrets.STAGING_ECR_REGION }}
@@ -164,11 +217,13 @@ jobs:
 
   deployProd:
     name: Prod deployment
-    needs: deployStaging
+    needs: [deployStaging, resolveScope]
     if: github.event.ref == 'refs/heads/main'
     uses: ./.github/workflows/rw-build-image.yaml
     with:
       environment: Production
+      # Resolved from the merged PR's labels.
+      pagecache-purge: ${{ needs.resolveScope.outputs.scope }}
     secrets:
       ecr-role: ${{ secrets.PROD_ECR_ROLE_TO_ASSUME }}
       ecr-region: ${{ secrets.PROD_ECR_REGION }}
