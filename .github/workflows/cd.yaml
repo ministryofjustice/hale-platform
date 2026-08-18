@@ -2,22 +2,6 @@ name: Deployment
 
 on:
   workflow_dispatch:
-    inputs:
-      pagecache-purge:
-        description: "Clear the full-page cache after deploy"
-        type: choice
-        required: true
-        default: all
-        options:
-          # Every site on the network. One Redis INCR - cheap regardless of size.
-          - all
-          # Sites using the Hale theme, including its child themes
-          # (Hale Dash and Hale Showcase declare "Template: hale").
-          - hale
-          # Sites using the Govwind theme.
-          - govwind
-          # Skip entirely - nothing is cleared.
-          - none
   push:
     branches:
       - "main"
@@ -34,8 +18,6 @@ jobs:
     uses: ./.github/workflows/rw-build-image.yaml
     with:
       environment: Development
-      # Push events supply no inputs, so scheduled/merge deploys get 'all'.
-      pagecache-purge: ${{ inputs.pagecache-purge || 'all' }}
     secrets:
       ecr-role: ${{ secrets.DEV_ECR_ROLE_TO_ASSUME }}
       ecr-region: ${{ secrets.DEV_ECR_REGION }}
@@ -86,8 +68,6 @@ jobs:
     uses: ./.github/workflows/rw-build-image.yaml
     with:
       environment: Demonstration
-      # Push events supply no inputs, so scheduled/merge deploys get 'all'.
-      pagecache-purge: ${{ inputs.pagecache-purge || 'all' }}
     secrets:
       ecr-role: ${{ secrets.DEMO_ECR_ROLE_TO_ASSUME }}
       ecr-region: ${{ secrets.DEMO_ECR_REGION }}
@@ -138,8 +118,6 @@ jobs:
     uses: ./.github/workflows/rw-build-image.yaml
     with:
       environment: Staging
-      # Push events supply no inputs, so scheduled/merge deploys get 'all'.
-      pagecache-purge: ${{ inputs.pagecache-purge || 'all' }}
     secrets:
       ecr-role: ${{ secrets.STAGING_ECR_ROLE_TO_ASSUME }}
       ecr-region: ${{ secrets.STAGING_ECR_REGION }}
@@ -191,8 +169,6 @@ jobs:
     uses: ./.github/workflows/rw-build-image.yaml
     with:
       environment: Production
-      # Push events supply no inputs, so scheduled/merge deploys get 'all'.
-      pagecache-purge: ${{ inputs.pagecache-purge || 'all' }}
     secrets:
       ecr-role: ${{ secrets.PROD_ECR_ROLE_TO_ASSUME }}
       ecr-region: ${{ secrets.PROD_ECR_REGION }}
