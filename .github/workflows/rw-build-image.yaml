@@ -91,6 +91,10 @@ on:
         required: true
       redis-host:
         required: true
+      # S3 bucket backing the theme asset CDN. Optional: when unset the
+      # publish step below is skipped and assets stay pod-served.
+      asset-bucket:
+        required: false
 
 jobs:
   buildImage:
@@ -196,6 +200,42 @@ jobs:
             ) &
           done
           wait
+
+      # Publish compiled theme assets to the CDN, namespaced by release.
+      #
+      # WHY: assets are baked into the container image, so every pod serves its
+      # own copy from an identical path. During a rolling update a visitor can
+      # take HTML from one release and CSS from another and get a 200 with the
+      # wrong bytes - which nginx then tells the browser to cache for ten years
+      # (expires max, opt/nginx/wordpress.conf). Putting the release in the URL
+      # makes each release's assets distinct and independently retrievable.
+      #
+      # Must run AFTER the NPM step above - dist/ does not exist before it.
+      # Themes only for now; plugin assets remain pod-served.
+      - name: Publish theme assets to CDN
+        env:
+          ASSET_BUCKET: ${{ secrets.asset-bucket }}
+          RELEASE: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${ASSET_BUCKET:-}" ]; then
+            echo "::notice::asset-bucket not configured; skipping CDN publish."
+            exit 0
+          fi
+
+          # Filters are applied in order and the LAST match wins, so the
+          # node_modules exclude must stay below the includes.
+          aws s3 sync wordpress/wp-content/themes/ "s3://$ASSET_BUCKET/$RELEASE/themes/" \
+            --exclude "*" \
+            --include "*.css"  --include "*.js"    --include "*.mjs" \
+            --include "*.svg"  --include "*.png"   --include "*.jpg" \
+            --include "*.jpeg" --include "*.gif"   --include "*.webp" \
+            --include "*.woff" --include "*.woff2" --include "*.ttf" --include "*.eot" \
+            --exclude "*/node_modules/*" \
+            --cache-control "public, max-age=31536000, immutable"
+
+          echo "### Theme assets published under \`$RELEASE\`" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Cache Docker layers for WordPress
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
