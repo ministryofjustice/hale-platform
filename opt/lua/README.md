@@ -835,7 +835,8 @@ Everything else falls through to PHP untouched.
 |---|---|---|---|---|
 | `pagecache:v{version}:{host}:{path}` | string, TTL = `PAGECACHE_TTL` | Lua (deferred write); deleted by PHP purge | Lua | Cached page: `"<content-type>\n<body>"` (split on first newline) |
 | `pagecache:fence:{host}:{path}` | string (integer microseconds from Redis `TIME`), TTL = `PAGECACHE_FENCE_TTL` | PHP purge plugin | Lua CAS script | Purge fence — blocks a stale in-flight render from re-caching (see below) |
-| `pagecache:version` | int | **Operator only** (`INCR`) | Lua + PHP | Site-wide flush counter, embedded in every content key |
+| `pagecache:version` | int | PHP (`INCR` on flush-all and on a mode change) or an operator | Lua + PHP | Site-wide flush counter, embedded in every content key |
+| `pagecache:config` | string (JSON) | PHP network dashboard / `wp hale-pagecache mode` | Lua | Runtime mode: `{"mode":"active"}` or `{"mode":"inactive"}`. Absent = `active` |
 
 Key anatomy:
 
@@ -902,6 +903,26 @@ Connection settings (`REDIS_HOST`, `REDIS_PORT`, `REDIS_AUTH`,
 `REDIS_SSL`, `REDIS_POOL_SIZE`, `REDIS_KEEPALIVE_MS`) are shared with the
 firewall and documented in [redis_pool.lua](redis_pool.lua).
 
+### Runtime mode (`pagecache:config`)
+
+Separate from the env vars above, and the only page-cache setting that can
+be changed without a restart:
+
+| Mode | Behaviour |
+|---|---|
+| `active` | Normal operation. The default for a missing or corrupt key. |
+| `inactive` | Full bypass — no lookups, no writes, no Redis I/O at all. Requests behave as if the module were not installed. Existing entries are left to expire on their own TTL. |
+
+Precedence is the same as the firewall's `FIREWALL_ENABLED` vs
+`firewall:config.mode`: **`PAGECACHE_ENABLED=false` wins over any mode.**
+The mode only applies where the cache is enabled for the environment.
+
+Lua re-reads the key at most once per second per worker, folded into the
+same `MGET` that fetches `pagecache:version` — so a mode change costs no
+extra Redis traffic and lands network-wide within ~1s. An unrecognised
+value falls back to `active` and logs one `[pagecache] event=config_warn`
+line, so a bad write can never silently take the cache down.
+
 ## Observability
 
 **Response header `X-Page-Cache`** — visible in browser devtools/curl:
@@ -911,7 +932,7 @@ firewall and documented in [redis_pool.lua](redis_pool.lua).
 | `HIT` | Served from Redis; PHP never ran |
 | `MISS` | Served by PHP; response was storeable and will be written to Redis |
 | `BYPASS` | Not cacheable — either the request (method/query/URI/cookie) or the response (status/headers) disqualified it |
-| *absent* | Cache is off (`PAGECACHE_ENABLED` unset), Redis is down, or the location isn't wired |
+| *absent* | Cache is off (`PAGECACHE_ENABLED` unset), mode is `inactive`, Redis is down, or the location isn't wired |
 
 One edge: a body that exceeds `PAGECACHE_MAX_BYTES` mid-stream still shows
 `MISS` (headers were already sent) but is not stored — the access log says
@@ -922,7 +943,8 @@ One edge: a body that exceeds `PAGECACHE_MAX_BYTES` mid-stream still shows
 | Value | Meaning |
 |---|---|
 | `hit` / `miss` / `bypass` | As per the header above (and `bypass` covers the too-big edge case correctly) |
-| `off` | `PAGECACHE_ENABLED` is not `true` |
+| `off` | `PAGECACHE_ENABLED` is not `true` (env-level; needs a restart to change) |
+| `inactive` | Enabled for the environment, but `pagecache:config` mode is `inactive` (dashboard-level; flip it back in the UI) |
 | `down` | Redis connect failed — request failed open to PHP |
 | `-` | Lua never ran (non-PHP location) |
 
@@ -935,15 +957,37 @@ refused, typically out of timers). Connection errors appear with the same
 
 ### Turn it on / off
 
-Locally: `make run-with-pagecache` / `make down-pagecache` (preserves the
+Two levels — reach for the mode first; it is instant and reversible.
+
+**Runtime mode (no restart, ~1s, network-wide).** Network Admin → Settings
+→ Hale Components → Page Cache → set the mode to *Inactive*. Equivalently:
+
+```bash
+# From any site in the network
+wp hale-pagecache mode inactive
+wp hale-pagecache mode active
+
+# Or straight to Redis (db1). Bump the version too, or reactivating will
+# serve entries written before you switched it off.
+SET pagecache:config '{"mode":"inactive"}'
+INCR pagecache:version
+```
+
+The dashboard and the WP-CLI command bump `pagecache:version` for you
+whenever the mode actually changes.
+
+**Environment kill-switch (needs a restart).** Locally:
+`make run-with-pagecache` / `make down-pagecache` (preserves the
 firewall's state). In production: set `PAGECACHE_ENABLED` in the nginx
 Helm values and redeploy — like `FIREWALL_ENABLED`, it needs a restart.
+This wins over the mode.
 
 ### Flush the entire cache
 
-Content keys embed a version number read from `pagecache:version`.
-Nothing in the codebase writes this key — bumping it is a manual,
-operator-only action:
+Content keys embed a version number read from `pagecache:version`, so
+bumping it orphans every cached page network-wide at once. The
+"Clear page cache on all sites" button and a mode change both bump it;
+to do it by hand:
 
 ```
 # In the page cache db (PAGECACHE_DB, default 1)

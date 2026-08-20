@@ -13,9 +13,21 @@
 --
 -- Fail-open everywhere: any Redis problem just means PHP serves the request.
 --
+-- TWO SWITCHES:
+--   PAGECACHE_ENABLED   env var, read once at module load -> needs an nginx
+--                       restart. The hard kill-switch for a whole environment.
+--   pagecache:config    Redis key, {"mode":"active"|"inactive"}, re-read at most
+--                       once a second per worker -> flips network-wide in ~1s
+--                       from the Hale Components network dashboard. "inactive"
+--                       is a full bypass: no lookups, no writes, no Redis I/O.
+--   ENABLED=false wins over any mode; the mode only applies where the cache is
+--   enabled. Mirrors FIREWALL_ENABLED vs firewall:config.mode.
+--
 -- KEY SCHEME (must match the WP purge mu-plugin):
---   pagecache:v{version}:{host}:{path}                  content key
+--   pagecache:v{version}:{host}:{path}                   content key
 --   pagecache:fence:{host}:{path}                        purge fence (no version)
+--   pagecache:config                                     runtime mode (see above)
+--   - value is "<content-type>\n<body>", split on the first newline.
 --   - {path} is $request_uri minus any query portion (see cache_path()).
 --   - {host} isolates multisite sites; {version} bumps for an instant mass flush.
 --   - scheme is deliberately omitted: TLS is terminated upstream, so the scheme
@@ -31,6 +43,7 @@
 -- ============================================================================
 
 local redis_pool = require "pagecache.redis"
+local cjson      = require "cjson.safe"
 
 local _M = {}
 
@@ -39,7 +52,14 @@ local TTL         = tonumber(os.getenv("PAGECACHE_TTL")) or 300
 local MAX_BYTES   = tonumber(os.getenv("PAGECACHE_MAX_BYTES")) or (2 * 1024 * 1024)
 local PREFIX      = "pagecache:"
 local VERSION_KEY = "pagecache:version"
+local CONFIG_KEY  = "pagecache:config"
 local DEFAULT_CT  = "text/html; charset=UTF-8"
+
+-- Runtime mode, held in pagecache:config and written by the WP network
+-- dashboard. "active" is the default for a missing/corrupt key so deploying
+-- this module never changes behaviour until someone flips the switch.
+local VALID_MODES  = { active = true, inactive = true }
+local DEFAULT_MODE = "active"
 
 -- Request URIs that must never be cached (admin, auth, API, cron, feeds...).
 -- request_uri is the ORIGINAL url, before the internal rewrite to index.php.
@@ -92,42 +112,83 @@ local function cache_path()
     return uri
 end
 
--- The version is cached per worker for VERSION_TTL seconds: it halves the
--- Redis round-trips on every request, at the cost of a version bump (mass
--- flush) taking up to VERSION_TTL to be seen by this worker. Per-URL purges
--- are unaffected: they DEL the content key and stamp the unversioned fence,
+-- Version and mode are snapshotted together per worker for STATE_TTL seconds
+-- behind a single MGET: same Redis round-trip count as fetching the version
+-- alone used to cost, at the price of a version bump (mass flush) or a mode
+-- change taking up to STATE_TTL to be seen by this worker. Per-URL purges are
+-- unaffected: they DEL the content key and stamp the unversioned fence,
 -- neither of which involves the version.
-local VERSION_TTL = 1
-local ver_cache, ver_cached_at = nil, 0
+local STATE_TTL = 1
+local state = { version = nil, mode = nil, at = 0 }
 
-local function get_version(red)
-    local now = ngx.now()
-    if ver_cache and (now - ver_cached_at) < VERSION_TTL then
-        return ver_cache
-    end
-    local res = red:get(VERSION_KEY)
-    if res == ngx.null then
-        -- Key absent (never bumped) = version 0. The PHP purge plugin's
-        -- (int) cast derives 0 from a missing key too. Cached like any
-        -- other value so the common no-bump state still skips the GET.
-        ver_cache, ver_cached_at = 0, now
-        return 0
-    end
-    local ver = tonumber(res)
-    if ver then
-        -- Normalise to an integer: the PHP purge plugin does (int) on this
-        -- same value, and the two sides must derive identical keys from it.
-        ver_cache, ver_cached_at = math.floor(ver), now
-        return ver_cache
-    end
-    -- GET errored (returned nil): keep the last-known version rather than
-    -- falling back to v0, which would miss everything and write entries
-    -- under a key no purge would ever touch.
-    return ver_cache or 0
+-- True once refresh_state() has stored a snapshot that is still inside the TTL
+-- window. fetch() leans on this to skip Redis entirely while mode="inactive".
+local function state_fresh()
+    return state.mode ~= nil and (ngx.now() - state.at) < STATE_TTL
 end
 
-local function build_key(red)
-    return PREFIX .. "v" .. get_version(red) .. ":" .. ngx.var.host .. ":" .. cache_path()
+-- Warn at most once per distinct bad value, so a corrupt config key doesn't
+-- write a line per request for as long as it stays corrupt.
+local warned_config = nil
+local function warn_config(raw, msg)
+    if warned_config ~= raw then
+        ngx.log(ngx.WARN, "[pagecache] event=config_warn ", msg, " using=", DEFAULT_MODE)
+        warned_config = raw
+    end
+end
+
+-- Decode pagecache:config into a mode. Anything unrecognised - key absent,
+-- corrupt JSON, unknown mode string - falls back to DEFAULT_MODE, so a bad
+-- write can never silently take the cache down network-wide.
+local function parse_mode(raw)
+    if raw == nil or raw == ngx.null then return DEFAULT_MODE end
+    local cfg, err = cjson.decode(raw)
+    if type(cfg) ~= "table" then
+        warn_config(raw, "config decode failed err=" .. tostring(err))
+        return DEFAULT_MODE
+    end
+    local mode = cfg.mode
+    if type(mode) == "string" and VALID_MODES[mode] then
+        return mode
+    end
+    warn_config(raw, "config.mode invalid (" .. tostring(mode) .. ")")
+    return DEFAULT_MODE
+end
+
+-- Refresh this worker's version+mode snapshot. One MGET, at most once per
+-- STATE_TTL seconds per worker.
+local function refresh_state(red)
+    if state_fresh() then return end
+
+    local res = red:mget(VERSION_KEY, CONFIG_KEY)
+    if not res then
+        -- MGET errored: keep the last-known values rather than falling back to
+        -- v0, which would miss everything and write entries under a key no
+        -- purge would ever touch. state.at is left untouched so the snapshot
+        -- stays stale and the next request retries.
+        state.version = state.version or 0
+        state.mode    = state.mode or DEFAULT_MODE
+        return
+    end
+
+    local raw_ver = res[1]
+    if raw_ver == nil or raw_ver == ngx.null then
+        -- Key absent (never bumped) = version 0. The PHP purge plugin's (int)
+        -- cast derives 0 from a missing key too.
+        state.version = 0
+    else
+        -- Normalise to an integer: the PHP purge plugin does (int) on this
+        -- same value, and the two sides must derive identical keys from it.
+        state.version = math.floor(tonumber(raw_ver) or state.version or 0)
+    end
+
+    state.mode = parse_mode(res[2])
+    state.at   = ngx.now()
+end
+
+-- Call only after refresh_state() has run for this request.
+local function build_key()
+    return PREFIX .. "v" .. (state.version or 0) .. ":" .. ngx.var.host .. ":" .. cache_path()
 end
 
 -- Fence key for this path. Unversioned and shared with the WP purge plugin,
@@ -161,10 +222,27 @@ function _M.fetch()
         return
     end
 
+    -- Steady-state "inactive" costs nothing: a snapshot that is still fresh
+    -- answers the question without opening a connection at all. Checked after
+    -- request_cacheable() so /wp-admin & friends keep logging pc=bypass
+    -- whether or not the snapshot happens to be warm - the log value stays a
+    -- property of the request, not of cache warmth.
+    if state_fresh() and state.mode == "inactive" then
+        set_status("inactive")
+        return
+    end
+
     local red = redis_pool.connect()
     if not red then set_status("down"); return end       -- fail-open -> PHP
 
-    local key  = build_key(red)
+    refresh_state(red)
+    if state.mode == "inactive" then
+        redis_pool.release(red)
+        set_status("inactive")
+        return
+    end
+
+    local key  = build_key()
     local blob = red:get(key)
     if blob == ngx.null or not blob then
         -- Snapshot Redis's own clock (not local wall-clock - avoids drift
