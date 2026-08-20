@@ -20,6 +20,7 @@ jobs:
       environment: Development
     secrets:
       ecr-role: ${{ secrets.DEV_ECR_ROLE_TO_ASSUME }}
+      asset-role: ${{ secrets.ASSET_ROLE_TO_ASSUME }}
       ecr-region: ${{ secrets.DEV_ECR_REGION }}
       ecr-repo: ${{ secrets.DEV_ECR_REPO }}
       sentry-dsn: ${{ vars.PHP_DSN }}
@@ -59,7 +60,6 @@ jobs:
       cloudfront-distribution-id: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
       redis-auth: ${{ secrets.REDIS_AUTH }}
       redis-host: ${{ secrets.REDIS_HOST }}
-      asset-bucket: ${{ secrets.ASSET_BUCKET }}
       alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
       wb-config: ${{ secrets.WB_CONFIG}}
 
@@ -71,6 +71,7 @@ jobs:
       environment: Demonstration
     secrets:
       ecr-role: ${{ secrets.DEMO_ECR_ROLE_TO_ASSUME }}
+      asset-role: ${{ secrets.ASSET_ROLE_TO_ASSUME }}
       ecr-region: ${{ secrets.DEMO_ECR_REGION }}
       ecr-repo: ${{ secrets.DEMO_ECR_REPO }}
       sentry-dsn: ${{ vars.PHP_DSN }}
@@ -107,7 +108,6 @@ jobs:
       cloudfront-distribution-id: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
       redis-auth: ${{ secrets.REDIS_AUTH }}
       redis-host: ${{ secrets.REDIS_HOST }}
-      asset-bucket: ${{ secrets.ASSET_BUCKET }}
       alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
       auth0-env-client-id: ${{ secrets.AUTH0_ENV_CLIENT_ID }}
       auth0-env-client-secret: ${{ secrets.AUTH0_ENV_CLIENT_SECRET }}
@@ -122,6 +122,7 @@ jobs:
       environment: Staging
     secrets:
       ecr-role: ${{ secrets.STAGING_ECR_ROLE_TO_ASSUME }}
+      asset-role: ${{ secrets.ASSET_ROLE_TO_ASSUME }}
       ecr-region: ${{ secrets.STAGING_ECR_REGION }}
       ecr-repo: ${{ secrets.STAGING_ECR_REPO }}
       domain: "staging.websitebuilder.service.justice.gov.uk"
@@ -158,7 +159,6 @@ jobs:
       cloudfront-distribution-id: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
       redis-auth: ${{ secrets.REDIS_AUTH }}
       redis-host: ${{ secrets.REDIS_HOST }}
-      asset-bucket: ${{ secrets.ASSET_BUCKET }}
       alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
       wb-config: ${{ secrets.WB_CONFIG}}
       auth0-env-client-id: ${{ secrets.AUTH0_ENV_CLIENT_ID }}
@@ -174,6 +174,7 @@ jobs:
       environment: Production
     secrets:
       ecr-role: ${{ secrets.PROD_ECR_ROLE_TO_ASSUME }}
+      asset-role: ${{ secrets.ASSET_ROLE_TO_ASSUME }}
       ecr-region: ${{ secrets.PROD_ECR_REGION }}
       ecr-repo: ${{ secrets.PROD_ECR_REPO }}
       sentry-dsn: ${{ vars.PHP_DSN }}
@@ -210,7 +211,6 @@ jobs:
       cloudfront-distribution-id: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
       redis-auth: ${{ secrets.REDIS_AUTH }}
       redis-host: ${{ secrets.REDIS_HOST }}
-      asset-bucket: ${{ secrets.ASSET_BUCKET }}
       alert-slack-webhook-url: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
       wb-config: ${{ secrets.WB_CONFIG}}
       auth0-env-client-id: ${{ secrets.AUTH0_ENV_CLIENT_ID }}

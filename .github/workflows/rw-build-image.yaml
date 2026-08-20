@@ -91,9 +91,10 @@ on:
         required: true
       redis-host:
         required: true
-      # S3 bucket backing the theme asset CDN. Optional: when unset the
-      # publish step below is skipped and assets stay pod-served.
-      asset-bucket:
+      # Role that may write compiled theme assets to the asset bucket.
+      # Optional: when unset the publish steps are skipped entirely and
+      # assets continue to be served from each pod.
+      asset-role:
         required: false
 
 jobs:
@@ -101,6 +102,9 @@ jobs:
     name: Build Image and push to ECR
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
+    env:
+      # Job-level so the publish steps below can gate on it with `if:`.
+      ASSET_ROLE: ${{ secrets.asset-role }}
     permissions:
       id-token: write
       contents: read
@@ -201,42 +205,6 @@ jobs:
           done
           wait
 
-      # Publish compiled theme assets to the CDN, namespaced by release.
-      #
-      # WHY: assets are baked into the container image, so every pod serves its
-      # own copy from an identical path. During a rolling update a visitor can
-      # take HTML from one release and CSS from another and get a 200 with the
-      # wrong bytes - which nginx then tells the browser to cache for ten years
-      # (expires max, opt/nginx/wordpress.conf). Putting the release in the URL
-      # makes each release's assets distinct and independently retrievable.
-      #
-      # Must run AFTER the NPM step above - dist/ does not exist before it.
-      # Themes only for now; plugin assets remain pod-served.
-      - name: Publish theme assets to CDN
-        env:
-          ASSET_BUCKET: ${{ secrets.asset-bucket }}
-          RELEASE: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-
-          if [ -z "${ASSET_BUCKET:-}" ]; then
-            echo "::notice::asset-bucket not configured; skipping CDN publish."
-            exit 0
-          fi
-
-          # Filters are applied in order and the LAST match wins, so the
-          # node_modules exclude must stay below the includes.
-          aws s3 sync wordpress/wp-content/themes/ "s3://$ASSET_BUCKET/$RELEASE/themes/" \
-            --exclude "*" \
-            --include "*.css"  --include "*.js"    --include "*.mjs" \
-            --include "*.svg"  --include "*.png"   --include "*.jpg" \
-            --include "*.jpeg" --include "*.gif"   --include "*.webp" \
-            --include "*.woff" --include "*.woff2" --include "*.ttf" --include "*.eot" \
-            --exclude "*/node_modules/*" \
-            --cache-control "public, max-age=31536000, immutable"
-
-          echo "### Theme assets published under \`$RELEASE\`" >> "$GITHUB_STEP_SUMMARY"
-
       - name: Cache Docker layers for WordPress
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
@@ -259,6 +227,45 @@ jobs:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: ${{ secrets.ecr-repo }}
           IMAGE_TAG: ${{ github.sha }}
+
+      # Publish compiled theme assets to the CDN, namespaced by release.
+      # Themes only for now; plugin assets remain pod-served.
+      - name: Configure asset publisher credentials
+        if: env.ASSET_ROLE != ''
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
+        with:
+          role-to-assume: ${{ secrets.asset-role }}
+          aws-region: ${{ secrets.ecr-region }}
+
+      - name: Publish theme assets to CDN
+        if: env.ASSET_ROLE != ''
+        env:
+          ASSET_BUCKET: ${{ secrets.s3-uploads-bucket }}
+          RELEASE: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${ASSET_BUCKET:-}" ]; then
+            echo "::notice::s3-uploads-bucket not set; skipping CDN publish."
+            exit 0
+          fi
+
+          # "cp --recursive" rather than "sync": each release writes to a new,
+          # empty prefix so there is nothing to diff, and cp needs only
+          # s3:PutObject - sync would additionally require s3:ListBucket.
+          # Filters apply in order and the LAST match wins, so the
+          # node_modules exclude must stay below the includes.
+          aws s3 cp wordpress/wp-content/themes/ "s3://$ASSET_BUCKET/assets/$RELEASE/themes/" \
+            --recursive \
+            --exclude "*" \
+            --include "*.css"  --include "*.js"    --include "*.mjs" \
+            --include "*.svg"  --include "*.png"   --include "*.jpg" \
+            --include "*.jpeg" --include "*.gif"   --include "*.webp" \
+            --include "*.woff" --include "*.woff2" --include "*.ttf" --include "*.eot" \
+            --exclude "*/node_modules/*" \
+            --cache-control "public, max-age=31536000, immutable"
+
+          echo "### Theme assets published under \`$RELEASE\`" >> "$GITHUB_STEP_SUMMARY"
 
   deployImage:
     name: Deploy to Environment
