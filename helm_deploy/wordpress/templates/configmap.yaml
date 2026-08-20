@@ -12,6 +12,10 @@ data:
   PAGECACHE_ENABLED: {{ .Values.configmap.pagecache.enabled | quote }}
   PAGECACHE_TTL: {{ .Values.configmap.pagecache.ttl | quote }}
   PAGECACHE_DB: {{ .Values.configmap.pagecache.db | quote }}
+  # Commit SHA this image was built from. Consumed by config.sh -> wp-config
+  # constant APP_RELEASE -> hale-components inc/asset-cdn.php, which uses it to
+  # build release-scoped CDN asset URLs.
+  APP_RELEASE: {{ .Values.configmap.release | quote }}
 ---
 apiVersion: v1
 kind: ConfigMap

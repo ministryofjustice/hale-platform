@@ -142,6 +142,9 @@ configmap:
   envtype: ""
   s3useprofile: "true"
   sentrydns: ""
+  # Commit SHA of the running release, set per deploy by the workflow. Empty
+  # here so a local/manual `helm upgrade` leaves the CDN asset rewrite inert.
+  release: ""
   firewall:
     enabled: "true"
   # Full-page cache (OpenResty + Redis). Ships dark: enable per environment.

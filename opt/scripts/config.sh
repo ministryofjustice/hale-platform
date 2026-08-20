@@ -23,6 +23,13 @@ wp config set AUTH0_ENV_CLIENT_ID "\$_SERVER['AUTH0_ENV_CLIENT_ID']" --raw
 wp config set AUTH0_ENV_CLIENT_SECRET "\$_SERVER['AUTH0_ENV_CLIENT_SECRET']" --raw
 wp config set AUTH0_ENV_DOMAIN "\$_SERVER['AUTH0_ENV_DOMAIN']" --raw
 wp config set CLOUDFRONT_DISTRIBUTION_ID "\$_SERVER['CLOUDFRONT_DISTRIBUTION_ID']" --raw
+
+# Release identity of this image, used to build release-scoped CDN asset URLs
+# (see hale-components inc/asset-cdn.php). Must be the same value the
+# "Publish theme assets to CDN" workflow step used for the S3 prefix.
+# Defaults to empty so an unset value leaves the CDN rewrite inert rather than
+# throwing on every request.
+wp config set APP_RELEASE "\$_SERVER['APP_RELEASE'] ?? ''" --raw
 wp config set QM_ENABLE_CAPS_PANEL true --raw
 wp config set WP_CACHE true --raw
 wp config set ACF_PRO_LICENSE "\$_SERVER['ACF_PRO_LICENSE']" --raw
