@@ -107,6 +107,7 @@ redis-cheatsheet:
 	echo ""; \
 	echo "=== Page cache (SELECT 1 first) ==="; \
 	echo ""; \
+	echo "  GET pagecache:config                        - runtime mode {\"mode\":\"active|inactive\"}"; \
 	echo "  GET pagecache:version                       - current cache version"; \
 	echo "  SCAN 0 MATCH pagecache:* COUNT 100          - list cache keys (repeat with returned cursor)"; \
 	echo "  TTL pagecache:v<ver>:<host>:<path>          - seconds left for a page"; \
