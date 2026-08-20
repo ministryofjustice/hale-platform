@@ -42,18 +42,21 @@ spec:
               cpu: {{ index .Values.wp.resources .Values.configmap.envtype "requests" "cpu" }}
               memory: {{ index .Values.wp.resources .Values.configmap.envtype "requests" "memory" }}
           env:
-            # DHI uses the Debian PHP layout (/etc/php-8.4), not the
-            # /usr/local/etc/php layout of the official WordPress image.
-            # The leading colon keeps the image's own conf.d on the scan path.
+            # Deliberately NOT under the image's own PHP directory. That path is
+            # version-stamped (/etc/php-8.4 today) and a PHP bump would leave
+            # this pointing at a directory that does not exist - the container
+            # would still start and silently ignore our php.ini overrides.
+            # The leading colon keeps the image's own conf.d on the scan path,
+            # so an arbitrary location here is additive, not a replacement.
             - name: PHP_INI_SCAN_DIR
-              value: :/etc/php-8.4/conf.custom
+              value: :/opt/hale/php-conf
           ports:
             - containerPort: {{ .Values.wp.image.ports.containerPort }}
           volumeMounts:
             - name: wordpress-volume-file-mount
               mountPath: /var/www/html
             - name: hale-php-config
-              mountPath: /etc/php-8.4/conf.custom
+              mountPath: /opt/hale/php-conf
           envFrom:
             - configMapRef:
                 name: hale-wp-config-{{ .Release.Revision }}

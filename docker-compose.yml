@@ -106,8 +106,9 @@ services:
       - ./wordpress/wp-content:/var/www/html/wp-content
       - ./dev:/mnt/dev
       - ./opt/scripts:/opt/scripts
-      # DHI uses the Debian PHP layout (/etc/php-8.4), not /usr/local/etc/php.
-      - ./opt/php/php-local.ini:/etc/php-8.4/conf.d/zz-local.ini
+      # Mounted outside the image's version-stamped PHP directory so a PHP
+      # bump cannot silently orphan it; PHP_INI_SCAN_DIR below picks it up.
+      - ./opt/php/php-local.ini:/opt/hale/php-conf/zz-local.ini
     depends_on:
       mariadb:
         condition: service_started
@@ -117,6 +118,8 @@ services:
       - .env
     environment:
       <<: *wp-env
+      # Leading colon keeps the image's own conf.d on the scan path.
+      PHP_INI_SCAN_DIR: ":/opt/hale/php-conf"
 
   # Database tooling. The hardened WordPress image has no mysql client, so
   # `wp db` subcommands run here instead. Mirrors the wp-tools sidecar in k8s.

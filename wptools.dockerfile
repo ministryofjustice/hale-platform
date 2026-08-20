@@ -72,9 +72,19 @@ RUN for b in mysql mysqldump mysqlcheck; do \
         fi; \
     done; true
 
-RUN curl -fsSL -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
-    && chmod +x /usr/local/bin/wp \
-    && apk del curl
+# wp-cli, pinned and checksum-verified. Fetching an unpinned phar from a raw
+# git host and executing it is a supply-chain risk: this binary runs with full
+# database access during multisite bootstrap, so a swapped or compromised build
+# would be executing as us. Bump both values together - wp-cli publishes the
+# checksum alongside each release as wp-cli-<version>.phar.sha512.
+ARG WP_CLI_VERSION=2.12.0
+ARG WP_CLI_SHA512=be928f6b8ca1e8dfb9d2f4b75a13aa4aee0896f8a9a0a1c45cd5d2c98605e6172e6d014dda2e27f88c98befc16c040cbb2bd1bfa121510ea5cdf5f6a30fe8832
+RUN curl -fsSL -o /usr/local/bin/wp \
+        "https://github.com/wp-cli/wp-cli/releases/download/v${WP_CLI_VERSION}/wp-cli-${WP_CLI_VERSION}.phar" \
+    && echo "${WP_CLI_SHA512}  /usr/local/bin/wp" | sha512sum -c - \
+    && chmod +x /usr/local/bin/wp
+
+RUN apk del curl
 
 # Scratch space for exports. Writing dumps into /var/www/html would put them
 # under the webroot where nginx could serve them.
