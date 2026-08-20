@@ -101,7 +101,7 @@
   "require": {
     "composer/installers": "^v2.0",
     "ministryofjustice/cookie-compliance": "1.3.6",
-    "ministryofjustice/govwind": "1.1.1",
+    "ministryofjustice/govwind": "1.1.2",
     "ministryofjustice/justice": "dev-main",
     "ministryofjustice/hale": "4.35.2",
     "ministryofjustice/hale-components": "1.19.3",
