@@ -23,6 +23,21 @@
 #   docker compose exec wp-tools wp db query "SELECT ..."
 # ##################################################
 
+# Colourscheme for the sidecar's neovim, vendored so the runtime image needs no
+# plugin manager and no network. Pinned to a commit sha: git verifies the sha on
+# fetch, so unlike a tarball URL there is nothing to swap under us. Bump by
+# changing ONEDARKPRO_COMMIT (matches lazy-lock.json in a local nvim setup).
+FROM alpine:3.24 AS themes
+ARG ONEDARKPRO_COMMIT=f5fddfd5122fe00421e199151ae4fe8571a02898
+RUN apk add --no-cache git \
+    && mkdir -p /themes/onedarkpro.nvim \
+    && cd /themes/onedarkpro.nvim \
+    && git init -q \
+    && git remote add origin https://github.com/olimorris/onedarkpro.nvim.git \
+    && git fetch -q --depth 1 origin "${ONEDARKPRO_COMMIT}" \
+    && git checkout -q FETCH_HEAD \
+    && rm -rf .git
+
 FROM alpine:3.24
 
 # mariadb-client provides mysql/mysqldump/mysqlcheck, which is what `wp db`
@@ -60,6 +75,7 @@ RUN apk add --no-cache \
         php84-gd \
         php84-pecl-imagick \
         php84-pecl-redis \
+        neovim \
         curl \
     && ln -sf /usr/bin/php84 /usr/local/bin/php
 
@@ -89,6 +105,31 @@ RUN apk del curl
 # Scratch space for exports. Writing dumps into /var/www/html would put them
 # under the webroot where nginx could serve them.
 RUN mkdir -p /scratch && chown 65532:65532 /scratch
+
+# neovim writes config/state/cache under XDG paths below $HOME. uid 65532 has no
+# passwd entry, so HOME is "/", which it cannot write to. Point the XDG dirs at
+# /scratch instead. HOME itself is left alone: wp-cli resolves ~/.wp-cli from it.
+ENV XDG_CONFIG_HOME=/scratch/.config \
+    XDG_DATA_HOME=/scratch/.local/share \
+    XDG_STATE_HOME=/scratch/.local/state \
+    XDG_CACHE_HOME=/scratch/.cache \
+    EDITOR=nvim
+RUN mkdir -p /scratch/.config /scratch/.local/share /scratch/.local/state /scratch/.cache \
+    && chown -R 65532:65532 /scratch
+COPY --chown=65532:65532 opt/nvim/init.lua /scratch/.config/nvim/init.lua
+
+# /usr/share/nvim/site is on the default packpath, so anything under
+# pack/*/start loads at startup without a plugin manager.
+COPY --from=themes /themes/onedarkpro.nvim /usr/share/nvim/site/pack/hale/start/onedarkpro.nvim
+
+# `v` shorthand for nvim. ash only sources a startup file for interactive shells
+# and only when $ENV names one, hence ENV=/etc/profile - Alpine's /etc/profile
+# sources /etc/profile.d/*.sh. Applies to `docker compose exec wp-tools sh` and
+# `kubectl exec -it <pod> -c wp-tools -- sh`; a non-interactive exec of a single
+# command still needs the full `nvim`.
+ENV ENV=/etc/profile
+RUN printf 'alias v=nvim\n' > /etc/profile.d/nvim-alias.sh \
+    && chmod 644 /etc/profile.d/nvim-alias.sh
 
 WORKDIR /var/www/html
 
