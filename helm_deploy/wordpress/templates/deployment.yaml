@@ -1,3 +1,4 @@
+{{- include "wordpress.validateEnv" . -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -10,7 +11,7 @@ spec:
     matchLabels:
       app: wordpress
       tier: frontend-c
-  replicas: {{ include "wp.replicaCount" . }}
+  replicas: {{ .Values.replicaCount }}
   strategy:
     type: {{ .Values.updateStrategy.type }}
     rollingUpdate:
@@ -36,11 +37,11 @@ spec:
           imagePullPolicy: {{ .Values.wp.image.imagePullPolicy }}
           resources:
             limits:
-              cpu: {{ index .Values.wp.resources .Values.configmap.envtype "limits" "cpu" }}
-              memory: {{ index .Values.wp.resources .Values.configmap.envtype "limits" "memory" }}
+              cpu: {{ .Values.wp.resources.limits.cpu }}
+              memory: {{ .Values.wp.resources.limits.memory }}
             requests:
-              cpu: {{ index .Values.wp.resources .Values.configmap.envtype "requests" "cpu" }}
-              memory: {{ index .Values.wp.resources .Values.configmap.envtype "requests" "memory" }}
+              cpu: {{ .Values.wp.resources.requests.cpu }}
+              memory: {{ .Values.wp.resources.requests.memory }}
           env:
             # Deliberately NOT under the image's own PHP directory. That path is
             # version-stamped (/etc/php-8.4 today) and a PHP bump would leave
@@ -62,7 +63,7 @@ spec:
                 name: hale-wp-config-{{ .Release.Revision }}
             - secretRef:
                 name: hale-wp-secrets-{{ .Release.Revision }}
-          {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
+          {{- if .Values.wp.probes.enabled }}
           # The previous probe combined two unrelated checks and used `ps`,
           # which the hardened image does not ship. Split into:
           #
@@ -101,11 +102,11 @@ spec:
           imagePullPolicy: {{ .Values.nginx.image.imagePullPolicy }}
           resources:
             limits:
-              cpu: {{ index .Values.nginx.resources .Values.configmap.envtype "limits" "cpu" }}
-              memory: {{ index .Values.nginx.resources .Values.configmap.envtype "limits" "memory" }}
+              cpu: {{ .Values.nginx.resources.limits.cpu }}
+              memory: {{ .Values.nginx.resources.limits.memory }}
             requests:
-              cpu: {{ index .Values.nginx.resources .Values.configmap.envtype "requests" "cpu" }}
-              memory: {{ index .Values.nginx.resources .Values.configmap.envtype "requests" "memory" }}
+              cpu: {{ .Values.nginx.resources.requests.cpu }}
+              memory: {{ .Values.nginx.resources.requests.memory }}
           ports:
             - containerPort: {{ .Values.nginx.image.ports.containerPort }}
             - name: fpm-status
@@ -118,7 +119,7 @@ spec:
                 name: hale-nginx-config-{{ .Release.Revision }}
             - secretRef:
                 name: hale-nginx-secrets-{{ .Release.Revision }}
-          {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
+          {{- if .Values.nginx.probes.enabled }}
           # Was `curl --fail http://localhost:8080`, which rendered a full
           # WordPress page every 5s on every pod. /fpm-ping is a FastCGI round
           # trip that proves nginx can reach php-fpm and php-fpm can dispatch to
@@ -170,11 +171,11 @@ spec:
           workingDir: /var/www/html
           resources:
             limits:
-              cpu: {{ index .Values.wptools.resources .Values.configmap.envtype "limits" "cpu" }}
-              memory: {{ index .Values.wptools.resources .Values.configmap.envtype "limits" "memory" }}
+              cpu: {{ .Values.wptools.resources.limits.cpu }}
+              memory: {{ .Values.wptools.resources.limits.memory }}
             requests:
-              cpu: {{ index .Values.wptools.resources .Values.configmap.envtype "requests" "cpu" }}
-              memory: {{ index .Values.wptools.resources .Values.configmap.envtype "requests" "memory" }}
+              cpu: {{ .Values.wptools.resources.requests.cpu }}
+              memory: {{ .Values.wptools.resources.requests.memory }}
           volumeMounts:
             # wp-cli reads wp-config.php from here for the database credentials.
             - name: wordpress-volume-file-mount

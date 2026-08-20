@@ -37,3 +37,35 @@ jobs:
             -e REDIS_HOST=localhost \
             -e REDIS_DB=1 \
             test-firewall
+
+  # Every environment gets its config from values.yaml layered with its own
+  # values-<env>.yaml overlay, so there are four ways the chart can render and
+  # a PR only exercises them here. Without this, a template referencing a value
+  # no overlay defines, or a renamed overlay file, is first discovered by the
+  # deploy job - mid-deploy, against a live namespace.
+  #
+  # Needs no secrets and no cluster: the chart renders with empty image
+  # repositories, and the deploy-time --set flags do not change which code
+  # paths run.
+  helm-render:
+    name: Render Helm chart for every environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
+
+      - name: Set up Helm
+        uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 #v5.0.1
+
+      - name: Render and lint each environment
+        run: |
+          for env in dev demo staging prod; do
+            echo "::group::$env"
+            helm template wordpress helm_deploy/wordpress \
+              --values helm_deploy/wordpress/values.yaml \
+              --values helm_deploy/wordpress/values-"$env".yaml > /dev/null
+            helm lint helm_deploy/wordpress \
+              --values helm_deploy/wordpress/values.yaml \
+              --values helm_deploy/wordpress/values-"$env".yaml
+            echo "::endgroup::"
+          done

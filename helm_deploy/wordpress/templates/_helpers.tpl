@@ -61,20 +61,21 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
-{{- define "wp.replicaCount" -}}
-{{- if eq .Values.configmap.envtype "staging" -}}
-  {{ .Values.replicaCount.staging }}
-{{- else if eq .Values.configmap.envtype "dev" -}}
-  {{ .Values.replicaCount.dev }}
-{{- else if eq .Values.configmap.envtype "demo" -}}
-  {{ .Values.replicaCount.demo }}
-{{- else -}}
-  {{ .Values.replicaCount.prod }}
-{{- end -}}
+{{- define "replicaSettings" -}}
+  minReplicas: {{ .Values.autoscaling.minReplicas | default 1 }}
+  maxReplicas: {{ .Values.autoscaling.maxReplicas | default 1 }}
 {{- end }}
 
-{{- define "replicaSettings" -}}
-  minReplicas: {{ index .Values.autoscaling.replicaCount .Values.configmap.envtype "min" | default 1 }}
-  maxReplicas: {{ index .Values.autoscaling.replicaCount .Values.configmap.envtype "max" | default 1 }}
+{{/*
+Fail the render unless an environment overlay supplied configmap.envtype.
+
+Without this a missing or misspelled --values flag would render namespaces like
+"hale-platform-" and deploy them, because empty strings are valid YAML. Renders
+nothing on success - include it from a template that is always evaluated.
+*/}}
+{{- define "wordpress.validateEnv" -}}
+{{- if not (has .Values.configmap.envtype (list "dev" "demo" "staging" "prod")) }}
+{{- fail (printf "configmap.envtype is %q - it must come from a values-<env>.yaml overlay (dev|demo|staging|prod). Did you forget --values helm_deploy/wordpress/values-<env>.yaml?" .Values.configmap.envtype) }}
+{{- end }}
 {{- end }}
 

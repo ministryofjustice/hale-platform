@@ -1,0 +1,29 @@
+## Development environment overlay.
+## Layered on top of values.yaml - only values that differ from the shared
+## defaults belong here.
+
+domain: dev.websitebuilder.service.justice.gov.uk
+
+configmap:
+  envtype: dev
+
+## Single pod, so the HPA has nothing to scale.
+replicaCount: 1
+
+autoscaling:
+  minReplicas: 1
+  maxReplicas: 1
+
+## Probes are off: with one pod a failing probe removes the only backend and
+## takes the environment down rather than shifting traffic.
+wp:
+  probes:
+    enabled: false
+
+nginx:
+  probes:
+    enabled: false
+
+ingress:
+  defaultHost:
+    certName: websitebuilder-dev-cert

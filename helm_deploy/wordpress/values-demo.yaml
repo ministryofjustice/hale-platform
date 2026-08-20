@@ -1,0 +1,28 @@
+## Demonstration environment overlay.
+## Layered on top of values.yaml - only values that differ from the shared
+## defaults belong here.
+
+domain: demo.websitebuilder.service.justice.gov.uk
+
+configmap:
+  envtype: demo
+
+replicaCount: 2
+
+autoscaling:
+  minReplicas: 2
+  maxReplicas: 4
+
+## Probes off, matching dev. Demo carries no traffic worth protecting with
+## automated pod replacement.
+wp:
+  probes:
+    enabled: false
+
+nginx:
+  probes:
+    enabled: false
+
+ingress:
+  defaultHost:
+    certName: websitebuilder-demo-cert

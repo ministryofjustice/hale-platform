@@ -1,4 +1,4 @@
-{{- if eq .Values.configmap.envtype "prod" }}
+{{- if .Values.ingress.justiceCanary.enabled }}
 # Dedicated Service for the canary backend.
 # The `wordpress` Service is already a NON-canary (primary) backend of the
 # hale-platform-ingress, and nginx-ingress will not let the same Service act as
