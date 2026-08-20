@@ -833,7 +833,7 @@ Everything else falls through to PHP untouched.
 
 | Key | Type | Writer | Reader | Purpose |
 |---|---|---|---|---|
-| `pagecache:v{version}:{host}:{path}` | string, TTL = `PAGECACHE_TTL` | Lua (deferred write); deleted by PHP purge | Lua | Cached page: `"<content-type>\n<body>"` (split on first newline) |
+| `pagecache:v{version}:{host}:{path}` | string, TTL = `PAGECACHE_TTL` | Lua (deferred write); deleted by PHP purge | Lua | Cached page, in the `PC2` blob format (see below) |
 | `pagecache:fence:{host}:{path}` | string (integer microseconds from Redis `TIME`), TTL = `PAGECACHE_FENCE_TTL` | PHP purge plugin | Lua CAS script | Purge fence — blocks a stale in-flight render from re-caching (see below) |
 | `pagecache:version` | int | PHP (`INCR` on flush-all and on a mode change) or an operator | Lua + PHP | Site-wide flush counter, embedded in every content key |
 | `pagecache:config` | string (JSON) | PHP network dashboard / `wp hale-pagecache mode` | Lua | Runtime mode: `{"mode":"active"}` or `{"mode":"inactive"}`. Absent = `active` |
@@ -850,6 +850,30 @@ Key anatomy:
 - `{version}` comes from `pagecache:version`, normalised to an integer on
   **both** sides (Lua `math.floor`, PHP `(int)`) so they derive identical
   keys.
+
+Value format — `PC2`: a magic line, one `Name: value` line per stored
+header with `Content-Type` always first (a header PHP emitted more than
+once gets a line each), a blank line, then the body.
+
+```
+PC2
+Content-Type: text/html; charset=UTF-8
+X-Robots-Tag: noindex, follow
+
+<!doctype html>...
+```
+
+A HIT skips PHP entirely, so only the headers in this blob reach the
+client. `STORE_HEADERS` (see [pagecache/init.lua](pagecache/init.lua)) is
+the allowlist of what gets kept besides `Content-Type`: currently
+`X-Robots-Tag` (Yoast's noindex — losing it would let search engines index
+excluded pages) and `Link` (WP core's REST discovery and shortlink).
+Anything else PHP emits is dropped from cached responses.
+
+Blobs written before this format (`"<content-type>\n<body>"`, split on the
+first newline) are still readable; every new write is `PC2`. During a
+rolling deploy an old worker can serve a `PC2` blob wrongly for up to one
+TTL — accepted, the same tradeoff as the fence format changeover.
 
 Everything the page cache writes goes through `SETEX`, so every key has a
 TTL and is eligible for `volatile-lru` eviction — on a shared Redis
