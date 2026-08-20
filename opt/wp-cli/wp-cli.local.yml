@@ -1,0 +1,29 @@
+# wp-cli defaults for LOCAL DEVELOPMENT ONLY.
+#
+# Mounted into the wp-tools container by docker-compose.yml and selected with
+# WP_CLI_CONFIG_PATH. Not baked into any image and not present in deployed
+# environments.
+#
+# Why this exists:
+# `wp db check`, `wp db optimize` and `wp db repair` shell out to mariadb-check.
+# Recent MariaDB clients attempt TLS by default and the local `mariadb` service
+# has no certificates, so those commands fail with:
+#   Got error: 2026: TLS/SSL error: SSL is required, but the server does not
+#   support it when trying to connect
+#
+# opt/mariadb/client-local.cnf handles direct `mariadb` / `mariadb-check` use,
+# but wp-cli generates its own credentials file and passes --defaults-file,
+# which suppresses /etc/my.cnf. So the option has to be supplied per command
+# here instead.
+#
+# Deployed environments talk to RDS, which supports TLS, and must keep
+# negotiating it - which is why this is local-only rather than an image default.
+
+db check:
+  ssl: 0
+
+db optimize:
+  ssl: 0
+
+db repair:
+  ssl: 0

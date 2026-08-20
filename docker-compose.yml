@@ -1,3 +1,34 @@
+# WordPress environment, shared by the wordpress container and the wp-tools
+# sidecar. wp-tools needs the same variables because wp-config.php resolves its
+# database credentials from the environment at runtime - without them wp-cli
+# cannot connect. Mirrors the configMap/secret both containers share in k8s.
+x-wp-env: &wp-env
+  WORDPRESS_DB_HOST: mariadb:3306
+  WORDPRESS_DB_USER: wordpress
+  WORDPRESS_DB_PASSWORD: wordpress
+  WORDPRESS_DB_NAME: wordpress
+  WORDPRESS_ADMIN_USER: admin
+  WORDPRESS_ADMIN_PASSWORD: wordpress
+  WORDPRESS_ADMIN_EMAIL: "wordpress@hale.docker"
+  WP_ENVIRONMENT_TYPE: local
+  S3_UPLOADS_USE_LOCAL: "true"
+  S3_UPLOADS_USE_INSTANCE_PROFILE: "false"
+  S3_UPLOADS_REGION: ""
+  S3_UPLOADS_BUCKET: ""
+  S3_UPLOADS_BUCKET_URL: ""
+  S3_UPLOADS_OBJECT_ACL: ""
+  CLOUDFRONT_DISTRIBUTION_ID: ""
+  AUTH0_ENV_CLIENT_ID: ""
+  AUTH0_ENV_CLIENT_SECRET: ""
+  AUTH0_ENV_DOMAIN: ""
+  SERVER_NAME: "hale.docker"
+  PHP_DSN: "" # Sentry constant (not used locally)
+  WP_SENTRY_ENV: ""
+  ACF_PRO_LICENSE: ""
+  NGINX_INTERNAL_URL: "https://nginx"
+  FIREWALL_ENABLED: ${FIREWALL_ENABLED:-false}
+  REDIS_SSL: "false"
+
 services:
   nginx:
     container_name: nginx
@@ -9,6 +40,9 @@ services:
     ports:
       - 8080:8080
       - 443:443
+      # PHP-FPM health/metrics listener. Internal in k8s (not routed by the
+      # ingress); published locally so http://localhost:8090/fpm-status works.
+      - 8090:8090
     volumes:
       # WP core lives in the shared wpcore volume (fast, native to the Docker
       # VM); only wp-content is bind-mounted from the host so edits to themes,
@@ -46,6 +80,21 @@ services:
       VIRTUAL_HOST: mariadb.docker
     volumes:
       - database:/var/lib/mysql
+  # Docker creates a named volume root-owned when the image's directory at that
+  # path is empty, which /var/www/html is in the hardened base image. The
+  # containers run as UID 65532 and cannot write to it, so the core copy fails.
+  # k8s solves this with `fsGroup: 65532` on the pod; Compose has no equivalent,
+  # so chown the volume once before anything else starts. Runs as root, exits
+  # immediately, and is the only thing in the local stack that needs root.
+  wpcore-init:
+    container_name: wpcore-init
+    image: alpine:3.24
+    platform: linux/arm64
+    user: "0:0"
+    command: ["sh", "-c", "chown 65532:65532 /var/www/html && chmod 755 /var/www/html"]
+    volumes:
+      - wpcore:/var/www/html
+
   wordpress:
     container_name: wordpress
     platform: linux/arm64
@@ -57,37 +106,52 @@ services:
       - ./wordpress/wp-content:/var/www/html/wp-content
       - ./dev:/mnt/dev
       - ./opt/scripts:/opt/scripts
-      - ./opt/php/php-local.ini:/usr/local/etc/php/conf.d/zz-local.ini
+      # DHI uses the Debian PHP layout (/etc/php-8.4), not /usr/local/etc/php.
+      - ./opt/php/php-local.ini:/etc/php-8.4/conf.d/zz-local.ini
     depends_on:
+      mariadb:
+        condition: service_started
+      wpcore-init:
+        condition: service_completed_successfully
+    env_file:
+      - .env
+    environment:
+      <<: *wp-env
+
+  # Database tooling. The hardened WordPress image has no mysql client, so
+  # `wp db` subcommands run here instead. Mirrors the wp-tools sidecar in k8s.
+  # Every other wp-cli command still works in the wordpress container.
+  #
+  #   docker compose exec wp-tools wp db query "SELECT 1"
+  #   docker compose exec wp-tools wp db export /scratch/dump.sql
+  wp-tools:
+    container_name: wp-tools
+    platform: linux/arm64
+    build:
+      context: .
+      dockerfile: wptools.dockerfile
+    volumes:
+      - wpcore:/var/www/html
+      - ./wordpress/wp-content:/var/www/html/wp-content
+      # Needed because local development symlinks some mu-plugins into /mnt/dev
+      # (e.g. wp-gov-uk-notify). wp-cli bootstraps WordPress, so a dangling
+      # symlink here is a fatal error. Must mirror the wordpress service's
+      # mounts for anything WordPress loads at runtime.
+      - ./dev:/mnt/dev
+      # Local-only: the local mariadb has no TLS. Deployed environments use RDS
+      # and keep TLS on. See the files for detail.
+      - ./opt/mariadb/client-local.cnf:/etc/my.cnf.d/client-local.cnf
+      - ./opt/wp-cli/wp-cli.local.yml:/scratch/wp-cli.yml
+    depends_on:
+      - wordpress
       - mariadb
     env_file:
       - .env
     environment:
-      WORDPRESS_DB_HOST: mariadb:3306
-      WORDPRESS_DB_USER: wordpress
-      WORDPRESS_DB_PASSWORD: wordpress
-      WORDPRESS_DB_NAME: wordpress
-      WORDPRESS_ADMIN_USER: admin
-      WORDPRESS_ADMIN_PASSWORD: wordpress
-      WORDPRESS_ADMIN_EMAIL: "wordpress@hale.docker"
-      WP_ENVIRONMENT_TYPE: local
-      S3_UPLOADS_USE_LOCAL: "true"
-      S3_UPLOADS_USE_INSTANCE_PROFILE: "false"
-      S3_UPLOADS_REGION: ""
-      S3_UPLOADS_BUCKET: ""
-      S3_UPLOADS_BUCKET_URL: ""
-      S3_UPLOADS_OBJECT_ACL: ""
-      CLOUDFRONT_DISTRIBUTION_ID: ""
-      AUTH0_ENV_CLIENT_ID: ""
-      AUTH0_ENV_CLIENT_SECRET: ""
-      AUTH0_ENV_DOMAIN: ""
-      SERVER_NAME: "hale.docker"
-      PHP_DSN: "" # Sentry constant (not used locally)
-      WP_SENTRY_ENV: ""
-      ACF_PRO_LICENSE: ""
-      NGINX_INTERNAL_URL: "https://nginx"
-      FIREWALL_ENABLED: ${FIREWALL_ENABLED:-false}
-      REDIS_SSL: "false"
+      <<: *wp-env
+      # Applies the local-only TLS opt-out above to `wp db check|optimize|repair`
+      WP_CLI_CONFIG_PATH: /scratch/wp-cli.yml
+
   redis:
     image: redis:7-alpine
     profiles:

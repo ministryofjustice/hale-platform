@@ -17,6 +17,9 @@ nginx:
     imagePullPolicy: Always
     ports:
       containerPort: 8080
+      # PHP-FPM health/metrics listener (/fpm-ping, /fpm-status). Internal only:
+      # the ingress routes containerPort above and never this one.
+      statusPort: 8090
 
   # Apply container level resource allocation
   resources:
@@ -88,6 +91,48 @@ wp:
       requests:
         cpu: "500m"
         memory: "1800Mi"
+
+## @param wp-tools database tooling sidecar
+##
+## The hardened WordPress image ships no mysql client, so `wp db` subcommands
+## run in this sidecar instead:
+##   kubectl exec <pod> -c wp-tools -- wp db query "SELECT ..."
+## It sits idle with no listening service, so requests are kept minimal.
+##
+wptools:
+  image:
+    repository: ""
+    imagePullPolicy: Always
+
+  resources:
+    dev:
+      limits:
+        cpu: "500m"
+        memory: "256Mi"
+      requests:
+        cpu: "10m"
+        memory: "32Mi"
+    demo:
+      limits:
+        cpu: "500m"
+        memory: "256Mi"
+      requests:
+        cpu: "10m"
+        memory: "32Mi"
+    staging:
+      limits:
+        cpu: "500m"
+        memory: "256Mi"
+      requests:
+        cpu: "10m"
+        memory: "32Mi"
+    prod:
+      limits:
+        cpu: "500m"
+        memory: "256Mi"
+      requests:
+        cpu: "10m"
+        memory: "32Mi"
 
 ## WordPress Autoscaling configuration
 ## ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/y

@@ -1,104 +1,78 @@
 ####################################################
-# WordPress multisite image
-# Installs WordPress multisite, PHP and PHP-FPM to serve
-# files to NGINX
+# WordPress multisite image - local development
+# Mirrors wordpress.dockerfile so local reproduces the k8s runtime exactly.
+# The only differences are the PHP-FPM pool config (listen on all interfaces
+# rather than 127.0.0.1, since nginx is a separate container here rather than
+# a sidecar sharing a network namespace) and the /opt/scripts mount point.
+#
+# Dev tooling (mysql client, wp-cli against the database) lives in the
+# `wp-tools` service in docker-compose.yml, matching the wp-tools sidecar in
+# k8s. Keeping this image identical to production is the point - it is what
+# catches path and permission problems before they reach a cluster.
+#
+# No platform pin here: let docker-compose.yml control the target architecture
+# for local builds. Production (wordpress.dockerfile) stays amd64.
 # ##################################################
-# Build multisite
-# Latest images at https://hub.docker.com/_/wordpress
-# No platform pin here: let docker-compose.yml (or `docker compose --platform`)
-# control the target architecture for local builds. Production (wordpress.dockerfile) stays amd64.
-FROM wordpress:7.0.2-php8.4-fpm-alpine
 
-# Install additional Alpine packages
-RUN apk update && \
-    apk add less \
-    vim \
-    hunspell \
-    hunspell-en-gb \
-    mariadb-client \
-    htop \
-    bash
+# ---------------------------------------------------------------------------
+# Builder stage - see wordpress.dockerfile for the rationale.
+# ---------------------------------------------------------------------------
+FROM dhi.io/wordpress:7.0.4-php8.4-fpm-dev AS builder
 
-# Install PHPRedis build dependencies
-RUN apk add --no-cache --virtual .build-deps pcre-dev $PHPIZE_DEPS
+USER root
 
-# Install and enable PHPRedis
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        php8.4-dev \
+        php-pear \
+        pkg-config \
+        ca-certificates \
+        curl \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN pecl install redis \
-    && docker-php-ext-enable redis
+    && cp "$(php-config --extension-dir)/redis.so" /tmp/redis.so \
+    && echo "extension=redis.so" > /tmp/docker-php-ext-redis.ini
 
-# Delete PHPRedis build dependencies
-RUN apk del .build-deps
+RUN curl -fsSL -o /tmp/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
+    && chmod +x /tmp/wp
 
-# Install a patched version of WordPress core, prior to release on Docker Hub.
-# Minimal implementation, edit the following 2 arguments directly.
-ARG PATCH_WORDPRESS_VERSION="7.0.3"
-# Get value from https://wordpress.org/wordpress-<WORDPRESS_VERSION>.tar.gz.sha1
-ARG PATCH_WORDPRESS_SHA1="344b74d7cbf13c55ba0f12cad207c06cfee4368a"
-# Download and extract script from: https://github.com/docker-library/wordpress/blob/master/Dockerfile.template
-RUN set -ex; \
-	if [ -n "$PATCH_WORDPRESS_VERSION" ] && [ -n "$PATCH_WORDPRESS_SHA1" ]; then \
-		curl -o wordpress.tar.gz -fL "https://wordpress.org/wordpress-$PATCH_WORDPRESS_VERSION.tar.gz"; \
-		echo "$PATCH_WORDPRESS_SHA1 *wordpress.tar.gz" | sha1sum -c -; \
-		tar -xzf wordpress.tar.gz -C /usr/src/; \
-		rm wordpress.tar.gz; \
-        chown -R www-data:www-data /usr/src/wordpress; \
-        echo "Patched WordPress core to $PATCH_WORDPRESS_VERSION"; \
-	fi
+# /opt/scripts is a volume mount point locally; the directory has to exist and
+# the uploads folder is staged here because the runtime stage has no shell.
+RUN mkdir -p /tmp/uploads /tmp/optscripts
 
-# Install wp-cli
-RUN curl -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
-    chmod +x /usr/local/bin/wp
+# ---------------------------------------------------------------------------
+# Runtime stage. COPY only - no RUN, no package manager, no root.
+# ---------------------------------------------------------------------------
+FROM dhi.io/wordpress:7.0.4-php8.4-fpm
 
-# Set permissions for wp-cli
-RUN addgroup -g 1001 wp \
-    && adduser -G wp -g wp -s /bin/sh -D wp \
-    && chown wp:wp /var/www/html
+COPY --from=builder /tmp/redis.so /usr/lib/php/extensions/no-debug-non-zts-20240924/redis.so
+COPY --from=builder /tmp/docker-php-ext-redis.ini /etc/php-8.4/conf.d/docker-php-ext-redis.ini
+
+COPY --from=builder --chmod=0755 /tmp/wp /usr/local/bin/wp
 
 # Add PHP multsite supporting files
 COPY opt/php/load.php /usr/src/wordpress/wp-content/mu-plugins/load.php
 COPY opt/php/application.php /usr/src/wordpress/wp-content/mu-plugins/application.php
 COPY opt/php/error-handling.php /usr/src/wordpress/error-handling.php
-COPY opt/php/www.local.conf /usr/local/etc/php-fpm.d/www.conf
 COPY opt/php/wp-cron-multisite.php /usr/src/wordpress/wp-cron-multisite.php
 
+COPY opt/php/www.local.conf /etc/php-8.4/php-fpm.d/www.conf
+
 # Setup WordPress multisite and network
-COPY opt/scripts/hale-entrypoint.sh /usr/local/bin/
-COPY opt/scripts/config.sh /usr/local/bin/
-COPY opt/scripts/startup-patch.sh /usr/local/bin/
+COPY --chmod=0755 opt/scripts/hale-entrypoint.sh /usr/local/bin/
+COPY --chmod=0755 opt/scripts/config.sh /usr/local/bin/
 
-# Generated Composer and NPM compiled artifacts (plugins, themes, CSS, JS)
-# The WP offical Docker image expects files to be in /usr/src/wordpress
-# but then will copy them over on launch of site to the /html directory.
-COPY /wordpress/wp-content/plugins /usr/src/wordpress/wp-content/plugins
-COPY /wordpress/wp-content/mu-plugins /usr/src/wordpress/wp-content/mu-plugins
-COPY /wordpress/wp-content/themes /usr/src/wordpress/wp-content/themes
-COPY /vendor /usr/src/wordpress/wp-content/vendor
+COPY --chown=65532:65532 /wordpress/wp-content/plugins /usr/src/wordpress/wp-content/plugins
+COPY --chown=65532:65532 /wordpress/wp-content/mu-plugins /usr/src/wordpress/wp-content/mu-plugins
+COPY --chown=65532:65532 /wordpress/wp-content/themes /usr/src/wordpress/wp-content/themes
+COPY --chown=65532:65532 /vendor /usr/src/wordpress/wp-content/vendor
 
-# Load default production php.ini file in
-# Custom php.ini additions for dev, staging & prod are done via k8s manifest
-RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+COPY --from=builder --chown=65532:65532 /tmp/uploads /usr/src/wordpress/wp-content/uploads
 
-# Create new user to run the container as non-root
-RUN adduser --disabled-password hale -u 1002 \
-    && chown -R hale:hale /var/www/html \
-    && chown hale:hale /usr/local/bin/docker-entrypoint.sh
+# Volume mount point for ./opt/scripts - must exist before the bind mount
+COPY --from=builder --chown=65532:65532 /tmp/optscripts /opt/scripts
 
-# Make multisite scripts executable
-RUN chmod +x /usr/local/bin/hale-entrypoint.sh \
-    && chmod +x /usr/local/bin/config.sh \
-    && chmod +x /usr/local/bin/startup-patch.sh
-
-# Create the uploads folder
-RUN mkdir -p /usr/src/wordpress/wp-content/uploads
-
-# Create /opt/scripts directory to ensure volume mount point exists
-RUN mkdir -p /opt/scripts
-
-# Overwrite offical WP image ENTRYPOINT (docker-entrypoint.sh)
-# with custom entrypoint so we can launch WP multisite network
 ENTRYPOINT ["/usr/local/bin/hale-entrypoint.sh"]
 
-# Set container user 'root' to 'hale' that is set to 1002. Number is required
-# instead of using user name.
-USER 1002
-
+USER 65532

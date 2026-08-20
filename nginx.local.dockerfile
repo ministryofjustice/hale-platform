@@ -37,6 +37,10 @@ USER 1002
 EXPOSE 443
 EXPOSE 8080
 
+# PHP-FPM health/metrics listener. Internal only - the ingress routes 8080
+# and never 8090. See the server block in opt/nginx/*wordpress.conf.
+EXPOSE 8090
+
 # Start in the foreground
 CMD ["/usr/local/openresty/bin/openresty", "-g", "daemon off;"]
 

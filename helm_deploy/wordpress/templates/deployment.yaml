@@ -24,6 +24,12 @@ spec:
     spec:
       terminationGracePeriodSeconds: 35
       serviceAccountName: hale-platform-{{ .Values.configmap.envtype }}-service
+      # The hardened WordPress image runs as UID 65532. fsGroup makes the shared
+      # emptyDir group-owned and setgid so the wordpress and wp-tools containers
+      # can both write to it, and removes the mount-point permission error that
+      # the old startup-patch.sh worked around.
+      securityContext:
+        fsGroup: 65532
       containers:
         - name: wordpress
           image: {{ .Values.wp.image.repository }}
@@ -36,36 +42,46 @@ spec:
               cpu: {{ index .Values.wp.resources .Values.configmap.envtype "requests" "cpu" }}
               memory: {{ index .Values.wp.resources .Values.configmap.envtype "requests" "memory" }}
           env:
+            # DHI uses the Debian PHP layout (/etc/php-8.4), not the
+            # /usr/local/etc/php layout of the official WordPress image.
+            # The leading colon keeps the image's own conf.d on the scan path.
             - name: PHP_INI_SCAN_DIR
-              value: :/usr/local/etc/php/conf.custom
+              value: :/etc/php-8.4/conf.custom
           ports:
             - containerPort: {{ .Values.wp.image.ports.containerPort }}
           volumeMounts:
             - name: wordpress-volume-file-mount
               mountPath: /var/www/html
             - name: hale-php-config
-              mountPath: /usr/local/etc/php/conf.custom
+              mountPath: /etc/php-8.4/conf.custom
           envFrom:
             - configMapRef:
                 name: hale-wp-config-{{ .Release.Revision }}
             - secretRef:
                 name: hale-wp-secrets-{{ .Release.Revision }}
           {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
-          readinessProbe:
+          # The previous probe combined two unrelated checks and used `ps`,
+          # which the hardened image does not ship. Split into:
+          #
+          # startupProbe - has the entrypoint finished copying core out of
+          # /usr/src/wordpress into the emptyDir? This is a real race on a fresh
+          # pod, and waiting on the actual condition beats guessing with
+          # initialDelaySeconds. Stops running once it passes.
+          startupProbe:
             exec:
-              command:
-                - /bin/sh
-                - -c
-                - |
-                  if [ -f /var/www/html/wp-load.php ] && ps aux | grep -q "[p]hp-fpm"
-                  then
-                    exit 0
-                  else
-                    exit 1
-                  fi
-            initialDelaySeconds: 30
+              command: ["/bin/sh", "-c", "[ -f /var/www/html/wp-load.php ]"]
+            periodSeconds: 2
+            timeoutSeconds: 5
+            failureThreshold: 30
+          # readinessProbe - is php-fpm actually listening? More accurate than
+          # matching a process name: a process can exist without a bound socket.
+          # Deliberately does NOT do a FastCGI round trip - under saturation that
+          # would take every pod out of the Service at once.
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.wp.image.ports.containerPort }}
             periodSeconds: 3
-            timeoutSeconds: 10
+            timeoutSeconds: 5
             successThreshold: 1
             failureThreshold: 3
           {{- end }}
@@ -89,6 +105,8 @@ spec:
               memory: {{ index .Values.nginx.resources .Values.configmap.envtype "requests" "memory" }}
           ports:
             - containerPort: {{ .Values.nginx.image.ports.containerPort }}
+            - name: fpm-status
+              containerPort: {{ .Values.nginx.image.ports.statusPort }}
           volumeMounts:
             - name: wordpress-volume-file-mount
               mountPath: /var/www/html
@@ -98,23 +116,74 @@ spec:
             - secretRef:
                 name: hale-nginx-secrets-{{ .Release.Revision }}
           {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
+          # Was `curl --fail http://localhost:8080`, which rendered a full
+          # WordPress page every 5s on every pod. /fpm-ping is a FastCGI round
+          # trip that proves nginx can reach php-fpm and php-fpm can dispatch to
+          # a worker, without bootstrapping WordPress at all.
+          #
+          # httpGet rather than exec+curl: the kubelet makes the request, so the
+          # probe no longer depends on curl being present in the image.
+          #
+          # failureThreshold is 6 rather than 3 deliberately. With
+          # pm.max_children = 10, a traffic spike can slow every pod at once; at
+          # 3 x 5s the entire Service could empty from a load problem that would
+          # otherwise have been slow-but-up. 30s of sustained failure is a
+          # genuinely unhealthy pod.
           readinessProbe:
-            exec:
-              command:
-                - sh
-                - -c
-                - |
-                  if curl --silent --fail http://localhost:8080 >/dev/null; then
-                    exit 0
-                  else
-                    exit 1
-                  fi
+            httpGet:
+              path: /fpm-ping
+              port: {{ .Values.nginx.image.ports.statusPort }}
             initialDelaySeconds: 35
             periodSeconds: 5
-            timeoutSeconds: 10
+            timeoutSeconds: 5
             successThreshold: 1
-            failureThreshold: 3
+            failureThreshold: 6
           {{- end }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+        # Database tooling sidecar. The hardened WordPress image ships no mysql
+        # client, so `wp db` subcommands run here. Every other wp-cli command
+        # still works in the wordpress container - only `wp db` shells out to
+        # the mysql binaries.
+        #
+        #   kubectl exec <pod> -c wp-tools -- wp db query "SELECT ..."
+        #
+        # Containers in a pod share a network namespace but not a filesystem,
+        # and by default not a PID namespace, so a PHP RCE in the wordpress
+        # container cannot execute this container's mysql binary.
+        #
+        # Idle (`tail -f /dev/null`) with no listening service, so it adds no
+        # attack surface of its own. No probes - it must not affect pod
+        # readiness.
+        - name: wp-tools
+          image: {{ .Values.wptools.image.repository }}
+          imagePullPolicy: {{ .Values.wptools.image.imagePullPolicy }}
+          workingDir: /var/www/html
+          resources:
+            limits:
+              cpu: {{ index .Values.wptools.resources .Values.configmap.envtype "limits" "cpu" }}
+              memory: {{ index .Values.wptools.resources .Values.configmap.envtype "limits" "memory" }}
+            requests:
+              cpu: {{ index .Values.wptools.resources .Values.configmap.envtype "requests" "cpu" }}
+              memory: {{ index .Values.wptools.resources .Values.configmap.envtype "requests" "memory" }}
+          volumeMounts:
+            # wp-cli reads wp-config.php from here for the database credentials.
+            - name: wordpress-volume-file-mount
+              mountPath: /var/www/html
+            # Exports go here, not under the webroot where nginx could serve them.
+            - name: wp-tools-scratch
+              mountPath: /scratch
+          envFrom:
+            - configMapRef:
+                name: hale-wp-config-{{ .Release.Revision }}
+            - secretRef:
+                name: hale-wp-secrets-{{ .Release.Revision }}
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -125,6 +194,8 @@ spec:
               type: RuntimeDefault
       volumes:
         - name: wordpress-volume-file-mount
+          emptyDir: {}
+        - name: wp-tools-scratch
           emptyDir: {}
         - name: hale-php-config
           configMap:
