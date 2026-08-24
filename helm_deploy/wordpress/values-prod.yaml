@@ -1,0 +1,232 @@
+## Production environment overlay.
+## Layered on top of values.yaml - only values that differ from the shared
+## defaults belong here.
+
+domain: websitebuilder.service.justice.gov.uk
+
+configmap:
+  envtype: prod
+
+replicaCount: 6
+
+autoscaling:
+  minReplicas: 6
+  maxReplicas: 18
+
+## More memory per pod than the other environments, and much larger requests so
+## the scheduler reserves real capacity rather than letting pods burst into it.
+wp:
+  probes:
+    enabled: true
+  resources:
+    limits:
+      cpu: "1000m"
+      memory: "3000Mi"
+    requests:
+      cpu: "500m"
+      memory: "1800Mi"
+
+nginx:
+  probes:
+    enabled: true
+  resources:
+    limits:
+      cpu: "1000m"
+      memory: "3000Mi"
+    requests:
+      cpu: "100m"
+      memory: "200Mi"
+
+## @param Manage traffic/domains via NGINX ingress
+##
+## Every public hostname the platform serves, each with its own cert. Only prod
+## has these: the other environments serve a single hostname off defaultHost.
+## defaultHost.certName stays empty here because prod's own domain
+## (websitebuilder.service.justice.gov.uk) is already in the list below.
+##
+## Adding a site to the platform means adding its hostname here - which is why
+## this list lives in the prod overlay and not in a file the other environments
+## also read.
+ingress:
+  defaultHost:
+    certName: ""
+
+  # www.justice.gov.uk canary Ingress plus its dedicated canary Service.
+  justiceCanary:
+    enabled: true
+
+  hosts:
+    - name: advance-into-justice.service.justice.gov.uk
+      certName: advance-into-justice-cert
+    - name: andrewmalkinson.independent-inquiry.uk
+      certName: andrewmalkinson-cert
+    - name: archive.ppo.gov.uk
+      certName: ppo-archive-cert
+    - name: bold.websitebuilder.service.justice.gov.uk
+      certName: websitebuilder-bold-cert
+    - name: brookhouseinquiry.org.uk
+      certName: brookhouse-cert
+    - name: ccrc.gov.uk
+      certName: ccrc-cert
+    - name: cjji.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-cjji-cert
+    - name: cjsm.justice.gov.uk
+      certName: cjsm-cert
+    - name: cym.victimandwitnessinformation.org.uk
+      certName: victimandwitnessinformation-cym-cert
+    - name: cym.victimscode.org.uk
+      certName: victimscode-cym-cert
+    - name: dashboard.websitebuilder.service.justice.gov.uk
+      certName: websitebuilder-dashboard-cert
+    - name: developers.websitebuilder.service.justice.gov.uk
+      certName: websitebuilder-developers-cert
+    - name: finucane.independent-inquiry.uk
+      certName: finucane-cert
+    - name: hmcpsi.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-hmcpsi-cert
+    - name: hmiprisons.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-hmiprisons-cert
+    - name: hmiprobation.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-hmiprobation-cert
+    - name: hmppsinsights.service.justice.gov.uk
+      certName: hmppsinsights-cert
+    - name: icrir.independent-inquiry.uk
+      certName: icrir-cert
+    - name: imb.org.uk
+      certName: imb-cert
+    - name: independentpublicadvocate.org.uk
+      certName: ipa-cert
+    - name: intranet.hmiprisons.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-hmiprisons-intranet-cert
+    - name: intranet.icrir.independent-inquiry.uk
+      certName: icrir-intranet-cert
+    - name: iapondeathsincustody.org
+      certName: iapdc-cert
+    - name: iapdeathsincustody.independent.gov.uk
+      certName: iapdci-cert
+    - name: judicialappointments.gov.uk
+      certName: judicialappointments-cert
+    - name: justiceinspectorates.gov.uk
+      certName: justiceinspectorates-cert
+    - name: lawcom.gov.uk
+      certName: lawcom-cert
+    - name: layobservers.org
+      certName: layobservers-cert
+    - name: legalaidlearning.justice.gov.uk
+      certName: legalaidlearning-cert
+    - name: magistrates.judiciary.uk
+      certName: magistrates-cert
+    - name: members.layobservers.org
+      certName: layobservers-members-cert
+    - name: my.imb.org.uk
+      certName: my-imb-cert
+    - name: nationalpreventivemechanism.org.uk
+      certName: nationalpreventivemechanism-cert
+    - name: newfuturesnetwork.gov.uk
+      certName: newfuturesnetwork-cert
+    - name: niofficialhistory.org.uk
+      certName: niofficialhistory-cert
+    - name: nottingham.independent-inquiry.uk
+      certName: nottingham-cert
+    - name: omagh.independent-inquiry.uk
+      certName: obi-cert
+    - name: pecs-contract-guide.service.justice.gov.uk
+      certName: pecs-cert
+    - name: ppo.gov.uk
+      certName: ppo-cert
+    - name: prisonandprobationjobs.gov.uk
+      certName: ppj-cert
+    - name: publicdefenderservice.org.uk
+      certName: publicdefenderservice-cert
+    - name: seewhatsontheinside.com
+      certName: swoti-cert
+    - name: seewhatsontheinside.co.uk
+      certName: swoti-uk-cert
+    - name: showcase.websitebuilder.service.justice.gov.uk
+      certName: websitebuilder-showcase-cert
+    - name: sifocc.org
+      certName: sifocc-cert
+    - name: victimandwitnessinformation.org.uk
+      certName: victimandwitnessinformation-cert
+    - name: victimscommissioner.org.uk
+      certName: victimscommissioner-cert
+    - name: victimscode.org.uk
+      certName: victimscode-cert
+    - name: websitebuilder.service.justice.gov.uk
+      certName: websitebuilder-cert
+
+    # www entries
+    - name: www.advance-into-justice.service.justice.gov.uk
+      certName: advance-into-justice-www-cert
+    - name: www.andrewmalkinson.independent-inquiry.uk
+      certName: andrewmalkinson-www-cert
+    - name: www.brookhouseinquiry.org.uk
+      certName: brookhouse-www-cert
+    - name: www.ccrc.gov.uk
+      certName: ccrc-www-cert
+    - name: www.cjji.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-cjji-www-cert
+    - name: www.cjsm.justice.gov.uk
+      certName: cjsm-www-cert
+    - name: www.finucane.independent-inquiry.uk
+      certName: finucane-www-cert
+    - name: www.hmcpsi.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-hmcpsi-www-cert
+    - name: www.hmiprisons.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-hmiprisons-www-cert
+    - name: www.hmiprobation.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-hmiprobation-www-cert
+    - name: www.hmppsinsights.service.justice.gov.uk
+      certName: hmppsinsights-www-cert
+    - name: www.iapondeathsincustody.org
+      certName: iapdc-www-cert
+    - name: www.iapdeathsincustody.independent.gov.uk
+      certName: iapdci-www-cert
+    - name: www.icrir.independent-inquiry.uk
+      certName: icrir-www-cert
+    - name: www.imb.org.uk
+      certName: imb-www-cert
+    - name: www.independentpublicadvocate.org.uk
+      certName: ipa-www-cert
+    - name: www.judicialappointments.gov.uk
+      certName: judicialappointments-www-cert
+    - name: www.justiceinspectorates.gov.uk
+      certName: justiceinspectorates-www-cert
+    - name: www.lawcom.gov.uk
+      certName: lawcom-www-cert
+    - name: www.layobservers.org
+      certName: layobservers-www-cert
+    - name: www.legalaidlearning.justice.gov.uk
+      certName: legalaidlearning-www-cert
+    - name: www.nationalpreventivemechanism.org.uk
+      certName: nationalpreventivemechanism-www-cert
+    - name: www.newfuturesnetwork.gov.uk
+      certName: newfuturesnetwork-www-cert
+    - name: www.niofficialhistory.org.uk
+      certName: niofficialhistory-www-cert
+    - name: www.nottingham.independent-inquiry.uk
+      certName: nottingham-www-cert
+    - name: www.omagh.independent-inquiry.uk
+      certName: obi-www-cert
+    - name: www.pecs-contract-guide.service.justice.gov.uk
+      certName: pecs-www-cert
+    - name: www.ppo.gov.uk
+      certName: ppo-www-cert
+    - name: www.prisonandprobationjobs.gov.uk
+      certName: ppj-www-cert
+    - name: www.publicdefenderservice.org.uk
+      certName: publicdefenderservice-www-cert
+    - name: www.seewhatsontheinside.com
+      certName: swoti-www-cert
+    - name: www.seewhatsontheinside.co.uk
+      certName: swoti-uk-www-cert
+    - name: www.sifocc.org
+      certName: sifocc-www-cert
+    - name: www.victimandwitnessinformation.org.uk
+      certName: victimandwitnessinformation-www-cert
+    - name: www.victimscommissioner.org.uk
+      certName: victimscommissioner-www-cert
+    - name: www.victimscode.org.uk
+      certName: victimscode-www-cert
+    - name: www.websitebuilder.service.justice.gov.uk
+      certName: websitebuilder-www-cert

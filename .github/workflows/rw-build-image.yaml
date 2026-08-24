@@ -13,11 +13,7 @@ on:
         required: true
       ecr-repo:
         required: true
-      sentry-dsn: 
-        required: true
-      domain:
-        required: true
-      env-type:
+      sentry-dsn:
         required: true
       acf-user:
         required: true
@@ -220,6 +216,21 @@ jobs:
           REPOSITORY: ${{ secrets.ecr-repo }}
           IMAGE_TAG: ${{ github.sha }}
 
+      # Database tooling sidecar. The hardened WordPress image has no mysql
+      # client, so `wp db` subcommands run in this container instead.
+      - name: Build and Push wp-tools Image
+        run: |
+          docker buildx build \
+            --pull \
+            --push \
+            --platform linux/amd64 \
+            --tag $REGISTRY/$REPOSITORY:hale-platform_wptools-$IMAGE_TAG \
+            --file wptools.dockerfile .
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ secrets.ecr-repo }}
+          IMAGE_TAG: ${{ github.sha }}
+
   deployImage:
     name: Deploy to Environment
     needs: [buildImage]
@@ -245,6 +256,7 @@ jobs:
           --install \
           --namespace ${{ secrets.kube-namespace }} \
           --values helm_deploy/wordpress/values.yaml \
+          --values helm_deploy/wordpress/values-${{ vars.ENV_TYPE }}.yaml \
           --set secrets.wpdbuser=${{ secrets.wp-db-user }} \
           --set secrets.wpdbhost=${{ secrets.wp-db-host }} \
           --set secrets.wpdbname=${{ secrets.wp-db-name }} \
@@ -273,9 +285,8 @@ jobs:
           --set secrets.redisauth=${{ secrets.redis-auth }} \
           --set secrets.redishost=${{ secrets.redis-host }} \
           --set alertSecrets.slackWebhookUrl=${{ secrets.alert-slack-webhook-url }} \
-          --set configmap.envtype=${{ vars.ENV_TYPE }} \
           --set configmap.sentrydns=${{ vars.PHP_DSN }} \
           --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.kube-namespace }}-green \
-          --set domain=${{ secrets.domain }} \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_nginx-${{ github.sha }} \
-          --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_wordpress-${{ github.sha }}
+          --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_wordpress-${{ github.sha }} \
+          --set wptools.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_wptools-${{ github.sha }}

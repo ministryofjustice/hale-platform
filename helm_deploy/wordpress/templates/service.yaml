@@ -9,6 +9,12 @@ spec:
   ports:
     - name: "8080"
       port: 8080
+    # PHP-FPM metrics. Cluster-internal only - the ingress targets 8080 and
+    # never this port. Exposed on the Service so Prometheus can scrape
+    # /fpm-status; ad-hoc access does not need it (kubectl port-forward talks
+    # to the pod directly).
+    - name: fpm-status
+      port: 8090
   selector:
     app: wordpress
     tier: frontend-c

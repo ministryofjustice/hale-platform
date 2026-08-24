@@ -1,11 +1,21 @@
 ## Default values for WordPress Multisite installation.
 ## This is a YAML-formatted file.
-## Declare variables to be passed into your templates.
-
-## Empty strings mean value is overwritten and populated when run by GitAction
-## during deployment
+##
+## This file holds defaults shared by every environment. Anything that differs
+## between environments lives in values-<env>.yaml and is layered on top:
+##
+##   helm upgrade wordpress helm_deploy/wordpress \
+##     --values helm_deploy/wordpress/values.yaml \
+##     --values helm_deploy/wordpress/values-prod.yaml
+##
+## Templates must never branch on the environment name. If a template needs to
+## behave differently somewhere, add a value here and set it in the overlay -
+## that keeps "what is different about prod" answerable by reading one file.
+##
+## Empty strings are populated by --set from GitHub Actions at deploy time.
 
 ## @param root domain
+## Set per environment in values-<env>.yaml.
 ##
 domain: ""
 
@@ -17,37 +27,23 @@ nginx:
     imagePullPolicy: Always
     ports:
       containerPort: 8080
+      # PHP-FPM health/metrics listener (/fpm-ping, /fpm-status). Internal only:
+      # the ingress routes containerPort above and never this one.
+      statusPort: 8090
 
-  # Apply container level resource allocation
+  # Readiness probing. Off in dev/demo, which are single-pod and where a failing
+  # probe just removes the only backend.
+  probes:
+    enabled: false
+
+  # Apply container level resource allocation. Overridden in values-prod.yaml.
   resources:
-    dev:
-      limits:
-        cpu: "1000m"
-        memory: "2000Mi"
-      requests:
-        cpu: "40m"
-        memory: "50Mi"
-    demo:
-      limits:
-        cpu: "1000m"
-        memory: "2000Mi"
-      requests:
-        cpu: "40m"
-        memory: "50Mi"
-    staging:
-      limits:
-        cpu: "1000m"
-        memory: "2000Mi"
-      requests:
-        cpu: "40m"
-        memory: "50Mi"
-    prod:
-      limits:
-        cpu: "1000m"
-        memory: "3000Mi"
-      requests:
-        cpu: "100m"
-        memory: "200Mi"
+    limits:
+      cpu: "1000m"
+      memory: "2000Mi"
+    requests:
+      cpu: "40m"
+      memory: "50Mi"
 
 ## @param Wordpress specific paramaters
 ##
@@ -58,66 +54,55 @@ wp:
     ports:
       containerPort: 9000
 
-  # Apply container level resource allocation
+  # Startup and readiness probing. See nginx.probes above.
+  probes:
+    enabled: false
+
+  # Apply container level resource allocation. Overridden in values-prod.yaml.
   resources:
-    dev:
-      limits:
-        cpu: "1000m"
-        memory: "2000Mi"
-      requests:
-        cpu: "100m"
-        memory: "600Mi"
-    demo:
-      limits:
-        cpu: "1000m"
-        memory: "2000Mi"
-      requests:
-        cpu: "100m"
-        memory: "600Mi"
-    staging:
-      limits:
-        cpu: "1000m"
-        memory: "2000Mi"
-      requests:
-        cpu: "100m"
-        memory: "600Mi"
-    prod:
-      limits:
-        cpu: "1000m"
-        memory: "3000Mi"
-      requests:
-        cpu: "500m"
-        memory: "1800Mi"
+    limits:
+      cpu: "1000m"
+      memory: "2000Mi"
+    requests:
+      cpu: "100m"
+      memory: "600Mi"
+
+## @param wp-tools database tooling sidecar
+##
+## The hardened WordPress image ships no mysql client, so `wp db` subcommands
+## run in this sidecar instead:
+##   kubectl exec <pod> -c wp-tools -- wp db query "SELECT ..."
+## It sits idle with no listening service, so requests are kept minimal.
+##
+## Sized identically in every environment - it does no work until someone execs
+## into it, so there is nothing for an environment to scale.
+##
+wptools:
+  image:
+    repository: ""
+    imagePullPolicy: Always
+
+  resources:
+    limits:
+      cpu: "500m"
+      memory: "256Mi"
+    requests:
+      cpu: "10m"
+      memory: "32Mi"
 
 ## WordPress Autoscaling configuration
 ## ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/y
-## Set min/max thresholds in number of pods run based on CPU can memory
+## Set min/max thresholds in number of pods run based on CPU can memory.
+## minReplicas/maxReplicas are set per environment in values-<env>.yaml.
 autoscaling:
   enabled: true
-  targetCPU: 70 
+  targetCPU: 70
   targetMemory: 75
-  replicaCount:
-    prod:
-      min: 6
-      max: 18
-    staging:
-      min: 2
-      max: 4
-    demo:
-      min: 2
-      max: 4
-    dev:
-      min: 1
-      max: 1
 
 ## @param Manage replica count
-## Default settings when HPA is not turned on
+## Default settings when HPA is not turned on. Set per environment.
 ##
-replicaCount:
-  prod: 6
-  staging: 3
-  dev: 1
-  demo: 2
+replicaCount: 1
 
 ## @param Deploymemt strategy config
 ##
@@ -141,9 +126,6 @@ cron:
 ## spin it up with "make uptime-up", exec in with "make uptime-shell", and
 ## shut it down again with "make uptime-down".
 ##
-## Rendered only in the namespaces listed under "envs" below - the deployment is
-## skipped everywhere else.
-##
 ## The image always comes from the prod namespace's ECR repo, defined in
 ## cloud-platform-environments at
 ## hale-platform-prod/resources/ecr-uptime-availability-monitor.tf, and is built
@@ -151,12 +133,8 @@ cron:
 ## no per-namespace repo: the registry is account wide, so any hale-platform
 ## namespace can pull the same prod image.
 uptime:
-  # Namespaces the monitor is deployed into, matched against configmap.envtype.
-  envs:
-    - prod
-    - staging
-    - demo
-    - dev
+  # Set false in an overlay to skip the monitor in that environment.
+  enabled: true
 
   image:
     repository: 754256621582.dkr.ecr.eu-west-2.amazonaws.com/jotw-content-devs/hale-platform-prod-uptime-availability-monitor-ecr:latest
@@ -185,6 +163,10 @@ uptime:
 
 ## @param Non-secret env variables
 ##
+## envtype names the environment and is set in values-<env>.yaml. It is the
+## chart's identity value: namespaces, service accounts and WAF tags are built
+## from it. Templates use it to *name* things, never to decide behaviour.
+##
 configmap:
   servername: ""
   envtype: ""
@@ -192,7 +174,6 @@ configmap:
   sentrydns: ""
   firewall:
     enabled: "true"
-
 
 ## @param secrets passed in via GitActions
 ##
@@ -239,178 +220,17 @@ ingress:
   metadata:
     annotations:
       setidentifier: ""
-  hosts:
-    - name: advance-into-justice.service.justice.gov.uk
-      certName: advance-into-justice-cert
-    - name: andrewmalkinson.independent-inquiry.uk
-      certName: andrewmalkinson-cert
-    - name: archive.ppo.gov.uk
-      certName: ppo-archive-cert
-    - name: bold.websitebuilder.service.justice.gov.uk
-      certName: websitebuilder-bold-cert
-    - name: brookhouseinquiry.org.uk
-      certName: brookhouse-cert
-    - name: ccrc.gov.uk
-      certName: ccrc-cert
-    - name: cjji.justiceinspectorates.gov.uk
-      certName: justiceinspectorates-cjji-cert
-    - name: cjsm.justice.gov.uk
-      certName: cjsm-cert
-    - name: cym.victimandwitnessinformation.org.uk
-      certName: victimandwitnessinformation-cym-cert
-    - name: cym.victimscode.org.uk
-      certName: victimscode-cym-cert
-    - name: dashboard.websitebuilder.service.justice.gov.uk
-      certName: websitebuilder-dashboard-cert
-    - name: developers.websitebuilder.service.justice.gov.uk
-      certName: websitebuilder-developers-cert
-    - name: finucane.independent-inquiry.uk
-      certName: finucane-cert
-    - name: hmcpsi.justiceinspectorates.gov.uk
-      certName: justiceinspectorates-hmcpsi-cert
-    - name: hmiprisons.justiceinspectorates.gov.uk
-      certName: justiceinspectorates-hmiprisons-cert
-    - name: hmiprobation.justiceinspectorates.gov.uk
-      certName: justiceinspectorates-hmiprobation-cert
-    - name: hmppsinsights.service.justice.gov.uk
-      certName: hmppsinsights-cert
-    - name: icrir.independent-inquiry.uk
-      certName: icrir-cert
-    - name: imb.org.uk
-      certName: imb-cert
-    - name: independentpublicadvocate.org.uk
-      certName: ipa-cert
-    - name: intranet.hmiprisons.justiceinspectorates.gov.uk
-      certName: justiceinspectorates-hmiprisons-intranet-cert
-    - name: intranet.icrir.independent-inquiry.uk
-      certName: icrir-intranet-cert
-    - name: iapondeathsincustody.org
-      certName: iapdc-cert
-    - name: iapdeathsincustody.independent.gov.uk
-      certName: iapdci-cert
-    - name: judicialappointments.gov.uk
-      certName: judicialappointments-cert
-    - name: justiceinspectorates.gov.uk
-      certName: justiceinspectorates-cert
-    - name: lawcom.gov.uk
-      certName: lawcom-cert
-    - name: layobservers.org
-      certName: layobservers-cert
-    - name: legalaidlearning.justice.gov.uk
-      certName: legalaidlearning-cert
-    - name: magistrates.judiciary.uk
-      certName: magistrates-cert
-    - name: members.layobservers.org
-      certName: layobservers-members-cert
-    - name: my.imb.org.uk
-      certName: my-imb-cert
-    - name: nationalpreventivemechanism.org.uk
-      certName: nationalpreventivemechanism-cert
-    - name: newfuturesnetwork.gov.uk
-      certName: newfuturesnetwork-cert
-    - name: niofficialhistory.org.uk
-      certName: niofficialhistory-cert
-    - name: nottingham.independent-inquiry.uk
-      certName: nottingham-cert
-    - name: omagh.independent-inquiry.uk
-      certName: obi-cert
-    - name: pecs-contract-guide.service.justice.gov.uk
-      certName: pecs-cert
-    - name: ppo.gov.uk
-      certName: ppo-cert
-    - name: prisonandprobationjobs.gov.uk
-      certName: ppj-cert
-    - name: publicdefenderservice.org.uk
-      certName: publicdefenderservice-cert
-    - name: seewhatsontheinside.com
-      certName: swoti-cert
-    - name: seewhatsontheinside.co.uk
-      certName: swoti-uk-cert
-    - name: showcase.websitebuilder.service.justice.gov.uk
-      certName: websitebuilder-showcase-cert
-    - name: sifocc.org
-      certName: sifocc-cert
-    - name: victimandwitnessinformation.org.uk
-      certName: victimandwitnessinformation-cert
-    - name: victimscommissioner.org.uk
-      certName: victimscommissioner-cert
-    - name: victimscode.org.uk
-      certName: victimscode-cert
-    - name: websitebuilder.service.justice.gov.uk
-      certName: websitebuilder-cert
 
-    # www entries
-    - name: www.advance-into-justice.service.justice.gov.uk
-      certName: advance-into-justice-www-cert
-    - name: www.andrewmalkinson.independent-inquiry.uk
-      certName: andrewmalkinson-www-cert
-    - name: www.brookhouseinquiry.org.uk
-      certName: brookhouse-www-cert
-    - name: www.ccrc.gov.uk
-      certName: ccrc-www-cert
-    - name: www.cjji.justiceinspectorates.gov.uk
-      certName: justiceinspectorates-cjji-www-cert
-    - name: www.cjsm.justice.gov.uk
-      certName: cjsm-www-cert
-    - name: www.finucane.independent-inquiry.uk
-      certName: finucane-www-cert
-    - name: www.hmcpsi.justiceinspectorates.gov.uk
-      certName: justiceinspectorates-hmcpsi-www-cert
-    - name: www.hmiprisons.justiceinspectorates.gov.uk
-      certName: justiceinspectorates-hmiprisons-www-cert
-    - name: www.hmiprobation.justiceinspectorates.gov.uk
-      certName: justiceinspectorates-hmiprobation-www-cert
-    - name: www.hmppsinsights.service.justice.gov.uk
-      certName: hmppsinsights-www-cert
-    - name: www.iapondeathsincustody.org
-      certName: iapdc-www-cert
-    - name: www.iapdeathsincustody.independent.gov.uk
-      certName: iapdci-www-cert
-    - name: www.icrir.independent-inquiry.uk
-      certName: icrir-www-cert
-    - name: www.imb.org.uk
-      certName: imb-www-cert
-    - name: www.independentpublicadvocate.org.uk
-      certName: ipa-www-cert
-    - name: www.judicialappointments.gov.uk
-      certName: judicialappointments-www-cert
-    - name: www.justiceinspectorates.gov.uk
-      certName: justiceinspectorates-www-cert
-    - name: www.lawcom.gov.uk
-      certName: lawcom-www-cert
-    - name: www.layobservers.org
-      certName: layobservers-www-cert
-    - name: www.legalaidlearning.justice.gov.uk
-      certName: legalaidlearning-www-cert
-    - name: www.nationalpreventivemechanism.org.uk
-      certName: nationalpreventivemechanism-www-cert
-    - name: www.newfuturesnetwork.gov.uk
-      certName: newfuturesnetwork-www-cert
-    - name: www.niofficialhistory.org.uk
-      certName: niofficialhistory-www-cert
-    - name: www.nottingham.independent-inquiry.uk
-      certName: nottingham-www-cert
-    - name: www.omagh.independent-inquiry.uk
-      certName: obi-www-cert
-    - name: www.pecs-contract-guide.service.justice.gov.uk
-      certName: pecs-www-cert
-    - name: www.ppo.gov.uk
-      certName: ppo-www-cert
-    - name: www.prisonandprobationjobs.gov.uk
-      certName: ppj-www-cert
-    - name: www.publicdefenderservice.org.uk
-      certName: publicdefenderservice-www-cert
-    - name: www.seewhatsontheinside.com
-      certName: swoti-www-cert
-    - name: www.seewhatsontheinside.co.uk
-      certName: swoti-uk-www-cert
-    - name: www.sifocc.org
-      certName: sifocc-www-cert
-    - name: www.victimandwitnessinformation.org.uk
-      certName: victimandwitnessinformation-www-cert
-    - name: www.victimscommissioner.org.uk
-      certName: victimscommissioner-www-cert
-    - name: www.victimscode.org.uk
-      certName: victimscode-www-cert
-    - name: www.websitebuilder.service.justice.gov.uk
-      certName: websitebuilder-www-cert
+  # TLS for the environment's own domain. Non-prod environments serve a single
+  # hostname off one cert; prod leaves certName empty because every hostname it
+  # serves - its own included - is listed under "hosts" below with its own cert.
+  defaultHost:
+    certName: ""
+
+  # Additional hostnames served by this environment, each with its own cert.
+  # Only prod has any: see values-prod.yaml.
+  hosts: []
+
+  # www.justice.gov.uk canary Ingress and its dedicated Service. Prod only.
+  justiceCanary:
+    enabled: false
