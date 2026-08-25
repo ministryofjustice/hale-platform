@@ -97,4 +97,10 @@ function M.is_admin(path)
     return (path or ""):sub(1, #"/wp-admin/") == "/wp-admin/"
 end
 
+-- Does this Cookie header carry a WordPress login cookie? Case-insensitive
+-- substring match, as the legacy nginx map did (~*wordpress_logged_in).
+function M.is_logged_in(cookie)
+    return (cookie or ""):lower():find("wordpress_logged_in", 1, true) ~= nil
+end
+
 return M
