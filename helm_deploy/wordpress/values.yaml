@@ -198,7 +198,7 @@ configmap:
   # cache and the WordPress purge hook) - they must always agree.
   pagecache:
     enabled: "true"
-    ttl: "300"
+    ttl: "3600"
     db: "1"
     # Max response size the Lua cache will store, in bytes (nginx side only).
     maxbytes: "2097152"
