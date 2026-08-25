@@ -32,7 +32,7 @@ describe("justice sites", function()
         assert.equals("enforce", justice.mode)
     end)
 
-    it("lists all five environments", function()
+    it("lists all six environments", function()
         local paths = {}
         for _, site in ipairs(justice.sites) do paths[site.host] = site.path end
         assert.equals("", paths["www.justice.gov.uk"])
@@ -41,10 +41,11 @@ describe("justice sites", function()
             "dev.websitebuilder.service.justice.gov.uk",
             "demo.websitebuilder.service.justice.gov.uk",
             "staging.websitebuilder.service.justice.gov.uk",
+            "websitebuilder.service.justice.gov.uk",
         }) do
             assert.equals("/justice", paths[host], host)
         end
-        assert.equals(5, #justice.sites)
+        assert.equals(6, #justice.sites)
     end)
 end)
 
@@ -82,34 +83,39 @@ end)
 describe("justice style-src", function()
     it("allows unsafe-inline on logged-out public pages (matches the policy live on www; no hashes)", function()
         local style = directive(policy("/", nil), "style")
-        assert.equals("style-src 'self' 'unsafe-inline'", style)
+        assert.equals("style-src 'self' 'unsafe-inline' " .. CDN, style)
         assert.is_nil(style:find("sha256", 1, true))
         assert.is_nil(style:find("'unsafe-eval'", 1, true))
     end)
 
     it("is the same for unrelated cookies", function()
-        assert.equals("style-src 'self' 'unsafe-inline'", directive(policy("/", "foo=bar; comment_author=x"), "style"))
+        assert.equals("style-src 'self' 'unsafe-inline' " .. CDN, directive(policy("/", "foo=bar; comment_author=x"), "style"))
     end)
 
     it("allows unsafe-inline when logged in", function()
-        assert.equals("style-src 'self' 'unsafe-inline'", directive(policy("/", LOGGED_IN_COOKIE), "style"))
-        assert.equals("style-src 'self' 'unsafe-inline'", directive(policy("/", "WordPress_Logged_In_ABC=1"), "style"))
+        assert.equals("style-src 'self' 'unsafe-inline' " .. CDN, directive(policy("/", LOGGED_IN_COOKIE), "style"))
+        assert.equals("style-src 'self' 'unsafe-inline' " .. CDN, directive(policy("/", "WordPress_Logged_In_ABC=1"), "style"))
     end)
 
     it("adds unsafe-eval on admin pages", function()
-        assert.equals("style-src 'self' 'unsafe-inline' 'unsafe-eval'", directive(policy("/wp-admin/", nil), "style"))
+        assert.equals("style-src 'self' 'unsafe-inline' 'unsafe-eval' " .. CDN, directive(policy("/wp-admin/", nil), "style"))
     end)
 
     it("allows unsafe-inline for theme dist assets", function()
-        assert.equals("style-src 'self' 'unsafe-inline'",
+        assert.equals("style-src 'self' 'unsafe-inline' " .. CDN,
             directive(policy("/wp-content/themes/justice/dist/css/app.css", nil), "style"))
+    end)
+
+    it("uses the environment's own CDN, or none locally", function()
+        assert.equals("style-src 'self' 'unsafe-inline' " .. DEV_CDN, directive(policy("/", nil, DEV), "style"))
+        assert.equals("style-src 'self' 'unsafe-inline'", directive(policy("/", nil, "hale.docker"), "style"))
     end)
 end)
 
 describe("justice script-src", function()
     it("allows self, GTM and unsafe-inline on logged-out public pages (no hashes)", function()
         local script = directive(policy("/", nil), "script")
-        assert.equals("script-src 'self' " .. GTM .. " 'unsafe-inline'", script)
+        assert.equals("script-src 'self' " .. GTM .. " 'unsafe-inline' " .. CDN, script)
         assert.is_nil(script:find("sha256", 1, true))
         assert.is_nil(script:find("'unsafe-eval'", 1, true))
     end)
@@ -121,17 +127,22 @@ describe("justice script-src", function()
     end)
 
     it("allows unsafe-inline when logged in", function()
-        assert.equals("script-src 'self' " .. GTM .. " 'unsafe-inline'", directive(policy("/", LOGGED_IN_COOKIE), "script"))
+        assert.equals("script-src 'self' " .. GTM .. " 'unsafe-inline' " .. CDN, directive(policy("/", LOGGED_IN_COOKIE), "script"))
     end)
 
     it("adds unsafe-eval on admin pages", function()
-        assert.equals("script-src 'self' 'unsafe-inline' 'unsafe-eval'", directive(policy("/wp-admin/upload.php", nil), "script"))
+        assert.equals("script-src 'self' 'unsafe-inline' 'unsafe-eval' " .. CDN, directive(policy("/wp-admin/upload.php", nil), "script"))
     end)
 
     it("falls through to the default script-src for theme dist assets", function()
         -- Deliberate asymmetry with style-src, carried over from the legacy maps.
-        assert.equals("script-src 'self' " .. GTM .. " 'unsafe-inline'",
+        assert.equals("script-src 'self' " .. GTM .. " 'unsafe-inline' " .. CDN,
             directive(policy("/wp-content/themes/justice/dist/js/app.min.js", nil), "script"))
+    end)
+
+    it("uses the environment's own CDN, or none locally", function()
+        assert.equals("script-src 'self' " .. GTM .. " 'unsafe-inline' " .. DEV_CDN, directive(policy("/", nil, DEV), "script"))
+        assert.equals("script-src 'self' " .. GTM .. " 'unsafe-inline'", directive(policy("/", nil, "hale.docker"), "script"))
     end)
 end)
 
@@ -163,20 +174,40 @@ describe("justice prefix anchoring", function()
 end)
 
 describe("justice full policy strings", function()
-    it("builds the public logged-out policy", function()
+    it("builds the public logged-out policy for www, verbatim from the old wordpress.conf map", function()
         assert.equals(
-            "style-src 'self' 'unsafe-inline'; " ..
-            "script-src 'self' " .. GTM .. " 'unsafe-inline'; " ..
-            "img-src 'self' " .. CDN .. "; " ..
+            "style-src 'self' 'unsafe-inline' https://cdn.websitebuilder.service.justice.gov.uk; " ..
+            "script-src 'self' https://www.googletagmanager.com/ 'unsafe-inline' https://cdn.websitebuilder.service.justice.gov.uk; " ..
+            "img-src 'self' https://cdn.websitebuilder.service.justice.gov.uk; " ..
             "worker-src 'self' blob:; " ..
             "object-src 'none'",
             policy("/", nil))
     end)
 
+    it("builds the public logged-out policy for dev with the dev CDN", function()
+        assert.equals(
+            "style-src 'self' 'unsafe-inline' " .. DEV_CDN .. "; " ..
+            "script-src 'self' " .. GTM .. " 'unsafe-inline' " .. DEV_CDN .. "; " ..
+            "img-src 'self' " .. DEV_CDN .. "; " ..
+            "worker-src 'self' blob:; " ..
+            "object-src 'none'",
+            policy("/", nil, DEV))
+    end)
+
+    it("builds the public logged-out policy for local with no CDN", function()
+        assert.equals(
+            "style-src 'self' 'unsafe-inline'; " ..
+            "script-src 'self' " .. GTM .. " 'unsafe-inline'; " ..
+            "img-src 'self'; " ..
+            "worker-src 'self' blob:; " ..
+            "object-src 'none'",
+            policy("/", nil, "hale.docker"))
+    end)
+
     it("builds the admin logged-in policy", function()
         assert.equals(
-            "style-src 'self' 'unsafe-inline' 'unsafe-eval'; " ..
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " ..
+            "style-src 'self' 'unsafe-inline' 'unsafe-eval' " .. CDN .. "; " ..
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' " .. CDN .. "; " ..
             "img-src 'self' " .. CDN .. " data:; " ..
             "worker-src 'self' blob:; " ..
             "object-src 'none'",
@@ -185,8 +216,8 @@ describe("justice full policy strings", function()
 
     it("builds the theme dist logged-out policy", function()
         assert.equals(
-            "style-src 'self' 'unsafe-inline'; " ..
-            "script-src 'self' " .. GTM .. " 'unsafe-inline'; " ..
+            "style-src 'self' 'unsafe-inline' " .. CDN .. "; " ..
+            "script-src 'self' " .. GTM .. " 'unsafe-inline' " .. CDN .. "; " ..
             "img-src 'self' " .. CDN .. "; " ..
             "worker-src 'self' blob:; " ..
             "object-src 'none'",

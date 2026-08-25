@@ -89,12 +89,18 @@ local function directive(templates, page, value)
     return string.format(template, value)
 end
 
--- 'self', the environment's CDN if it has one, and data: on admin pages.
+-- Append the environment's CDN, if it has one. Theme CSS/JS and images are
+-- served from the CDN, so style-src, script-src and img-src all need it.
+local function with_cdn(directive_string, cdn_origin)
+    if not cdn_origin then return directive_string end
+    return directive_string .. " " .. cdn_origin
+end
+
+-- 'self', the CDN, and data: on admin pages.
 local function img_src(page, cdn_origin)
-    local sources = { "'self'" }
-    if cdn_origin then table.insert(sources, cdn_origin) end
-    if page == "admin" then table.insert(sources, "data:") end
-    return "img-src " .. table.concat(sources, " ")
+    local sources = with_cdn("img-src 'self'", cdn_origin)
+    if page == "admin" then sources = sources .. " data:" end
+    return sources
 end
 
 -- `path` is site-relative (see csp/csp.lua); `cookie` may be nil; `host`
@@ -112,10 +118,12 @@ function M.policy(path, cookie, host)
         style_source, script_source = UNSAFE_INLINE, UNSAFE_INLINE
     end
 
+    local cdn_origin = cdn.for_host(host)
+
     return table.concat({
-        directive(STYLE,  page, style_source),
-        directive(SCRIPT, page, script_source),
-        img_src(page, cdn.for_host(host)),
+        with_cdn(directive(STYLE,  page, style_source),  cdn_origin),
+        with_cdn(directive(SCRIPT, page, script_source), cdn_origin),
+        img_src(page, cdn_origin),
         "worker-src 'self' blob:",
         "object-src 'none'",
     }, "; ")
