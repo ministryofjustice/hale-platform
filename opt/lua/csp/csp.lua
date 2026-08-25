@@ -7,12 +7,14 @@
 --   mode   = "enforce" | "report-only"
 --   sites  = { { host = "...", path = "" | "/prefix" }, ... }  -- optional;
 --            omit it to match every request (a catch-all)
---   policy = function(path, cookie, host) -> "<header value>"
+--   policy = function(request) -> "<header value>"
+--            request = { path = ..., cookie = ..., host = ... }
 --            `path` is relative to the matched site's base path (so
 --            "/justice/wp-admin/" on a "/justice" site arrives as
 --            "/wp-admin/"), with any query string already removed.
---            `host` is the request host, e.g. for per-environment lookups
---            (see csp/cdn.lua).
+--            `cookie` is the Cookie header (may be nil); `host` is the
+--            request host, e.g. for per-environment lookups (csp/cdn.lua).
+--            Modules build these with csp/policy.lua.
 --
 -- M.policies is checked in order; the first module whose `sites` matches
 -- the request wins, so the catch-all goes last.
@@ -76,8 +78,12 @@ function M.build(request)
         local matched, site_path = matches(policy, request.host, path)
         if matched then
             return {
-                policy = policy.policy(site_path, request.cookie, request.host),
-                mode   = policy.mode,
+                policy = policy.policy({
+                    path   = site_path,
+                    cookie = request.cookie,
+                    host   = request.host,
+                }),
+                mode = policy.mode,
             }
         end
     end

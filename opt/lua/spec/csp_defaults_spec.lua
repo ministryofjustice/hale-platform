@@ -9,45 +9,59 @@ local DEV = "dev.websitebuilder.service.justice.gov.uk"
 local CDN = "https://cdn.websitebuilder.service.justice.gov.uk"
 local DEV_CDN = "https://cdn.dev.websitebuilder.service.justice.gov.uk"
 
--- The old wordpress.conf $csp_report_only map default, with the wildcard
--- https://*.websitebuilder.service.justice.gov.uk replaced by one CDN origin.
-local function expected(cdn_origin)
-    local suffix = cdn_origin and (" " .. cdn_origin) or ""
-    return "default-src 'self'; "
-        .. "script-src 'self' 'unsafe-inline' 'unsafe-eval'" .. suffix .. "; "
-        .. "style-src 'self' 'unsafe-inline'" .. suffix .. "; "
-        .. "img-src 'self' data: https:; "
-        .. "font-src 'self' data:" .. suffix .. "; "
-        .. "frame-ancestors 'self'; object-src 'none';"
+local function has(list, value)
+    for _, v in ipairs(list) do
+        if v == value then return true end
+    end
+    return false
 end
 
 describe("csp defaults", function()
-    it("is report-only", function()
+    it("is a report-only catch-all", function()
         assert.equals("report-only", defaults.mode)
-    end)
-
-    it("is a catch-all (no sites)", function()
         assert.is_nil(defaults.sites)
     end)
 
-    it("allows the production CDN in script, style and font-src", function()
-        assert.equals(expected(CDN), defaults.policy("/", nil, WWW))
-        assert.equals(expected(CDN), defaults.policy("/", nil, "unknown.example"))
+    it("declares the base policy", function()
+        local p = defaults.build({ path = "/", host = "hale.docker" })
+        assert.same({ "'self'" }, p:get("default-src"))
+        assert.same({ "'self'", "'unsafe-inline'", "'unsafe-eval'" }, p:get("script-src"))
+        assert.same({ "'self'", "'unsafe-inline'" }, p:get("style-src"))
+        assert.same({ "'self'", "data:", "https:" }, p:get("img-src"))
+        assert.same({ "'self'", "data:" }, p:get("font-src"))
+        assert.same({ "'self'" }, p:get("frame-ancestors"))
+        assert.same({ "'none'" }, p:get("object-src"))
     end)
 
-    it("allows the environment's own CDN", function()
-        assert.equals(expected(DEV_CDN), defaults.policy("/", nil, DEV))
+    it("adds the environment's CDN to script, style, img and font-src", function()
+        local p = defaults.build({ path = "/", host = DEV })
+        for _, name in ipairs({ "script-src", "style-src", "img-src", "font-src" }) do
+            assert.is_true(has(p:get(name), DEV_CDN), name)
+        end
+        assert.is_false(has(p:get("default-src"), DEV_CDN))
+        assert.is_false(has(p:get("frame-ancestors"), DEV_CDN))
     end)
 
-    it("allows no CDN where the environment has none (local)", function()
-        local policy = defaults.policy("/", nil, "hale.docker")
-        assert.equals(expected(nil), policy)
-        assert.is_nil(policy:find("  ", 1, true))
-        assert.is_nil(policy:find("websitebuilder", 1, true))
+    it("uses the production CDN for www and unknown hosts", function()
+        assert.is_true(has(defaults.build({ path = "/", host = WWW }):get("script-src"), CDN))
+        assert.is_true(has(defaults.build({ path = "/", host = "example.com" }):get("script-src"), CDN))
     end)
 
-    it("returns the same policy for every page and cookie", function()
-        assert.equals(expected(CDN), defaults.policy("/wp-admin/options.php", nil, WWW))
-        assert.equals(expected(CDN), defaults.policy("/anything", "wordpress_logged_in_1=abc", WWW))
+    it("is the same for every page and cookie", function()
+        local expected = defaults.policy({ path = "/", host = WWW })
+        assert.equals(expected, defaults.policy({ path = "/wp-admin/options.php", host = WWW }))
+        assert.equals(expected, defaults.policy({ path = "/x", host = WWW, cookie = "wordpress_logged_in_1=a" }))
+    end)
+
+    it("renders the header value for dev", function()
+        assert.equals(
+            "default-src 'self'; " ..
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' " .. DEV_CDN .. "; " ..
+            "style-src 'self' 'unsafe-inline' " .. DEV_CDN .. "; " ..
+            "img-src 'self' data: https: " .. DEV_CDN .. "; " ..
+            "font-src 'self' data: " .. DEV_CDN .. "; " ..
+            "frame-ancestors 'self'; " ..
+            "object-src 'none'",
+            defaults.policy({ path = "/", host = DEV }))
     end)
 end)
