@@ -1,3 +1,14 @@
+# Env vars shared by every service that talks to the firewall / page cache.
+# Merged into each service's environment with `<<: *firewall-pagecache-env`.
+# Both flags can be overridden per-run from the shell, e.g.
+# `PAGECACHE_ENABLED=false make run`, or changed here to alter the default.
+# The page cache is on by default and needs Redis, which is why the redis
+# service is not profile-gated (redis-insight still is - it's optional).
+x-firewall-pagecache-env: &firewall-pagecache-env
+  FIREWALL_ENABLED: ${FIREWALL_ENABLED:-false}
+  PAGECACHE_ENABLED: ${PAGECACHE_ENABLED:-true}
+  REDIS_SSL: "false"
+
 services:
   nginx:
     container_name: nginx
@@ -19,17 +30,16 @@ services:
       - ./dev:/mnt/dev
       - ./opt/nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
       - ./opt/nginx/localwordpress.conf:/usr/local/openresty/nginx/conf/conf.d/localwordpress.conf
-      - ./opt/lua/firewall.lua:/usr/local/openresty/nginx/lua/firewall.lua
       - ./opt/lua/firewall:/usr/local/openresty/nginx/lua/firewall
+      - ./opt/lua/pagecache:/usr/local/openresty/nginx/lua/pagecache
       - ./bin/certs:/etc/nginx/certs/self-signed/
     depends_on:
       - wordpress
       - mariadb
     environment:
+      <<: *firewall-pagecache-env
       VIRTUAL_HOST: hale.docker
       VIRTUAL_PORT: 443
-      FIREWALL_ENABLED: ${FIREWALL_ENABLED:-false}
-      REDIS_SSL: "false"
   mariadb:
     container_name: mariadb
     platform: linux/arm64
@@ -63,6 +73,7 @@ services:
     env_file:
       - .env
     environment:
+      <<: *firewall-pagecache-env
       WORDPRESS_DB_HOST: mariadb:3306
       WORDPRESS_DB_USER: wordpress
       WORDPRESS_DB_PASSWORD: wordpress
@@ -86,12 +97,8 @@ services:
       WP_SENTRY_ENV: ""
       ACF_PRO_LICENSE: ""
       NGINX_INTERNAL_URL: "https://nginx"
-      FIREWALL_ENABLED: ${FIREWALL_ENABLED:-false}
-      REDIS_SSL: "false"
   redis:
     image: redis:7-alpine
-    profiles:
-    - firewall
     ports:
       - 127.0.0.1:6379:6379
     volumes:
@@ -100,6 +107,7 @@ services:
     image: redis/redisinsight:3.4
     profiles:
     - firewall
+    - pagecache
     environment:
       VIRTUAL_PORT: 5540
       VIRTUAL_HOST: redis-insight.docker

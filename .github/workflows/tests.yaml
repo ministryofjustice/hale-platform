@@ -35,5 +35,5 @@ jobs:
           docker run --rm \
             --network host \
             -e REDIS_HOST=localhost \
-            -e REDIS_DB=1 \
+            -e FIREWALL_DB=1 \
             test-firewall
