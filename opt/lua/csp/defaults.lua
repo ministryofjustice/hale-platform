@@ -5,26 +5,37 @@
 -- (no `sites`, so it matches everything — keep it LAST in csp/csp.lua).
 -- Report-only: violations are surfaced in the browser console / reports
 -- without blocking anything.
+--
+-- Sites on the platform load theme assets and fonts from their environment's
+-- CDN, so script-src, style-src and font-src allow the CDN for the request
+-- host (see csp/cdn.lua); none is added where the environment has no CDN.
 -- ============================================================================
+
+local cdn = require("csp.cdn")
 
 local M = {}
 
 M.mode = "report-only"
 
--- Sites on the platform load theme assets and fonts from their environment's
--- CDN (cdn.<env>.websitebuilder.service.justice.gov.uk), hence the wildcard.
-local PLATFORM = "https://*.websitebuilder.service.justice.gov.uk"
+-- Append the environment's CDN, if it has one.
+local function with_cdn(directive_string, cdn_origin)
+    if not cdn_origin then return directive_string end
+    return directive_string .. " " .. cdn_origin
+end
 
-M.policy_string = "default-src 'self'; "
-    .. "script-src 'self' 'unsafe-inline' 'unsafe-eval' " .. PLATFORM .. "; "
-    .. "style-src 'self' 'unsafe-inline' " .. PLATFORM .. "; "
-    .. "img-src 'self' data: https:; "
-    .. "font-src 'self' data: " .. PLATFORM .. "; "
-    .. "frame-ancestors 'self'; object-src 'none';"
+-- Same policy for every page; only the CDN varies, by host.
+function M.policy(_, _, host)
+    local cdn_origin = cdn.for_host(host)
 
--- Same policy for every page; the arguments are ignored.
-function M.policy()
-    return M.policy_string
+    return table.concat({
+        "default-src 'self'",
+        with_cdn("script-src 'self' 'unsafe-inline' 'unsafe-eval'", cdn_origin),
+        with_cdn("style-src 'self' 'unsafe-inline'", cdn_origin),
+        with_cdn("img-src 'self' data: https:", cdn_origin),
+        with_cdn("font-src 'self' data:", cdn_origin),
+        "frame-ancestors 'self'",
+        "object-src 'none';",
+    }, "; ")
 end
 
 return M
