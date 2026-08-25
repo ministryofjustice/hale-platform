@@ -28,6 +28,7 @@ services:
       - ./opt/nginx/localwordpress.conf:/usr/local/openresty/nginx/conf/conf.d/localwordpress.conf
       - ./opt/lua/firewall:/usr/local/openresty/nginx/lua/firewall
       - ./opt/lua/pagecache:/usr/local/openresty/nginx/lua/pagecache
+      - ./opt/lua/csp:/usr/local/openresty/nginx/lua/csp
       - ./bin/certs:/etc/nginx/certs/self-signed/
     depends_on:
       - wordpress
