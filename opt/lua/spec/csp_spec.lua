@@ -16,9 +16,9 @@ end
 -- A fake policy module that records what it was called with.
 local function fake(name, sites, mode)
     local m = { mode = mode or "enforce", sites = sites, calls = {} }
-    function m.policy(path, cookie, host)
-        table.insert(m.calls, { path = path, cookie = cookie, host = host })
-        return name .. " " .. tostring(path)
+    function m.policy(request)
+        table.insert(m.calls, request)
+        return name .. " " .. tostring(request.path)
     end
     return m
 end
@@ -128,7 +128,7 @@ describe("csp.build with the real policy modules", function()
         for _, r in ipairs({ req(WWW, "/", nil), req(DEV, "/justice/", nil), req("hale.docker", "/justice/", nil) }) do
             local result = csp.build(r)
             assert.equals("enforce", result.mode, r.host)
-            assert.equals(justice.policy("/", nil, r.host), result.policy, r.host)
+            assert.equals(justice.policy({ path = "/", host = r.host }), result.policy, r.host)
         end
     end)
 
@@ -136,7 +136,7 @@ describe("csp.build with the real policy modules", function()
         for _, r in ipairs({ req("example.com", "/", nil), req(DEV, "/", nil), req("hale.docker", "/justicefoo/", nil) }) do
             local result = csp.build(r)
             assert.equals("report-only", result.mode)
-            assert.equals(defaults.policy("/", nil, r.host), result.policy, r.host)
+            assert.equals(defaults.policy({ path = "/", host = r.host }), result.policy, r.host)
         end
     end)
 end)
@@ -157,21 +157,22 @@ describe("csp.apply", function()
     it("sets Content-Security-Policy for an enforce policy", function()
         local ngx = with_ngx(WWW, "/", nil)
         csp.apply()
-        assert.equals(justice.policy("/", nil, WWW), ngx.header["Content-Security-Policy"])
+        assert.equals(justice.policy({ path = "/", host = WWW }), ngx.header["Content-Security-Policy"])
         assert.is_nil(ngx.header["Content-Security-Policy-Report-Only"])
     end)
 
     it("sets Content-Security-Policy-Report-Only for a report-only policy", function()
         local ngx = with_ngx("example.com", "/", nil)
         csp.apply()
-        assert.equals(defaults.policy("/", nil, "example.com"), ngx.header["Content-Security-Policy-Report-Only"])
+        assert.equals(defaults.policy({ path = "/", host = "example.com" }), ngx.header["Content-Security-Policy-Report-Only"])
         assert.is_nil(ngx.header["Content-Security-Policy"])
     end)
 
     it("uses request_uri (pre-rewrite) and the cookie", function()
         local ngx = with_ngx(DEV, "/justice/wp-admin/x.php?y=1", "wordpress_logged_in_1=a")
         csp.apply()
-        assert.equals(justice.policy("/wp-admin/x.php", "wordpress_logged_in_1=a", DEV), ngx.header["Content-Security-Policy"])
+        assert.equals(justice.policy({ path = "/wp-admin/x.php", cookie = "wordpress_logged_in_1=a", host = DEV }),
+            ngx.header["Content-Security-Policy"])
     end)
 
     it("sets no header when nothing matches", function()
