@@ -53,10 +53,23 @@ describe("policy:add", function()
         assert.equals("style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self' data:", p:render())
     end)
 
+    it("never creates an empty directive (CSP would read it as 'none')", function()
+        local p = base():add("font-src", nil):add({ "font-src", "connect-src" }, nil, nil):add("font-src")
+        assert.is_nil(p:get("font-src"))
+        assert.is_nil(p:get("connect-src"))
+        assert.equals("style-src 'self' 'unsafe-inline'; img-src 'self'", p:render())
+    end)
+
     it("is chainable (returns the same policy)", function()
         local p = base()
         assert.equals(p, p:add("img-src", "data:"))
         assert.equals(p, p:add("style-src", "x"):add("img-src", "y"))
+    end)
+end)
+
+describe("policy.new validation", function()
+    it("rejects a directive declared with no sources", function()
+        assert.has_error(function() policy.new({ { "font-src" } }) end, "csp policy: directive 'font-src' has no sources")
     end)
 end)
 
