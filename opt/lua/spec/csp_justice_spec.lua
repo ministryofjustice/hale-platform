@@ -11,6 +11,10 @@ local CDN = "https://cdn.websitebuilder.service.justice.gov.uk"
 local DEV_CDN = "https://cdn.dev.websitebuilder.service.justice.gov.uk"
 local GTM = "https://www.googletagmanager.com/"
 local LOGGED_IN_COOKIE = "wordpress_logged_in_abc123=hash"
+local SNIPPET_HASH = "'sha256-Ac6EurLc5WNuBriCCA6Gi746Ieu1q/votBRNGQmBSUk='"  -- mojLoadLocalizedData()
+local GTM_IMG = "https://www.googletagmanager.com"
+local GA_IMG = "https://*.google-analytics.com"
+local SPECULATION = "'inline-speculation-rules'"
 
 -- Build for a site-relative path; defaults to the production host.
 local function build(path, host, cookie)
@@ -46,30 +50,54 @@ describe("justice sites", function()
     end)
 end)
 
-describe("justice base policy (public pages)", function()
-    it("allows self and unsafe-inline styles, plus GTM for scripts", function()
+describe("justice base policy (public pages, logged out)", function()
+    it("allows self and unsafe-inline styles; self, GTM, known snippets and speculation rules for scripts", function()
         local p = build("/")
         assert.same({ "'self'", "'unsafe-inline'", CDN }, p:get("style-src"))
-        assert.same({ "'self'", GTM, "'unsafe-inline'", CDN }, p:get("script-src"))
-        assert.same({ "'self'", CDN }, p:get("img-src"))
+        assert.same({ "'self'", GTM, CDN, SNIPPET_HASH, SPECULATION }, p:get("script-src"))
+        assert.same({ "'self'", CDN, GTM_IMG, GA_IMG }, p:get("img-src"))
         assert.same({ "'self'", "blob:" }, p:get("worker-src"))
         assert.same({ "'none'" }, p:get("object-src"))
     end)
 
-    it("does not allow eval, data: images or hashes", function()
+    it("NEVER allows unsafe-inline scripts on public pages", function()
+        for _, path in ipairs({ "/", "/courts/", "/wp-login.php", "/wp-content/themes/justice/dist/js/a.js" }) do
+            for _, host in ipairs({ WWW, DEV, LOCAL }) do
+                assert.is_false(has(build(path, host):get("script-src"), "'unsafe-inline'"), host .. path)
+            end
+        end
+    end)
+
+    it("does not allow eval or data: images", function()
         local rendered = build("/"):render()
         assert.is_nil(rendered:find("'unsafe-eval'", 1, true))
         assert.is_nil(rendered:find("data:", 1, true))
-        assert.is_nil(rendered:find("sha256", 1, true))
-    end)
-
-    it("is the same whether or not the user is logged in", function()
-        assert.equals(build("/"):render(), build("/", WWW, LOGGED_IN_COOKIE):render())
     end)
 
     it("treats /wp-login.php and a nil path as public pages", function()
         assert.equals(build("/"):render(), build("/wp-login.php"):render())
         assert.equals(build("/"):render(), build(nil):render())
+    end)
+end)
+
+describe("justice logged-in overlay", function()
+    it("swaps the script hashes for unsafe-inline, never both", function()
+        local p = build("/", WWW, LOGGED_IN_COOKIE)
+        assert.same({ "'self'", GTM, CDN, "'unsafe-inline'" }, p:get("script-src"))
+        assert.is_false(has(p:get("script-src"), SNIPPET_HASH))
+        assert.is_false(has(p:get("script-src"), SPECULATION))
+    end)
+
+    it("matches the login cookie case-insensitively and ignores other cookies", function()
+        assert.is_true(has(build("/", WWW, "x=1; WordPress_Logged_In_ABC=1"):get("script-src"), "'unsafe-inline'"))
+        assert.is_false(has(build("/", WWW, "foo=bar; comment_author=x"):get("script-src"), "'unsafe-inline'"))
+    end)
+
+    it("changes nothing else", function()
+        local out, inn = build("/"), build("/", WWW, LOGGED_IN_COOKIE)
+        for _, name in ipairs({ "style-src", "img-src", "worker-src", "object-src" }) do
+            assert.same(out:get(name), inn:get(name), name)
+        end
     end)
 end)
 
@@ -95,17 +123,45 @@ describe("justice CDN overlay", function()
     end)
 end)
 
+describe("justice analytics overlay", function()
+    it("allows GTM and Google Analytics image pixels on every page", function()
+        for _, path in ipairs({ "/", "/wp-admin/" }) do
+            for _, host in ipairs({ WWW, DEV, LOCAL }) do
+                local img = build(path, host):get("img-src")
+                assert.is_true(has(img, GTM_IMG), host .. path)
+                assert.is_true(has(img, GA_IMG), host .. path)
+            end
+        end
+    end)
+
+    it("does not add them anywhere but img-src", function()
+        local rendered = build("/"):render()
+        for _, name in ipairs({ "style-src", "worker-src", "object-src" }) do
+            assert.is_false(has(build("/"):get(name), GA_IMG), name)
+        end
+        assert.equals(1, select(2, rendered:gsub("google%-analytics%.com", "")))
+    end)
+end)
+
 describe("justice admin overlay", function()
-    it("adds unsafe-eval to style and script-src, and data: to img-src", function()
+    it("adds unsafe-inline and unsafe-eval to script-src, unsafe-eval to style-src, data: to img-src", function()
         local p = build("/wp-admin/options.php")
+        assert.same({ "'self'", GTM, CDN, "'unsafe-inline'", "'unsafe-eval'" }, p:get("script-src"))
         assert.is_true(has(p:get("style-src"), "'unsafe-eval'"))
-        assert.is_true(has(p:get("script-src"), "'unsafe-eval'"))
         assert.is_true(has(p:get("img-src"), "data:"))
     end)
 
-    it("keeps everything public pages have", function()
+    it("uses unsafe-inline scripts with or without the login cookie, never a hash", function()
+        for _, cookie in ipairs({ "", LOGGED_IN_COOKIE }) do
+            local p = build("/wp-admin/", WWW, cookie)
+            assert.is_true(has(p:get("script-src"), "'unsafe-inline'"))
+            assert.is_false(has(p:get("script-src"), SNIPPET_HASH))
+        end
+    end)
+
+    it("keeps everything public pages have, except the script hashes", function()
         local public, admin = build("/"), build("/wp-admin/")
-        for _, name in ipairs({ "style-src", "script-src", "img-src", "worker-src", "object-src" }) do
+        for _, name in ipairs({ "style-src", "img-src", "worker-src", "object-src" }) do
             for _, source in ipairs(public:get(name)) do
                 assert.is_true(has(admin:get(name), source), name .. " lost " .. source)
             end
@@ -120,31 +176,41 @@ describe("justice admin overlay", function()
 end)
 
 describe("justice rendered header values", function()
-    it("public page on www (matches the old wordpress.conf map exactly)", function()
+    it("public page on www, logged out", function()
         assert.equals(
             "style-src 'self' 'unsafe-inline' " .. CDN .. "; " ..
-            "script-src 'self' " .. GTM .. " 'unsafe-inline' " .. CDN .. "; " ..
-            "img-src 'self' " .. CDN .. "; " ..
+            "script-src 'self' " .. GTM .. " " .. CDN .. " " .. SNIPPET_HASH .. " " .. SPECULATION .. "; " ..
+            "img-src 'self' " .. CDN .. " " .. GTM_IMG .. " " .. GA_IMG .. "; " ..
             "worker-src 'self' blob:; " ..
             "object-src 'none'",
             justice.policy({ path = "/", host = WWW }))
     end)
 
-    it("public page on dev", function()
+    it("public page on www, logged in", function()
+        assert.equals(
+            "style-src 'self' 'unsafe-inline' " .. CDN .. "; " ..
+            "script-src 'self' " .. GTM .. " " .. CDN .. " 'unsafe-inline'; " ..
+            "img-src 'self' " .. CDN .. " " .. GTM_IMG .. " " .. GA_IMG .. "; " ..
+            "worker-src 'self' blob:; " ..
+            "object-src 'none'",
+            justice.policy({ path = "/", host = WWW, cookie = LOGGED_IN_COOKIE }))
+    end)
+
+    it("public page on dev, logged out", function()
         assert.equals(
             "style-src 'self' 'unsafe-inline' " .. DEV_CDN .. "; " ..
-            "script-src 'self' " .. GTM .. " 'unsafe-inline' " .. DEV_CDN .. "; " ..
-            "img-src 'self' " .. DEV_CDN .. "; " ..
+            "script-src 'self' " .. GTM .. " " .. DEV_CDN .. " " .. SNIPPET_HASH .. " " .. SPECULATION .. "; " ..
+            "img-src 'self' " .. DEV_CDN .. " " .. GTM_IMG .. " " .. GA_IMG .. "; " ..
             "worker-src 'self' blob:; " ..
             "object-src 'none'",
             justice.policy({ path = "/", host = DEV }))
     end)
 
-    it("public page locally (no CDN)", function()
+    it("public page locally, logged out (no CDN)", function()
         assert.equals(
             "style-src 'self' 'unsafe-inline'; " ..
-            "script-src 'self' " .. GTM .. " 'unsafe-inline'; " ..
-            "img-src 'self'; " ..
+            "script-src 'self' " .. GTM .. " " .. SNIPPET_HASH .. " " .. SPECULATION .. "; " ..
+            "img-src 'self' " .. GTM_IMG .. " " .. GA_IMG .. "; " ..
             "worker-src 'self' blob:; " ..
             "object-src 'none'",
             justice.policy({ path = "/", host = LOCAL }))
@@ -153,8 +219,8 @@ describe("justice rendered header values", function()
     it("admin page on www", function()
         assert.equals(
             "style-src 'self' 'unsafe-inline' " .. CDN .. " 'unsafe-eval'; " ..
-            "script-src 'self' " .. GTM .. " 'unsafe-inline' " .. CDN .. " 'unsafe-eval'; " ..
-            "img-src 'self' " .. CDN .. " data:; " ..
+            "script-src 'self' " .. GTM .. " " .. CDN .. " 'unsafe-inline' 'unsafe-eval'; " ..
+            "img-src 'self' " .. CDN .. " " .. GTM_IMG .. " " .. GA_IMG .. " data:; " ..
             "worker-src 'self' blob:; " ..
             "object-src 'none'",
             justice.policy({ path = "/wp-admin/index.php", host = WWW, cookie = LOGGED_IN_COOKIE }))
