@@ -17,7 +17,9 @@
 --
 -- add() ignores nil (so optional sources need no `if`) and duplicates (so
 -- overlays are safe to apply more than once). Adding to a directive the
--- policy does not have yet appends it.
+-- policy does not have yet appends it — but only if at least one source is
+-- non-nil: a directive with no sources renders as e.g. "font-src ", which
+-- CSP treats as 'none' and would block everything, so it is never created.
 -- ============================================================================
 
 local unpack = table.unpack or unpack  -- Lua 5.2+ / LuaJIT
@@ -27,11 +29,13 @@ local M = {}
 local Policy = {}
 Policy.__index = Policy
 
--- directives: ordered list of { name, source, source, ... }
+-- directives: ordered list of { name, source, source, ... }; every
+-- directive needs at least one source (see the note on empty directives).
 function M.new(directives)
     local p = setmetatable({ order = {}, sources = {} }, Policy)
     for _, entry in ipairs(directives) do
         local name = entry[1]
+        assert(#entry >= 2, "csp policy: directive '" .. tostring(name) .. "' has no sources")
         table.insert(p.order, name)
         p.sources[name] = {}
         for i = 2, #entry do
@@ -58,17 +62,23 @@ local function contains(list, value)
 end
 
 -- Add one or more sources to one directive (a name) or several (a list of
--- names). Returns self so calls can be chained.
+-- names). nil sources are skipped. Returns self so calls can be chained.
 function Policy:add(names, ...)
+    local sources = {}
+    for i = 1, select("#", ...) do
+        local source = select(i, ...)
+        if source ~= nil then table.insert(sources, source) end
+    end
+    if #sources == 0 then return self end  -- nothing to add: never create an empty directive
+
     if type(names) == "string" then names = { names } end
     for _, name in ipairs(names) do
         if not self.sources[name] then
             table.insert(self.order, name)
             self.sources[name] = {}
         end
-        for i = 1, select("#", ...) do
-            local source = select(i, ...)
-            if source ~= nil and not contains(self.sources[name], source) then
+        for _, source in ipairs(sources) do
+            if not contains(self.sources[name], source) then
                 table.insert(self.sources[name], source)
             end
         end
