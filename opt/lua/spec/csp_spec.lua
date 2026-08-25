@@ -136,7 +136,7 @@ describe("csp.build with the real policy modules", function()
         for _, r in ipairs({ req("example.com", "/", nil), req(DEV, "/", nil), req("hale.docker", "/justicefoo/", nil) }) do
             local result = csp.build(r)
             assert.equals("report-only", result.mode)
-            assert.equals(defaults.policy_string, result.policy)
+            assert.equals(defaults.policy("/", nil, r.host), result.policy, r.host)
         end
     end)
 end)
@@ -164,7 +164,7 @@ describe("csp.apply", function()
     it("sets Content-Security-Policy-Report-Only for a report-only policy", function()
         local ngx = with_ngx("example.com", "/", nil)
         csp.apply()
-        assert.equals(defaults.policy_string, ngx.header["Content-Security-Policy-Report-Only"])
+        assert.equals(defaults.policy("/", nil, "example.com"), ngx.header["Content-Security-Policy-Report-Only"])
         assert.is_nil(ngx.header["Content-Security-Policy"])
     end)
 
