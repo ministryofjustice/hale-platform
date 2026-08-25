@@ -11,8 +11,15 @@ local M = {}
 
 M.mode = "report-only"
 
-M.policy_string = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-    .. "style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; "
+-- Sites on the platform load theme assets and fonts from their environment's
+-- CDN (cdn.<env>.websitebuilder.service.justice.gov.uk), hence the wildcard.
+local PLATFORM = "https://*.websitebuilder.service.justice.gov.uk"
+
+M.policy_string = "default-src 'self'; "
+    .. "script-src 'self' 'unsafe-inline' 'unsafe-eval' " .. PLATFORM .. "; "
+    .. "style-src 'self' 'unsafe-inline' " .. PLATFORM .. "; "
+    .. "img-src 'self' data: https:; "
+    .. "font-src 'self' data: " .. PLATFORM .. "; "
     .. "frame-ancestors 'self'; object-src 'none';"
 
 -- Same policy for every page; the arguments are ignored.

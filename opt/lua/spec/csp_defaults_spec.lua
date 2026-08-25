@@ -4,8 +4,12 @@
 package.path = package.path .. ";lua/?.lua;lua/?/init.lua"
 local defaults = require "csp.defaults"
 
-local EXPECTED = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-    .. "style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; "
+-- Verbatim from the old wordpress.conf $csp_report_only map default.
+local EXPECTED = "default-src 'self'; "
+    .. "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.websitebuilder.service.justice.gov.uk; "
+    .. "style-src 'self' 'unsafe-inline' https://*.websitebuilder.service.justice.gov.uk; "
+    .. "img-src 'self' data: https:; "
+    .. "font-src 'self' data: https://*.websitebuilder.service.justice.gov.uk; "
     .. "frame-ancestors 'self'; object-src 'none';"
 
 describe("csp defaults", function()
@@ -17,7 +21,7 @@ describe("csp defaults", function()
         assert.is_nil(defaults.sites)
     end)
 
-    it("applies the legacy default policy verbatim", function()
+    it("applies the old map default policy verbatim", function()
         assert.equals(EXPECTED, defaults.policy_string)
         assert.equals(EXPECTED, defaults.policy("/", nil))
     end)
