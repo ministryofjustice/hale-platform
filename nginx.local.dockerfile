@@ -30,6 +30,7 @@ COPY opt/nginx/localwordpress.conf /usr/local/openresty/nginx/conf/conf.d/
 COPY opt/lua/redis_pool.lua        /usr/local/openresty/nginx/lua/redis_pool.lua
 COPY opt/lua/firewall              /usr/local/openresty/nginx/lua/firewall
 COPY opt/lua/pagecache             /usr/local/openresty/nginx/lua/pagecache
+COPY opt/lua/csp                   /usr/local/openresty/nginx/lua/csp
 COPY opt/nginx/error-pages/        /usr/local/openresty/nginx/html/error-pages/
 
 # Switch to non-root user (numeric UID for consistency with production)
