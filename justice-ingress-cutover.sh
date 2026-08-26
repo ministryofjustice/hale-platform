@@ -15,41 +15,81 @@
 #       - old primary ingress justice-gov-uk-production-ingress-modsec in
 #         namespace justice-gov-uk-production is removed
 #
-# Precondition (already merged in hale-platform#453): the canary ingress has
-# canary-weight "100", so all www.justice.gov.uk traffic is already served by
-# the hale-platform pods. That is what makes every step below traffic-neutral.
+# ---------------------------------------------------------------------------
+# WHERE THIS FLOW COMES FROM (it is NOT a documented runbook)
 #
-# Order matters:
-#   1. add-host        annotate hale-platform-ingress to allow the duplicate
-#                      host, then add www.justice.gov.uk TLS + rule to it.
-#                      (Two non-canary ingresses now claim the host; nginx keeps
-#                      using the older one, and the weight-100 canary still
-#                      sends everything to hale pods -> no traffic change.)
-#   2. delete-old      delete the justice-gov-uk-production ingress.
-#                      nginx now builds the www.justice.gov.uk server from
-#                      hale-platform-ingress; canary still attached at 100%.
-#   3. delete-canary   delete hale-platform-justice-ingress and the
-#                      wordpress-canary Service. Traffic flows via the primary
-#                      backend `wordpress` (same pods).
-#   4. cleanup         remove the temporary duplicate-host annotations.
+# The end state is defined by the two PRs. The ORDER and the guards below are
+# derived from:
 #
-# Never do 2 before 1: the host would have no non-canary ingress.
-# Never do 1 without the annotations: the admission policy will reject it.
+#  [CP-DUP] Cloud Platform user guide, "ingress with duplicate hostnames":
+#           Gatekeeper rejects an Ingress (create AND update) whose host is
+#           used in another namespace unless BOTH objects carry
+#           allow-duplicate-host: "true" and an identical, same-order
+#           allowed-duplicate-ns, plus external-dns aws-weight/set-identifier.
+#           https://user-guide.cloud-platform.service.justice.gov.uk/documentation/deploying-an-app/ingress-with-duplicate-hostnames.html
 #
-# Afterwards, merge hale-platform#452 and justice-gov-uk#548 PROMPTLY:
-#   - until #452 is merged, a CI deploy from main will re-create the canary
-#     ingress + Service (harmless, but undoes step 3), and any *other* change
-#     to the primary ingress template could drop the hand-patched host.
-#   - helm upgrade tolerates the already-deleted canary resources.
+#  [CP-WH]  cloud-platform-terraform-ingress-controller templates/values.yaml.tpl:
+#           admissionWebhooks.enabled: false. So ingress-nginx's own
+#           "host and path already defined" webhook is NOT in play on CP.
+#
+#  [NGX-1]  ingress-nginx controller.go createServers/getBackendServers:
+#           canary ingresses never create a server or location (NoServer).
+#           => a canary with no non-canary ingress for its host serves the
+#              default backend (404, default cert). NEVER delete the old
+#              primary before the host exists on hale-platform-ingress.
+#
+#  [NGX-2]  ingress-nginx store.go sortIngressSlice: ingresses are processed
+#           oldest-CreationTimestamp first; for the same host+path+pathType
+#           the first one wins and later ones are ignored ("Location already
+#           configured"). Two non-canary ingresses for one host is therefore
+#           tolerated, not an error. Which one wins depends on age — see
+#           `status` output.
+#
+#  [NGX-3]  ingress-nginx getBackendServers location loop + issue #10090
+#           (closed, fix PR #10091 NOT merged, `break` on pathType mismatch
+#           still in main): same host + same path + DIFFERENT pathType on two
+#           non-canary ingresses produces two `location "/"` blocks ->
+#           nginx: [emerg] duplicate location -> the SHARED modsec controller
+#           fails to reload for EVERY tenant. This is the one change here that
+#           could hurt all hale sites. Guard: the rule we add to
+#           hale-platform-ingress mirrors the LIVE path+pathType of the old
+#           ingress, and we refuse to proceed otherwise. It also means
+#           hale-platform#452 (which renders pathType ImplementationSpecific)
+#           MUST NOT be deployed while the old ingress still exists, if the
+#           old ingress uses a different pathType.
+#
+#  [NGX-4]  mergeAlternativeBackends requires path AND pathType to match for
+#           a canary to attach. Empirically the canary IS attached today
+#           (www.justice.gov.uk returns X-Version: next = hale; the old stack
+#           returns X-Version: legacy), so we don't rely on reasoning here —
+#           `status` checks the header.
+#
+#  [HELM]   Helm 3-way merge: spec.rules / spec.tls are atomic lists. A helm
+#           upgrade that touches the ingress replaces them with the chart's
+#           render. Merge #452 promptly after delete-canary, and avoid any
+#           other ingress template change until then.
+# ---------------------------------------------------------------------------
+#
+# Precondition (merged in hale-platform#453): canary-weight "100" so all
+# www.justice.gov.uk traffic is already served by hale pods. That makes every
+# step below traffic-neutral.
+#
+# Steps:
+#   status         inspect; prints who "wins" the host (age) and live pathType
+#   backup         dump all four objects to YAML
+#   add-host       annotate hale-platform-ingress [CP-DUP], then add the
+#                  www.justice.gov.uk TLS + rule, mirroring the old ingress's
+#                  live path/pathType [NGX-3].
+#   delete-old     delete the justice-gov-uk-production ingress (#548).
+#                  Refuses unless add-host is in place [NGX-1].
+#   delete-canary  delete hale-platform-justice-ingress + wordpress-canary.
+#                  Refuses while the old ingress still exists.
+#   cleanup        remove the temporary duplicate-host annotations.
+#   verify         final state check.
 #
 # Usage:
 #   ./justice-ingress-cutover.sh status
-#   ./justice-ingress-cutover.sh backup
-#   ./justice-ingress-cutover.sh add-host        [DRY_RUN=0 to apply]
-#   ./justice-ingress-cutover.sh delete-old      [DRY_RUN=0 to apply]
-#   ./justice-ingress-cutover.sh delete-canary   [DRY_RUN=0 to apply]
-#   ./justice-ingress-cutover.sh cleanup         [DRY_RUN=0 to apply]
-#   ./justice-ingress-cutover.sh verify
+#   DRY_RUN=0 ./justice-ingress-cutover.sh add-host      (etc.)
 #
 # DRY_RUN defaults to 1 (server-side dry run for patches, print-only for
 # deletes). Set KUBE_CONTEXT to pin a kubectl context.
@@ -70,8 +110,11 @@ OLD_ING="justice-gov-uk-production-ingress-modsec"
 HOST="www.justice.gov.uk"
 CERT_SECRET="justice-www-cert"
 
-# Must be byte-identical (incl. order) on every ingress that shares the host.
+# Must be byte-identical (incl. order) on every ingress that shares the host [CP-DUP].
 DUP_NS_VALUE="justice-gov-uk-production,hale-platform-prod"
+
+# Header that distinguishes the stacks: hale => "next", old => "legacy".
+EXPECT_X_VERSION="next"
 
 BACKUP_DIR="${BACKUP_DIR:-$(dirname "$0")/backup-$(date +%Y%m%d-%H%M%S)}"
 
@@ -106,18 +149,20 @@ confirm() {
 ing_exists() { k get ingress "$2" -n "$1" >/dev/null 2>&1; }
 svc_exists() { k get service "$2" -n "$1" >/dev/null 2>&1; }
 
-primary_has_host() {
-  k get ingress "$HALE_PRIMARY_ING" -n "$HALE_NS" -o json \
-    | jq -e --arg h "$HOST" '.spec.rules[] | select(.host == $h)' >/dev/null 2>&1
+ing_json() { k get ingress "$2" -n "$1" -o json; }
+
+primary_rule_json() {
+  ing_json "$HALE_NS" "$HALE_PRIMARY_ING" | jq -c --arg h "$HOST" '[.spec.rules[] | select(.host == $h)] | .[0] // empty'
 }
+primary_has_host() { [[ -n "$(primary_rule_json)" ]]; }
 
 primary_has_tls() {
-  k get ingress "$HALE_PRIMARY_ING" -n "$HALE_NS" -o json \
+  ing_json "$HALE_NS" "$HALE_PRIMARY_ING" \
     | jq -e --arg h "$HOST" '.spec.tls[] | select(.hosts[] == $h)' >/dev/null 2>&1
 }
 
 primary_has_dup_annotations() {
-  k get ingress "$HALE_PRIMARY_ING" -n "$HALE_NS" -o json \
+  ing_json "$HALE_NS" "$HALE_PRIMARY_ING" \
     | jq -e --arg v "$DUP_NS_VALUE" \
         '.metadata.annotations["allow-duplicate-host"] == "true"
          and .metadata.annotations["allowed-duplicate-ns"] == $v' >/dev/null 2>&1
@@ -128,13 +173,33 @@ canary_weight() {
     -o jsonpath='{.metadata.annotations.nginx\.ingress\.kubernetes\.io/canary-weight}' 2>/dev/null || true
 }
 
+# Live path/pathType of the old ingress's rule for $HOST — mirrored in add-host [NGX-3].
+old_path()     { ing_json "$OLD_NS" "$OLD_ING" | jq -r --arg h "$HOST" '.spec.rules[] | select(.host == $h) | .http.paths[0].path'; }
+old_pathtype() { ing_json "$OLD_NS" "$OLD_ING" | jq -r --arg h "$HOST" '.spec.rules[] | select(.host == $h) | .http.paths[0].pathType'; }
+
+created() { k get ingress "$2" -n "$1" -o jsonpath='{.metadata.creationTimestamp}' 2>/dev/null || echo "-"; }
+
+x_version() {
+  # $1 = optional extra curl header
+  curl -sS -o /dev/null -D - ${1:+-H "$1"} "https://$HOST/" 2>/dev/null \
+    | awk 'tolower($1)=="x-version:" {gsub("\r","",$2); print $2}'
+}
+
 curl_probe() {
-  # Quick external check; compare headers before/after each step.
   say "curl probe: https://$HOST/"
   curl -sS -o /dev/null -D - "https://$HOST/" \
-    | grep -iE '^(HTTP/|server:|x-page-cache|x-cache|strict-transport|location:)' || true
-  echo "--- /search?s=test (should be 200 from hale, not 404) ---"
+    | grep -iE '^(HTTP/|x-version|x-page-cache|strict-transport|location:)' || true
+  local v; v="$(x_version)"
+  local vc; vc="$(x_version 'X-Canary: always')"
+  printf 'X-Version (plain)=%s  (X-Canary: always)=%s   [expect both "%s"; "legacy" = old stack]\n' \
+    "${v:-<none>}" "${vc:-<none>}" "$EXPECT_X_VERSION"
+  echo "--- /search?s=test ---"
   curl -sS -o /dev/null -w 'HTTP %{http_code}\n' "https://$HOST/search?s=test" || true
+}
+
+assert_served_by_hale() {
+  local v; v="$(x_version)"
+  [[ "$v" == "$EXPECT_X_VERSION" ]] || die "https://$HOST/ returned X-Version='$v', expected '$EXPECT_X_VERSION'. Traffic is not on hale — stop and investigate."
 }
 
 # ---------------------------------------------------------------------------
@@ -150,14 +215,24 @@ cmd_status() {
   k get ingress -n "$OLD_NS" -o wide || warn "cannot list ingresses in $OLD_NS"
 
   say "State"
-  printf '%-55s %s\n' "old primary $OLD_NS/$OLD_ING exists:"          "$(ing_exists "$OLD_NS" "$OLD_ING" && echo yes || echo no)"
-  printf '%-55s %s\n' "canary $HALE_NS/$HALE_CANARY_ING exists:"       "$(ing_exists "$HALE_NS" "$HALE_CANARY_ING" && echo yes || echo no)"
-  printf '%-55s %s\n' "canary weight:"                                  "$(canary_weight)"
-  printf '%-55s %s\n' "canary svc $HALE_NS/$HALE_CANARY_SVC exists:"    "$(svc_exists "$HALE_NS" "$HALE_CANARY_SVC" && echo yes || echo no)"
-  printf '%-55s %s\n' "primary has rule for $HOST:"                    "$(primary_has_host && echo yes || echo no)"
-  printf '%-55s %s\n' "primary has TLS for $HOST:"                     "$(primary_has_tls && echo yes || echo no)"
-  printf '%-55s %s\n' "primary has duplicate-host annotations:"        "$(primary_has_dup_annotations && echo yes || echo no)"
-  printf '%-55s %s\n' "secret $HALE_NS/$CERT_SECRET exists:"           "$(k get secret "$CERT_SECRET" -n "$HALE_NS" >/dev/null 2>&1 && echo yes || echo no)"
+  printf '%-58s %s\n' "old primary $OLD_NS/$OLD_ING exists:"          "$(ing_exists "$OLD_NS" "$OLD_ING" && echo yes || echo no)"
+  if ing_exists "$OLD_NS" "$OLD_ING"; then
+  printf '%-58s %s\n' "old primary live path / pathType:"              "$(old_path) / $(old_pathtype)"
+  fi
+  printf '%-58s %s\n' "canary $HALE_NS/$HALE_CANARY_ING exists:"       "$(ing_exists "$HALE_NS" "$HALE_CANARY_ING" && echo yes || echo no)"
+  printf '%-58s %s\n' "canary weight:"                                  "$(canary_weight)"
+  printf '%-58s %s\n' "canary svc $HALE_NS/$HALE_CANARY_SVC exists:"    "$(svc_exists "$HALE_NS" "$HALE_CANARY_SVC" && echo yes || echo no)"
+  printf '%-58s %s\n' "primary has rule for $HOST:"                    "$(primary_rule_json | jq -r 'if . == null or . == "" then "no" else "yes: " + (.http.paths[0].path) + " / " + (.http.paths[0].pathType) end' 2>/dev/null || echo no)"
+  printf '%-58s %s\n' "primary has TLS for $HOST:"                     "$(primary_has_tls && echo yes || echo no)"
+  printf '%-58s %s\n' "primary has duplicate-host annotations:"        "$(primary_has_dup_annotations && echo yes || echo no)"
+  printf '%-58s %s\n' "secret $HALE_NS/$CERT_SECRET exists:"           "$(k get secret "$CERT_SECRET" -n "$HALE_NS" >/dev/null 2>&1 && echo yes || echo no)"
+
+  say "Creation timestamps (oldest non-canary ingress wins a shared host) [NGX-2]"
+  printf '%-58s %s\n' "$OLD_NS/$OLD_ING:"          "$(created "$OLD_NS" "$OLD_ING")"
+  printf '%-58s %s\n' "$HALE_NS/$HALE_PRIMARY_ING:" "$(created "$HALE_NS" "$HALE_PRIMARY_ING")"
+  printf '%-58s %s\n' "$HALE_NS/$HALE_CANARY_ING:"  "$(created "$HALE_NS" "$HALE_CANARY_ING")"
+  echo "If $HALE_PRIMARY_ING is OLDER than $OLD_ING, add-host itself moves the host's"
+  echo "primary server to hale (backend 'wordpress'). Either way traffic stays on hale pods."
 
   curl_probe
 }
@@ -179,18 +254,32 @@ cmd_add_host() {
 
   # Preconditions
   ing_exists "$HALE_NS" "$HALE_PRIMARY_ING" || die "$HALE_PRIMARY_ING not found in $HALE_NS"
+  ing_exists "$OLD_NS" "$OLD_ING"           || die "$OLD_NS/$OLD_ING not found — order assumption broken; re-check state before continuing"
   k get secret "$CERT_SECRET" -n "$HALE_NS" >/dev/null 2>&1 || die "TLS secret $CERT_SECRET missing in $HALE_NS"
   local w; w="$(canary_weight)"
   if [[ "$w" != "100" ]]; then
     warn "canary weight is '$w', expected 100 (hale-platform#453). Traffic is NOT fully on hale pods yet."
     confirm
   fi
+  assert_served_by_hale
+
+  # [NGX-3] mirror the old ingress's live path + pathType exactly. A different
+  # pathType for the same host+path on two non-canary ingresses produces a
+  # duplicate nginx location and breaks the shared controller's reload.
+  local path ptype
+  path="$(old_path)"; ptype="$(old_pathtype)"
+  [[ -n "$path" && -n "$ptype" && "$ptype" != "null" ]] || die "could not read live path/pathType from $OLD_NS/$OLD_ING"
+  echo "old ingress live rule: path=$path pathType=$ptype  -> mirroring these on $HALE_PRIMARY_ING"
+  if [[ "$ptype" != "ImplementationSpecific" ]]; then
+    warn "old ingress pathType is '$ptype' but hale-platform#452 renders 'ImplementationSpecific'."
+    warn "DO NOT merge/deploy #452 until delete-old has run, or the shared modsec controller will fail to reload [NGX-3]."
+  fi
 
   local dry=()
   [[ "$DRY_RUN" == "1" ]] && dry=(--dry-run=server)
 
-  # 1a. annotations so the duplicate-host admission policy accepts the host
-  #     while $OLD_NS/$OLD_ING still exists. Same value/order as the other two.
+  # 1a. [CP-DUP] annotations so Gatekeeper accepts the duplicate host while
+  #     $OLD_NS/$OLD_ING still exists. Same value/order as the other two.
   if primary_has_dup_annotations; then
     echo "annotations already present — skipping"
   else
@@ -210,14 +299,14 @@ EOF
 )"
   fi
 
-  # 1c. rule (mirrors the range over ingress.hosts in templates/ingress.yaml)
+  # 1c. rule — same shape as templates/ingress.yaml but with the LIVE path/pathType
   if primary_has_host; then
-    echo "rule for $HOST already present — skipping"
+    echo "rule for $HOST already present — skipping: $(primary_rule_json)"
   else
     k patch ingress "$HALE_PRIMARY_ING" -n "$HALE_NS" "${dry[@]}" --type=json -p "$(cat <<EOF
 [{"op":"add","path":"/spec/rules/-","value":{
   "host":"$HOST",
-  "http":{"paths":[{"path":"/","pathType":"ImplementationSpecific",
+  "http":{"paths":[{"path":"$path","pathType":"$ptype",
     "backend":{"service":{"name":"wordpress","port":{"number":8080}}}}]}
 }}]
 EOF
@@ -226,13 +315,15 @@ EOF
 
   if [[ "$DRY_RUN" != "1" ]]; then
     say "Result"
-    k get ingress "$HALE_PRIMARY_ING" -n "$HALE_NS" -o json \
+    ing_json "$HALE_NS" "$HALE_PRIMARY_ING" \
       | jq --arg h "$HOST" '{tls: [.spec.tls[] | select(.hosts[] == $h)], rule: [.spec.rules[] | select(.host == $h)]}'
+    echo "waiting 20s for ingress-nginx to reload..."
+    sleep 20
     curl_probe
+    assert_served_by_hale
     echo
-    echo "Expect: no change in behaviour (old ingress still wins the host; canary still 100%)."
-    echo "Check ingress-nginx logs for warnings if you want:"
-    echo "  kubectl -n ingress-controllers logs -l app.kubernetes.io/name=ingress-nginx --since=2m | grep -i '$HOST'"
+    echo "Expect: X-Version still '$EXPECT_X_VERSION'. Optional: check the modsec controller for reload errors:"
+    echo "  kubectl -n ingress-controllers get events --sort-by=.lastTimestamp | grep -iE 'reload|emerg' | tail"
   fi
 }
 
@@ -240,12 +331,14 @@ cmd_delete_old() {
   say "Step 2: delete old primary $OLD_NS/$OLD_ING  (justice-gov-uk#548)"
   dry_banner
 
+  # [NGX-1] host must already exist on a non-canary ingress or it goes to the default backend.
   primary_has_host || die "refusing: $HALE_PRIMARY_ING does not yet have a rule for $HOST (run add-host first)"
   primary_has_tls  || die "refusing: $HALE_PRIMARY_ING does not yet have TLS for $HOST (run add-host first)"
   if ! ing_exists "$OLD_NS" "$OLD_ING"; then
     echo "$OLD_ING already gone — nothing to do"
     return 0
   fi
+  assert_served_by_hale
 
   [[ -d "$BACKUP_DIR" ]] || warn "no backup dir found; run 'backup' first"
 
@@ -257,12 +350,14 @@ cmd_delete_old() {
 
   confirm
   k delete ingress "$OLD_ING" -n "$OLD_NS"
-  echo "waiting 15s for ingress-nginx to reload..."
-  sleep 15
+  echo "waiting 20s for ingress-nginx to reload..."
+  sleep 20
   curl_probe
+  assert_served_by_hale
   echo
-  echo "Expect: site still up, served by hale (TLS now from $CERT_SECRET)."
+  echo "Expect: site up, X-Version '$EXPECT_X_VERSION', TLS now from $CERT_SECRET."
   echo "Note: #548's PR text names 'justice-gov-uk-dev-ingress' — that is the dev name; prod is $OLD_ING."
+  echo "It is now safe to merge hale-platform#452 at any point."
 }
 
 cmd_delete_canary() {
@@ -270,7 +365,7 @@ cmd_delete_canary() {
   dry_banner
 
   primary_has_host || die "refusing: $HALE_PRIMARY_ING does not have a rule for $HOST"
-  ing_exists "$OLD_NS" "$OLD_ING" && die "refusing: old ingress $OLD_NS/$OLD_ING still exists; nginx would route the host to it (nginx-service). Run delete-old first."
+  ing_exists "$OLD_NS" "$OLD_ING" && die "refusing: old ingress $OLD_NS/$OLD_ING still exists; the host's server may still be the old one. Run delete-old first."
 
   if [[ "$DRY_RUN" == "1" ]]; then
     echo "would run: kubectl delete ingress $HALE_CANARY_ING -n $HALE_NS"
@@ -283,12 +378,13 @@ cmd_delete_canary() {
   confirm
   ing_exists "$HALE_NS" "$HALE_CANARY_ING" && k delete ingress "$HALE_CANARY_ING" -n "$HALE_NS" || echo "canary ingress already gone"
   svc_exists "$HALE_NS" "$HALE_CANARY_SVC" && k delete service "$HALE_CANARY_SVC" -n "$HALE_NS" || echo "canary service already gone"
-  echo "waiting 15s for ingress-nginx to reload..."
-  sleep 15
+  echo "waiting 20s for ingress-nginx to reload..."
+  sleep 20
   curl_probe
+  assert_served_by_hale
   echo
-  echo "Expect: site still up, now via backend 'wordpress' on $HALE_PRIMARY_ING."
-  echo "NOW merge hale-platform#452 — until then a CI deploy will re-create the canary resources."
+  echo "Expect: site up via backend 'wordpress' on $HALE_PRIMARY_ING."
+  echo "NOW merge hale-platform#452 — until then a CI deploy re-creates the canary resources [HELM]."
 }
 
 cmd_cleanup() {
@@ -315,9 +411,8 @@ cmd_verify() {
   canary svc exists:             no
   primary has rule/TLS for host: yes / yes
   duplicate-host annotations:    no (after cleanup)
+  X-Version:                     $EXPECT_X_VERSION (plain and with X-Canary)
 EOF
-  say "Ingress-nginx view of the host (optional)"
-  echo "  kubectl -n ingress-controllers exec deploy/<modsec-controller> -- cat /etc/nginx/nginx.conf | grep -n -A3 'server_name $HOST'"
   say "Then merge: hale-platform#452, justice-gov-uk#548"
 }
 
@@ -325,6 +420,7 @@ EOF
 
 command -v kubectl >/dev/null || die "kubectl not found"
 command -v jq >/dev/null      || die "jq not found"
+command -v curl >/dev/null    || die "curl not found"
 
 case "${1:-}" in
   status)        cmd_status ;;
@@ -337,5 +433,5 @@ case "${1:-}" in
   all)
     cmd_status; cmd_backup; cmd_add_host; cmd_delete_old; cmd_delete_canary; cmd_cleanup; cmd_verify ;;
   *)
-    sed -n '2,60p' "$0"; exit 1 ;;
+    sed -n '2,95p' "$0"; exit 1 ;;
 esac
