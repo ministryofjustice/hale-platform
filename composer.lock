@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3f767cc4500fa978fb1b7e5fb1502d33",
+    "content-hash": "7f7dfd6ead784f2f561c78e56e7138a8",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -115,16 +115,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.393.5",
+            "version": "3.394.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "d15e6bceff1ece1c0a6d2bb8fb0a9521a8721eab"
+                "reference": "8a85b79ee9e9009bf19fa31659451124855447ad"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/d15e6bceff1ece1c0a6d2bb8fb0a9521a8721eab",
-                "reference": "d15e6bceff1ece1c0a6d2bb8fb0a9521a8721eab",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/8a85b79ee9e9009bf19fa31659451124855447ad",
+                "reference": "8a85b79ee9e9009bf19fa31659451124855447ad",
                 "shasum": ""
             },
             "require": {
@@ -206,9 +206,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.393.5"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.394.0"
             },
-            "time": "2026-08-24T18:17:30+00:00"
+            "time": "2026-08-25T19:22:47+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -1083,26 +1083,25 @@
         },
         {
             "name": "ministryofjustice/justice",
-            "version": "dev-main",
+            "version": "11.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/justice.git",
-                "reference": "8571384e850ca5b25c5db99dd1c18553ab12b894"
+                "reference": "807befdf4e8a5fbeb1ba61c3aed80cd3e6bf1c25"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/justice/zipball/8571384e850ca5b25c5db99dd1c18553ab12b894",
-                "reference": "8571384e850ca5b25c5db99dd1c18553ab12b894",
+                "url": "https://api.github.com/repos/ministryofjustice/justice/zipball/807befdf4e8a5fbeb1ba61c3aed80cd3e6bf1c25",
+                "reference": "807befdf4e8a5fbeb1ba61c3aed80cd3e6bf1c25",
                 "shasum": ""
             },
-            "default-branch": true,
             "type": "wordpress-theme",
             "description": "Justice GovUK theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/justice/tree/main",
+                "source": "https://github.com/ministryofjustice/justice/tree/11.1.1",
                 "issues": "https://github.com/ministryofjustice/justice/issues"
             },
-            "time": "2026-08-24T11:14:44+00:00"
+            "time": "2026-08-26T11:21:33+00:00"
         },
         {
             "name": "ministryofjustice/ppo",
@@ -4000,7 +3999,6 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "ministryofjustice/justice": 20,
         "ministryofjustice/ppo": 20
     },
     "prefer-stable": true,
