@@ -91,8 +91,9 @@
 #   ./justice-ingress-cutover.sh status
 #   DRY_RUN=0 ./justice-ingress-cutover.sh add-host      (etc.)
 #
-# DRY_RUN defaults to 1 (server-side dry run for patches, print-only for
-# deletes). Set KUBE_CONTEXT to pin a kubectl context.
+# DRY_RUN defaults to 1: every mutating kubectl call (annotate/patch/delete)
+# runs with --dry-run=server, so RBAC and admission are exercised but nothing
+# is persisted. Set KUBE_CONTEXT to pin a kubectl context.
 
 set -euo pipefail
 
@@ -151,10 +152,11 @@ svc_exists() { k get service "$2" -n "$1" >/dev/null 2>&1; }
 
 ing_json() { k get ingress "$2" -n "$1" -o json; }
 
+# Rule object for $HOST on the primary, or the literal `null` (never empty / never a jq error).
 primary_rule_json() {
-  ing_json "$HALE_NS" "$HALE_PRIMARY_ING" | jq -c --arg h "$HOST" '[.spec.rules[] | select(.host == $h)] | .[0] // empty'
+  ing_json "$HALE_NS" "$HALE_PRIMARY_ING" | jq -c --arg h "$HOST" '[(.spec.rules // [])[] | select(.host == $h)] | .[0] // null'
 }
-primary_has_host() { [[ -n "$(primary_rule_json)" ]]; }
+primary_has_host() { [[ "$(primary_rule_json)" != "null" ]]; }
 
 primary_has_tls() {
   ing_json "$HALE_NS" "$HALE_PRIMARY_ING" \
@@ -168,14 +170,24 @@ primary_has_dup_annotations() {
          and .metadata.annotations["allowed-duplicate-ns"] == $v' >/dev/null 2>&1
 }
 
+# [CP-DUP] the OLD ingress must carry all four annotations too, or Gatekeeper rejects add-host.
+old_has_dup_annotations() {
+  ing_json "$OLD_NS" "$OLD_ING" \
+    | jq -e --arg v "$DUP_NS_VALUE" \
+        '.metadata.annotations["allow-duplicate-host"] == "true"
+         and .metadata.annotations["allowed-duplicate-ns"] == $v
+         and (.metadata.annotations["external-dns.alpha.kubernetes.io/aws-weight"] // "") != ""
+         and (.metadata.annotations["external-dns.alpha.kubernetes.io/set-identifier"] // "") != ""' >/dev/null 2>&1
+}
+
 canary_weight() {
   k get ingress "$HALE_CANARY_ING" -n "$HALE_NS" \
     -o jsonpath='{.metadata.annotations.nginx\.ingress\.kubernetes\.io/canary-weight}' 2>/dev/null || true
 }
 
 # Live path/pathType of the old ingress's rule for $HOST — mirrored in add-host [NGX-3].
-old_path()     { ing_json "$OLD_NS" "$OLD_ING" | jq -r --arg h "$HOST" '.spec.rules[] | select(.host == $h) | .http.paths[0].path'; }
-old_pathtype() { ing_json "$OLD_NS" "$OLD_ING" | jq -r --arg h "$HOST" '.spec.rules[] | select(.host == $h) | .http.paths[0].pathType'; }
+old_path()     { ing_json "$OLD_NS" "$OLD_ING" | jq -r --arg h "$HOST" '(.spec.rules // [])[] | select(.host == $h) | .http.paths[0].path'; }
+old_pathtype() { ing_json "$OLD_NS" "$OLD_ING" | jq -r --arg h "$HOST" '(.spec.rules // [])[] | select(.host == $h) | .http.paths[0].pathType'; }
 
 created() { k get ingress "$2" -n "$1" -o jsonpath='{.metadata.creationTimestamp}' 2>/dev/null || echo "-"; }
 
@@ -225,6 +237,7 @@ cmd_status() {
   printf '%-58s %s\n' "primary has rule for $HOST:"                    "$(primary_rule_json | jq -r 'if . == null or . == "" then "no" else "yes: " + (.http.paths[0].path) + " / " + (.http.paths[0].pathType) end' 2>/dev/null || echo no)"
   printf '%-58s %s\n' "primary has TLS for $HOST:"                     "$(primary_has_tls && echo yes || echo no)"
   printf '%-58s %s\n' "primary has duplicate-host annotations:"        "$(primary_has_dup_annotations && echo yes || echo no)"
+  printf '%-58s %s\n' "old primary has duplicate-host annotations:"    "$(old_has_dup_annotations && echo yes || echo no)"
   printf '%-58s %s\n' "secret $HALE_NS/$CERT_SECRET exists:"           "$(k get secret "$CERT_SECRET" -n "$HALE_NS" >/dev/null 2>&1 && echo yes || echo no)"
 
   say "Creation timestamps (oldest non-canary ingress wins a shared host) [NGX-2]"
@@ -256,6 +269,7 @@ cmd_add_host() {
   ing_exists "$HALE_NS" "$HALE_PRIMARY_ING" || die "$HALE_PRIMARY_ING not found in $HALE_NS"
   ing_exists "$OLD_NS" "$OLD_ING"           || die "$OLD_NS/$OLD_ING not found — order assumption broken; re-check state before continuing"
   k get secret "$CERT_SECRET" -n "$HALE_NS" >/dev/null 2>&1 || die "TLS secret $CERT_SECRET missing in $HALE_NS"
+  old_has_dup_annotations || die "$OLD_NS/$OLD_ING lacks the duplicate-host / external-dns annotations required on BOTH ingresses [CP-DUP]; Gatekeeper would reject the patch"
   local w; w="$(canary_weight)"
   if [[ "$w" != "100" ]]; then
     warn "canary weight is '$w', expected 100 (hale-platform#453). Traffic is NOT fully on hale pods yet."
@@ -278,12 +292,14 @@ cmd_add_host() {
   local dry=()
   [[ "$DRY_RUN" == "1" ]] && dry=(--dry-run=server)
 
+  # One prompt covers every mutation below, including re-runs where 1a is skipped.
+  confirm
+
   # 1a. [CP-DUP] annotations so Gatekeeper accepts the duplicate host while
   #     $OLD_NS/$OLD_ING still exists. Same value/order as the other two.
   if primary_has_dup_annotations; then
     echo "annotations already present — skipping"
   else
-    confirm
     k annotate ingress "$HALE_PRIMARY_ING" -n "$HALE_NS" "${dry[@]}" --overwrite \
       "allow-duplicate-host=true" \
       "allowed-duplicate-ns=$DUP_NS_VALUE"
@@ -365,6 +381,7 @@ cmd_delete_canary() {
   dry_banner
 
   primary_has_host || die "refusing: $HALE_PRIMARY_ING does not have a rule for $HOST"
+  primary_has_tls  || die "refusing: $HALE_PRIMARY_ING does not have TLS for $HOST"
   ing_exists "$OLD_NS" "$OLD_ING" && die "refusing: old ingress $OLD_NS/$OLD_ING still exists; the host's server may still be the old one. Run delete-old first."
 
   if [[ "$DRY_RUN" == "1" ]]; then
@@ -433,5 +450,6 @@ case "${1:-}" in
   all)
     cmd_status; cmd_backup; cmd_add_host; cmd_delete_old; cmd_delete_canary; cmd_cleanup; cmd_verify ;;
   *)
-    sed -n '2,95p' "$0"; exit 1 ;;
+    # Help = the header comment block (everything up to `set -euo pipefail`).
+    awk '/^set -euo pipefail/ {exit} NR > 1 && /^#/' "$0"; exit 1 ;;
 esac
