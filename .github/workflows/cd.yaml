@@ -5,7 +5,7 @@ on:
   push:
     branches:
       - "main"
-      #- "dev"
+      - "dev"
       - "demo"
 
 # ============================================================
@@ -162,9 +162,26 @@ jobs:
       auth0-env-client-secret: ${{ secrets.AUTH0_ENV_CLIENT_SECRET }}
       auth0-env-domain: ${{ secrets.AUTH0_ENV_DOMAIN }}
 
+  checkFriday:
+    runs-on: ubuntu-latest
+    outputs:
+      needs_approval: ${{ steps.day-check.outputs.friday }}
+    steps:
+      - id: day-check
+        run: |
+          if [ "$(date -u +%u)" -eq 5 ]; then
+            echo "friday=true" >> "$GITHUB_OUTPUT"
+            echo "## Approval required" >> "$GITHUB_STEP_SUMMARY"
+            echo "This deployment requires approval because today is Friday." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "friday=false" >> "$GITHUB_OUTPUT"
+          fi
+
   deployProd:
     name: Prod deployment
-    needs: deployStaging
+    needs:
+      - deployStaging
+      - checkFriday
     if: github.event.ref == 'refs/heads/main'
     uses: ./.github/workflows/rw-build-image.yaml
     with:
