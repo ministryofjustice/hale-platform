@@ -384,6 +384,8 @@ ingress:
       certName: ipa-www-cert
     - name: www.judicialappointments.gov.uk
       certName: judicialappointments-www-cert
+    - name: www.justice.gov.uk
+      certName: justice-www-cert
     - name: www.justiceinspectorates.gov.uk
       certName: justiceinspectorates-www-cert
     - name: www.lawcom.gov.uk
