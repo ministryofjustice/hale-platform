@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fa1034467cb6857c05236c1d4fdf4e83",
+    "content-hash": "2f00851932c980b6b05fb4b2c085a596",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -1083,25 +1083,25 @@
         },
         {
             "name": "ministryofjustice/justice",
-            "version": "11.1.3",
+            "version": "11.1.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/justice.git",
-                "reference": "66739d06f8c8e40d11725465778263d2f950ec3f"
+                "reference": "0f4a4f7593c20523fd8e1ddeee2067dc1ad80e3a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/justice/zipball/66739d06f8c8e40d11725465778263d2f950ec3f",
-                "reference": "66739d06f8c8e40d11725465778263d2f950ec3f",
+                "url": "https://api.github.com/repos/ministryofjustice/justice/zipball/0f4a4f7593c20523fd8e1ddeee2067dc1ad80e3a",
+                "reference": "0f4a4f7593c20523fd8e1ddeee2067dc1ad80e3a",
                 "shasum": ""
             },
             "type": "wordpress-theme",
             "description": "Justice GovUK theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/justice/tree/11.1.3",
+                "source": "https://github.com/ministryofjustice/justice/tree/11.1.4",
                 "issues": "https://github.com/ministryofjustice/justice/issues"
             },
-            "time": "2026-08-28T12:05:03+00:00"
+            "time": "2026-09-01T11:07:47+00:00"
         },
         {
             "name": "ministryofjustice/ppo",
