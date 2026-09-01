@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c89c9ccc757d56385b646602e09c9b87",
+    "content-hash": "2f00851932c980b6b05fb4b2c085a596",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -1200,16 +1200,16 @@
         },
         {
             "name": "ministryofjustice/wp-moj-blocks",
-            "version": "4.1.0",
+            "version": "4.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-moj-blocks.git",
-                "reference": "b619784489ba3be90fdbafaae92ace7955ec8a1e"
+                "reference": "6ae5e3e18ec9582f0a30515c9486d6a274c783d7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/wp-moj-blocks/zipball/b619784489ba3be90fdbafaae92ace7955ec8a1e",
-                "reference": "b619784489ba3be90fdbafaae92ace7955ec8a1e",
+                "url": "https://api.github.com/repos/ministryofjustice/wp-moj-blocks/zipball/6ae5e3e18ec9582f0a30515c9486d6a274c783d7",
+                "reference": "6ae5e3e18ec9582f0a30515c9486d6a274c783d7",
                 "shasum": ""
             },
             "require-dev": {
@@ -1233,10 +1233,10 @@
             ],
             "description": "WP plugin that adds addtional blocks.",
             "support": {
-                "source": "https://github.com/ministryofjustice/wp-moj-blocks/tree/4.1.0",
+                "source": "https://github.com/ministryofjustice/wp-moj-blocks/tree/4.2.0",
                 "issues": "https://github.com/ministryofjustice/wp-moj-blocks/issues"
             },
-            "time": "2026-09-01T09:15:48+00:00"
+            "time": "2026-09-01T11:21:02+00:00"
         },
         {
             "name": "ministryofjustice/wp-s3-uploads",
@@ -4007,5 +4007,5 @@
         "php": ">=8.0"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
