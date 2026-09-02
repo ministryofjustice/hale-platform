@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2f00851932c980b6b05fb4b2c085a596",
+    "content-hash": "6ec5673d6ff0aefaf2f834aa17d67263",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -115,16 +115,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.394.5",
+            "version": "3.394.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "12c80170a12c9e9e5d9057bff4d197979631624f"
+                "reference": "860a8b13413adcef698afa0770f0d85f85777a78"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/12c80170a12c9e9e5d9057bff4d197979631624f",
-                "reference": "12c80170a12c9e9e5d9057bff4d197979631624f",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/860a8b13413adcef698afa0770f0d85f85777a78",
+                "reference": "860a8b13413adcef698afa0770f0d85f85777a78",
                 "shasum": ""
             },
             "require": {
@@ -206,9 +206,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.394.5"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.394.6"
             },
-            "time": "2026-08-31T22:10:11+00:00"
+            "time": "2026-09-01T18:09:58+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -1011,16 +1011,16 @@
         },
         {
             "name": "ministryofjustice/hale-components",
-            "version": "1.19.4",
+            "version": "1.20.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale-components.git",
-                "reference": "c0e09ac5a7771b5c2b83e73d7f616d2c0d201b01"
+                "reference": "7c539b80171cc33db98f77eac170653304af8db2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/c0e09ac5a7771b5c2b83e73d7f616d2c0d201b01",
-                "reference": "c0e09ac5a7771b5c2b83e73d7f616d2c0d201b01",
+                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/7c539b80171cc33db98f77eac170653304af8db2",
+                "reference": "7c539b80171cc33db98f77eac170653304af8db2",
                 "shasum": ""
             },
             "require": {
@@ -1032,10 +1032,10 @@
                 "wordpress"
             ],
             "support": {
-                "source": "https://github.com/ministryofjustice/hale-components/tree/1.19.4",
+                "source": "https://github.com/ministryofjustice/hale-components/tree/1.20.0",
                 "issues": "https://github.com/ministryofjustice/hale-components/issues"
             },
-            "time": "2026-08-21T13:52:00+00:00"
+            "time": "2026-09-02T12:49:13+00:00"
         },
         {
             "name": "ministryofjustice/hale-dash",
@@ -3630,15 +3630,15 @@
         },
         {
             "name": "wpackagist-plugin/ewww-image-optimizer",
-            "version": "8.7.6",
+            "version": "8.7.7",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/ewww-image-optimizer/",
-                "reference": "tags/8.7.6"
+                "reference": "tags/8.7.7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/ewww-image-optimizer.8.7.6.zip"
+                "url": "https://downloads.wordpress.org/plugin/ewww-image-optimizer.8.7.7.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
