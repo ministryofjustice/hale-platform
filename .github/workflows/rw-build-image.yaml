@@ -228,8 +228,8 @@ jobs:
           REPOSITORY: ${{ secrets.ecr-repo }}
           IMAGE_TAG: ${{ github.sha }}
 
-      # Publish compiled theme assets to the CDN, namespaced by release.
-      # Themes only for now; plugin assets remain pod-served.
+      # Publish compiled theme and plugin assets to the CDN, namespaced by
+      # release. Everything else (PHP, templates, source) stays pod-served.
       - name: Configure asset publisher credentials
         if: env.ASSET_ROLE != ''
         uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
@@ -237,7 +237,7 @@ jobs:
           role-to-assume: ${{ secrets.asset-role }}
           aws-region: ${{ secrets.ecr-region }}
 
-      - name: Publish theme assets to CDN
+      - name: Publish theme and plugin assets to CDN
         if: env.ASSET_ROLE != ''
         env:
           ASSET_BUCKET: ${{ secrets.s3-uploads-bucket }}
@@ -253,19 +253,47 @@ jobs:
           # "cp --recursive" rather than "sync": each release writes to a new,
           # empty prefix so there is nothing to diff, and cp needs only
           # s3:PutObject - sync would additionally require s3:ListBucket.
-          # Filters apply in order and the LAST match wins, so the
-          # node_modules exclude must stay below the includes.
-          aws s3 cp wordpress/wp-content/themes/ "s3://$ASSET_BUCKET/assets/$RELEASE/themes/" \
-            --recursive \
-            --exclude "*" \
-            --include "*.css"  --include "*.js"    --include "*.mjs" \
-            --include "*.svg"  --include "*.png"   --include "*.jpg" \
-            --include "*.jpeg" --include "*.gif"   --include "*.webp" \
-            --include "*.woff" --include "*.woff2" --include "*.ttf" --include "*.eot" \
-            --exclude "*/node_modules/*" \
-            --cache-control "public, max-age=31536000, immutable"
+          # Filters apply in order and the LAST match wins, so every exclude
+          # must stay below the includes.
+          #
+          # Assets only - the static file types below, never PHP or templates.
+          # <src dir>/ maps to s3://<bucket>/assets/<release>/<prefix>/, mirrored
+          # by hale-components inc/asset-cdn.php when it rewrites enqueued URLs.
+          #
+          # The trailing excludes drop things that happen to match the asset
+          # extensions but are never enqueued on the front end, so publishing
+          # them only leaks internal detail and bloats the bucket:
+          #   - src/       uncompiled SCSS/JSX/JS; themes serve from dist/,
+          #                plugins from build/ or their own assets/
+          #   - vendor/    third-party libraries vendored into a plugin
+          #   - build tooling that is *.js: bundler/linter/formatter configs
+          #     (*.config.js), task runners (gulpfile/Gruntfile, Laravel Mix),
+          #     and dotfiles (.eslintrc.js etc)
+          # dist/, build/ and assets/ are still copied whole, so every relative
+          # url() in a served stylesheet still resolves on the CDN.
+          publish_assets() {
+            aws s3 cp "$1" "s3://$ASSET_BUCKET/assets/$RELEASE/$2/" \
+              --recursive \
+              --exclude "*" \
+              --include "*.css"  --include "*.js"    --include "*.mjs" \
+              --include "*.svg"  --include "*.png"   --include "*.jpg" \
+              --include "*.jpeg" --include "*.gif"   --include "*.webp" \
+              --include "*.woff" --include "*.woff2" --include "*.ttf" --include "*.eot" \
+              --exclude "*/node_modules/*" \
+              --exclude "*/src/*" \
+              --exclude "*/vendor/*" \
+              --exclude "*.config.js" --exclude "*.config.mjs" \
+              --exclude "*gulpfile.js" --exclude "*gulpfile.mjs" \
+              --exclude "*Gruntfile.js" \
+              --exclude "*webpack.mix.js" \
+              --exclude "*/.*" \
+              --cache-control "public, max-age=31536000, immutable"
+          }
 
-          echo "### Theme assets published under \`$RELEASE\`" >> "$GITHUB_STEP_SUMMARY"
+          publish_assets wordpress/wp-content/themes/  themes
+          publish_assets wordpress/wp-content/plugins/ plugins
+
+          echo "### Theme and plugin assets published under \`$RELEASE\`" >> "$GITHUB_STEP_SUMMARY"
 
   deployImage:
     name: Deploy to Environment
