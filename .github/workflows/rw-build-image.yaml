@@ -269,8 +269,14 @@ jobs:
           #   - build tooling that is *.js: bundler/linter/formatter configs
           #     (*.config.js), task runners (gulpfile/Gruntfile, Laravel Mix),
           #     and dotfiles (.eslintrc.js etc)
-          # dist/, build/ and assets/ are still copied whole, so every relative
-          # url() in a served stylesheet still resolves on the CDN.
+          #   - website-builder-blocks/assets/icons/  its 14k-file Material
+          #     Icons mirror (~55 MB). The icon blocks read these from the pod
+          #     filesystem or emit absolute plugin_dir_url() paths that never
+          #     pass through the enqueue filters, so they are not rewritten and
+          #     do not need to be on the CDN. Scoped to this plugin so other
+          #     themes' icon dirs (e.g. ppo) keep travelling with their CSS.
+          # dist/, build/ and the rest of assets/ are still copied whole, so
+          # every relative url() in a served stylesheet still resolves on the CDN.
           publish_assets() {
             aws s3 cp "$1" "s3://$ASSET_BUCKET/assets/$RELEASE/$2/" \
               --recursive \
@@ -282,6 +288,7 @@ jobs:
               --exclude "*/node_modules/*" \
               --exclude "*/src/*" \
               --exclude "*/vendor/*" \
+              --exclude "*/website-builder-blocks/assets/icons/*" \
               --exclude "*.config.js" --exclude "*.config.mjs" \
               --exclude "*gulpfile.js" --exclude "*gulpfile.mjs" \
               --exclude "*Gruntfile.js" \
