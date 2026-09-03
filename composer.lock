@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "67e01306f88bf13122880c4014228267",
+    "content-hash": "2a7b8d808abe946d35b335748ba8765a",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -1128,16 +1128,16 @@
         },
         {
             "name": "ministryofjustice/website-builder-blocks",
-            "version": "2.2.7",
+            "version": "2.2.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/website-builder-blocks.git",
-                "reference": "8b425e5b324ce2d4115c7521af421f82178a922c"
+                "reference": "3e501016536f31735a27ee11c9e04139437d0832"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/8b425e5b324ce2d4115c7521af421f82178a922c",
-                "reference": "8b425e5b324ce2d4115c7521af421f82178a922c",
+                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/3e501016536f31735a27ee11c9e04139437d0832",
+                "reference": "3e501016536f31735a27ee11c9e04139437d0832",
                 "shasum": ""
             },
             "require-dev": {
@@ -1161,10 +1161,10 @@
             ],
             "description": "WP plugin that adds addtional blocks.",
             "support": {
-                "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/2.2.7",
+                "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/2.2.8",
                 "issues": "https://github.com/ministryofjustice/website-builder-blocks/issues"
             },
-            "time": "2026-09-02T15:11:31+00:00"
+            "time": "2026-09-03T14:14:37+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
@@ -4007,5 +4007,5 @@
         "php": ">=8.0"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }
