@@ -278,8 +278,10 @@ jobs:
           # dist/, build/ and the rest of assets/ are still copied whole, so
           # every relative url() in a served stylesheet still resolves on the CDN.
           publish_assets() {
+            # --only-show-errors: skip the per-file "upload:" lines. 
             aws s3 cp "$1" "s3://$ASSET_BUCKET/assets/$RELEASE/$2/" \
               --recursive \
+              --only-show-errors \
               --exclude "*" \
               --include "*.css"  --include "*.js"    --include "*.mjs" \
               --include "*.svg"  --include "*.png"   --include "*.jpg" \
