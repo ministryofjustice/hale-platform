@@ -2,7 +2,7 @@
 ### Local build config
 ####################################################
 
-.PHONY: run run-with-firewall run-with-pagecache down down-firewall down-pagecache build shell none clone-repos symlink logs restart clean help test-firewall redis-cli redis-cli-local redis-cheatsheet uptime-run uptime-down
+.PHONY: run run-with-firewall run-with-pagecache down down-firewall down-pagecache build shell none clone-repos symlink logs restart clean help test-firewall wp-core-cve-check redis-cli redis-cli-local redis-cheatsheet uptime-run uptime-down
 # Default target - list targets with their ## descriptions
 help: ## Show this help
 	@echo "Available commands:"
@@ -158,6 +158,12 @@ symlink: ## Create symlinks for dev packages
 test-firewall: ## Lint and test firewall scripts
 	@echo "Linting and testing firewall scripts..."
 	@./bin/local-test-firewall.sh
+
+# Run the WordPress core version and CVE check locally.
+# Prints findings and exits non-zero when it finds any. Posts nothing to Slack
+# unless SKIP_SLACK=0. Needs a WPScan API token (https://wpscan.com/api).
+wp-core-cve-check: ## Check WordPress core version and CVEs
+	@./bin/wp-core-cve-check.sh
 
 # Spin up the uptime monitor pod. It ships at zero replicas, and
 # imagePullPolicy is Always, so scaling up always pulls the current image.
