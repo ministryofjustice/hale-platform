@@ -1,0 +1,82 @@
+name: WordPress Core CVE Check
+
+# Daily check of the WordPress core version this repo builds:
+#   - is a newer core available (api.wordpress.org)
+#   - does the built version have known CVEs (WPScan Vulnerability Database)
+#
+# Findings are split by severity:
+#
+#   alert - CVEs, and a stale PATCH_WORDPRESS_VERSION. Sent to Slack.
+#   info  - a newer core being available. Log only, since Dependabot already
+#           raises a PR for it.
+#
+# Each alert is pinged at most twice, on first sight and as a final reminder two
+# days later, then goes quiet. The schedule lives in a small JSON file carried
+# between runs by the cache below - lose it and findings look new again, which
+# over-notifies rather than going silent.
+#
+# The job exits non-zero on any finding either way, so a red run in the Actions
+# tab is the signal for anything now quiet.
+#
+# Slack posting is off by default, set in bin/wp-core-cve-check.sh. Turn it on
+# there when notifications are wanted, rather than per-workflow.
+#
+# Core only. Plugins, themes and PHP dependencies are covered by
+# snyk-security.yaml and Dependabot.
+#
+# Scheduled runs always execute the copy of this file on the default branch,
+# so use the manual trigger to test changes on a branch.
+
+on:
+  schedule:
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  STATE_DIR: ~/.cache/wp-core-cve
+
+jobs:
+  check:
+    name: Check core version and CVEs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
+
+      # A fresh key every run, restored by prefix, because a cache entry cannot
+      # be overwritten once written.
+      - name: Restore ping schedule
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 #v6.1.0
+        with:
+          path: ${{ env.STATE_DIR }}
+          key: wp-core-cve-state-${{ github.run_id }}
+          restore-keys: wp-core-cve-state-
+
+      - name: Run core version and CVE check
+        env:
+          WPSCAN_API_TOKEN: ${{ secrets.WPSCAN_API_TOKEN }}
+          # An incoming webhook URL is bound to one channel at creation, so the
+          # channel is chosen by swapping this secret, not by the payload.
+          # Reuses the existing deployment alert webhook rather than requesting
+          # a second one through #digital_it_forum.
+          SLACK_WEBHOOK_URL: ${{ secrets.ALERT_SLACK_WEBHOOK_URL }}
+        # STATE_FILE is set here rather than in env: so that $HOME expands. The
+        # cache path above is the same directory, written with ~ because the
+        # cache action expands that itself.
+        run: STATE_FILE="$HOME/.cache/wp-core-cve/state.json" ./bin/wp-core-cve-check.sh
+
+      # always(), because the check exits non-zero whenever it finds anything -
+      # which is exactly when the updated schedule must be kept.
+      - name: Save ping schedule
+        if: always()
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 #v6.1.0
+        with:
+          path: ${{ env.STATE_DIR }}
+          key: wp-core-cve-state-${{ github.run_id }}
