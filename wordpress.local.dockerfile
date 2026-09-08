@@ -6,7 +6,7 @@
 # a sidecar sharing a network namespace) and the /opt/scripts mount point.
 #
 # Dev tooling (mysql client, wp-cli against the database) lives in the
-# `wp-tools` service in docker-compose.yml, matching the wp-tools sidecar in
+# `wptools` service in docker-compose.yml, matching the wptools sidecar in
 # k8s. Keeping this image identical to production is the point - it is what
 # catches path and permission problems before they reach a cluster.
 #

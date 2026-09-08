@@ -1,5 +1,5 @@
 ####################################################
-# wp-tools - database tooling sidecar
+# wptools - database tooling sidecar
 #
 # The hardened WordPress runtime image ships no MariaDB client, so `wp db`
 # subcommands (query, export, import, cli, check, optimize, repair) cannot run
@@ -19,8 +19,8 @@
 # untrusted input.
 #
 # Usage:
-#   kubectl exec <pod> -c wp-tools -- wp db query "SELECT ..."
-#   docker compose exec wp-tools wp db query "SELECT ..."
+#   kubectl exec <pod> -c wptools -- wp db query "SELECT ..."
+#   docker compose exec wptools wp db query "SELECT ..."
 # ##################################################
 
 # Colourscheme for the sidecar's neovim, vendored so the runtime image needs no
@@ -124,8 +124,8 @@ COPY --from=themes /themes/onedarkpro.nvim /usr/share/nvim/site/pack/hale/start/
 
 # `v` shorthand for nvim. ash only sources a startup file for interactive shells
 # and only when $ENV names one, hence ENV=/etc/profile - Alpine's /etc/profile
-# sources /etc/profile.d/*.sh. Applies to `docker compose exec wp-tools sh` and
-# `kubectl exec -it <pod> -c wp-tools -- sh`; a non-interactive exec of a single
+# sources /etc/profile.d/*.sh. Applies to `docker compose exec wptools sh` and
+# `kubectl exec -it <pod> -c wptools -- sh`; a non-interactive exec of a single
 # command still needs the full `nvim`.
 ENV ENV=/etc/profile
 RUN printf 'alias v=nvim\n' > /etc/profile.d/nvim-alias.sh \

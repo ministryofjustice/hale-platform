@@ -1,5 +1,5 @@
-# WordPress environment, shared by the wordpress container and the wp-tools
-# sidecar. wp-tools needs the same variables because wp-config.php resolves its
+# WordPress environment, shared by the wordpress container and the wptools
+# sidecar. wptools needs the same variables because wp-config.php resolves its
 # database credentials from the environment at runtime - without them wp-cli
 # cannot connect. Mirrors the configMap/secret both containers share in k8s.
 x-wp-env: &wp-env
@@ -131,17 +131,17 @@ services:
       PHP_INI_SCAN_DIR: ":/opt/hale/php-conf"
 
   # Database tooling. The hardened WordPress image has no mysql client, so
-  # `wp db` subcommands run here instead. Mirrors the wp-tools sidecar in k8s.
+  # `wp db` subcommands run here instead. Mirrors the wptools sidecar in k8s.
   # Every other wp-cli command still works in the wordpress container.
   #
-  #   docker compose exec wp-tools wp db query "SELECT 1"
-  #   docker compose exec wp-tools wp db export /scratch/dump.sql
-  wp-tools:
-    container_name: wp-tools
+  #   docker compose exec wptools wp db query "SELECT 1"
+  #   docker compose exec wptools wp db export /scratch/dump.sql
+  wptools:
+    container_name: wptools
     platform: linux/arm64
     build:
       context: .
-      dockerfile: wp-tools.dockerfile
+      dockerfile: wptools.dockerfile
     volumes:
       - wpcore:/var/www/html
       - ./wordpress/wp-content:/var/www/html/wp-content

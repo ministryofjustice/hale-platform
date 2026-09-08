@@ -1,6 +1,6 @@
 # MariaDB client settings for LOCAL DEVELOPMENT ONLY.
 #
-# Mounted into the wp-tools container by docker-compose.yml. Not baked into the
+# Mounted into the wptools container by docker-compose.yml. Not baked into the
 # image and not present in any deployed environment.
 #
 # Recent MariaDB clients attempt TLS by default, and the local `mariadb` service
@@ -13,6 +13,6 @@
 # Disabling TLS is correct here and would NOT be correct in a deployed
 # environment: there the database is RDS, which supports TLS, and the client
 # should keep negotiating it. That is why this lives in a compose-only mount
-# rather than in wp-tools.dockerfile.
+# rather than in wptools.dockerfile.
 [client]
 ssl = 0

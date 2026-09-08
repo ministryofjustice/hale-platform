@@ -1,6 +1,6 @@
 # wp-cli defaults for LOCAL DEVELOPMENT ONLY.
 #
-# Mounted into the wp-tools container by docker-compose.yml and selected with
+# Mounted into the wptools container by docker-compose.yml and selected with
 # WP_CLI_CONFIG_PATH. Not baked into any image and not present in deployed
 # environments.
 #

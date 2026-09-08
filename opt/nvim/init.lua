@@ -1,4 +1,4 @@
--- neovim config for the wp-tools sidecar. Lives at $XDG_CONFIG_HOME/nvim,
+-- neovim config for the wptools sidecar. Lives at $XDG_CONFIG_HOME/nvim,
 -- which the image points at /scratch (uid 65532 cannot write to HOME).
 --
 -- Deliberately plugin-manager free: the only plugin is the colourscheme, baked

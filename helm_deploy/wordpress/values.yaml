@@ -67,21 +67,20 @@ wp:
       cpu: "100m"
       memory: "600Mi"
 
-## @param wp-tools database tooling sidecar
+## @param wptools database tooling sidecar
 ##
 ## The hardened WordPress image ships no mysql client, so `wp db` subcommands
 ## run in this sidecar instead:
-##   kubectl exec <pod> -c wp-tools -- wp db query "SELECT ..."
+##   kubectl exec <pod> -c wptools -- wp db query "SELECT ..."
 ## It sits idle with no listening service, so requests are kept minimal.
 ##
 ## Sized identically in every environment - it does no work until someone execs
 ## into it, so there is nothing for an environment to scale.
 ##
-## The key is wptools, not wp-tools, and has to stay that way: a Go template
-## cannot dot-access a hyphenated key - {{ .Values.wp-tools.image.repository }}
-## fails to parse, because the template engine reads the hyphen as minus. The
-## container, the compose service and the dockerfile are all named wp-tools;
-## this key and the ECR tag component are the two places that cannot be.
+## Named wptools, one word, everywhere: this key, the container, the compose
+## service, the dockerfile and the ECR tag component. Do not hyphenate this one
+## in particular - a Go template cannot dot-access a hyphenated key, so
+## {{ .Values.wp-tools.image.repository }} is a parse error, not a lookup miss.
 wptools:
   image:
     repository: ""

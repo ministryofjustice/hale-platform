@@ -26,7 +26,7 @@ spec:
       terminationGracePeriodSeconds: 35
       serviceAccountName: hale-platform-{{ .Values.configmap.envtype }}-service
       # The hardened WordPress image runs as UID 65532. fsGroup makes the shared
-      # emptyDir group-owned and setgid so the wordpress and wp-tools containers
+      # emptyDir group-owned and setgid so the wordpress and wptools containers
       # can both write to it, and removes the mount-point permission error that
       # the old startup-patch.sh worked around.
       securityContext:
@@ -156,7 +156,7 @@ spec:
         # still works in the wordpress container - only `wp db` shells out to
         # the mysql binaries.
         #
-        #   kubectl exec <pod> -c wp-tools -- wp db query "SELECT ..."
+        #   kubectl exec <pod> -c wptools -- wp db query "SELECT ..."
         #
         # Containers in a pod share a network namespace but not a filesystem,
         # and by default not a PID namespace, so a PHP RCE in the wordpress
@@ -165,7 +165,7 @@ spec:
         # Idle (`tail -f /dev/null`) with no listening service, so it adds no
         # attack surface of its own. No probes - it must not affect pod
         # readiness.
-        - name: wp-tools
+        - name: wptools
           image: {{ .Values.wptools.image.repository }}
           imagePullPolicy: {{ .Values.wptools.image.imagePullPolicy }}
           workingDir: /var/www/html
@@ -181,7 +181,7 @@ spec:
             - name: wordpress-volume-file-mount
               mountPath: /var/www/html
             # Exports go here, not under the webroot where nginx could serve them.
-            - name: wp-tools-scratch
+            - name: wptools-scratch
               mountPath: /scratch
           envFrom:
             - configMapRef:
@@ -199,7 +199,7 @@ spec:
       volumes:
         - name: wordpress-volume-file-mount
           emptyDir: {}
-        - name: wp-tools-scratch
+        - name: wptools-scratch
           emptyDir: {}
         - name: hale-php-config
           configMap:
