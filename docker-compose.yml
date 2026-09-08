@@ -141,7 +141,7 @@ services:
     platform: linux/arm64
     build:
       context: .
-      dockerfile: wptools.dockerfile
+      dockerfile: wp-tools.dockerfile
     volumes:
       - wpcore:/var/www/html
       - ./wordpress/wp-content:/var/www/html/wp-content

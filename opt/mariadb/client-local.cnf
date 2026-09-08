@@ -13,6 +13,6 @@
 # Disabling TLS is correct here and would NOT be correct in a deployed
 # environment: there the database is RDS, which supports TLS, and the client
 # should keep negotiating it. That is why this lives in a compose-only mount
-# rather than in wptools.dockerfile.
+# rather than in wp-tools.dockerfile.
 [client]
 ssl = 0

@@ -40,7 +40,28 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Build PHPRedis and stage it alongside the .ini that enables it. Both are
 # copied into the runtime stage, which cannot run docker-php-ext-enable itself.
-RUN pecl install redis \
+#
+# Pinned and checksum-verified, for the same reason wp-cli is below: bare
+# "pecl install redis" takes whatever release is latest on the day, and the
+# result is compiled C loaded into every PHP-FPM process. The tarball is
+# fetched here and handed to pecl as a local file, so the hash is checked
+# before anything is unpacked or built.
+#
+# What the sha256 buys: the exact bytes are pinned, so a rebuild that fetches
+# different ones fails loudly instead of quietly shipping different code. What
+# it does not buy: pecl publishes no per-release hash to check against, so this
+# attests to what was fetched when the pin was set, not to authenticity at the
+# source. It was cross-checked against the file size in pecl's release
+# metadata (399284 bytes) at the time of pinning.
+#
+# Bump both values together - releases are at https://pecl.php.net/package/redis
+ARG PHPREDIS_VERSION=6.3.0
+ARG PHPREDIS_SHA256=0d5141f634bd1db6c1ddcda053d25ecf2c4fc1c395430d534fd3f8d51dd7f0b5
+RUN curl -fsSL -o /tmp/redis.tgz \
+        "https://pecl.php.net/get/redis-${PHPREDIS_VERSION}.tgz" \
+    && echo "${PHPREDIS_SHA256}  /tmp/redis.tgz" | sha256sum -c - \
+    && pecl install /tmp/redis.tgz \
+    && rm /tmp/redis.tgz \
     && cp "$(php-config --extension-dir)/redis.so" /tmp/redis.so \
     && echo "extension=/usr/local/lib/php-extensions/redis.so" > /tmp/docker-php-ext-redis.ini
 

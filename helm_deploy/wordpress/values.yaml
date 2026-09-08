@@ -77,6 +77,11 @@ wp:
 ## Sized identically in every environment - it does no work until someone execs
 ## into it, so there is nothing for an environment to scale.
 ##
+## The key is wptools, not wp-tools, and has to stay that way: a Go template
+## cannot dot-access a hyphenated key - {{ .Values.wp-tools.image.repository }}
+## fails to parse, because the template engine reads the hyphen as minus. The
+## container, the compose service and the dockerfile are all named wp-tools;
+## this key and the ECR tag component are the two places that cannot be.
 wptools:
   image:
     repository: ""
