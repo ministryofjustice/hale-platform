@@ -1,0 +1,11 @@
+{
+  "runtime": {
+    "version": "LuaJIT"
+  },
+  "workspace": {
+    "library": ["~/.local/share/openresty-lls/library"]
+  },
+  "diagnostics": {
+    "globals": ["ngx"]
+  }
+}

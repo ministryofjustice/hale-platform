@@ -24,6 +24,6 @@ IMAGE=$(docker build -f nginx.local.dockerfile --target test --quiet .)
 echo "Running Lua firewall tests..."
 docker run --rm \
     --network hale-platform_default \
-    -e REDIS_DB=1 \
+    -e FIREWALL_DB=1 \
     -e REDIS_HOST=redis \
     "$IMAGE"

@@ -17,3 +17,7 @@ auth.json
 !/wordpress/wp-content/plugins
 !/wordpress/wp-content/themes
 !/wordpress/wp-content/mu-plugins
+
+# Test-only files inside the Lua module tree - keep out of the nginx image
+opt/lua/firewall/firewall_e2e_test.mjs
+opt/lua/firewall/fixtures

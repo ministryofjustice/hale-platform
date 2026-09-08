@@ -51,10 +51,6 @@ ingress:
   defaultHost:
     certName: ""
 
-  # www.justice.gov.uk canary Ingress plus its dedicated canary Service.
-  justiceCanary:
-    enabled: true
-
   hosts:
     - name: advance-into-justice.service.justice.gov.uk
       certName: advance-into-justice-cert
@@ -190,6 +186,8 @@ ingress:
       certName: ipa-www-cert
     - name: www.judicialappointments.gov.uk
       certName: judicialappointments-www-cert
+    - name: www.justice.gov.uk
+      certName: justice-www-cert
     - name: www.justiceinspectorates.gov.uk
       certName: justiceinspectorates-www-cert
     - name: www.lawcom.gov.uk
