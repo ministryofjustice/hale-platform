@@ -29,6 +29,7 @@ fi
 # Define repositories by type
 plugins=(
     "ministryofjustice/cookie-compliance"
+    "ministryofjustice/website-builder-block-restrictions"
     "ministryofjustice/website-builder-blocks"
     "ministryofjustice/wp-moj-blocks"
 )

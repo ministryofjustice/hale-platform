@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b3f09b67f427f76ef2b41876dc0923a8",
+    "content-hash": "012e77c10f8176562d9b4fd25fac3ab8",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -1125,6 +1125,34 @@
                 "issues": "https://github.com/ministryofjustice/ppo/issues"
             },
             "time": "2026-08-07T15:22:14+00:00"
+        },
+        {
+            "name": "ministryofjustice/website-builder-block-restrictions",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ministryofjustice/website-builder-block-restrictions.git",
+                "reference": "0a6e3bc87a7d255dcb91f50a29e8437db0bc1782"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ministryofjustice/website-builder-block-restrictions/zipball/0a6e3bc87a7d255dcb91f50a29e8437db0bc1782",
+                "reference": "0a6e3bc87a7d255dcb91f50a29e8437db0bc1782",
+                "shasum": ""
+            },
+            "require": {
+                "composer/installers": "~1.0 || ^2.0"
+            },
+            "type": "wordpress-plugin",
+            "description": "Restricts the block editor to an approved list of core blocks. A per-site settings page turns the restriction on or off",
+            "keywords": [
+                "wordpress"
+            ],
+            "support": {
+                "source": "https://github.com/ministryofjustice/website-builder-block-restrictions/tree/1.0.0",
+                "issues": "https://github.com/ministryofjustice/website-builder-block-restrictions/issues"
+            },
+            "time": "2026-09-08T12:45:03+00:00"
         },
         {
             "name": "ministryofjustice/website-builder-blocks",
