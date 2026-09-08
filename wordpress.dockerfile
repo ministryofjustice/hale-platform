@@ -82,6 +82,19 @@ RUN curl -fsSL -o /tmp/wp \
 # Staged empty directory - the runtime stage has no shell to mkdir with.
 RUN mkdir -p /tmp/uploads
 
+# Query Monitor's database drop-in. QM normally symlinks this itself on
+# activation, but DISALLOW_FILE_MODS (config.sh) stops that, and activation
+# only fires once anyway while the webroot is an emptyDir rebuilt on every
+# pod start - so the panel has been absent in deployed environments either
+# way. Shipping it in the image is what makes it work.
+#
+# It has to be a symlink, not a copy: the drop-in locates the plugin with
+# dirname(dirname(__FILE__)), and PHP resolves __FILE__ through symlinks, so
+# a plain copy at wp-content/db.php would point at the webroot and QM would
+# bail out of its own is_readable() guard. Relative, so it resolves the same
+# under /usr/src/wordpress/wp-content and /var/www/html/wp-content.
+RUN ln -s plugins/query-monitor/wp-content/db.php /tmp/db.php
+
 # ---------------------------------------------------------------------------
 # Runtime stage. COPY only - no RUN, no package manager, no root.
 # ---------------------------------------------------------------------------
@@ -125,6 +138,9 @@ COPY --chown=65532:65532 /vendor /usr/src/wordpress/wp-content/vendor
 
 # Create the uploads folder (staged in the builder - no shell here to mkdir)
 COPY --from=builder --chown=65532:65532 /tmp/uploads /usr/src/wordpress/wp-content/uploads
+
+# Query Monitor database drop-in (symlink staged in the builder above).
+COPY --from=builder --chown=65532:65532 /tmp/db.php /usr/src/wordpress/wp-content/db.php
 
 # Overwrite offical WP image ENTRYPOINT (docker-entrypoint.sh)
 # with custom entrypoint so we can launch WP multisite network
