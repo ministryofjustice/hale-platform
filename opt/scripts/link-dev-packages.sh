@@ -67,6 +67,9 @@ echo "[dev-links] === Plugins ==="
 link_if_exists "$DEV_ROOT/plugins/cookie-compliance" \
   "$WP_ROOT/plugins/cookie-compliance"
 
+link_if_exists "$DEV_ROOT/plugins/website-builder-block-restrictions" \
+  "$WP_ROOT/plugins/website-builder-block-restrictions"
+
 link_if_exists "$DEV_ROOT/plugins/website-builder-blocks" \
   "$WP_ROOT/plugins/website-builder-blocks"
 
