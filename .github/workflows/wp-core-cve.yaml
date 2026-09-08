@@ -6,9 +6,17 @@ name: WordPress Core CVE Check
 #
 # Findings are split by severity:
 #
-#   alert - CVEs, and a stale PATCH_WORDPRESS_VERSION. Sent to Slack.
-#   info  - a newer core being available. Log only, since Dependabot already
-#           raises a PR for it.
+#   alert - CVEs, a newer core being available, and a stale
+#           PATCH_WORDPRESS_VERSION. Sent to Slack.
+#   info  - log only. Nothing is at this level right now; see the script.
+#
+# The core version is read from the ARG WORDPRESS_VERSION line in
+# wordpress.dockerfile, which the hardened multi-stage build interpolates into
+# both FROM tags. Dependabot cannot parse a version out of a tag built that
+# way, and has no credentials for the dhi.io registry, so it no longer raises
+# the core bump PR - which is why "a newer core is available" is now an alert
+# rather than a log line. nginx.dockerfile and wptools.dockerfile still carry
+# literal tags on public registries and remain covered by Dependabot.
 #
 # Each alert is pinged at most twice, on first sight and as a final reminder two
 # days later, then goes quiet. The schedule lives in a small JSON file carried
