@@ -18,11 +18,13 @@ name: WordPress Core CVE Check
 # The job exits non-zero on any finding either way, so a red run in the Actions
 # tab is the signal for anything now quiet.
 #
-# Slack posting is off by default, set in bin/wp-core-cve-check.sh. Turn it on
-# there when notifications are wanted, rather than per-workflow.
+# Slack posting is on, set in bin/wp-core-cve-check.sh. Silence it there with
+# SKIP_SLACK=1 when needed, rather than per-workflow.
 #
-# Core only. Plugins, themes and PHP dependencies are covered by
-# snyk-security.yaml and Dependabot.
+# Core only. PHP dependencies and the composer-installed plugins are scanned by
+# .github/workflows/snyk-security.yaml (the "PHP dependency test" step); core
+# itself is not scanned by anything else. Theme npm dependencies are not covered
+# by either, and remain a separate gap.
 #
 # Scheduled runs always execute the copy of this file on the default branch,
 # so use the manual trigger to test changes on a branch.
