@@ -27,6 +27,7 @@ ARG PHP_VERSION=8.4
 FROM --platform=linux/amd64 dhi.io/wordpress:${WORDPRESS_VERSION}-php${PHP_VERSION}-fpm-dev AS builder
 
 ARG PHP_VERSION
+ARG WORDPRESS_VERSION
 USER root
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -36,6 +37,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         pkg-config \
         ca-certificates \
         curl \
+        unzip \
     && rm -rf /var/lib/apt/lists/*
 
 # Build PHPRedis and stage it alongside the .ini that enables it. Both are
@@ -78,6 +80,33 @@ RUN curl -fsSL -o /tmp/wp \
         "https://github.com/wp-cli/wp-cli/releases/download/v${WP_CLI_VERSION}/wp-cli-${WP_CLI_VERSION}.phar" \
     && echo "${WP_CLI_SHA512}  /tmp/wp" | sha512sum -c - \
     && chmod +x /tmp/wp
+
+# British English translations, baked into the image.
+#
+# wp-content/languages is not otherwise shipped and the webroot is an emptyDir,
+# so a pack downloaded at runtime is lost on the next pod start - and with
+# DISALLOW_FILE_MODS set (config.sh) WordPress cannot re-fetch it at all.
+# Baking it in is what makes en_GB survive a restart, and it puts the locale in
+# the Site Language dropdown as already installed, so selecting it needs no
+# download. The locale itself stays a per-site database option - this only
+# makes the choice work.
+#
+# Tracks WORDPRESS_VERSION, so a core bump pulls the matching translations. If
+# a core version has no pack published yet the build fails here, which is the
+# right way round - better than silently shipping strings from another release.
+#
+# Deliberately not checksummed, unlike wp-cli and phpredis above: translation
+# packages are regenerated whenever a translator updates a string, so a pinned
+# hash would break the build at random. Those two are immutable releases, this
+# is not.
+#
+# .po files are translator sources - only .mo and .json are read at runtime.
+ARG WP_LOCALE=en_GB
+RUN curl -fsSL -o /tmp/lang.zip \
+        "https://downloads.wordpress.org/translation/core/${WORDPRESS_VERSION}/${WP_LOCALE}.zip" \
+    && mkdir -p /tmp/languages \
+    && unzip -q /tmp/lang.zip -d /tmp/languages \
+    && rm -f /tmp/lang.zip /tmp/languages/*.po
 
 # Staged empty directory - the runtime stage has no shell to mkdir with.
 RUN mkdir -p /tmp/uploads
@@ -141,6 +170,9 @@ COPY --from=builder --chown=65532:65532 /tmp/uploads /usr/src/wordpress/wp-conte
 
 # Query Monitor database drop-in (symlink staged in the builder above).
 COPY --from=builder --chown=65532:65532 /tmp/db.php /usr/src/wordpress/wp-content/db.php
+
+# British English translations (staged in the builder above).
+COPY --from=builder --chown=65532:65532 /tmp/languages /usr/src/wordpress/wp-content/languages
 
 # Overwrite offical WP image ENTRYPOINT (docker-entrypoint.sh)
 # with custom entrypoint so we can launch WP multisite network
