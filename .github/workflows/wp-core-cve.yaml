@@ -22,8 +22,9 @@ name: WordPress Core CVE Check
 # SKIP_SLACK=1 when needed, rather than per-workflow.
 #
 # Core only. PHP dependencies and the composer-installed plugins are scanned by
-# snyk-security.yaml:57; core itself is not scanned by anything else. Theme npm
-# dependencies are not covered by either, and remain a separate gap.
+# .github/workflows/snyk-security.yaml (the "PHP dependency test" step); core
+# itself is not scanned by anything else. Theme npm dependencies are not covered
+# by either, and remain a separate gap.
 #
 # Scheduled runs always execute the copy of this file on the default branch,
 # so use the manual trigger to test changes on a branch.
