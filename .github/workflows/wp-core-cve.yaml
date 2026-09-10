@@ -7,16 +7,26 @@ name: WordPress Core CVE Check
 # Findings are split by severity:
 #
 #   alert - CVEs, and a stale PATCH_WORDPRESS_VERSION. Sent to Slack.
-#   info  - a newer core being available. Log only, since Dependabot already
-#           raises a PR for it.
+#   info  - a newer core being available. Log only.
 #
-# Each alert is pinged at most twice, on first sight and as a final reminder two
-# days later, then goes quiet. The schedule lives in a small JSON file carried
-# between runs by the cache below - lose it and findings look new again, which
-# over-notifies rather than going silent.
+# The core version is read from the ARG WORDPRESS_VERSION line in
+# wordpress.dockerfile, which the hardened multi-stage build interpolates into
+# both FROM tags. Dependabot cannot parse a version out of a tag built that
+# way, and has no credentials for the dhi.io registry, so it no longer opens
+# the core bump PR. That makes the info-level finding below the only record of
+# a lagging core version - it is in the job log, and the run exits non-zero,
+# but nothing is sent to Slack for it. nginx.dockerfile and wptools.dockerfile
+# still carry literal tags on public registries and remain covered by
+# Dependabot.
+#
+# An alert is sent on first sight and then repeated every two days
+# (PING_GAP_DAYS) until the finding clears. The job runs daily, so the gap is
+# what stops it being a daily alarm. The schedule lives in a small JSON file
+# carried between runs by the cache below - lose it and findings look new
+# again, which re-alerts rather than going silent.
 #
 # The job exits non-zero on any finding either way, so a red run in the Actions
-# tab is the signal for anything now quiet.
+# tab is the signal for the info-level findings, which never reach Slack.
 #
 # Slack posting is on, set in bin/wp-core-cve-check.sh. Silence it there with
 # SKIP_SLACK=1 when needed, rather than per-workflow.

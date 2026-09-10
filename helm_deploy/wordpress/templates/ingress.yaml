@@ -130,17 +130,15 @@ metadata:
 spec:
   ingressClassName: modsec
   tls:
-{{- if not (eq .Values.configmap.envtype "prod") }}
+{{- if .Values.ingress.defaultHost.certName }}
   - hosts:
     - {{ .Values.domain }}
-    secretName: websitebuilder-{{ .Values.configmap.envtype }}-cert
+    secretName: {{ .Values.ingress.defaultHost.certName }}
 {{- end }}
-{{- if eq .Values.configmap.envtype "prod" }}
-  {{- range .Values.ingress.hosts }}
+{{- range .Values.ingress.hosts }}
   - hosts:
     - {{ .name }}
     secretName: {{ .certName }}
-  {{- end }}
 {{- end }}
   rules:
     - host: {{ .Values.domain }}
@@ -153,8 +151,7 @@ spec:
                 name: wordpress
                 port:
                   number: 8080
-  {{- if eq .Values.configmap.envtype "prod" }}
-    {{- range .Values.ingress.hosts }}
+  {{- range .Values.ingress.hosts }}
     - host: {{ .name }}
       http:
         paths:
@@ -165,6 +162,5 @@ spec:
                 name: wordpress
                 port:
                   number: 8080
-    {{- end }}
   {{- end }}
 {{- end }}
