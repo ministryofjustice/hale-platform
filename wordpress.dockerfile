@@ -174,6 +174,7 @@ COPY opt/php/www.conf ${PHP_INI_DIR}/php-fpm.d/www.conf
 # Setup WordPress multisite and network
 COPY --chmod=0755 opt/scripts/hale-entrypoint.sh /usr/local/bin/
 COPY --chmod=0755 opt/scripts/config.sh /usr/local/bin/
+COPY --chmod=0755 opt/scripts/startup-patch.sh /usr/local/bin/
 
 # Generated Composer and NPM compiled artifacts (plugins, themes, CSS, JS)
 # The WP offical Docker image expects files to be in /usr/src/wordpress
