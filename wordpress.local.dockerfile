@@ -101,6 +101,12 @@ COPY opt/php/www.local.conf ${PHP_INI_DIR}/php-fpm.d/www.conf
 COPY --chmod=0755 opt/scripts/hale-entrypoint.sh /usr/local/bin/
 COPY --chmod=0755 opt/scripts/config.sh /usr/local/bin/
 
+# Composer and NPM artifacts. COPY copies a symlink as a symlink, so building
+# while the dev links created by opt/scripts/link-dev-packages.sh are in place
+# bakes dangling links to /mnt/dev into the image. The wp-content bind mount
+# hides that locally, so nothing reports it. `make build` deletes wordpress/
+# before composer runs, which is what keeps these directories real - build
+# through make, not with a bare `docker compose build`.
 COPY --chown=65532:65532 /wordpress/wp-content/plugins /usr/src/wordpress/wp-content/plugins
 COPY --chown=65532:65532 /wordpress/wp-content/mu-plugins /usr/src/wordpress/wp-content/mu-plugins
 COPY --chown=65532:65532 /wordpress/wp-content/themes /usr/src/wordpress/wp-content/themes

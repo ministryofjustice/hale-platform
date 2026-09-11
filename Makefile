@@ -2,7 +2,7 @@
 ### Local build config
 ####################################################
 
-.PHONY: run run-with-firewall run-with-pagecache down down-firewall down-pagecache build shell none clone-repos symlink logs restart clean help test-firewall wp-core-cve-check redis-cli redis-cli-local redis-cheatsheet uptime-run uptime-down
+.PHONY: run run-with-firewall run-with-pagecache down down-firewall down-pagecache build shell none clone-repos symlink symlink-auto wait-wordpress logs restart clean help test-firewall wp-core-cve-check redis-cli redis-cli-local redis-cheatsheet uptime-run uptime-down
 # Default target - list targets with their ## descriptions
 help: ## Show this help
 	@echo "Available commands:"
@@ -14,6 +14,7 @@ run: ## Start the Docker containers
 	@echo "Starting Docker containers..."
 	docker compose up -d
 	@./bin/upload.sh
+	@$(MAKE) --no-print-directory symlink-auto
 	@echo "✓ Site is running"
 
 # Run site (start redis and enable firewall) using Docker
@@ -21,6 +22,7 @@ run-with-firewall: ## Run, with firewall config and dependencies
 	@echo "Starting Docker containers..."
 	FIREWALL_ENABLED=true docker compose --profile firewall up -d
 	@./bin/upload.sh
+	@$(MAKE) --no-print-directory symlink-auto
 	@echo "✓ Site is running"
 
 # Run site (start redis and enable page cache, firewall stays off) using Docker
@@ -28,6 +30,7 @@ run-with-pagecache: ## Run, with page cache config and dependencies
 	@echo "Starting Docker containers..."
 	PAGECACHE_ENABLED=true docker compose --profile pagecache up -d
 	@./bin/upload.sh
+	@$(MAKE) --no-print-directory symlink-auto
 	@echo "✓ Site is running"
 
 # Turn the firewall off: recreate the app containers with the flag unset
@@ -141,6 +144,7 @@ restart: ## Restart all containers, keeping firewall/page cache state
 	echo "Starting Docker containers..."; \
 	FIREWALL_ENABLED=$$FW PAGECACHE_ENABLED=$$PC docker compose $$PROFILES up -d; \
 	./bin/upload.sh; \
+	$(MAKE) --no-print-directory symlink-auto; \
 	echo "✓ Site is running"
 
 # Clone all MoJ repositories
@@ -148,11 +152,31 @@ clone-repos: ## Clone all MoJ repositories into dev/ folder
 	@echo "Cloning repositories..."
 	@./bin/clone-repos.sh
 
+# Wait for the wordpress container to accept exec. `docker compose up -d`
+# returns once the container is created, which is a moment before docker exec
+# will work, so the run targets would otherwise race the symlink step.
+wait-wordpress:
+	@for i in $$(seq 1 30); do \
+		docker exec wordpress true >/dev/null 2>&1 && exit 0; \
+		sleep 1; \
+	done; \
+	echo "wordpress container is not accepting exec - run 'make symlink' once it is"; \
+	exit 1
+
 # Create symlinks for dev packages inside container
-symlink: ## Create symlinks for dev packages
+symlink: wait-wordpress ## Create symlinks for dev packages
 	@echo "Creating symlinks for dev packages..."
 	@docker exec wordpress bash /opt/scripts/link-dev-packages.sh
 	@echo "✓ Symlinks created"
+
+# Symlink step for the run targets: a no-op when dev/ holds no cloned
+# repositories, so a checkout without `make clone-repos` does not print a
+# dozen "Skipping" lines on every start. Run `make symlink` directly to see
+# that output.
+symlink-auto:
+	@if [ -n "$$(find dev -mindepth 2 -maxdepth 2 -type d 2>/dev/null)" ]; then \
+		$(MAKE) --no-print-directory symlink; \
+	fi
 
 # Lint and test firewall scripts
 test-firewall: ## Lint and test firewall scripts

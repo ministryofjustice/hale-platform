@@ -66,6 +66,21 @@ while true; do
             exit 1
             fi
 
+            # wordpress.local.dockerfile COPYs wordpress/wp-content into the
+            # image, and COPY copies a symlink as a symlink. Building while the
+            # dev links from opt/scripts/link-dev-packages.sh are in place
+            # therefore bakes dangling links to /mnt/dev into the image, which
+            # the bind mount hides locally and nothing reports. The rm -rf of
+            # wordpress/ above clears them, so this cannot fire on a normal run
+            # - it is here for anyone who reorders or reuses this script. A bare
+            # `docker compose build` skips this check entirely: use make build.
+            if find wordpress/wp-content -maxdepth 2 -type l 2>/dev/null | grep -q .; then
+                echo -e "\nDev symlinks are still present under wordpress/wp-content."
+                echo -e "Building now would copy them into the image as dangling links."
+                echo -e "Run 'make build', which clears wordpress/ first.\n"
+                exit 1
+            fi
+
             # Build Docker images
             echo -e '\n######################'
             echo -e '# Run Docker Build'
