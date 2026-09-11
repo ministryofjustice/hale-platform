@@ -113,8 +113,28 @@ replicaCount: 1
 ## Voluntary disruptions - node drains, cluster upgrades, descheduling. Without
 ## this the scheduler may evict several pods at once, which is where downtime
 ## usually comes from on a cluster nobody is deploying to.
+##
+## Off by default because the deploy service account has no rights over the
+## resource: Helm needs `get` on everything in the release, so a rendered PDB
+## fails the upgrade outright with
+##
+##   poddisruptionbudgets.policy "wordpress" is forbidden: User
+##   "system:serviceaccount:<ns>:cd-serviceaccount" cannot get resource
+##   "poddisruptionbudgets" in API group "policy"
+##
+## Managed platforms often withhold this deliberately - a PDB that can never be
+## satisfied blocks their node rotations indefinitely - so confirm the namespace
+## is allowed one before turning it on, rather than assuming it is an oversight:
+##
+##   kubectl auth can-i get poddisruptionbudgets \
+##     --as=system:serviceaccount:<namespace>:cd-serviceaccount -n <namespace>
+##
+## Nothing else in the zero-downtime setup depends on this. Rollouts are covered
+## by maxUnavailable: 0, the probes and the preStop hooks; what is lost is
+## protection against several pods being evicted at once during node
+## maintenance.
 podDisruptionBudget:
-  enabled: true
+  enabled: false
   minAvailable: 50%
 
 updateStrategy:
