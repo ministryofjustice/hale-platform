@@ -94,6 +94,9 @@ COPY opt/php/load.php /usr/src/wordpress/wp-content/mu-plugins/load.php
 COPY opt/php/application.php /usr/src/wordpress/wp-content/mu-plugins/application.php
 COPY opt/php/error-handling.php /usr/src/wordpress/error-handling.php
 COPY opt/php/wp-cron-multisite.php /usr/src/wordpress/wp-cron-multisite.php
+# Health endpoint. Reachable only through the internal 8090 listener; the
+# public server block denies /healthz.php by path.
+COPY opt/php/healthz.php /usr/src/wordpress/healthz.php
 
 COPY opt/php/www.local.conf ${PHP_INI_DIR}/php-fpm.d/www.conf
 

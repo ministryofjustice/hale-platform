@@ -7,21 +7,13 @@ domain: demo.websitebuilder.service.justice.gov.uk
 configmap:
   envtype: demo
 
+## Same shape as the other environments: enough pods to roll and to scale
+## without a gap in service.
 replicaCount: 2
 
 autoscaling:
   minReplicas: 2
-  maxReplicas: 4
-
-## Probes off, matching dev. Demo carries no traffic worth protecting with
-## automated pod replacement.
-wp:
-  probes:
-    enabled: false
-
-nginx:
-  probes:
-    enabled: false
+  maxReplicas: 6
 
 ingress:
   defaultHost:

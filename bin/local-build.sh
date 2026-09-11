@@ -54,6 +54,41 @@ while true; do
             rm composer.lock
             composer install -vvv
 
+            # Translations for the locales the platform offers.
+            #
+            # wordpress.dockerfile bakes these into the deployed image, but that
+            # cannot work locally: ./wordpress/wp-content is bind-mounted over
+            # /var/www/html/wp-content, so anything the image ships under
+            # wp-content is hidden. Without this the Site Language dropdown
+            # offers only English (United States), and DISALLOW_FILE_MODS stops
+            # WordPress fetching the packs itself.
+            #
+            # Version comes from the image this build produces; the locale list
+            # comes from wordpress.dockerfile, so local offers exactly what
+            # deploys. tr -d strips the CR - both dockerfiles are stored with
+            # CRLF endings. A failure here is a warning, not a build failure:
+            # local translations are not worth stopping a build for, unlike the
+            # deployed image where the strings must match core.
+            WP_VERSION=$(sed -nE 's/^ARG WORDPRESS_VERSION=([0-9.]+).*/\1/p' \
+                wordpress.local.dockerfile | head -1 | tr -d '\r')
+            WP_LOCALES=$(sed -nE 's/^ARG WP_LOCALES="?([^"]*)"?.*/\1/p' \
+                wordpress.dockerfile | head -1 | tr -d '\r')
+            WP_LOCALES=${WP_LOCALES:-"en_GB cy"}
+            LANG_DIR=wordpress/wp-content/languages
+            echo -e "\nFetching translations for WordPress $WP_VERSION: $WP_LOCALES"
+            mkdir -p "$LANG_DIR"
+            for locale in $WP_LOCALES; do
+                if curl -fsSL -o /tmp/hale-lang.zip \
+                    "https://downloads.wordpress.org/translation/core/$WP_VERSION/$locale.zip"; then
+                    unzip -o -q /tmp/hale-lang.zip -d "$LANG_DIR"
+                    echo "  $locale installed into $LANG_DIR"
+                else
+                    echo "  WARNING: could not fetch $locale for $WP_VERSION -"
+                    echo "  WARNING: it will be missing from the Site Language dropdown."
+                fi
+            done
+            rm -f /tmp/hale-lang.zip "$LANG_DIR"/*.po
+
             # Test NPM is installed locally
             if ! command -v npm > /dev/null 2>&1; then
               echo "Oops, NPM does not appear to be installed locally."

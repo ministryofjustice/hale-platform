@@ -81,7 +81,7 @@ RUN curl -fsSL -o /tmp/wp \
     && echo "${WP_CLI_SHA512}  /tmp/wp" | sha512sum -c - \
     && chmod +x /tmp/wp
 
-# British English translations, baked into the image.
+# Translations, baked into the image. en_GB (British English) and cy (Welsh).
 #
 # wp-content/languages is not otherwise shipped and the webroot is an emptyDir,
 # so a pack downloaded at runtime is lost on the next pod start - and with
@@ -92,8 +92,9 @@ RUN curl -fsSL -o /tmp/wp \
 # makes the choice work.
 #
 # Tracks WORDPRESS_VERSION, so a core bump pulls the matching translations. If
-# a core version has no pack published yet the build fails here, which is the
-# right way round - better than silently shipping strings from another release.
+# a core version has no pack published for one of these locales the build fails
+# here, which is the right way round - better than silently shipping strings
+# from another release, or an image missing a locale the sites offer.
 #
 # Deliberately not checksummed, unlike wp-cli and phpredis above: translation
 # packages are regenerated whenever a translator updates a string, so a pinned
@@ -101,11 +102,18 @@ RUN curl -fsSL -o /tmp/wp \
 # is not.
 #
 # .po files are translator sources - only .mo and .json are read at runtime.
-ARG WP_LOCALE=en_GB
-RUN curl -fsSL -o /tmp/lang.zip \
-        "https://downloads.wordpress.org/translation/core/${WORDPRESS_VERSION}/${WP_LOCALE}.zip" \
-    && mkdir -p /tmp/languages \
-    && unzip -q /tmp/lang.zip -d /tmp/languages \
+# Space-separated, so adding a locale is a one-word change. The `|| exit 1`
+# matters: a failing command inside a for loop does not fail the RUN on its own,
+# which would leave a locale silently missing from the image.
+ARG WP_LOCALES="en_GB cy"
+RUN mkdir -p /tmp/languages \
+    && for locale in ${WP_LOCALES}; do \
+        echo "Fetching ${locale} translations for ${WORDPRESS_VERSION}" \
+        && curl -fsSL -o /tmp/lang.zip \
+            "https://downloads.wordpress.org/translation/core/${WORDPRESS_VERSION}/${locale}.zip" \
+        && unzip -q -o /tmp/lang.zip -d /tmp/languages \
+        || exit 1; \
+    done \
     && rm -f /tmp/lang.zip /tmp/languages/*.po
 
 # Staged empty directory - the runtime stage has no shell to mkdir with.
@@ -145,6 +153,9 @@ COPY opt/php/application.php /usr/src/wordpress/wp-content/mu-plugins/applicatio
 COPY opt/php/wpdr-document-upload-dir.php /usr/src/wordpress/wp-content/mu-plugins/wpdr-document-upload-dir.php
 COPY opt/php/error-handling.php /usr/src/wordpress/error-handling.php
 COPY opt/php/wp-cron-multisite.php /usr/src/wordpress/wp-cron-multisite.php
+# Health endpoint. Reachable only through the internal 8090 listener; the
+# public server block denies /healthz.php by path.
+COPY opt/php/healthz.php /usr/src/wordpress/healthz.php
 
 # PHP-FPM pool config. PHP_INI_DIR is set by the base image (currently
 # /etc/php-8.4 - the Debian layout, not the /usr/local/etc/php layout of the

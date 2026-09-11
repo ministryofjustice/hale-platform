@@ -64,31 +64,64 @@ spec:
             - secretRef:
                 name: hale-wp-secrets-{{ .Release.Revision }}
           {{- if .Values.wp.probes.enabled }}
-          # The previous probe combined two unrelated checks and used `ps`,
-          # which the hardened image does not ship. Split into:
+          # The previous probe combined two unrelated checks and used `ps`, which
+          # the hardened image does not ship.
           #
-          # startupProbe - has the entrypoint finished copying core out of
-          # /usr/src/wordpress into the emptyDir? This is a real race on a fresh
-          # pod, and waiting on the actual condition beats guessing with
-          # initialDelaySeconds. Stops running once it passes.
+          # startupProbe - has the entrypoint finished? It tests the loopback
+          # socket, which is the last thing to appear: the injected config.sh
+          # runs 49 wp-cli calls and a network-wide `wp core update-db` between
+          # the core copy and `exec php-fpm`, and nothing is listening until all
+          # of it is done. Measured at 26.6s on a container whose webroot was
+          # already populated, so a fresh emptyDir is longer.
+          #
+          # It previously tested `[ -f wp-load.php ]`, which appears early in the
+          # copy and instantly on a restart - it passed ~26s before the pod could
+          # serve, so it guarded nothing. nginx's /healthz was doing the real
+          # gating either way; this makes the probe mean what its name says and
+          # restarts a container whose entrypoint has hung.
+          #
+          # exec, not tcpSocket, because the pool binds 127.0.0.1 and an exec runs
+          # inside the pod's network namespace. php is already in the image, and
+          # the connect timeout keeps a wedged socket from hanging the probe.
+          #
+          # failureThreshold 120 (240s) is load-bearing now that the probe waits
+          # on real work: update-db walks every site in the network, and a
+          # ceiling shorter than that work is a restart loop. 30 x 2s was safe
+          # only because the old check passed immediately.
           startupProbe:
             exec:
-              command: ["/bin/sh", "-c", "[ -f /var/www/html/wp-load.php ]"]
+              command:
+                - php
+                - -r
+                # Quoted: the ": " inside would otherwise make YAML read this
+                # sequence entry as a mapping, not a string.
+                - "exit(@fsockopen('127.0.0.1', {{ .Values.wp.image.ports.containerPort }}, $e, $s, 1) ? 0 : 1);"
             periodSeconds: 2
             timeoutSeconds: 5
-            failureThreshold: 30
-          # readinessProbe - is php-fpm actually listening? More accurate than
-          # matching a process name: a process can exist without a bound socket.
-          # Deliberately does NOT do a FastCGI round trip - under saturation that
-          # would take every pod out of the Service at once.
-          readinessProbe:
-            tcpSocket:
-              port: {{ .Values.wp.image.ports.containerPort }}
-            periodSeconds: 3
-            timeoutSeconds: 5
-            successThreshold: 1
-            failureThreshold: 3
+            failureThreshold: 120
+          # No readinessProbe here, deliberately.
+          #
+          # A tcpSocket probe on 9000 cannot pass: opt/php/www.conf binds
+          # php-fpm to 127.0.0.1:9000, and a tcpSocket probe dials the pod IP,
+          # so the connection is refused and the pod never becomes ready. The
+          # loopback binding is correct - nginx reaches php-fpm through the
+          # shared network namespace and nothing outside the pod can - so the
+          # probe is what gives way.
+          #
+          # nginx's readinessProbe below covers this container anyway: /healthz
+          # is a FastCGI round trip that only returns 200 when php-fpm is
+          # serving and this pod's webroot holds a readable WordPress.
           {{- end }}
+          # preStop - endpoint removal and container shutdown happen at the same
+          # time, and endpoint removal is eventually consistent: ingress-nginx
+          # can still route here for a second or two after php-fpm starts
+          # draining. Sleeping first keeps this pod serving until the routing
+          # tables have caught up. SIGQUIT (the image's StopSignal) then lets
+          # in-flight requests finish, inside the 35s grace period.
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 10"]
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -120,10 +153,22 @@ spec:
             - secretRef:
                 name: hale-nginx-secrets-{{ .Release.Revision }}
           {{- if .Values.nginx.probes.enabled }}
-          # Was `curl --fail http://localhost:8080`, which rendered a full
-          # WordPress page every 5s on every pod. /fpm-ping is a FastCGI round
-          # trip that proves nginx can reach php-fpm and php-fpm can dispatch to
-          # a worker, without bootstrapping WordPress at all.
+          # Was `curl --fail http://localhost:8080` every 5s on every pod. That
+          # request carries Host: localhost, which is not a site in wp_blogs, so
+          # it bootstrapped PHP, WordPress core, ms-settings and a database
+          # connection only to be redirected - measured at 302 in 12ms. curl
+          # --fail treats a 3xx as success, so the probe passed on the redirect
+          # and never established that any site could actually be served, while
+          # still tying readiness to the whole downstream stack.
+          #
+          # /healthz (opt/php/healthz.php) proves what this pod needs to serve:
+          # nginx is up, FastCGI reaches php-fpm, PHP executes, and the webroot
+          # holds a readable WordPress. It does not query the database - every
+          # pod shares one, so a database check would mark the whole Deployment
+          # unready at once, and Kubernetes has no fail-open for an empty
+          # endpoint list. nginx can still serve page cache hits with no PHP and
+          # no database involved. /healthz/deep does query, for the uptime pod
+          # and alerting, and is deliberately not wired to any probe.
           #
           # httpGet rather than exec+curl: the kubelet makes the request, so the
           # probe no longer depends on curl being present in the image.
@@ -133,16 +178,31 @@ spec:
           # 3 x 5s the entire Service could empty from a load problem that would
           # otherwise have been slow-but-up. 30s of sustained failure is a
           # genuinely unhealthy pod.
+          #
+          # initialDelaySeconds is 5, not the 35 the old probe needed. That
+          # number was sized for a probe that rendered a page; /healthz answers
+          # in ~3ms and the wordpress container's startupProbe already holds the
+          # pod back until core has been copied, so a longer delay only adds
+          # dead time to every pod join - serialising rollouts behind it now
+          # that maxUnavailable is 0, and delaying every HPA scale-up.
           readinessProbe:
             httpGet:
-              path: /fpm-ping
+              path: /healthz
               port: {{ .Values.nginx.image.ports.statusPort }}
-            initialDelaySeconds: 35
+            initialDelaySeconds: 5
             periodSeconds: 5
             timeoutSeconds: 5
             successThreshold: 1
             failureThreshold: 6
           {{- end }}
+          # preStop - see the wordpress container above. This is the one that
+          # matters: nginx stops accepting new connections as soon as it is
+          # signalled, so without the sleep, requests the ingress sends during
+          # the endpoint-propagation window are refused and the user gets a 502.
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 10"]
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:

@@ -31,10 +31,10 @@ nginx:
       # the ingress routes containerPort above and never this one.
       statusPort: 8090
 
-  # Readiness probing. Off in dev/demo, which are single-pod and where a failing
-  # probe just removes the only backend.
+  # Readiness probing. On everywhere: every environment now runs more than one
+  # pod, so a failing probe shifts traffic instead of removing the only backend.
   probes:
-    enabled: false
+    enabled: true
 
   # Apply container level resource allocation. Overridden in values-prod.yaml.
   resources:
@@ -54,9 +54,9 @@ wp:
     ports:
       containerPort: 9000
 
-  # Startup and readiness probing. See nginx.probes above.
+  # Startup probing. See nginx.probes above.
   probes:
-    enabled: false
+    enabled: true
 
   # Apply container level resource allocation. Overridden in values-prod.yaml.
   resources:
@@ -110,11 +110,23 @@ replicaCount: 1
 
 ## @param Deploymemt strategy config
 ##
+## Voluntary disruptions - node drains, cluster upgrades, descheduling. Without
+## this the scheduler may evict several pods at once, which is where downtime
+## usually comes from on a cluster nobody is deploying to.
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 50%
+
 updateStrategy:
   type: RollingUpdate
   rollingUpdate:
     maxSurge: 25%
-    maxUnavailable: 25%
+    ## Zero, so a rollout never drops below the desired replica count - it adds
+    ## a new pod, waits for it to pass readiness, then retires an old one. The
+    ## surge needs cluster headroom for 25% more pods for the length of the
+    ## rollout, which is the price of not dipping capacity while new pods spend
+    ## up to 60s on the startupProbe and 35s on the readiness delay.
+    maxUnavailable: 0
 
 ## @param Turn on/off cron tasks
 ##
