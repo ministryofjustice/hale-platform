@@ -24,8 +24,6 @@ jobs:
       ecr-region: ${{ secrets.DEV_ECR_REGION }}
       ecr-repo: ${{ secrets.DEV_ECR_REPO }}
       sentry-dsn: ${{ vars.PHP_DSN }}
-      domain: "dev.websitebuilder.service.justice.gov.uk"
-      env-type: ${{ vars.ENV_TYPE }}
       acf-user: ${{ secrets.ACF_USER }}
       acf-password: ${{ secrets.ACF_PASSWORD }}
       acf-token: ${{ secrets.ACF_PRO_LICENSE }}
@@ -75,8 +73,6 @@ jobs:
       ecr-region: ${{ secrets.DEMO_ECR_REGION }}
       ecr-repo: ${{ secrets.DEMO_ECR_REPO }}
       sentry-dsn: ${{ vars.PHP_DSN }}
-      domain: "demo.websitebuilder.service.justice.gov.uk"
-      env-type: ${{ vars.ENV_TYPE }}
       acf-user: ${{ secrets.ACF_USER }}
       acf-password: ${{ secrets.ACF_PASSWORD }}
       acf-token: ${{ secrets.ACF_PRO_LICENSE }}
@@ -125,9 +121,7 @@ jobs:
       asset-role: ${{ secrets.ASSET_ROLE_TO_ASSUME }}
       ecr-region: ${{ secrets.STAGING_ECR_REGION }}
       ecr-repo: ${{ secrets.STAGING_ECR_REPO }}
-      domain: "staging.websitebuilder.service.justice.gov.uk"
       sentry-dsn: ${{ vars.PHP_DSN }}
-      env-type: ${{ vars.ENV_TYPE }}
       acf-user: ${{ secrets.ACF_USER }}
       acf-password: ${{ secrets.ACF_PASSWORD }}
       acf-token: ${{ secrets.ACF_PRO_LICENSE }}
@@ -195,8 +189,6 @@ jobs:
       ecr-region: ${{ secrets.PROD_ECR_REGION }}
       ecr-repo: ${{ secrets.PROD_ECR_REPO }}
       sentry-dsn: ${{ vars.PHP_DSN }}
-      domain: "websitebuilder.service.justice.gov.uk"
-      env-type: ${{ vars.ENV_TYPE }}
       acf-user: ${{ secrets.ACF_USER }}
       acf-password: ${{ secrets.ACF_PASSWORD }}
       acf-token: ${{ secrets.ACF_PRO_LICENSE }}

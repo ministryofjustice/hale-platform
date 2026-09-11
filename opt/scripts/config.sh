@@ -13,6 +13,17 @@ wp config set COOKIEPATH "/"
 wp config set SITECOOKIEPATH "/"
 wp config set WP_ENVIRONMENT_TYPE "\$_SERVER['WP_ENVIRONMENT_TYPE']" --raw
 wp config set AUTOMATIC_UPDATER_DISABLED true --raw
+# Blocks anything that creates, deletes or updates core, plugin or theme files
+# at runtime: the plugin and theme installers, the updaters, and the built-in
+# file editors. Every plugin here arrives through composer and an image build,
+# so none of that should ever run in a container - and with the webroot on an
+# emptyDir it would be lost on the next pod start regardless. Closes the
+# code-execution path a compromised admin account would otherwise have.
+#
+# Uploads are explicitly excepted by core, so media and wp-document-revisions
+# are unaffected. Language packs are NOT excepted: a site set to a non-en_US
+# locale can no longer fetch its pack, so check before assuming this is free.
+wp config set DISALLOW_FILE_MODS true --raw
 wp config set FORCE_SSL_ADMIN true --raw
 wp config set S3_UPLOADS_BUCKET "\$_SERVER['S3_UPLOADS_BUCKET']" --raw
 wp config set S3_UPLOADS_REGION "\$_SERVER['S3_UPLOADS_REGION']" --raw

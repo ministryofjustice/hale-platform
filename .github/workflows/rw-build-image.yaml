@@ -13,11 +13,7 @@ on:
         required: true
       ecr-repo:
         required: true
-      sentry-dsn: 
-        required: true
-      domain:
-        required: true
-      env-type:
+      sentry-dsn:
         required: true
       acf-user:
         required: true
@@ -228,81 +224,20 @@ jobs:
           REPOSITORY: ${{ secrets.ecr-repo }}
           IMAGE_TAG: ${{ github.sha }}
 
-      # Publish compiled theme and plugin assets to the CDN, namespaced by
-      # release. Everything else (PHP, templates, source) stays pod-served.
-      - name: Configure asset publisher credentials
-        if: env.ASSET_ROLE != ''
-        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
-        with:
-          role-to-assume: ${{ secrets.asset-role }}
-          aws-region: ${{ secrets.ecr-region }}
-
-      - name: Publish theme and plugin assets to CDN
-        if: env.ASSET_ROLE != ''
-        env:
-          ASSET_BUCKET: ${{ secrets.s3-uploads-bucket }}
-          RELEASE: ${{ github.sha }}
+      # Database tooling sidecar. The hardened WordPress image has no mysql
+      # client, so `wp db` subcommands run in this container instead.
+      - name: Build and Push wptools Image
         run: |
-          set -euo pipefail
-
-          if [ -z "${ASSET_BUCKET:-}" ]; then
-            echo "::notice::s3-uploads-bucket not set; skipping CDN publish."
-            exit 0
-          fi
-
-          # "cp --recursive" rather than "sync": each release writes to a new,
-          # empty prefix so there is nothing to diff, and cp needs only
-          # s3:PutObject - sync would additionally require s3:ListBucket.
-          # Filters apply in order and the LAST match wins, so every exclude
-          # must stay below the includes.
-          #
-          # Assets only - the static file types below, never PHP or templates.
-          # <src dir>/ maps to s3://<bucket>/assets/<release>/<prefix>/, mirrored
-          # by hale-components inc/asset-cdn.php when it rewrites enqueued URLs.
-          #
-          # The trailing excludes drop things that happen to match the asset
-          # extensions but are never enqueued on the front end, so publishing
-          # them only leaks internal detail and bloats the bucket:
-          #   - src/       uncompiled SCSS/JSX/JS; themes serve from dist/,
-          #                plugins from build/ or their own assets/
-          #   - vendor/    third-party libraries vendored into a plugin
-          #   - build tooling that is *.js: bundler/linter/formatter configs
-          #     (*.config.js), task runners (gulpfile/Gruntfile, Laravel Mix),
-          #     and dotfiles (.eslintrc.js etc)
-          #   - website-builder-blocks/assets/icons/  its 14k-file Material
-          #     Icons mirror (~55 MB). The icon blocks read these from the pod
-          #     filesystem or emit absolute plugin_dir_url() paths that never
-          #     pass through the enqueue filters, so they are not rewritten and
-          #     do not need to be on the CDN. Scoped to this plugin so other
-          #     themes' icon dirs (e.g. ppo) keep travelling with their CSS.
-          # dist/, build/ and the rest of assets/ are still copied whole, so
-          # every relative url() in a served stylesheet still resolves on the CDN.
-          publish_assets() {
-            # --only-show-errors: skip the per-file "upload:" lines. 
-            aws s3 cp "$1" "s3://$ASSET_BUCKET/assets/$RELEASE/$2/" \
-              --recursive \
-              --only-show-errors \
-              --exclude "*" \
-              --include "*.css"  --include "*.js"    --include "*.mjs" \
-              --include "*.svg"  --include "*.png"   --include "*.jpg" \
-              --include "*.jpeg" --include "*.gif"   --include "*.webp" \
-              --include "*.woff" --include "*.woff2" --include "*.ttf" --include "*.eot" \
-              --exclude "*/node_modules/*" \
-              --exclude "*/src/*" \
-              --exclude "*/vendor/*" \
-              --exclude "*/website-builder-blocks/assets/icons/*" \
-              --exclude "*.config.js" --exclude "*.config.mjs" \
-              --exclude "*gulpfile.js" --exclude "*gulpfile.mjs" \
-              --exclude "*Gruntfile.js" \
-              --exclude "*webpack.mix.js" \
-              --exclude "*/.*" \
-              --cache-control "public, max-age=31536000, immutable"
-          }
-
-          publish_assets wordpress/wp-content/themes/  themes
-          publish_assets wordpress/wp-content/plugins/ plugins
-
-          echo "### Theme and plugin assets published under \`$RELEASE\`" >> "$GITHUB_STEP_SUMMARY"
+          docker buildx build \
+            --pull \
+            --push \
+            --platform linux/amd64 \
+            --tag $REGISTRY/$REPOSITORY:hale-platform_wptools-$IMAGE_TAG \
+            --file wptools.dockerfile .
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ secrets.ecr-repo }}
+          IMAGE_TAG: ${{ github.sha }}
 
   deployImage:
     name: Deploy to Environment
@@ -334,6 +269,7 @@ jobs:
           --install \
           --namespace ${{ secrets.kube-namespace }} \
           --values helm_deploy/wordpress/values.yaml \
+          --values helm_deploy/wordpress/values-${{ vars.ENV_TYPE }}.yaml \
           --set secrets.wpdbuser=${{ secrets.wp-db-user }} \
           --set secrets.wpdbhost=${{ secrets.wp-db-host }} \
           --set secrets.wpdbname=${{ secrets.wp-db-name }} \
@@ -362,10 +298,8 @@ jobs:
           --set secrets.redisauth=${{ secrets.redis-auth }} \
           --set secrets.redishost=${{ secrets.redis-host }} \
           --set alertSecrets.slackWebhookUrl=${{ secrets.alert-slack-webhook-url }} \
-          --set configmap.envtype=${{ vars.ENV_TYPE }} \
           --set configmap.sentrydns=${{ vars.PHP_DSN }} \
           --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.kube-namespace }}-green \
-          --set domain=${{ secrets.domain }} \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_nginx-${{ github.sha }} \
           --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_wordpress-${{ github.sha }} \
-          --set configmap.release=${{ github.sha }}
+          --set wptools.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_wptools-${{ github.sha }}

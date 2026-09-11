@@ -1,0 +1,29 @@
+## Staging environment overlay.
+## Layered on top of values.yaml - only values that differ from the shared
+## defaults belong here.
+
+domain: staging.websitebuilder.service.justice.gov.uk
+
+configmap:
+  envtype: staging
+
+replicaCount: 3
+
+autoscaling:
+  minReplicas: 2
+  maxReplicas: 4
+
+## Probes on. Staging runs multiple pods, so removing an unhealthy one shifts
+## traffic rather than taking the environment down - and it exercises the same
+## probe configuration prod runs.
+wp:
+  probes:
+    enabled: true
+
+nginx:
+  probes:
+    enabled: true
+
+ingress:
+  defaultHost:
+    certName: websitebuilder-staging-cert

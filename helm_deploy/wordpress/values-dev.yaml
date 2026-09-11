@@ -1,0 +1,47 @@
+## Development environment overlay.
+## Layered on top of values.yaml - only values that differ from the shared
+## defaults belong here.
+
+domain: dev.websitebuilder.service.justice.gov.uk
+
+configmap:
+  envtype: dev
+
+## Two pods, the same shape as the other environments.
+replicaCount: 2
+
+autoscaling:
+  minReplicas: 2
+  maxReplicas: 4
+
+## ---------------------------------------------------------------------------
+## Single-pod dev
+##
+## Uncomment all three blocks below together - they are a set, and any one on
+## its own misbehaves:
+##
+##   replicaCount            one pod
+##   autoscaling.enabled     off, or the HPA scales straight back to minReplicas
+##                           and the replicaCount above is ignored
+##   podDisruptionBudget     off. minAvailable is 50%, and Kubernetes rounds a
+##                           percentage up - 50% of 1 pod is 1, so the budget
+##                           can never be satisfied and node drains block
+##                           indefinitely instead of being protected
+##
+## A rollout still has no downtime on one pod: maxUnavailable is 0 and maxSurge
+## 25% rounds up to 1, so a replacement is created and has to pass /healthz
+## before the old pod is retired. What you give up is redundancy - a node
+## failure, an eviction or a crash takes dev down until the pod is rescheduled,
+## and there is nothing to shift traffic to while it is.
+## ---------------------------------------------------------------------------
+# replicaCount: 1
+#
+# autoscaling:
+#   enabled: false
+#
+# podDisruptionBudget:
+#   enabled: false
+
+ingress:
+  defaultHost:
+    certName: websitebuilder-dev-cert
