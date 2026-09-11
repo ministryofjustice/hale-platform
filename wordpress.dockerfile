@@ -130,7 +130,14 @@ RUN mkdir -p /tmp/uploads
 # a plain copy at wp-content/db.php would point at the webroot and QM would
 # bail out of its own is_readable() guard. Relative, so it resolves the same
 # under /usr/src/wordpress/wp-content and /var/www/html/wp-content.
-RUN ln -s plugins/query-monitor/wp-content/db.php /tmp/db.php
+#
+# Staged inside a directory rather than as /tmp/db.php on its own. The link is
+# deliberately dangling here - its target only exists in the runtime stage - and
+# BuildKit dereferences the source of a single-file COPY to compute its cache
+# key, which fails with "/tmp/db.php: not found". Copying a directory preserves
+# the symlinks inside it without resolving them.
+RUN mkdir -p /tmp/dropins \
+    && ln -s plugins/query-monitor/wp-content/db.php /tmp/dropins/db.php
 
 # ---------------------------------------------------------------------------
 # Runtime stage. COPY only - no RUN, no package manager, no root.
@@ -180,7 +187,7 @@ COPY --chown=65532:65532 /vendor /usr/src/wordpress/wp-content/vendor
 COPY --from=builder --chown=65532:65532 /tmp/uploads /usr/src/wordpress/wp-content/uploads
 
 # Query Monitor database drop-in (symlink staged in the builder above).
-COPY --from=builder --chown=65532:65532 /tmp/db.php /usr/src/wordpress/wp-content/db.php
+COPY --from=builder --chown=65532:65532 /tmp/dropins/ /usr/src/wordpress/wp-content/
 
 # British English translations (staged in the builder above).
 COPY --from=builder --chown=65532:65532 /tmp/languages /usr/src/wordpress/wp-content/languages
