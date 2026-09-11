@@ -154,10 +154,6 @@ COPY --from=builder /tmp/docker-php-ext-redis.ini ${PHP_INI_DIR}/conf.d/docker-p
 # wp-cli
 COPY --from=builder --chmod=0755 /tmp/wp /usr/local/bin/wp
 
-# Create the non-root runtime user early so COPY --chown can assign ownership
-# at write time, avoiding a slow recursive chown over the whole tree later.
-RUN adduser --disabled-password hale -u 1002
-
 # Add PHP multsite supporting files
 COPY opt/php/load.php /usr/src/wordpress/wp-content/mu-plugins/load.php
 COPY opt/php/application.php /usr/src/wordpress/wp-content/mu-plugins/application.php
