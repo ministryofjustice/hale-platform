@@ -44,7 +44,11 @@ FROM --platform=linux/amd64 php:${PHP_VERSION}-cli AS extbuilder
 
 ARG PHPREDIS_VERSION=6.3.0
 ARG PHPREDIS_SHA256=0d5141f634bd1db6c1ddcda053d25ecf2c4fc1c395430d534fd3f8d51dd7f0b5
-RUN curl -fsSL -o /tmp/redis.tgz \
+# --retry with --retry-all-errors covers transient 5xx and connection failures.
+# curl -f fails hard on any HTTP error, so a single bad gateway from GitHub or
+# pecl kills the whole build - which is a poor trade for a fetch that succeeds on
+# the next attempt.
+RUN curl -fsSL --retry 3 --retry-delay 2 --retry-all-errors -o /tmp/redis.tgz \
         "https://pecl.php.net/get/redis-${PHPREDIS_VERSION}.tgz" \
     && echo "${PHPREDIS_SHA256}  /tmp/redis.tgz" | sha256sum -c - \
     && pecl install /tmp/redis.tgz \
@@ -98,7 +102,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # checksum alongside each release as wp-cli-<version>.phar.sha512.
 ARG WP_CLI_VERSION=2.12.0
 ARG WP_CLI_SHA512=be928f6b8ca1e8dfb9d2f4b75a13aa4aee0896f8a9a0a1c45cd5d2c98605e6172e6d014dda2e27f88c98befc16c040cbb2bd1bfa121510ea5cdf5f6a30fe8832
-RUN curl -fsSL -o /tmp/wp \
+RUN curl -fsSL --retry 3 --retry-delay 2 --retry-all-errors -o /tmp/wp \
     "https://github.com/wp-cli/wp-cli/releases/download/v${WP_CLI_VERSION}/wp-cli-${WP_CLI_VERSION}.phar" \
     && echo "${WP_CLI_SHA512}  /tmp/wp" | sha512sum -c - \
     && chmod +x /tmp/wp
@@ -131,7 +135,7 @@ ARG WP_LOCALES="en_GB cy"
 RUN mkdir -p /tmp/languages \
     && for locale in ${WP_LOCALES}; do \
     echo "Fetching ${locale} translations for ${WORDPRESS_VERSION}" \
-    && curl -fsSL -o /tmp/lang.zip \
+    && curl -fsSL --retry 3 --retry-delay 2 --retry-all-errors -o /tmp/lang.zip \
     "https://downloads.wordpress.org/translation/core/${WORDPRESS_VERSION}/${locale}.zip" \
     && unzip -q -o /tmp/lang.zip -d /tmp/languages \
     || exit 1; \
