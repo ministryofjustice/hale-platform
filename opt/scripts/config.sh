@@ -69,8 +69,31 @@ wp core multisite-install --title="Hale Multisite Platform" \
     --skip-email \
     --quiet;
 
-# Run DB check and update
-wp core update-db --network --url="${SERVER_NAME}"
+# Run DB check and update, but only when the schema is actually behind.
+#
+# `wp core update-db --network` walks every site in the network - 58 of them and
+# growing - and on all but the first pod after a core bump every one reports
+# "already at latest db version". That is a per-release migration sitting in a
+# per-pod boot path: it runs on every pod start, on every scale-up, before
+# php-fpm can listen, and several pods run it concurrently against one database.
+#
+# Comparing the code's $wp_db_version against the stored option costs two fast
+# wp-cli calls and skips the walk entirely when there is nothing to do. A core
+# bump moves every site together, so the main site's option is a sound proxy -
+# the case it would miss is a single subsite lagging on its own, which cannot
+# happen while every deploy has been running the full walk.
+#
+# If the comparison fails for any reason the values will not match and the walk
+# runs, which is the safe direction.
+CODE_DB_VERSION=$(wp eval 'global $wp_db_version; echo $wp_db_version;' --skip-plugins --skip-themes 2>/dev/null || echo "unknown")
+SITE_DB_VERSION=$(wp option get db_version --skip-plugins --skip-themes 2>/dev/null || echo "unset")
+
+if [ "$CODE_DB_VERSION" = "$SITE_DB_VERSION" ]; then
+    echo "Database already at version ${SITE_DB_VERSION}, skipping the network upgrade"
+else
+    echo "Database at ${SITE_DB_VERSION}, code expects ${CODE_DB_VERSION} - upgrading the network"
+    wp core update-db --network --url="${SERVER_NAME}"
+fi
 
 # Setup Hale theme
 wp theme enable hale --network --url="${SERVER_NAME}"
