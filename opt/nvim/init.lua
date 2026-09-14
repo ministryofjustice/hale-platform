@@ -1,5 +1,6 @@
--- neovim config for the wptools sidecar. Lives at $XDG_CONFIG_HOME/nvim,
--- which the image points at /scratch (uid 65532 cannot write to HOME).
+-- neovim config for the wptools sidecar. Lives at $XDG_CONFIG_HOME/nvim, which
+-- the image points at /opt/nvim-config - deliberately outside /scratch, because
+-- Kubernetes mounts an emptyDir there and would hide this file at runtime.
 --
 -- Deliberately plugin-manager free: the only plugin is the colourscheme, baked
 -- into /usr/share/nvim/site/pack/hale/start by the dockerfile.

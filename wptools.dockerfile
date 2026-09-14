@@ -114,17 +114,25 @@ RUN apk del curl
 # under the webroot where nginx could serve them.
 RUN mkdir -p /scratch && chown 65532:65532 /scratch
 
-# neovim writes config/state/cache under XDG paths below $HOME. uid 65532 has no
-# passwd entry, so HOME is "/", which it cannot write to. Point the XDG dirs at
-# /scratch instead. HOME itself is left alone: wp-cli resolves ~/.wp-cli from it.
-ENV XDG_CONFIG_HOME=/scratch/.config \
+# neovim writes state and cache under XDG paths below $HOME. uid 65532 has no
+# passwd entry, so HOME is "/", which it cannot write to - hence pointing the
+# writable XDG dirs at /scratch. HOME itself is left alone: wp-cli resolves
+# ~/.wp-cli from it.
+#
+# XDG_CONFIG_HOME is the exception and must NOT be under /scratch. In Kubernetes
+# an emptyDir is mounted at /scratch, which hides everything the image placed
+# there - so an init.lua baked in at build time is invisible at runtime, nvim
+# starts unconfigured, and the colourscheme below never gets selected even though
+# its files are present. Config is read-only, so it lives outside the volume;
+# only the dirs that genuinely need writing stay in it.
+ENV XDG_CONFIG_HOME=/opt/nvim-config \
     XDG_DATA_HOME=/scratch/.local/share \
     XDG_STATE_HOME=/scratch/.local/state \
     XDG_CACHE_HOME=/scratch/.cache \
     EDITOR=nvim
-RUN mkdir -p /scratch/.config /scratch/.local/share /scratch/.local/state /scratch/.cache \
+RUN mkdir -p /scratch/.local/share /scratch/.local/state /scratch/.cache \
     && chown -R 65532:65532 /scratch
-COPY --chown=65532:65532 opt/nvim/init.lua /scratch/.config/nvim/init.lua
+COPY --chown=65532:65532 opt/nvim/init.lua /opt/nvim-config/nvim/init.lua
 
 # /usr/share/nvim/site is on the default packpath, so anything under
 # pack/*/start loads at startup without a plugin manager.
