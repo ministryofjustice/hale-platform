@@ -27,8 +27,11 @@ spec:
       serviceAccountName: hale-platform-{{ .Values.configmap.envtype }}-service
       # The hardened WordPress image runs as UID 65532. fsGroup makes the shared
       # emptyDir group-owned and setgid so the wordpress and wptools containers
-      # can both write to it, and removes the mount-point permission error that
-      # the old startup-patch.sh worked around.
+      # can both write into it.
+      #
+      # It does not make the volume's own directory writable: that stays owned by
+      # root, so the entrypoint's tar still cannot chmod the mount point. See
+      # opt/scripts/startup-patch.sh, which tolerates exactly that one failure.
       securityContext:
         fsGroup: 65532
       containers:
@@ -44,7 +47,7 @@ spec:
               memory: {{ .Values.wp.resources.requests.memory }}
           env:
             # Deliberately NOT under the image's own PHP directory. That path is
-            # version-stamped (/etc/php-8.4 today) and a PHP bump would leave
+            # version-stamped (/etc/php-<version>) and a PHP bump would leave
             # this pointing at a directory that does not exist - the container
             # would still start and silently ignore our php.ini overrides.
             # The leading colon keeps the image's own conf.d on the scan path,
@@ -64,30 +67,22 @@ spec:
             - secretRef:
                 name: hale-wp-secrets-{{ .Release.Revision }}
           {{- if .Values.wp.probes.enabled }}
-          # The previous probe combined two unrelated checks and used `ps`, which
-          # the hardened image does not ship.
+          # startupProbe - has the entrypoint finished?
           #
-          # startupProbe - has the entrypoint finished? It tests the loopback
-          # socket, which is the last thing to appear: the injected config.sh
-          # runs 49 wp-cli calls and a network-wide `wp core update-db` between
-          # the core copy and `exec php-fpm`, and nothing is listening until all
-          # of it is done. Measured at 26.6s on a container whose webroot was
-          # already populated, so a fresh emptyDir is longer.
-          #
-          # It previously tested `[ -f wp-load.php ]`, which appears early in the
-          # copy and instantly on a restart - it passed ~26s before the pod could
-          # serve, so it guarded nothing. nginx's /healthz was doing the real
-          # gating either way; this makes the probe mean what its name says and
-          # restarts a container whose entrypoint has hung.
+          # It tests the loopback socket, which is the last thing to appear. The
+          # injected config.sh runs 49 wp-cli calls between the core copy and
+          # `exec php-fpm`, and nothing is listening until all of it is done -
+          # measured at 69s on a dev pod with 58 sites in the network. Testing
+          # for a file instead would pass long before the pod could serve, and
+          # instantly on a restart, guarding nothing.
           #
           # exec, not tcpSocket, because the pool binds 127.0.0.1 and an exec runs
           # inside the pod's network namespace. php is already in the image, and
           # the connect timeout keeps a wedged socket from hanging the probe.
           #
-          # failureThreshold 120 (240s) is load-bearing now that the probe waits
-          # on real work: update-db walks every site in the network, and a
-          # ceiling shorter than that work is a restart loop. 30 x 2s was safe
-          # only because the old check passed immediately.
+          # failureThreshold 120 (240s) is load-bearing: the ceiling has to exceed
+          # however long the entrypoint takes, or the container is killed and
+          # restarted in a loop. That work grows with the number of sites.
           startupProbe:
             exec:
               command:
@@ -153,13 +148,8 @@ spec:
             - secretRef:
                 name: hale-nginx-secrets-{{ .Release.Revision }}
           {{- if .Values.nginx.probes.enabled }}
-          # Was `curl --fail http://localhost:8080` every 5s on every pod. That
-          # request carries Host: localhost, which is not a site in wp_blogs, so
-          # it bootstrapped PHP, WordPress core, ms-settings and a database
-          # connection only to be redirected - measured at 302 in 12ms. curl
-          # --fail treats a 3xx as success, so the probe passed on the redirect
-          # and never established that any site could actually be served, while
-          # still tying readiness to the whole downstream stack.
+          # This is the only readiness probe in the pod, so /healthz alone decides
+          # whether this pod receives traffic.
           #
           # /healthz (opt/php/healthz.php) proves what this pod needs to serve:
           # nginx is up, FastCGI reaches php-fpm, PHP executes, and the webroot
@@ -170,21 +160,19 @@ spec:
           # no database involved. /healthz/deep does query, for the uptime pod
           # and alerting, and is deliberately not wired to any probe.
           #
-          # httpGet rather than exec+curl: the kubelet makes the request, so the
-          # probe no longer depends on curl being present in the image.
+          # httpGet, so the kubelet makes the request itself and the probe depends
+          # on nothing being present in the image.
           #
-          # failureThreshold is 6 rather than 3 deliberately. With
-          # pm.max_children = 10, a traffic spike can slow every pod at once; at
-          # 3 x 5s the entire Service could empty from a load problem that would
-          # otherwise have been slow-but-up. 30s of sustained failure is a
-          # genuinely unhealthy pod.
+          # failureThreshold 6 gives 30s of sustained failure before a pod leaves
+          # the Service. With pm.max_children = 10 a traffic spike slows every
+          # pod at once, and a shorter window could empty the entire Service from
+          # a load problem that was slow but still serving.
           #
-          # initialDelaySeconds is 5, not the 35 the old probe needed. That
-          # number was sized for a probe that rendered a page; /healthz answers
-          # in ~3ms and the wordpress container's startupProbe already holds the
-          # pod back until core has been copied, so a longer delay only adds
-          # dead time to every pod join - serialising rollouts behind it now
-          # that maxUnavailable is 0, and delaying every HPA scale-up.
+          # initialDelaySeconds 5 because /healthz answers in ~3ms and the
+          # wordpress container's startupProbe already holds the pod back until
+          # the entrypoint has finished. Any longer is dead time on every pod
+          # join, which serialises rollouts behind it while maxUnavailable is 0
+          # and delays every HPA scale-up.
           readinessProbe:
             httpGet:
               path: /healthz
