@@ -21,7 +21,7 @@
 # ---------------------------------------------------------------------------
 # Image version, declared once. PHP_VERSION must match the version in the tag:
 # it selects the Debian -dev headers the Redis extension is compiled against.
-ARG WORDPRESS_VERSION=7.1.0
+ARG WORDPRESS_VERSION=7.1
 ARG PHP_VERSION=8.5
 
 FROM --platform=linux/amd64 dhi.io/wordpress:${WORDPRESS_VERSION}-php${PHP_VERSION}-fpm-dev AS builder
