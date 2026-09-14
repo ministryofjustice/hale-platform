@@ -19,21 +19,26 @@
 # extension is built against the exact PHP ABI the runtime expects
 # (PHP API 20240924, NTS, no-debug).
 # ---------------------------------------------------------------------------
-# Image version, declared once. PHP_VERSION must match the version in the tag:
-# it selects the Debian -dev headers the Redis extension is compiled against.
+# Image version, declared once and referenced only by the FROM tags below.
+#
+# Nothing else names a PHP version. The builder installs no PHP packages: the
+# -dev image already carries the matching headers, phpize and php-config, which
+# is the only way this can work now that DHI ships a PHP that Debian does not
+# package (there is no php8.5-dev in trixie). Installing php-pear here would be
+# actively harmful - it depends on php-cli, which resolves to Debian's PHP and
+# would compile the extension against the wrong ABI.
 ARG WORDPRESS_VERSION=7.1
 ARG PHP_VERSION=8.5
 
 FROM --platform=linux/amd64 dhi.io/wordpress:${WORDPRESS_VERSION}-php${PHP_VERSION}-fpm-dev AS builder
 
-ARG PHP_VERSION
+# Only WORDPRESS_VERSION is needed inside the stage (the translation packs).
+# PHP_VERSION is consumed by the FROM tags above and nothing else.
 ARG WORDPRESS_VERSION
 USER root
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
-        php${PHP_VERSION}-dev \
-        php-pear \
         pkg-config \
         ca-certificates \
         curl \
@@ -60,10 +65,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ARG PHPREDIS_VERSION=6.3.0
 ARG PHPREDIS_SHA256=0d5141f634bd1db6c1ddcda053d25ecf2c4fc1c395430d534fd3f8d51dd7f0b5
 RUN curl -fsSL -o /tmp/redis.tgz \
-        "https://pecl.php.net/get/redis-${PHPREDIS_VERSION}.tgz" \
+    "https://pecl.php.net/get/redis-${PHPREDIS_VERSION}.tgz" \
     && echo "${PHPREDIS_SHA256}  /tmp/redis.tgz" | sha256sum -c - \
-    && pecl install /tmp/redis.tgz \
-    && rm /tmp/redis.tgz \
+    && tar -xzf /tmp/redis.tgz -C /tmp \
+    && cd "/tmp/redis-${PHPREDIS_VERSION}" \
+    && phpize \
+    && ./configure \
+    && make -j"$(nproc)" \
+    && make install \
+    && cd / && rm -rf /tmp/redis.tgz "/tmp/redis-${PHPREDIS_VERSION}" \
     && cp "$(php-config --extension-dir)/redis.so" /tmp/redis.so \
     && echo "extension=/usr/local/lib/php-extensions/redis.so" > /tmp/docker-php-ext-redis.ini
 
@@ -77,7 +87,7 @@ RUN curl -fsSL -o /tmp/redis.tgz \
 ARG WP_CLI_VERSION=2.12.0
 ARG WP_CLI_SHA512=be928f6b8ca1e8dfb9d2f4b75a13aa4aee0896f8a9a0a1c45cd5d2c98605e6172e6d014dda2e27f88c98befc16c040cbb2bd1bfa121510ea5cdf5f6a30fe8832
 RUN curl -fsSL -o /tmp/wp \
-        "https://github.com/wp-cli/wp-cli/releases/download/v${WP_CLI_VERSION}/wp-cli-${WP_CLI_VERSION}.phar" \
+    "https://github.com/wp-cli/wp-cli/releases/download/v${WP_CLI_VERSION}/wp-cli-${WP_CLI_VERSION}.phar" \
     && echo "${WP_CLI_SHA512}  /tmp/wp" | sha512sum -c - \
     && chmod +x /tmp/wp
 
@@ -108,11 +118,11 @@ RUN curl -fsSL -o /tmp/wp \
 ARG WP_LOCALES="en_GB cy"
 RUN mkdir -p /tmp/languages \
     && for locale in ${WP_LOCALES}; do \
-        echo "Fetching ${locale} translations for ${WORDPRESS_VERSION}" \
-        && curl -fsSL -o /tmp/lang.zip \
-            "https://downloads.wordpress.org/translation/core/${WORDPRESS_VERSION}/${locale}.zip" \
-        && unzip -q -o /tmp/lang.zip -d /tmp/languages \
-        || exit 1; \
+    echo "Fetching ${locale} translations for ${WORDPRESS_VERSION}" \
+    && curl -fsSL -o /tmp/lang.zip \
+    "https://downloads.wordpress.org/translation/core/${WORDPRESS_VERSION}/${locale}.zip" \
+    && unzip -q -o /tmp/lang.zip -d /tmp/languages \
+    || exit 1; \
     done \
     && rm -f /tmp/lang.zip /tmp/languages/*.po
 
