@@ -23,11 +23,22 @@
 # package the Redis extension is compiled against, so the two have to agree -
 # which in practice means PHP_VERSION can only be a version Debian packages.
 #
-# Trixie tops out at 8.4. Moving to 8.5 needs a different source for phpize and
-# the headers: the -dev image does not put phpize on PATH, and there is no
-# php8.5-dev to install, so that bump is blocked on finding where DHI expects
-# extensions to be built. Core and PHP are independent decisions; this file
-# bumps core only.
+# Trixie tops out at 8.4, and that cap is not avoidable on this base. Verified by
+# building against the -dev image: /usr/bin holds only `php` and `php-8.4` - no
+# phpize and no php-config, suffixed or otherwise - and /usr/lib/php holds only
+# `extensions`. DHI's "-dev" means the variant has a shell and a package manager,
+# NOT that it ships PHP development headers.
+#
+# So Debian's php<version>-dev is the only source of phpize and headers here, and
+# the extension it produces loads into DHI's own PHP because the ABI triple
+# matches (API20240924, NTS, no-debug) - not because the headers came from the
+# same build. That is the property being relied on; it is sound, but it is worth
+# knowing it is a compatibility guarantee rather than an identity.
+#
+# Getting past 8.4 means building the extension somewhere that has the tooling:
+# the official php:<version> image (it bundles pecl) in a third stage, or the
+# Alpine DHI variant, whose php85-dev package does exist. Core and PHP are
+# independent decisions; this file bumps core only.
 #
 # php${PHP_VERSION}-dev brings phpize, the matching headers and the autotools.
 # php-pear is deliberately NOT installed - it depends on php-cli, and pulling a
