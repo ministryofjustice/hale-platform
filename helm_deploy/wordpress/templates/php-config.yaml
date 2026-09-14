@@ -10,3 +10,28 @@ data:
     max_execution_time = 600
     max_input_time = 600
     memory_limit = 512M
+
+    ; Opcache. Everything below was previously at the base image's defaults,
+    ; which are sized for a small application rather than a WordPress multisite.
+    ;
+    ; The webroot holds 14,228 PHP files - 1,301 of core, 5,141 of vendor, 2,921
+    ; of plugins, 4,008 of mu-plugins and 829 of themes - against a default limit
+    ; of 4,000. Past the limit opcache simply stops caching, and every file
+    ; beyond it is compiled from source on every request that touches it.
+    ;
+    ; PHP rounds this up to the next value in a fixed internal set, so 20000
+    ; becomes 32531 - enough for the codebase to roughly double.
+    opcache.max_accelerated_files = 20000
+
+    ; The file limit is academic without the memory to back it: 14,000 compiled
+    ; files do not fit in the default 128M, and opcache hitting its memory
+    ; ceiling either stops caching or restarts and discards everything. Check
+    ; used_memory and oom_restarts after this lands.
+    opcache.memory_consumption = 256
+
+    ; No stat() on every cached file on every request. Safe here specifically
+    ; because the code cannot change under a running pod: DISALLOW_FILE_MODS is
+    ; set (opt/scripts/config.sh) and the webroot is an emptyDir rebuilt from the
+    ; image on every pod start. On a conventional host, where a deploy rewrites
+    ; files in place, this would serve stale code until the pool was restarted.
+    opcache.validate_timestamps = 0
