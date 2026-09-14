@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bf7e63d1560790ab10f1dc79c9ebcbfe",
+    "content-hash": "3c8c88445d07aaa2b99441c8f1e75bfd",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -115,16 +115,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.394.9",
+            "version": "3.395.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "c5e7a247fa6aeac7355d5be88f38873480789c71"
+                "reference": "f5eda89b1f2ecd4aea56eb04d58874bad12ef02e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/c5e7a247fa6aeac7355d5be88f38873480789c71",
-                "reference": "c5e7a247fa6aeac7355d5be88f38873480789c71",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/f5eda89b1f2ecd4aea56eb04d58874bad12ef02e",
+                "reference": "f5eda89b1f2ecd4aea56eb04d58874bad12ef02e",
                 "shasum": ""
             },
             "require": {
@@ -206,9 +206,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.394.9"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.395.1"
             },
-            "time": "2026-09-04T18:07:00+00:00"
+            "time": "2026-09-13T18:43:19+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -1039,25 +1039,25 @@
         },
         {
             "name": "ministryofjustice/hale-dash",
-            "version": "2.2.1",
+            "version": "2.2.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale-dash.git",
-                "reference": "8734730a5524a067642949ab621f0d5f49ac8a72"
+                "reference": "5bd870d6949fd36ab2eb0d461c1a5cac42715243"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale-dash/zipball/8734730a5524a067642949ab621f0d5f49ac8a72",
-                "reference": "8734730a5524a067642949ab621f0d5f49ac8a72",
+                "url": "https://api.github.com/repos/ministryofjustice/hale-dash/zipball/5bd870d6949fd36ab2eb0d461c1a5cac42715243",
+                "reference": "5bd870d6949fd36ab2eb0d461c1a5cac42715243",
                 "shasum": ""
             },
             "type": "wordpress-theme",
             "description": "Hale Dash theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/hale-dash/tree/2.2.1",
+                "source": "https://github.com/ministryofjustice/hale-dash/tree/2.2.2",
                 "issues": "https://github.com/ministryofjustice/hale-dash/issues"
             },
-            "time": "2026-08-11T11:52:08+00:00"
+            "time": "2026-09-14T15:06:26+00:00"
         },
         {
             "name": "ministryofjustice/hale-showcase",
@@ -3676,15 +3676,15 @@
         },
         {
             "name": "wpackagist-plugin/microsoft-clarity",
-            "version": "0.10.29",
+            "version": "0.10.31",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/microsoft-clarity/",
-                "reference": "tags/0.10.29"
+                "reference": "tags/0.10.31"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/microsoft-clarity.0.10.29.zip"
+                "url": "https://downloads.wordpress.org/plugin/microsoft-clarity.0.10.31.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -3928,10 +3928,10 @@
         },
         {
             "name": "wpengine/advanced-custom-fields-pro",
-            "version": "6.8.9",
+            "version": "6.8.10",
             "dist": {
                 "type": "zip",
-                "url": "https://connect.advancedcustomfields.com/v2/plugins/composer_download?s=composer&p=pro&t=6.8.9"
+                "url": "https://connect.advancedcustomfields.com/v2/plugins/composer_download?s=composer&p=pro&t=6.8.10"
             },
             "require": {
                 "composer/installers": "~1.0 || ~2.0"
@@ -4035,5 +4035,5 @@
         "php": ">=8.0"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }
