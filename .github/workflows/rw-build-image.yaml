@@ -357,3 +357,60 @@ jobs:
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_nginx-${{ github.sha }} \
           --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_wordpress-${{ github.sha }} \
           --set wptools.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_wptools-${{ github.sha }}
+
+      # helm upgrade returns as soon as the API server accepts the manifests -
+      # seconds, before a single new pod exists. Without this the job goes green
+      # whether or not the rollout ever completes, and maxUnavailable: 0 makes
+      # that quiet rather than loud: the old pods keep serving, so a stalled
+      # deploy looks exactly like a successful one.
+      #
+      # This changes no deployment behaviour, it only waits and reports. It
+      # returns the moment the rollout finishes - roughly 2-3 minutes in dev and
+      # 4-5 in prod - and the timeout is a ceiling for something genuinely stuck,
+      # at which point the Deployment's own progressDeadlineSeconds has already
+      # marked it ProgressDeadlineExceeded.
+      #
+      # No rollback: a red build here means "the new version is not serving",
+      # not "the site is down". The old pods are still up, and whether to roll
+      # back is a decision for a person.
+      - name: Wait for the rollout
+        run: |
+          kubectl rollout status deploy/wordpress \
+            --namespace ${{ secrets.kube-namespace }} \
+            --timeout=10m
+
+      # Readiness deliberately stops before WordPress renders anything - no
+      # plugins, no theme, no database - so every other check in this pipeline
+      # can pass while every page returns 500. This is the only test that
+      # exercises the path a visitor actually takes: ingress, TLS, nginx,
+      # FastCGI, php-fpm, WordPress, database, HTML.
+      #
+      # The host comes from the ingress so it is correct per environment with no
+      # extra inputs to keep in step.
+      #
+      # The cache-busting query string is load-bearing. A plain request can be
+      # served from the Redis page cache by nginx alone, with php-fpm completely
+      # dead, and would pass. A query string bypasses the cache and forces the
+      # request through PHP.
+      - name: Smoke test the deployed site
+        run: |
+          set -euo pipefail
+          host=$(kubectl get ingress hale-platform-ingress \
+            --namespace ${{ secrets.kube-namespace }} \
+            -o jsonpath='{.spec.rules[0].host}')
+          if [ -z "$host" ]; then
+            echo "::error::could not read a host from the ingress"
+            exit 1
+          fi
+          url="https://$host/?deploy-smoke-test=${{ github.sha }}"
+          echo "requesting $url"
+          code=$(curl -sS -o /tmp/smoke.html -w '%{http_code}' --max-time 30 "$url" || echo 000)
+          bytes=$(wc -c < /tmp/smoke.html | tr -d ' ')
+          echo "HTTP $code, $bytes bytes"
+          if [ "$code" != "200" ]; then
+            echo "::error::$host returned $code after deploy"
+            head -c 500 /tmp/smoke.html
+            exit 1
+          fi
+          echo "site is serving"
+
