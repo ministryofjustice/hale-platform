@@ -17,21 +17,22 @@
 # ---------------------------------------------------------------------------
 # Builder stage - see wordpress.dockerfile for the rationale.
 # ---------------------------------------------------------------------------
-# Image version, declared once and referenced only by the FROM tags below.
+# Image versions. PHP_VERSION selects the base image tag AND the Debian -dev
+# package the Redis extension is compiled against, so the two have to agree -
+# which in practice means PHP_VERSION can only be a version Debian packages.
 #
-# Nothing else names a PHP version. The builder installs no PHP packages: the
-# -dev image already carries the matching headers, phpize and php-config, which
-# is the only way this can work now that DHI ships a PHP that Debian does not
-# package (there is no php8.5-dev in trixie). Installing php-pear here would be
-# actively harmful - it depends on php-cli, which resolves to Debian's PHP and
-# would compile the extension against the wrong ABI.
+# Trixie tops out at 8.4. Moving to 8.5 needs a different source for phpize and
+# the headers: the -dev image does not put phpize on PATH, and there is no
+# php8.5-dev to install, so that bump is blocked on finding where DHI expects
+# extensions to be built. Core and PHP are independent decisions; this file
+# bumps core only.
 #
-# autoconf/automake/libtool were previously arriving as dependencies of the
-# php-dev package, and phpize cannot run without them. gzip is needed because
-# tar shells out to it for -z; pecl never needed it because it decompresses
-# through PHP's own zlib. Both are build-stage only - the runtime stage copies
-# the finished .so and nothing else.
-ARG WORDPRESS_VERSION=7.0.4
+# php${PHP_VERSION}-dev brings phpize, the matching headers and the autotools.
+# php-pear is deliberately NOT installed - it depends on php-cli, and pulling a
+# second PHP in to get `pecl` risks compiling against the wrong ABI. phpize
+# builds the extension directly instead. gzip is needed because tar shells out
+# to it for -z. All build-stage only; the runtime copies the finished .so.
+ARG WORDPRESS_VERSION=7.1
 ARG PHP_VERSION=8.4
 
 FROM dhi.io/wordpress:${WORDPRESS_VERSION}-php${PHP_VERSION}-fpm-dev AS builder
@@ -41,6 +42,7 @@ USER root
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
+        php${PHP_VERSION}-dev \
         autoconf \
         automake \
         libtool \
