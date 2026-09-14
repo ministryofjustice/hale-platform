@@ -14,7 +14,7 @@
 # ##################################################
 
 ARG WORDPRESS_VERSION=7.1
-ARG PHP_VERSION=8.4
+ARG PHP_VERSION=8.5
 
 # ---------------------------------------------------------------------------
 # Extension stage: compile PHPRedis.
@@ -186,9 +186,10 @@ COPY opt/php/wp-cron-multisite.php /usr/src/wordpress/wp-cron-multisite.php
 # public server block denies /healthz.php by path.
 COPY opt/php/healthz.php /usr/src/wordpress/healthz.php
 
-# PHP-FPM pool config. PHP_INI_DIR is set by the base image (currently
-# /etc/php-8.4 - the Debian layout, not the /usr/local/etc/php layout of the
-# official WordPress image), so this tracks a PHP version bump automatically.
+# PHP-FPM pool config. PHP_INI_DIR is set by the base image and is version
+# stamped (/etc/php-<version>, DHI's own layout rather than the
+# /usr/local/etc/php of the official WordPress image), so referencing the
+# variable tracks a PHP bump automatically instead of hardcoding the path.
 # The image's own zz-wordpress.conf loads after this one and sets only
 # user/group, so the pool tuning here is preserved.
 COPY opt/php/www.conf ${PHP_INI_DIR}/php-fpm.d/www.conf

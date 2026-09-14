@@ -15,7 +15,7 @@
 # ##################################################
 
 ARG WORDPRESS_VERSION=7.1
-ARG PHP_VERSION=8.4
+ARG PHP_VERSION=8.5
 
 # ---------------------------------------------------------------------------
 # Extension stage: compile PHPRedis.
