@@ -19,25 +19,21 @@
 # extension is built against the exact PHP ABI the runtime expects
 # (PHP API 20240924, NTS, no-debug).
 # ---------------------------------------------------------------------------
-# Image versions - the only place either is written. Both are consumed solely by
-# the FROM tags below; nothing in the build names a version, so bumping either
-# is a one-line edit here, as it was before the image was hardened.
+# Image versions. PHP_VERSION selects the base image tag AND the Debian -dev
+# package the Redis extension is compiled against, so the two have to agree -
+# which in practice means PHP_VERSION can only be a version Debian packages.
 #
-# Core and PHP still bump independently: the other images in the stack carry
-# their own PHP (wptools installs Alpine php8X-* packages, CI resolves composer
-# under setup-php), and bin/check-versions.sh asserts they all agree.
+# Trixie tops out at 8.4. Moving to 8.5 needs a different source for phpize and
+# the headers: the -dev image does not put phpize on PATH, and there is no
+# php8.5-dev to install, so that bump is blocked on finding where DHI expects
+# extensions to be built. Core and PHP are independent decisions; this file
+# bumps core only.
 #
-# The builder installs no PHP packages. DHI compiles its own PHP - the running
-# image reports PHP_BUILD_PROVIDER=docker-hardened-images and configures with
-# --program-suffix - so the headers and phpize it needs are already in the -dev
-# image, and a Debian php<version>-dev would supply a *different* PHP's headers
-# that happen to be ABI-compatible. It also caps the platform at whatever PHP
-# Debian packages, which is why 8.5 could not be built that way.
-#
-# php-pear stays out for the same reason doubled: it depends on php-cli and would
-# pull a second PHP in to provide `pecl`. autoconf/automake/libtool are needed
-# because phpize runs them and they used to arrive via php<version>-dev. gzip is
-# needed because tar shells out to it for -z.
+# php${PHP_VERSION}-dev brings phpize, the matching headers and the autotools.
+# php-pear is deliberately NOT installed - it depends on php-cli, and pulling a
+# second PHP in to get `pecl` risks compiling against the wrong ABI. phpize
+# builds the extension directly instead. gzip is needed because tar shells out
+# to it for -z. All build-stage only; the runtime copies the finished .so.
 ARG WORDPRESS_VERSION=7.1
 ARG PHP_VERSION=8.4
 
@@ -50,6 +46,7 @@ USER root
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
+        php${PHP_VERSION}-dev \
         autoconf \
         automake \
         libtool \
@@ -79,37 +76,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Bump both values together - releases are at https://pecl.php.net/package/redis
 ARG PHPREDIS_VERSION=6.3.0
 ARG PHPREDIS_SHA256=0d5141f634bd1db6c1ddcda053d25ecf2c4fc1c395430d534fd3f8d51dd7f0b5
-# Build against whatever toolchain the image itself provides, asking PHP for its
-# own version rather than being told. DHI configures PHP with --program-suffix,
-# so its tools are phpize-8.4 / php-config-8.4; Debian's php<version>-dev instead
-# installs unsuffixed names. Trying both means this stage needs no version of its
-# own, so the ARGs above stay the single place a version is written - and a PHP
-# bump is one edit, as it was before the image was hardened.
-#
-# If neither is found the build stops here and prints what the image does have,
-# rather than failing later with a cryptic linker error.
-RUN set -eux; \
-    v="$(php -r 'echo PHP_MAJOR_VERSION . "." . PHP_MINOR_VERSION;')"; \
-    phpize_bin="$(command -v phpize || command -v "phpize-$v" || true)"; \
-    php_config_bin="$(command -v php-config || command -v "php-config-$v" || true)"; \
-    if [ -z "$phpize_bin" ] || [ -z "$php_config_bin" ]; then \
-        echo "no phpize/php-config for PHP $v in this image; available:" >&2; \
-        ls /usr/bin | grep -i php >&2 || true; \
-        exit 1; \
-    fi; \
-    echo "building phpredis with $phpize_bin against $("$php_config_bin" --version)"; \
-    curl -fsSL -o /tmp/redis.tgz "https://pecl.php.net/get/redis-${PHPREDIS_VERSION}.tgz"; \
-    echo "${PHPREDIS_SHA256}  /tmp/redis.tgz" | sha256sum -c -; \
-    tar -xzf /tmp/redis.tgz -C /tmp; \
-    cd "/tmp/redis-${PHPREDIS_VERSION}"; \
-    "$phpize_bin"; \
-    ./configure --with-php-config="$php_config_bin"; \
-    make -j"$(nproc)"; \
-    make install; \
-    cd /; \
-    rm -rf /tmp/redis.tgz "/tmp/redis-${PHPREDIS_VERSION}"; \
-    cp "$("$php_config_bin" --extension-dir)/redis.so" /tmp/redis.so; \
-    echo "extension=/usr/local/lib/php-extensions/redis.so" > /tmp/docker-php-ext-redis.ini
+RUN curl -fsSL -o /tmp/redis.tgz \
+    "https://pecl.php.net/get/redis-${PHPREDIS_VERSION}.tgz" \
+    && echo "${PHPREDIS_SHA256}  /tmp/redis.tgz" | sha256sum -c - \
+    && tar -xzf /tmp/redis.tgz -C /tmp \
+    && cd "/tmp/redis-${PHPREDIS_VERSION}" \
+    && phpize \
+    && ./configure \
+    && make -j"$(nproc)" \
+    && make install \
+    && cd / && rm -rf /tmp/redis.tgz "/tmp/redis-${PHPREDIS_VERSION}" \
+    && cp "$(php-config --extension-dir)/redis.so" /tmp/redis.so \
+    && echo "extension=/usr/local/lib/php-extensions/redis.so" > /tmp/docker-php-ext-redis.ini
 
 # The runtime image has a PHP CLI but no curl, so the download happens here and
 # the phar is copied across.
