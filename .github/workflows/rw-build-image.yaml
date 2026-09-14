@@ -239,6 +239,60 @@ jobs:
           REPOSITORY: ${{ secrets.ecr-repo }}
           IMAGE_TAG: ${{ github.sha }}
 
+      # The wordpress and wptools images are built independently, from different
+      # bases, each with its own PHP. bin/check-versions.sh asserts the versions
+      # *declared* in the repo agree; this asserts the versions actually built do,
+      # and that the sidecar can still bootstrap WordPress.
+      #
+      # It catches three things nothing else does:
+      #   - the two PHPs drifting apart despite matching ARGs
+      #   - a distro renaming or dropping a package, so an extension the site
+      #     loads quietly disappears from the sidecar and every `wp` command
+      #     starts failing at bootstrap
+      #   - redis.so failing to load in the wordpress image, which is silent:
+      #     php-fpm logs a startup warning and serves on without it, and
+      #     /healthz does not check extensions
+      - name: Verify the images agree
+        run: |
+          set -euo pipefail
+          WP="$REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG"
+          WT="$REGISTRY/$REPOSITORY:hale-platform_wptools-$IMAGE_TAG"
+          docker pull -q "$WP" >/dev/null
+          docker pull -q "$WT" >/dev/null
+
+          php_of() { docker run --rm --entrypoint php "$1" -r 'echo PHP_VERSION;'; }
+          wp_php="$(php_of "$WP")"
+          wt_php="$(php_of "$WT")"
+          echo "wordpress PHP $wp_php"
+          echo "wptools   PHP $wt_php"
+
+          if [ "${wp_php%.*}" != "${wt_php%.*}" ]; then
+            echo "::error::PHP minor version mismatch - wordpress $wp_php, wptools $wt_php"
+            exit 1
+          fi
+          if [ "$wp_php" != "$wt_php" ]; then
+            echo "::warning::PHP patch versions differ - wordpress $wp_php, wptools $wt_php"
+          fi
+
+          # wp-cli bootstraps WordPress, so the sidecar needs what the site loads.
+          for e in mysqli pdo_mysql phar mbstring xml dom simplexml curl openssl \
+                   session fileinfo tokenizer ctype iconv posix redis; do
+            if ! docker run --rm --entrypoint php "$WT" -r "exit(extension_loaded('$e') ? 0 : 1);"; then
+              echo "::error::wptools is missing the $e extension"
+              exit 1
+            fi
+          done
+
+          if ! docker run --rm --entrypoint php "$WP" -r "exit(extension_loaded('redis') ? 0 : 1);"; then
+            echo "::error::redis.so did not load in the wordpress image - check the ABI it was built against"
+            exit 1
+          fi
+
+          echo "images agree: PHP ${wp_php%.*}, all required extensions present"
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ secrets.ecr-repo }}
+          IMAGE_TAG: ${{ github.sha }}
   deployImage:
     name: Deploy to Environment
     needs: [buildImage]
