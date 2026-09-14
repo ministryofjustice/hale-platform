@@ -41,43 +41,43 @@ RUN apk add --no-cache git \
 FROM alpine:3.24
 
 # mariadb-client provides mysql/mysqldump/mysqlcheck, which is what `wp db`
-# shells out to. The php84-* set covers what wp-cli needs to bootstrap
+# shells out to. The php85-* set covers what wp-cli needs to bootstrap
 # WordPress far enough to read wp-config.php.
 RUN apk add --no-cache \
         mariadb-client \
-        php84 \
-        php84-mysqli \
-        php84-pdo \
-        php84-pdo_mysql \
-        php84-phar \
-        php84-mbstring \
-        php84-curl \
-        php84-openssl \
-        php84-simplexml \
-        php84-xml \
-        php84-dom \
-        php84-tokenizer \
-        php84-ctype \
-        php84-iconv \
-        php84-session \
-        php84-fileinfo \
-        php84-exif \
-        php84-intl \
-        php84-zip \
-        php84-sodium \
-        php84-posix \
-        php84-opcache \
-        php84-xmlreader \
-        php84-xmlwriter \
-        php84-sqlite3 \
-        php84-pdo_sqlite \
-        php84-bcmath \
-        php84-gd \
-        php84-pecl-imagick \
-        php84-pecl-redis \
+        php85 \
+        php85-mysqli \
+        php85-pdo \
+        php85-pdo_mysql \
+        php85-phar \
+        php85-mbstring \
+        php85-curl \
+        php85-openssl \
+        php85-simplexml \
+        php85-xml \
+        php85-dom \
+        php85-tokenizer \
+        php85-ctype \
+        php85-iconv \
+        php85-session \
+        php85-fileinfo \
+        php85-exif \
+        php85-intl \
+        php85-zip \
+        php85-sodium \
+        php85-posix \
+        php85-opcache \
+        php85-xmlreader \
+        php85-xmlwriter \
+        php85-sqlite3 \
+        php85-pdo_sqlite \
+        php85-bcmath \
+        php85-gd \
+        php85-pecl-imagick \
+        php85-pecl-redis \
         neovim \
         curl \
-    && ln -sf /usr/bin/php84 /usr/local/bin/php
+    && ln -sf /usr/bin/php85 /usr/local/bin/php
 
 # Newer mariadb-client installs the mariadb-* binary names. wp-cli invokes
 # mysql/mysqldump/mysqlcheck by name, so make sure those resolve.
