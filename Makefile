@@ -2,7 +2,7 @@
 ### Local build config
 ####################################################
 
-.PHONY: run run-with-firewall run-with-pagecache down down-firewall down-pagecache build shell none clone-repos symlink symlink-auto wait-wordpress logs restart clean help test-firewall wp-core-cve-check redis-cli redis-cli-local redis-cheatsheet uptime-run uptime-down
+.PHONY: check-versions run run-with-firewall run-with-pagecache down down-firewall down-pagecache build shell none clone-repos symlink symlink-auto wait-wordpress logs restart clean help test-firewall wp-core-cve-check redis-cli redis-cli-local redis-cheatsheet uptime-run uptime-down
 # Default target - list targets with their ## descriptions
 help: ## Show this help
 	@echo "Available commands:"
@@ -177,6 +177,11 @@ symlink-auto:
 	@if [ -n "$$(find dev -mindepth 2 -maxdepth 2 -type d 2>/dev/null)" ]; then \
 		$(MAKE) --no-print-directory symlink; \
 	fi
+
+# Assert the WordPress/PHP versions declared across the dockerfiles and the CI
+# workflow still agree. Also run on every pull request.
+check-versions: ## Check version references agree across images and CI
+	@./bin/check-versions.sh
 
 # Lint and test firewall scripts
 test-firewall: ## Lint and test firewall scripts

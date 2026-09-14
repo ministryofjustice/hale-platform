@@ -69,3 +69,18 @@ jobs:
               --values helm_deploy/wordpress/values-"$env".yaml
             echo "::endgroup::"
           done
+
+  # Two numbers - the WordPress core version and the PHP version - are declared
+  # independently in four files, and nothing links them at build time. A
+  # mismatch is quiet: local tests a different PHP than production runs, or the
+  # wptools sidecar bootstraps WordPress on an older interpreter than the site
+  # does. Needs no secrets, no cluster and no images.
+  versions:
+    name: Version references agree
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
+
+      - name: Check versions
+        run: ./bin/check-versions.sh
