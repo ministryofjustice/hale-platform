@@ -43,6 +43,11 @@ FROM alpine:3.24
 # mariadb-client provides mysql/mysqldump/mysqlcheck, which is what `wp db`
 # shells out to. The php85-* set covers what wp-cli needs to bootstrap
 # WordPress far enough to read wp-config.php.
+#
+# No opcache here, deliberately. Alpine has no php85-opcache package, and it
+# would buy nothing if it did: this container runs wp-cli, one process per
+# command, and opcache caches compiled bytecode for reuse across requests in a
+# long-running process. PHP disables it for CLI by default for the same reason.
 RUN apk add --no-cache \
         mariadb-client \
         php85 \
@@ -66,7 +71,6 @@ RUN apk add --no-cache \
         php85-zip \
         php85-sodium \
         php85-posix \
-        php85-opcache \
         php85-xmlreader \
         php85-xmlwriter \
         php85-sqlite3 \
