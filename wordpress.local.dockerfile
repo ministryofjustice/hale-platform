@@ -14,84 +14,76 @@
 # for local builds. Production (wordpress.dockerfile) stays amd64.
 # ##################################################
 
-# ---------------------------------------------------------------------------
-# Builder stage - see wordpress.dockerfile for the rationale.
-# ---------------------------------------------------------------------------
-# Image versions. PHP_VERSION selects the base image tag AND the Debian -dev
-# package the Redis extension is compiled against, so the two have to agree -
-# which in practice means PHP_VERSION can only be a version Debian packages.
-#
-# Trixie tops out at 8.4, and that cap is not avoidable on this base. Verified by
-# building against the -dev image: /usr/bin holds only `php` and `php-8.4` - no
-# phpize and no php-config, suffixed or otherwise - and /usr/lib/php holds only
-# `extensions`. DHI's "-dev" means the variant has a shell and a package manager,
-# NOT that it ships PHP development headers.
-#
-# So Debian's php<version>-dev is the only source of phpize and headers here, and
-# the extension it produces loads into DHI's own PHP because the ABI triple
-# matches (API20240924, NTS, no-debug) - not because the headers came from the
-# same build. That is the property being relied on; it is sound, but it is worth
-# knowing it is a compatibility guarantee rather than an identity.
-#
-# Getting past 8.4 means building the extension somewhere that has the tooling:
-# the official php:<version> image (it bundles pecl) in a third stage, or the
-# Alpine DHI variant, whose php85-dev package does exist. Core and PHP are
-# independent decisions; this file bumps core only.
-#
-# php${PHP_VERSION}-dev brings phpize, the matching headers and the autotools.
-# php-pear is deliberately NOT installed - it depends on php-cli, and pulling a
-# second PHP in to get `pecl` risks compiling against the wrong ABI. phpize
-# builds the extension directly instead. gzip is needed because tar shells out
-# to it for -z. All build-stage only; the runtime copies the finished .so.
 ARG WORDPRESS_VERSION=7.1
 ARG PHP_VERSION=8.4
 
+# ---------------------------------------------------------------------------
+# Extension stage: compile PHPRedis.
+#
+# Built in the official PHP image rather than the DHI one, because no DHI
+# variant ships phpize or php-config - "-dev" there means the image has a shell
+# and a package manager, not that it carries development headers. Debian's
+# php<version>-dev was filling that gap, which capped PHP at whatever Debian
+# packages; the official image tracks upstream releases and bundles pecl, so
+# that ceiling is gone.
+#
+# Only redis.so leaves this stage. The shell, the package manager and the root
+# user it needs never reach the runtime image, which is still COPY-only.
+#
+# The .so is loaded by a PHP that did not build it. That is sound: extension
+# compatibility is defined by the ABI triple - PHP API number, thread safety and
+# debug build - which matches for any build of the same PHP minor version. It is
+# the same guarantee the previous approach relied on, against a different
+# provider.
+#
+# Pinned and checksum-verified: this is compiled C loaded into every PHP-FPM
+# process, and a bare "pecl install redis" takes whatever is latest on the day.
+# pecl publishes no per-release hash, so this attests to the bytes fetched when
+# the pin was set. Bump both together - https://pecl.php.net/package/redis
+# ---------------------------------------------------------------------------
+FROM php:${PHP_VERSION}-cli AS extbuilder
+
+ARG PHPREDIS_VERSION=6.3.0
+ARG PHPREDIS_SHA256=0d5141f634bd1db6c1ddcda053d25ecf2c4fc1c395430d534fd3f8d51dd7f0b5
+RUN curl -fsSL -o /tmp/redis.tgz \
+        "https://pecl.php.net/get/redis-${PHPREDIS_VERSION}.tgz" \
+    && echo "${PHPREDIS_SHA256}  /tmp/redis.tgz" | sha256sum -c - \
+    && pecl install /tmp/redis.tgz \
+    && cp "$(php-config --extension-dir)/redis.so" /tmp/redis.so \
+    && echo "extension=/usr/local/lib/php-extensions/redis.so" > /tmp/docker-php-ext-redis.ini \
+    && rm -rf /tmp/redis.tgz
+
+# ---------------------------------------------------------------------------
+# Builder stage - see wordpress.dockerfile for the rationale.
+# ---------------------------------------------------------------------------
+# Image versions - the only place either is written. Both are consumed solely by
+# the FROM tags below, so bumping either is a one-line edit here.
+#
+# PHP_VERSION drives three tags: the two DHI stages and the official php image
+# the extension is compiled in. It is no longer bounded by what Debian packages.
+# That mattered: no DHI variant ships phpize or php-config - verified in CI,
+# /usr/bin holds only `php` and `php-8.4`, and "-dev" there means the image has
+# a shell and a package manager, not development headers - so the only source of
+# build tooling was Debian's php<version>-dev, which stops at 8.4 on trixie.
+#
+# Core and PHP still bump independently: wptools installs its own Alpine php8X-*
+# packages and CI resolves composer under setup-php, so a PHP bump is four files.
+# bin/check-versions.sh asserts they agree.
+#
 FROM dhi.io/wordpress:${WORDPRESS_VERSION}-php${PHP_VERSION}-fpm-dev AS builder
 
 # PHP_VERSION is consumed by the FROM tags above and nothing else.
 USER root
 
+# Nothing is compiled in this stage any more - the extension is built in
+# extbuilder above - so this is just what is needed to fetch and unpack: wp-cli
+# and the translation packs.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        build-essential \
-        php${PHP_VERSION}-dev \
-        autoconf \
-        automake \
-        libtool \
-        pkg-config \
         ca-certificates \
         curl \
-        gzip \
         unzip \
     && rm -rf /var/lib/apt/lists/*
 
-# Pinned and checksum-verified, for the same reason wp-cli is below: bare
-# "pecl install redis" takes whatever release is latest on the day, and the
-# result is compiled C loaded into every PHP-FPM process. The tarball is
-# fetched here and handed to pecl as a local file, so the hash is checked
-# before anything is unpacked or built.
-#
-# What the sha256 buys: the exact bytes are pinned, so a rebuild that fetches
-# different ones fails loudly instead of quietly shipping different code. What
-# it does not buy: pecl publishes no per-release hash to check against, so this
-# attests to what was fetched when the pin was set, not to authenticity at the
-# source. It was cross-checked against the file size in pecl's release
-# metadata (399284 bytes) at the time of pinning.
-#
-# Bump both values together - releases are at https://pecl.php.net/package/redis
-ARG PHPREDIS_VERSION=6.3.0
-ARG PHPREDIS_SHA256=0d5141f634bd1db6c1ddcda053d25ecf2c4fc1c395430d534fd3f8d51dd7f0b5
-RUN curl -fsSL -o /tmp/redis.tgz \
-    "https://pecl.php.net/get/redis-${PHPREDIS_VERSION}.tgz" \
-    && echo "${PHPREDIS_SHA256}  /tmp/redis.tgz" | sha256sum -c - \
-    && tar -xzf /tmp/redis.tgz -C /tmp \
-    && cd "/tmp/redis-${PHPREDIS_VERSION}" \
-    && phpize \
-    && ./configure \
-    && make -j"$(nproc)" \
-    && make install \
-    && cd / && rm -rf /tmp/redis.tgz "/tmp/redis-${PHPREDIS_VERSION}" \
-    && cp "$(php-config --extension-dir)/redis.so" /tmp/redis.so \
-    && echo "extension=/usr/local/lib/php-extensions/redis.so" > /tmp/docker-php-ext-redis.ini
 
 # wp-cli, pinned and checksum-verified. Fetching an unpinned phar from a raw
 # git host and executing it is a supply-chain risk: this binary runs with full
@@ -117,8 +109,8 @@ FROM dhi.io/wordpress:${WORDPRESS_VERSION}-php${PHP_VERSION}-fpm
 # Version-independent paths: the .so is referenced by absolute path from the
 # .ini, so neither the PHP version nor the ABI number appears here. PHP_INI_DIR
 # comes from the base image, so a PHP bump follows the FROM tag automatically.
-COPY --from=builder /tmp/redis.so /usr/local/lib/php-extensions/redis.so
-COPY --from=builder /tmp/docker-php-ext-redis.ini ${PHP_INI_DIR}/conf.d/docker-php-ext-redis.ini
+COPY --from=extbuilder /tmp/redis.so /usr/local/lib/php-extensions/redis.so
+COPY --from=extbuilder /tmp/docker-php-ext-redis.ini ${PHP_INI_DIR}/conf.d/docker-php-ext-redis.ini
 
 COPY --from=builder --chmod=0755 /tmp/wp /usr/local/bin/wp
 
