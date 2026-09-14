@@ -27,6 +27,12 @@
 # package (there is no php8.5-dev in trixie). Installing php-pear here would be
 # actively harmful - it depends on php-cli, which resolves to Debian's PHP and
 # would compile the extension against the wrong ABI.
+#
+# autoconf/automake/libtool were previously arriving as dependencies of the
+# php-dev package, and phpize cannot run without them. gzip is needed because
+# tar shells out to it for -z; pecl never needed it because it decompresses
+# through PHP's own zlib. Both are build-stage only - the runtime stage copies
+# the finished .so and nothing else.
 ARG WORDPRESS_VERSION=7.1
 ARG PHP_VERSION=8.5
 
@@ -39,9 +45,13 @@ USER root
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
+        autoconf \
+        automake \
+        libtool \
         pkg-config \
         ca-certificates \
         curl \
+        gzip \
         unzip \
     && rm -rf /var/lib/apt/lists/*
 
