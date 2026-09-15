@@ -95,8 +95,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # ---------------------------------------------------------------------------
 # Ghostscript, staged for the runtime stage.
 #
-# ImageMagick has no PDF decoder of its own - it shells out to `gs`. Without it
-# every PDF upload 500s: WordPress asks an image editor for thumbnail sizes
+# ImageMagick has no PDF decoder of its own - it forks `gs`. Without it every
+# PDF upload 500s: WordPress asks an image editor for thumbnail sizes
 # (wp-admin/includes/image.php), Imagick::readImage() reports
 # "FailedToExecuteCommand `gs'", and nothing catches it.
 #
@@ -105,39 +105,49 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # pulled ghostscript in behind libMagickCore. DHI installs no such thing, so it
 # has to be asked for deliberately.
 #
-# Staged rather than installed, because the runtime stage has no package
-# manager. The find/comm pair records the filesystem either side of the install
-# and stages only what apt added, so nothing from the base image is shadowed by
-# the COPY - including /etc/ld.so.cache, which is rewritten in place by apt's
-# ldconfig trigger and would be wrong in the runtime. That the loader has no
-# cache entry for these libraries is fine: glibc falls back to its built-in
-# default directories, which is where they land.
+# Downloaded and unpacked, not installed. A plain apt-get install fails in this
+# image: dpkg cannot configure the packages and exits 1 with every one of them
+# listed - the libraries as well as ghostscript itself, which is the signature
+# of trigger processing failing rather than of anything specific to gs. None of
+# that configuration is wanted anyway. The runtime has no package manager, runs
+# no maintainer script and cannot run ldconfig, so the only thing needed out of
+# these packages is their files.
+#
+# Working package-wise also makes the COPY additive by construction. apt
+# downloads only what is not already installed in this stage, and this stage is
+# the runtime image plus a shell and a package manager - so anything downloaded
+# here is absent from the runtime too. /etc/ld.so.cache in particular is never
+# touched, where an install would have had apt's ldconfig trigger rewrite it in
+# place and the runtime would have inherited a cache describing a filesystem it
+# does not have. That the loader then has no cache entry for these libraries is
+# fine: glibc falls back to its built-in default directories, which is where
+# they land.
 #
 # fonts-urw-base35 is named explicitly. It is what gs substitutes with when a
 # PDF does not embed its own fonts, and a thumbnail of unrenderable text is
 # worse than no thumbnail.
 #
 # The runtime image is verified to actually run this - see the "Verify the
-# images agree" step in .github/workflows/rw-build-image.yaml. The -dev variant
-# carries libraries the runtime does not, so a dependency satisfied here is not
-# proof of one satisfied there.
+# images agree" step in .github/workflows/rw-build-image.yaml. This stage
+# carries packages the runtime does not, so a dependency treated as satisfied
+# here is not proof of one satisfied there.
 # ---------------------------------------------------------------------------
-RUN find /usr /etc -xdev | sort > /tmp/fs-before \
-    && apt-get update && apt-get install -y --no-install-recommends \
+RUN mkdir -p /tmp/debs/partial /tmp/gs \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends --download-only \
+        -o Dir::Cache::archives=/tmp/debs \
+        -o APT::Keep-Downloaded-Packages=true \
         ghostscript \
         fonts-urw-base35 \
-    && rm -rf /var/lib/apt/lists/* \
-    && find /usr /etc -xdev | sort > /tmp/fs-after \
-    && mkdir -p /tmp/gs \
-    && comm -13 /tmp/fs-before /tmp/fs-after \
-        | grep -Ev '^/usr/share/(doc|man|info|lintian|bug)(/|$)' \
-        | tar -cf - --no-recursion -T - \
-        | tar -xf - -C /tmp/gs \
-    && rm -f /tmp/fs-before /tmp/fs-after \
+    && for deb in /tmp/debs/*.deb; do dpkg-deb -x "$deb" /tmp/gs; done \
+    && rm -rf /tmp/debs /var/lib/apt/lists/* \
+    && rm -rf /tmp/gs/usr/share/doc /tmp/gs/usr/share/man /tmp/gs/usr/share/lintian \
     && test -x /tmp/gs/usr/bin/gs \
+    && ! LD_LIBRARY_PATH=/tmp/gs/usr/lib/x86_64-linux-gnu \
+        ldd /tmp/gs/usr/bin/gs | grep "not found" \
     && echo "gs libraries not staged, so expected in the runtime base:" \
-    && ldd /usr/bin/gs | awk '$3 ~ /^\// {print $3}' | sed 's|^/lib/|/usr/lib/|' \
-        | sort -u | while read -r l; do [ -e "/tmp/gs$l" ] || echo "  $l"; done
+    && LD_LIBRARY_PATH=/tmp/gs/usr/lib/x86_64-linux-gnu ldd /tmp/gs/usr/bin/gs \
+        | awk '$3 ~ /^\// {print $3}' | grep -v '^/tmp/gs' | sort -u | sed 's/^/  /'
 
 
 # The runtime image has a PHP CLI but no curl, so the download happens here and
@@ -228,11 +238,11 @@ COPY --from=extbuilder /tmp/docker-php-ext-redis.ini ${PHP_INI_DIR}/conf.d/docke
 COPY --from=builder --chmod=0755 /tmp/wp /usr/local/bin/wp
 
 # Ghostscript (staged in the builder above). The tree holds /usr/bin/gs, the
-# shared libraries apt pulled in with it and the PostScript resources under
-# /usr/share/ghostscript, each already at the path it was installed to. Only
-# files absent from the base image are in it, so this COPY adds and never
-# replaces. Needed by ImageMagick to rasterise the first page of a PDF upload
-# into the media library thumbnail.
+# shared libraries it was downloaded with and the PostScript resources under
+# /usr/share/ghostscript, each at the path dpkg would have installed it to.
+# It contains only packages this image does not already have, so the COPY
+# adds and never replaces. Needed by ImageMagick to rasterise the first page
+# of a PDF upload into the media library thumbnail.
 COPY --from=builder /tmp/gs/ /
 
 # Add PHP multsite supporting files

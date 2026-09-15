@@ -88,27 +88,29 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         unzip \
     && rm -rf /var/lib/apt/lists/*
 
-# Ghostscript, staged for the runtime stage. ImageMagick shells out to `gs` to
+# Ghostscript, staged for the runtime stage. ImageMagick forks `gs` to
 # rasterise a PDF, so without it every PDF upload fails in
-# wp_generate_attachment_metadata. The find/comm pair stages only what apt
-# added, so the COPY in the runtime stage shadows nothing from the base image.
+# wp_generate_attachment_metadata. Downloaded and unpacked rather than
+# installed, because dpkg cannot configure these packages in this image - and
+# the runtime needs their files, not their maintainer scripts. apt downloads
+# only what this stage lacks, so the COPY below shadows nothing.
 # Full reasoning in wordpress.dockerfile.
-RUN find /usr /etc -xdev | sort > /tmp/fs-before \
-    && apt-get update && apt-get install -y --no-install-recommends \
+RUN mkdir -p /tmp/debs/partial /tmp/gs \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends --download-only \
+        -o Dir::Cache::archives=/tmp/debs \
+        -o APT::Keep-Downloaded-Packages=true \
         ghostscript \
         fonts-urw-base35 \
-    && rm -rf /var/lib/apt/lists/* \
-    && find /usr /etc -xdev | sort > /tmp/fs-after \
-    && mkdir -p /tmp/gs \
-    && comm -13 /tmp/fs-before /tmp/fs-after \
-        | grep -Ev '^/usr/share/(doc|man|info|lintian|bug)(/|$)' \
-        | tar -cf - --no-recursion -T - \
-        | tar -xf - -C /tmp/gs \
-    && rm -f /tmp/fs-before /tmp/fs-after \
+    && for deb in /tmp/debs/*.deb; do dpkg-deb -x "$deb" /tmp/gs; done \
+    && rm -rf /tmp/debs /var/lib/apt/lists/* \
+    && rm -rf /tmp/gs/usr/share/doc /tmp/gs/usr/share/man /tmp/gs/usr/share/lintian \
     && test -x /tmp/gs/usr/bin/gs \
+    && ! LD_LIBRARY_PATH=/tmp/gs/usr/lib/x86_64-linux-gnu \
+        ldd /tmp/gs/usr/bin/gs | grep "not found" \
     && echo "gs libraries not staged, so expected in the runtime base:" \
-    && ldd /usr/bin/gs | awk '$3 ~ /^\// {print $3}' | sed 's|^/lib/|/usr/lib/|' \
-        | sort -u | while read -r l; do [ -e "/tmp/gs$l" ] || echo "  $l"; done
+    && LD_LIBRARY_PATH=/tmp/gs/usr/lib/x86_64-linux-gnu ldd /tmp/gs/usr/bin/gs \
+        | awk '$3 ~ /^\// {print $3}' | grep -v '^/tmp/gs' | sort -u | sed 's/^/  /'
 
 
 # wp-cli, pinned and checksum-verified. Fetching an unpinned phar from a raw
