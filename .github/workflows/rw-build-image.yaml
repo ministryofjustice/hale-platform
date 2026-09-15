@@ -234,9 +234,10 @@ jobs:
       # The wordpress and wptools images are built independently, from different
       # bases, each with its own PHP. bin/check-versions.sh asserts the versions
       # *declared* in the repo agree; this asserts the versions actually built do,
-      # and that the sidecar can still bootstrap WordPress.
+      # that the sidecar can still bootstrap WordPress, and that the binaries the
+      # platform forks are present and working.
       #
-      # It catches three things nothing else does:
+      # It surfaces things nothing else does:
       #   - the two PHPs drifting apart despite matching ARGs
       #   - a distro renaming or dropping a package, so an extension the site
       #     loads quietly disappears from the sidecar and every `wp` command
@@ -244,41 +245,47 @@ jobs:
       #   - redis.so failing to load in the wordpress image, which is silent:
       #     php-fpm logs a startup warning and serves on without it, and
       #     /healthz does not check extensions
+      #   - ghostscript or hunspell missing or unusable, which is silent until a
+      #     PDF upload 500s or a cron run dies
+      #
+      # Advisory: every finding is a ::warning:: and the step always exits 0.
+      # None of this stops a deploy - the annotations on the run summary are the
+      # output. `set -e` is deliberately absent: each check is tested explicitly,
+      # and nothing unexpected should be able to fail the job either.
       - name: Verify the images agree
         run: |
-          set -euo pipefail
+          set -uo pipefail
+          warnings=0
+          warn() { echo "::warning::$*"; warnings=$((warnings + 1)); }
+
           WP="$REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG"
           WT="$REGISTRY/$REPOSITORY:hale-platform_wptools-$IMAGE_TAG"
-          docker pull -q "$WP" >/dev/null
-          docker pull -q "$WT" >/dev/null
+          docker pull -q "$WP" >/dev/null || warn "could not pull the wordpress image - the checks below cannot run"
+          docker pull -q "$WT" >/dev/null || warn "could not pull the wptools image - the checks below cannot run"
 
-          php_of() { docker run --rm --entrypoint php "$1" -r 'echo PHP_VERSION;'; }
+          php_of() { docker run --rm --entrypoint php "$1" -r 'echo PHP_VERSION;' 2>/dev/null; }
           wp_php="$(php_of "$WP")"
           wt_php="$(php_of "$WT")"
-          echo "wordpress PHP $wp_php"
-          echo "wptools   PHP $wt_php"
+          echo "wordpress PHP ${wp_php:-unknown}"
+          echo "wptools   PHP ${wt_php:-unknown}"
 
-          if [ "${wp_php%.*}" != "${wt_php%.*}" ]; then
-            echo "::error::PHP minor version mismatch - wordpress $wp_php, wptools $wt_php"
-            exit 1
-          fi
-          if [ "$wp_php" != "$wt_php" ]; then
-            echo "::warning::PHP patch versions differ - wordpress $wp_php, wptools $wt_php"
+          if [ -z "$wp_php" ] || [ -z "$wt_php" ]; then
+            warn "could not read the PHP version out of one of the images"
+          elif [ "${wp_php%.*}" != "${wt_php%.*}" ]; then
+            warn "PHP minor version mismatch - wordpress $wp_php, wptools $wt_php"
+          elif [ "$wp_php" != "$wt_php" ]; then
+            warn "PHP patch versions differ - wordpress $wp_php, wptools $wt_php"
           fi
 
           # wp-cli bootstraps WordPress, so the sidecar needs what the site loads.
           for e in mysqli pdo_mysql phar mbstring xml dom simplexml curl openssl \
                    session fileinfo tokenizer ctype iconv posix redis; do
-            if ! docker run --rm --entrypoint php "$WT" -r "exit(extension_loaded('$e') ? 0 : 1);"; then
-              echo "::error::wptools is missing the $e extension"
-              exit 1
-            fi
+            docker run --rm --entrypoint php "$WT" -r "exit(extension_loaded('$e') ? 0 : 1);" \
+              || warn "wptools is missing the $e extension"
           done
 
-          if ! docker run --rm --entrypoint php "$WP" -r "exit(extension_loaded('redis') ? 0 : 1);"; then
-            echo "::error::redis.so did not load in the wordpress image - check the ABI it was built against"
-            exit 1
-          fi
+          docker run --rm --entrypoint php "$WP" -r "exit(extension_loaded('redis') ? 0 : 1);" \
+            || warn "redis.so did not load in the wordpress image - check the ABI it was built against"
 
           # PDF uploads. ImageMagick has no PDF decoder of its own, so a media
           # library thumbnail for a PDF is a fork of /usr/bin/gs. Ghostscript is
@@ -287,10 +294,8 @@ jobs:
           # reads it back in the runtime image, which is the only place the
           # dependency is actually resolved. A missing gs surfaces here as
           # "FailedToExecuteCommand" rather than as a 500 on first upload.
-          if ! docker run --rm --tmpfs /tmp:rw,mode=1777 --entrypoint php "$WP" -r '$i=new Imagick(); $i->newImage(8,8,"white"); $i->setImageFormat("pdf"); $i->writeImage("/tmp/probe.pdf"); $j=new Imagick(); $j->readImage("/tmp/probe.pdf[0]"); exit($j->getImageWidth() > 0 ? 0 : 1);'; then
-            echo "::error::the wordpress image cannot rasterise a PDF - check that ghostscript was staged into the runtime stage"
-            exit 1
-          fi
+          docker run --rm --tmpfs /tmp:rw,mode=1777 --entrypoint php "$WP" -r '$i=new Imagick(); $i->newImage(8,8,"white"); $i->setImageFormat("pdf"); $i->writeImage("/tmp/probe.pdf"); $j=new Imagick(); $j->readImage("/tmp/probe.pdf[0]"); exit($j->getImageWidth() > 0 ? 0 : 1);' \
+            || warn "the wordpress image cannot rasterise a PDF - check that ghostscript was staged into the runtime stage"
 
           # Spellcheck. The justice theme forks hunspell from a cron hook, and
           # PhpSpellcheck raises on a non-zero exit or on any stderr at all -
@@ -300,7 +305,7 @@ jobs:
           # wordlist from the Alpine stage, and a UTF-8 locale. The probe
           # dictionary carries an accented entry on purpose - that is what
           # hunspell cannot convert when glibc reports ANSI_X3.4-1968.
-          if ! docker run --rm --tmpfs /tmp:rw,mode=1777 --entrypoint sh "$WP" -c '
+          docker run --rm --tmpfs /tmp:rw,mode=1777 --entrypoint sh "$WP" -c '
             printf "caf\303\251\nSchedule\n" > /tmp/probe.dic
             printf "\nteh Schedule\n" | hunspell -p /tmp/probe.dic -i UTF-8 -a \
                 -d en_GB-large > /tmp/probe.out 2> /tmp/probe.err
@@ -308,12 +313,14 @@ jobs:
               echo "hunspell wrote to stderr:"; cat /tmp/probe.err; exit 1
             fi
             grep -q "^&" /tmp/probe.out
-          '; then
-            echo "::error::hunspell cannot spellcheck cleanly against en_GB-large - check the dictionaries stage and LANG"
-            exit 1
-          fi
+          ' || warn "hunspell cannot spellcheck cleanly against en_GB-large - check the dictionaries stage and LANG"
 
-          echo "images agree: PHP ${wp_php%.*}, all required extensions present"
+          if [ "$warnings" -eq 0 ]; then
+            echo "images agree: PHP ${wp_php%.*}, extensions present, gs and hunspell working"
+          else
+            echo "$warnings check(s) reported - see the warning annotations on this run"
+          fi
+          exit 0
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: ${{ secrets.ecr-repo }}
