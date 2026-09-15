@@ -13,8 +13,8 @@
 #    copy and wp-config-docker.php, so the multisite bootstrap is unchanged.
 # ##################################################
 
-ARG WORDPRESS_VERSION=7.1
-ARG PHP_VERSION=8.5
+ARG WORDPRESS_VERSION=7.0.4
+ARG PHP_VERSION=8.4
 
 # ---------------------------------------------------------------------------
 # Extension stage: compile PHPRedis.
