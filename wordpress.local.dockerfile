@@ -93,7 +93,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # wp_generate_attachment_metadata. Downloaded and unpacked rather than
 # installed, because dpkg cannot configure these packages in this image - and
 # the runtime needs their files, not their maintainer scripts. apt downloads
-# only what this stage lacks, so the COPY below shadows nothing.
+# only what this stage lacks, so the COPY below shadows nothing. `ldconfig -n`
+# creates the SONAME symlinks dpkg-deb does not unpack.
 # Full reasoning in wordpress.dockerfile.
 RUN mkdir -p /tmp/debs/partial /tmp/gs \
     && apt-get update \
@@ -105,6 +106,7 @@ RUN mkdir -p /tmp/debs/partial /tmp/gs \
     && for deb in /tmp/debs/*.deb; do dpkg-deb -x "$deb" /tmp/gs; done \
     && rm -rf /tmp/debs /var/lib/apt/lists/* \
     && rm -rf /tmp/gs/usr/share/doc /tmp/gs/usr/share/man /tmp/gs/usr/share/lintian \
+    && ldconfig -n /tmp/gs/usr/lib/x86_64-linux-gnu \
     && test -x /tmp/gs/usr/bin/gs \
     && ! LD_LIBRARY_PATH=/tmp/gs/usr/lib/x86_64-linux-gnu \
         ldd /tmp/gs/usr/bin/gs | grep "not found" \

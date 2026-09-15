@@ -105,6 +105,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # pulled ghostscript in behind libMagickCore. DHI installs no such thing, so it
 # has to be asked for deliberately.
 #
+# dpkg-deb unpacks files and nothing else, so the SONAME symlinks that ldconfig
+# would normally create are missing - Debian library packages ship only the
+# fully versioned file, libgs.so.10.05 and not libgs.so.10, which is what gs
+# actually links against. `ldconfig -n` on the staged directory creates them
+# without touching any cache, which is exactly the half of ldconfig wanted here.
+#
 # Downloaded and unpacked, not installed. A plain apt-get install fails in this
 # image: dpkg cannot configure the packages and exits 1 with every one of them
 # listed - the libraries as well as ghostscript itself, which is the signature
@@ -142,6 +148,7 @@ RUN mkdir -p /tmp/debs/partial /tmp/gs \
     && for deb in /tmp/debs/*.deb; do dpkg-deb -x "$deb" /tmp/gs; done \
     && rm -rf /tmp/debs /var/lib/apt/lists/* \
     && rm -rf /tmp/gs/usr/share/doc /tmp/gs/usr/share/man /tmp/gs/usr/share/lintian \
+    && ldconfig -n /tmp/gs/usr/lib/x86_64-linux-gnu \
     && test -x /tmp/gs/usr/bin/gs \
     && ! LD_LIBRARY_PATH=/tmp/gs/usr/lib/x86_64-linux-gnu \
         ldd /tmp/gs/usr/bin/gs | grep "not found" \
