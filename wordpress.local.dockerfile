@@ -74,6 +74,14 @@ RUN curl -fsSL --retry 3 --retry-delay 2 --retry-all-errors -o /tmp/redis.tgz \
 # packages and CI resolves composer under setup-php, so a PHP bump is four files.
 # bin/check-versions.sh asserts they agree.
 #
+# Hunspell dictionaries. From Alpine because Debian's hunspell-en-gb ships
+# en_GB alone and the justice theme asks for en_GB-large, which PhpSpellcheck
+# passes straight to `hunspell -d`. Safe to mix: .aff and .dic are plain text
+# with no linkage to a C library. Full reasoning in wordpress.dockerfile.
+FROM alpine:3.24 AS dictionaries
+
+RUN apk add --no-cache hunspell-en-gb
+
 FROM dhi.io/wordpress:${WORDPRESS_VERSION}-php${PHP_VERSION}-fpm-dev AS builder
 
 # PHP_VERSION is consumed by the FROM tags above and nothing else.
@@ -88,31 +96,41 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         unzip \
     && rm -rf /var/lib/apt/lists/*
 
-# Ghostscript, staged for the runtime stage. ImageMagick forks `gs` to
+# External binaries the application shells out to. ImageMagick forks `gs` to
 # rasterise a PDF, so without it every PDF upload fails in
-# wp_generate_attachment_metadata. Downloaded and unpacked rather than
+# wp_generate_attachment_metadata; the justice theme forks `hunspell` to
+# spellcheck content on a cron hook, and without it that cron run dies on an
+# uncaught ProcessFailedException. Downloaded and unpacked rather than
 # installed, because dpkg cannot configure these packages in this image - and
 # the runtime needs their files, not their maintainer scripts. apt downloads
 # only what this stage lacks, so the COPY below shadows nothing. `ldconfig -n`
 # creates the SONAME symlinks dpkg-deb does not unpack.
 # Full reasoning in wordpress.dockerfile.
-RUN mkdir -p /tmp/debs/partial /tmp/gs \
+RUN mkdir -p /tmp/debs/partial /tmp/sysdeps \
     && apt-get update \
     && apt-get install -y --no-install-recommends --download-only \
         -o Dir::Cache::archives=/tmp/debs \
         -o APT::Keep-Downloaded-Packages=true \
         ghostscript \
         fonts-urw-base35 \
-    && for deb in /tmp/debs/*.deb; do dpkg-deb -x "$deb" /tmp/gs; done \
+        hunspell \
+    && for deb in /tmp/debs/*.deb; do dpkg-deb -x "$deb" /tmp/sysdeps; done \
     && rm -rf /tmp/debs /var/lib/apt/lists/* \
-    && rm -rf /tmp/gs/usr/share/doc /tmp/gs/usr/share/man /tmp/gs/usr/share/lintian \
-    && ldconfig -n /tmp/gs/usr/lib/x86_64-linux-gnu \
-    && test -x /tmp/gs/usr/bin/gs \
-    && ! LD_LIBRARY_PATH=/tmp/gs/usr/lib/x86_64-linux-gnu \
-        ldd /tmp/gs/usr/bin/gs | grep "not found" \
-    && echo "gs libraries not staged, so expected in the runtime base:" \
-    && LD_LIBRARY_PATH=/tmp/gs/usr/lib/x86_64-linux-gnu ldd /tmp/gs/usr/bin/gs \
-        | awk '$3 ~ /^\// {print $3}' | grep -v '^/tmp/gs' | sort -u | sed 's/^/  /'
+    && rm -rf /tmp/sysdeps/usr/share/doc /tmp/sysdeps/usr/share/man /tmp/sysdeps/usr/share/lintian \
+    && ldconfig -n /tmp/sysdeps/usr/lib/x86_64-linux-gnu \
+    && for bin in gs hunspell; do \
+        test -x "/tmp/sysdeps/usr/bin/$bin" || exit 1; \
+        if LD_LIBRARY_PATH=/tmp/sysdeps/usr/lib/x86_64-linux-gnu \
+            ldd "/tmp/sysdeps/usr/bin/$bin" | grep -q "not found"; then \
+            echo "unresolved libraries for $bin"; exit 1; \
+        fi; \
+    done \
+    && echo "libraries not staged, so expected in the runtime base:" \
+    && { for bin in gs hunspell; do \
+            LD_LIBRARY_PATH=/tmp/sysdeps/usr/lib/x86_64-linux-gnu \
+                ldd "/tmp/sysdeps/usr/bin/$bin"; \
+        done; } \
+        | awk '$3 ~ /^\// {print $3}' | grep -v '^/tmp/sysdeps' | sort -u | sed 's/^/  /'
 
 
 # wp-cli, pinned and checksum-verified. Fetching an unpinned phar from a raw
@@ -146,7 +164,10 @@ COPY --from=builder --chmod=0755 /tmp/wp /usr/local/bin/wp
 
 # Ghostscript (staged in the builder above), at its installed paths. Only files
 # absent from the base image are in the tree, so this adds and never replaces.
-COPY --from=builder /tmp/gs/ /
+COPY --from=builder /tmp/sysdeps/ /
+
+# Hunspell dictionaries (Alpine stage above).
+COPY --from=dictionaries /usr/share/hunspell /usr/share/hunspell
 
 # Add PHP multsite supporting files
 COPY opt/php/load.php /usr/src/wordpress/wp-content/mu-plugins/load.php

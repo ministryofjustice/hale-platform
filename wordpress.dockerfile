@@ -57,6 +57,25 @@ RUN curl -fsSL --retry 3 --retry-delay 2 --retry-all-errors -o /tmp/redis.tgz \
     && rm -rf /tmp/redis.tgz
 
 # ---------------------------------------------------------------------------
+# Hunspell dictionaries.
+#
+# From Alpine rather than Debian, because Debian's hunspell-en-gb ships en_GB
+# alone and the justice theme asks for en_GB-large. PhpSpellcheck passes that
+# name straight to `hunspell -d`, so a variant that does not exist is a failed
+# process rather than a fallback to a smaller wordlist. Alpine's package
+# carries both, and is the one the pre-hardening image installed, so this keeps
+# the platform spellchecking against the wordlist it always has.
+#
+# Mixing distributions is safe for these particular files. A .aff and a .dic
+# are plain text read at runtime, with no linkage to a C library or to whoever
+# packaged them. The binary itself still comes from Debian with everything
+# else. Pinned to the same Alpine the wptools image uses.
+# ---------------------------------------------------------------------------
+FROM --platform=linux/amd64 alpine:3.24 AS dictionaries
+
+RUN apk add --no-cache hunspell-en-gb
+
+# ---------------------------------------------------------------------------
 # Builder stage: compile PHPRedis and fetch wp-cli.
 # The -dev variant is the same base as the runtime image, which guarantees the
 # extension is built against the exact PHP ABI the runtime expects
@@ -93,7 +112,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # ---------------------------------------------------------------------------
-# Ghostscript, staged for the runtime stage.
+# External binaries the application shells out to, staged for the runtime.
 #
 # ImageMagick has no PDF decoder of its own - it forks `gs`. Without it every
 # PDF upload 500s: WordPress asks an image editor for thumbnail sizes
@@ -133,28 +152,42 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # PDF does not embed its own fonts, and a thumbnail of unrenderable text is
 # worse than no thumbnail.
 #
+# hunspell is the other one. The justice theme spellchecks page content on a
+# cron hook, through PhpSpellcheck, which runs the binary as a subprocess - so
+# a missing hunspell is an uncaught ProcessFailedException that kills the cron
+# run, not a skipped check. It was an explicit apk package before the base
+# image swap and was dropped with the rest of that block.
+#
 # The runtime image is verified to actually run this - see the "Verify the
 # images agree" step in .github/workflows/rw-build-image.yaml. This stage
 # carries packages the runtime does not, so a dependency treated as satisfied
 # here is not proof of one satisfied there.
 # ---------------------------------------------------------------------------
-RUN mkdir -p /tmp/debs/partial /tmp/gs \
+RUN mkdir -p /tmp/debs/partial /tmp/sysdeps \
     && apt-get update \
     && apt-get install -y --no-install-recommends --download-only \
         -o Dir::Cache::archives=/tmp/debs \
         -o APT::Keep-Downloaded-Packages=true \
         ghostscript \
         fonts-urw-base35 \
-    && for deb in /tmp/debs/*.deb; do dpkg-deb -x "$deb" /tmp/gs; done \
+        hunspell \
+    && for deb in /tmp/debs/*.deb; do dpkg-deb -x "$deb" /tmp/sysdeps; done \
     && rm -rf /tmp/debs /var/lib/apt/lists/* \
-    && rm -rf /tmp/gs/usr/share/doc /tmp/gs/usr/share/man /tmp/gs/usr/share/lintian \
-    && ldconfig -n /tmp/gs/usr/lib/x86_64-linux-gnu \
-    && test -x /tmp/gs/usr/bin/gs \
-    && ! LD_LIBRARY_PATH=/tmp/gs/usr/lib/x86_64-linux-gnu \
-        ldd /tmp/gs/usr/bin/gs | grep "not found" \
-    && echo "gs libraries not staged, so expected in the runtime base:" \
-    && LD_LIBRARY_PATH=/tmp/gs/usr/lib/x86_64-linux-gnu ldd /tmp/gs/usr/bin/gs \
-        | awk '$3 ~ /^\// {print $3}' | grep -v '^/tmp/gs' | sort -u | sed 's/^/  /'
+    && rm -rf /tmp/sysdeps/usr/share/doc /tmp/sysdeps/usr/share/man /tmp/sysdeps/usr/share/lintian \
+    && ldconfig -n /tmp/sysdeps/usr/lib/x86_64-linux-gnu \
+    && for bin in gs hunspell; do \
+        test -x "/tmp/sysdeps/usr/bin/$bin" || exit 1; \
+        if LD_LIBRARY_PATH=/tmp/sysdeps/usr/lib/x86_64-linux-gnu \
+            ldd "/tmp/sysdeps/usr/bin/$bin" | grep -q "not found"; then \
+            echo "unresolved libraries for $bin"; exit 1; \
+        fi; \
+    done \
+    && echo "libraries not staged, so expected in the runtime base:" \
+    && { for bin in gs hunspell; do \
+            LD_LIBRARY_PATH=/tmp/sysdeps/usr/lib/x86_64-linux-gnu \
+                ldd "/tmp/sysdeps/usr/bin/$bin"; \
+        done; } \
+        | awk '$3 ~ /^\// {print $3}' | grep -v '^/tmp/sysdeps' | sort -u | sed 's/^/  /'
 
 
 # The runtime image has a PHP CLI but no curl, so the download happens here and
@@ -250,7 +283,11 @@ COPY --from=builder --chmod=0755 /tmp/wp /usr/local/bin/wp
 # It contains only packages this image does not already have, so the COPY
 # adds and never replaces. Needed by ImageMagick to rasterise the first page
 # of a PDF upload into the media library thumbnail.
-COPY --from=builder /tmp/gs/ /
+COPY --from=builder /tmp/sysdeps/ /
+
+# Hunspell dictionaries (Alpine stage above), kept separate from the Debian
+# tree because the two distributions disagree about which variants exist.
+COPY --from=dictionaries /usr/share/hunspell /usr/share/hunspell
 
 # Add PHP multsite supporting files
 COPY opt/php/load.php /usr/src/wordpress/wp-content/mu-plugins/load.php

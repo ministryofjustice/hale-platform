@@ -300,6 +300,20 @@ jobs:
             exit 1
           fi
 
+          # Spellcheck. The justice theme forks hunspell from a cron hook, and a
+          # missing binary or a missing wordlist is an uncaught
+          # ProcessFailedException that takes the whole cron run with it. The
+          # binary and the dictionaries arrive from different stages - Debian
+          # ships en_GB only, so en_GB-large comes from an Alpine stage - which
+          # is exactly the seam worth testing. In -a mode hunspell answers a
+          # misspelling with & when it has suggestions and # when it does not;
+          # either proves the dictionary loaded.
+          if ! printf 'teh\n' | docker run -i --rm --entrypoint hunspell "$WP" \
+              -d en_GB-large -a | grep -q '^[&#]'; then
+            echo "::error::hunspell cannot spellcheck against en_GB-large - check the dictionaries stage"
+            exit 1
+          fi
+
           echo "images agree: PHP ${wp_php%.*}, all required extensions present"
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
