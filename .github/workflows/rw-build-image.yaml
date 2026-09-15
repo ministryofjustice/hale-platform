@@ -292,17 +292,24 @@ jobs:
             exit 1
           fi
 
-          # Spellcheck. The justice theme forks hunspell from a cron hook, and a
-          # missing binary or a missing wordlist is an uncaught
-          # ProcessFailedException that takes the whole cron run with it. The
-          # binary and the dictionaries arrive from different stages - Debian
-          # ships en_GB only, so en_GB-large comes from an Alpine stage - which
-          # is exactly the seam worth testing. In -a mode hunspell answers a
-          # misspelling with & when it has suggestions and # when it does not;
-          # either proves the dictionary loaded.
-          if ! printf 'teh\n' | docker run -i --rm --entrypoint hunspell "$WP" \
-              -d en_GB-large -a | grep -q '^[&#]'; then
-            echo "::error::hunspell cannot spellcheck against en_GB-large - check the dictionaries stage"
+          # Spellcheck. The justice theme forks hunspell from a cron hook, and
+          # PhpSpellcheck raises on a non-zero exit or on any stderr at all -
+          # which becomes an uncaught ProcessFailedException out of wp-cron.php.
+          # So this asserts silence, not just success, and exercises all three
+          # pieces that have to line up: the Debian binary, the en_GB-large
+          # wordlist from the Alpine stage, and a UTF-8 locale. The probe
+          # dictionary carries an accented entry on purpose - that is what
+          # hunspell cannot convert when glibc reports ANSI_X3.4-1968.
+          if ! docker run --rm --tmpfs /tmp:rw,mode=1777 --entrypoint sh "$WP" -c '
+            printf "caf\303\251\nSchedule\n" > /tmp/probe.dic
+            printf "\nteh Schedule\n" | hunspell -p /tmp/probe.dic -i UTF-8 -a \
+                -d en_GB-large > /tmp/probe.out 2> /tmp/probe.err
+            if [ -s /tmp/probe.err ]; then
+              echo "hunspell wrote to stderr:"; cat /tmp/probe.err; exit 1
+            fi
+            grep -q "^&" /tmp/probe.out
+          '; then
+            echo "::error::hunspell cannot spellcheck cleanly against en_GB-large - check the dictionaries stage and LANG"
             exit 1
           fi
 

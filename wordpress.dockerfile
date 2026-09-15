@@ -172,7 +172,12 @@ RUN mkdir -p /tmp/debs/partial /tmp/sysdeps \
         fonts-urw-base35 \
         hunspell \
     && for deb in /tmp/debs/*.deb; do dpkg-deb -x "$deb" /tmp/sysdeps; done \
-    && rm -rf /tmp/debs /var/lib/apt/lists/* \
+    && mkdir -p /tmp/libcdeb /tmp/sysdeps/usr/lib/locale \
+    && ( cd /tmp/libcdeb && apt-get download libc-bin ) \
+    && dpkg-deb -x /tmp/libcdeb/libc-bin_*.deb /tmp/libc \
+    && cp -a /tmp/libc/usr/lib/locale/C.utf8 /tmp/sysdeps/usr/lib/locale/ \
+    && test -f /tmp/sysdeps/usr/lib/locale/C.utf8/LC_CTYPE \
+    && rm -rf /tmp/libcdeb /tmp/libc /tmp/debs /var/lib/apt/lists/* \
     && rm -rf /tmp/sysdeps/usr/share/doc /tmp/sysdeps/usr/share/man /tmp/sysdeps/usr/share/lintian \
     && ldconfig -n /tmp/sysdeps/usr/lib/x86_64-linux-gnu \
     && for bin in gs hunspell; do \
@@ -288,6 +293,19 @@ COPY --from=builder /tmp/sysdeps/ /
 # Hunspell dictionaries (Alpine stage above), kept separate from the Debian
 # tree because the two distributions disagree about which variants exist.
 COPY --from=dictionaries /usr/share/hunspell /usr/share/hunspell
+
+# glibc resolves a locale name against /usr/lib/locale, and DHI ships no locale
+# data at all - so every locale but C is unavailable and nl_langinfo(CODESET)
+# answers ANSI_X3.4-1968. hunspell asks glibc for the terminal encoding and
+# converts its personal dictionary into it, so a wordlist with accented entries
+# produces one failed conversion per entry on stderr, and PhpSpellcheck treats
+# any stderr at all as a failed process - an uncaught exception out of
+# wp-cron.php. musl has no such failure mode: it answers UTF-8 whatever the
+# locale, which is why this only appeared after the base image changed.
+#
+# C.utf8 is 404K and ships prebuilt in libc-bin, so the builder takes the
+# locale out of that package and nothing else - the rest is already here.
+ENV LANG=C.UTF-8
 
 # Add PHP multsite supporting files
 COPY opt/php/load.php /usr/src/wordpress/wp-content/mu-plugins/load.php
