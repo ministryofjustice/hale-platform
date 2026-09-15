@@ -280,6 +280,18 @@ jobs:
             exit 1
           fi
 
+          # PDF uploads. ImageMagick has no PDF decoder of its own, so a media
+          # library thumbnail for a PDF is a fork of /usr/bin/gs. Ghostscript is
+          # staged out of the builder rather than installed, and the -dev variant
+          # carries libraries the runtime does not - so this writes a PDF and
+          # reads it back in the runtime image, which is the only place the
+          # dependency is actually resolved. A missing gs surfaces here as
+          # "FailedToExecuteCommand" rather than as a 500 on first upload.
+          if ! docker run --rm --tmpfs /tmp:rw,mode=1777 --entrypoint php "$WP" -r '$i=new Imagick(); $i->newImage(8,8,"white"); $i->setImageFormat("pdf"); $i->writeImage("/tmp/probe.pdf"); $j=new Imagick(); $j->readImage("/tmp/probe.pdf[0]"); exit($j->getImageWidth() > 0 ? 0 : 1);'; then
+            echo "::error::the wordpress image cannot rasterise a PDF - check that ghostscript was staged into the runtime stage"
+            exit 1
+          fi
+
           echo "images agree: PHP ${wp_php%.*}, all required extensions present"
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
