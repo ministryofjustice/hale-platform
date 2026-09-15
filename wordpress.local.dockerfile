@@ -115,7 +115,12 @@ RUN mkdir -p /tmp/debs/partial /tmp/sysdeps \
         fonts-urw-base35 \
         hunspell \
     && for deb in /tmp/debs/*.deb; do dpkg-deb -x "$deb" /tmp/sysdeps; done \
-    && rm -rf /tmp/debs /var/lib/apt/lists/* \
+    && mkdir -p /tmp/libcdeb /tmp/sysdeps/usr/lib/locale \
+    && ( cd /tmp/libcdeb && apt-get download libc-bin ) \
+    && dpkg-deb -x /tmp/libcdeb/libc-bin_*.deb /tmp/libc \
+    && cp -a /tmp/libc/usr/lib/locale/C.utf8 /tmp/sysdeps/usr/lib/locale/ \
+    && test -f /tmp/sysdeps/usr/lib/locale/C.utf8/LC_CTYPE \
+    && rm -rf /tmp/libcdeb /tmp/libc /tmp/debs /var/lib/apt/lists/* \
     && rm -rf /tmp/sysdeps/usr/share/doc /tmp/sysdeps/usr/share/man /tmp/sysdeps/usr/share/lintian \
     && ldconfig -n /tmp/sysdeps/usr/lib/x86_64-linux-gnu \
     && for bin in gs hunspell; do \
@@ -168,6 +173,10 @@ COPY --from=builder /tmp/sysdeps/ /
 
 # Hunspell dictionaries (Alpine stage above).
 COPY --from=dictionaries /usr/share/hunspell /usr/share/hunspell
+
+# DHI ships no locale data, so glibc reports ANSI_X3.4-1968 and hunspell fails
+# to convert accented personal-dictionary entries. C.utf8 is staged above.
+ENV LANG=C.UTF-8
 
 # Add PHP multsite supporting files
 COPY opt/php/load.php /usr/src/wordpress/wp-content/mu-plugins/load.php
