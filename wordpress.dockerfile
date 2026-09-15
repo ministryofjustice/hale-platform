@@ -92,6 +92,53 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         unzip \
     && rm -rf /var/lib/apt/lists/*
 
+# ---------------------------------------------------------------------------
+# Ghostscript, staged for the runtime stage.
+#
+# ImageMagick has no PDF decoder of its own - it shells out to `gs`. Without it
+# every PDF upload 500s: WordPress asks an image editor for thumbnail sizes
+# (wp-admin/includes/image.php), Imagick::readImage() reports
+# "FailedToExecuteCommand `gs'", and nothing catches it.
+#
+# The Alpine image this replaced carried ghostscript by accident - the official
+# WordPress image resolves imagick's runtime dependencies with scanelf, and apk
+# pulled ghostscript in behind libMagickCore. DHI installs no such thing, so it
+# has to be asked for deliberately.
+#
+# Staged rather than installed, because the runtime stage has no package
+# manager. The find/comm pair records the filesystem either side of the install
+# and stages only what apt added, so nothing from the base image is shadowed by
+# the COPY - including /etc/ld.so.cache, which is rewritten in place by apt's
+# ldconfig trigger and would be wrong in the runtime. That the loader has no
+# cache entry for these libraries is fine: glibc falls back to its built-in
+# default directories, which is where they land.
+#
+# fonts-urw-base35 is named explicitly. It is what gs substitutes with when a
+# PDF does not embed its own fonts, and a thumbnail of unrenderable text is
+# worse than no thumbnail.
+#
+# The runtime image is verified to actually run this - see the "Verify the
+# images agree" step in .github/workflows/rw-build-image.yaml. The -dev variant
+# carries libraries the runtime does not, so a dependency satisfied here is not
+# proof of one satisfied there.
+# ---------------------------------------------------------------------------
+RUN find /usr /etc -xdev | sort > /tmp/fs-before \
+    && apt-get update && apt-get install -y --no-install-recommends \
+        ghostscript \
+        fonts-urw-base35 \
+    && rm -rf /var/lib/apt/lists/* \
+    && find /usr /etc -xdev | sort > /tmp/fs-after \
+    && mkdir -p /tmp/gs \
+    && comm -13 /tmp/fs-before /tmp/fs-after \
+        | grep -Ev '^/usr/share/(doc|man|info|lintian|bug)(/|$)' \
+        | tar -cf - --no-recursion -T - \
+        | tar -xf - -C /tmp/gs \
+    && rm -f /tmp/fs-before /tmp/fs-after \
+    && test -x /tmp/gs/usr/bin/gs \
+    && echo "gs libraries not staged, so expected in the runtime base:" \
+    && ldd /usr/bin/gs | awk '$3 ~ /^\// {print $3}' | sed 's|^/lib/|/usr/lib/|' \
+        | sort -u | while read -r l; do [ -e "/tmp/gs$l" ] || echo "  $l"; done
+
 
 # The runtime image has a PHP CLI but no curl, so the download happens here and
 # the phar is copied across.
@@ -179,6 +226,14 @@ COPY --from=extbuilder /tmp/docker-php-ext-redis.ini ${PHP_INI_DIR}/conf.d/docke
 
 # wp-cli
 COPY --from=builder --chmod=0755 /tmp/wp /usr/local/bin/wp
+
+# Ghostscript (staged in the builder above). The tree holds /usr/bin/gs, the
+# shared libraries apt pulled in with it and the PostScript resources under
+# /usr/share/ghostscript, each already at the path it was installed to. Only
+# files absent from the base image are in it, so this COPY adds and never
+# replaces. Needed by ImageMagick to rasterise the first page of a PDF upload
+# into the media library thumbnail.
+COPY --from=builder /tmp/gs/ /
 
 # Add PHP multsite supporting files
 COPY opt/php/load.php /usr/src/wordpress/wp-content/mu-plugins/load.php

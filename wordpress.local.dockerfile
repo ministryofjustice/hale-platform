@@ -88,6 +88,28 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         unzip \
     && rm -rf /var/lib/apt/lists/*
 
+# Ghostscript, staged for the runtime stage. ImageMagick shells out to `gs` to
+# rasterise a PDF, so without it every PDF upload fails in
+# wp_generate_attachment_metadata. The find/comm pair stages only what apt
+# added, so the COPY in the runtime stage shadows nothing from the base image.
+# Full reasoning in wordpress.dockerfile.
+RUN find /usr /etc -xdev | sort > /tmp/fs-before \
+    && apt-get update && apt-get install -y --no-install-recommends \
+        ghostscript \
+        fonts-urw-base35 \
+    && rm -rf /var/lib/apt/lists/* \
+    && find /usr /etc -xdev | sort > /tmp/fs-after \
+    && mkdir -p /tmp/gs \
+    && comm -13 /tmp/fs-before /tmp/fs-after \
+        | grep -Ev '^/usr/share/(doc|man|info|lintian|bug)(/|$)' \
+        | tar -cf - --no-recursion -T - \
+        | tar -xf - -C /tmp/gs \
+    && rm -f /tmp/fs-before /tmp/fs-after \
+    && test -x /tmp/gs/usr/bin/gs \
+    && echo "gs libraries not staged, so expected in the runtime base:" \
+    && ldd /usr/bin/gs | awk '$3 ~ /^\// {print $3}' | sed 's|^/lib/|/usr/lib/|' \
+        | sort -u | while read -r l; do [ -e "/tmp/gs$l" ] || echo "  $l"; done
+
 
 # wp-cli, pinned and checksum-verified. Fetching an unpinned phar from a raw
 # git host and executing it is a supply-chain risk: this binary runs with full
@@ -117,6 +139,10 @@ COPY --from=extbuilder /tmp/redis.so /usr/local/lib/php-extensions/redis.so
 COPY --from=extbuilder /tmp/docker-php-ext-redis.ini ${PHP_INI_DIR}/conf.d/docker-php-ext-redis.ini
 
 COPY --from=builder --chmod=0755 /tmp/wp /usr/local/bin/wp
+
+# Ghostscript (staged in the builder above), at its installed paths. Only files
+# absent from the base image are in the tree, so this adds and never replaces.
+COPY --from=builder /tmp/gs/ /
 
 # Add PHP multsite supporting files
 COPY opt/php/load.php /usr/src/wordpress/wp-content/mu-plugins/load.php
