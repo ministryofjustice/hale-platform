@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1196c2c3294d0c66baba34ac3a403f76",
+    "content-hash": "c4a13fab203fd8334db939f0aaf23296",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -991,26 +991,25 @@
         },
         {
             "name": "ministryofjustice/hale",
-            "version": "dev-main",
+            "version": "dev-invalidate-colours-css-cache",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale.git",
-                "reference": "05631eb53da2175c489d96468a17c6c862d8f5e7"
+                "reference": "e2734f16f4e59fb53c2768a0a0140da1e454ff2d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/05631eb53da2175c489d96468a17c6c862d8f5e7",
-                "reference": "05631eb53da2175c489d96468a17c6c862d8f5e7",
+                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/e2734f16f4e59fb53c2768a0a0140da1e454ff2d",
+                "reference": "e2734f16f4e59fb53c2768a0a0140da1e454ff2d",
                 "shasum": ""
             },
-            "default-branch": true,
             "type": "wordpress-theme",
             "description": "Hale theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/hale/tree/4.35.2",
+                "source": "https://github.com/ministryofjustice/hale/tree/invalidate-colours-css-cache",
                 "issues": "https://github.com/ministryofjustice/hale/issues"
             },
-            "time": "2026-08-14T13:42:53+00:00"
+            "time": "2026-09-14T16:29:44+00:00"
         },
         {
             "name": "ministryofjustice/hale-components",

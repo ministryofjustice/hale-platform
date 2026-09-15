@@ -103,7 +103,7 @@
     "ministryofjustice/cookie-compliance": "dev-main",
     "ministryofjustice/govwind": "dev-main",
     "ministryofjustice/justice": "dev-main",
-    "ministryofjustice/hale": "dev-main",
+    "ministryofjustice/hale": "dev-invalidate-colours-css-cache",
     "ministryofjustice/hale-components": "dev-cdn-assets",
     "ministryofjustice/hale-dash": "dev-costs",
     "ministryofjustice/hale-showcase": "1.1.10",
