@@ -1,54 +1,52 @@
 ####################################################
 # WordPress multisite image - local development
-# Mirrors wordpress.dockerfile so local reproduces the k8s runtime exactly.
-# The only differences are the PHP-FPM pool config (listen on all interfaces
-# rather than 127.0.0.1, since nginx is a separate container here rather than
-# a sidecar sharing a network namespace) and the /opt/scripts mount point.
 #
-# Dev tooling (mysql client, wp-cli against the database) lives in the
-# `wptools` service in docker-compose.yml, matching the wptools sidecar in
-# k8s. Keeping this image identical to production is the point - it is what
-# catches path and permission problems before they reach a cluster.
+# The local version of wordpress.dockerfile, built by docker compose. It uses
+# the same stages and the same hardened base image, so path and permission
+# problems show up locally before they reach a cluster. wordpress.dockerfile
+# explains each stage in full; the comments here are shorter.
 #
-# No platform pin here: let docker-compose.yml control the target architecture
-# for local builds. Production (wordpress.dockerfile) stays amd64.
+# How it differs from wordpress.dockerfile:
+#   - No --platform on the FROM lines. docker-compose.yml picks the
+#     architecture (arm64 locally); the deployed image is amd64.
+#   - php-fpm uses www.local.conf, which listens on port 9000 on every
+#     address. nginx runs in its own container here, so it can't reach
+#     127.0.0.1 inside this one.
+#   - An empty /opt/scripts folder, which docker compose mounts ./opt/scripts
+#     over.
+#   - No translations, Query Monitor drop-in or wpdr-document-upload-dir.php.
+#     ./wordpress/wp-content is mounted over wp-content locally, and
+#     bin/local-build.sh downloads the translations into that folder instead.
+#
+# Database tools (the mysql client, wp db) are in the wptools service in
+# docker-compose.yml, as they are in the wptools sidecar in Kubernetes.
 # ##################################################
 
+# Image versions. Keep them the same as wordpress.dockerfile -
+# bin/check-versions.sh (make check-versions) fails if they differ.
 ARG WORDPRESS_VERSION=7.1
 ARG PHP_VERSION=8.5
 
 # ---------------------------------------------------------------------------
-# Extension stage: compile PHPRedis.
+# Extension stage: build the PHPRedis extension (redis.so).
 #
-# Built in the official PHP image rather than the DHI one, because no DHI
-# variant ships phpize or php-config - "-dev" there means the image has a shell
-# and a package manager, not that it carries development headers. Debian's
-# php<version>-dev was filling that gap, which capped PHP at whatever Debian
-# packages; the official image tracks upstream releases and bundles pecl, so
-# that ceiling is gone.
+# Downloads a pinned PHPRedis release from pecl, checks its SHA-256 and
+# compiles it. This uses the official php image because it has phpize and
+# php-config, which no DHI image includes. The runtime stage copies only
+# redis.so and its one-line .ini.
 #
-# Only redis.so leaves this stage. The shell, the package manager and the root
-# user it needs never reach the runtime image, which is still COPY-only.
-#
-# The .so is loaded by a PHP that did not build it. That is sound: extension
-# compatibility is defined by the ABI triple - PHP API number, thread safety and
-# debug build - which matches for any build of the same PHP minor version. It is
-# the same guarantee the previous approach relied on, against a different
-# provider.
-#
-# Pinned and checksum-verified: this is compiled C loaded into every PHP-FPM
-# process, and a bare "pecl install redis" takes whatever is latest on the day.
-# pecl publishes no per-release hash, so this attests to the bytes fetched when
-# the pin was set. Bump both together - https://pecl.php.net/package/redis
+# A redis.so built here loads in the DHI image because both are builds of the
+# same PHP minor version - see wordpress.dockerfile. Change PHPREDIS_VERSION and
+# PHPREDIS_SHA256 together, here and in wordpress.dockerfile -
+# https://pecl.php.net/package/redis
 # ---------------------------------------------------------------------------
 FROM php:${PHP_VERSION}-cli AS extbuilder
 
 ARG PHPREDIS_VERSION=6.3.0
 ARG PHPREDIS_SHA256=0d5141f634bd1db6c1ddcda053d25ecf2c4fc1c395430d534fd3f8d51dd7f0b5
-# --retry with --retry-all-errors covers transient 5xx and connection failures.
-# curl -f fails hard on any HTTP error, so a single bad gateway from GitHub or
-# pecl kills the whole build - which is a poor trade for a fetch that succeeds on
-# the next attempt.
+# Retries up to 3 times on any error, including a dropped connection or a
+# temporary 5xx from pecl. -f makes curl fail on an HTTP error instead of
+# saving the error page, so without retries one bad response fails the build.
 RUN curl -fsSL --retry 3 --retry-delay 2 --retry-all-errors -o /tmp/redis.tgz \
         "https://pecl.php.net/get/redis-${PHPREDIS_VERSION}.tgz" \
     && echo "${PHPREDIS_SHA256}  /tmp/redis.tgz" | sha256sum -c - \
@@ -58,54 +56,42 @@ RUN curl -fsSL --retry 3 --retry-delay 2 --retry-all-errors -o /tmp/redis.tgz \
     && rm -rf /tmp/redis.tgz
 
 # ---------------------------------------------------------------------------
-# Builder stage - see wordpress.dockerfile for the rationale.
+# Dictionaries stage: the hunspell dictionaries (en_GB and en_GB-large).
+#
+# Taken from Alpine because the justice theme uses en_GB-large and Debian's
+# hunspell-en-gb package only has en_GB. The files are plain text, so mixing
+# distributions is safe - see wordpress.dockerfile.
 # ---------------------------------------------------------------------------
-# Image versions - the only place either is written. Both are consumed solely by
-# the FROM tags below, so bumping either is a one-line edit here.
-#
-# PHP_VERSION drives three tags: the two DHI stages and the official php image
-# the extension is compiled in. It is no longer bounded by what Debian packages.
-# That mattered: no DHI variant ships phpize or php-config - verified in CI,
-# /usr/bin holds only `php` and `php-8.4`, and "-dev" there means the image has
-# a shell and a package manager, not development headers - so the only source of
-# build tooling was Debian's php<version>-dev, which stops at 8.4 on trixie.
-#
-# Core and PHP still bump independently: wptools installs its own Alpine php8X-*
-# packages and CI resolves composer under setup-php, so a PHP bump is four files.
-# bin/check-versions.sh asserts they agree.
-#
-# Hunspell dictionaries. From Alpine because Debian's hunspell-en-gb ships
-# en_GB alone and the justice theme asks for en_GB-large, which PhpSpellcheck
-# passes straight to `hunspell -d`. Safe to mix: .aff and .dic are plain text
-# with no linkage to a C library. Full reasoning in wordpress.dockerfile.
 FROM alpine:3.24 AS dictionaries
 
 RUN apk add --no-cache hunspell-en-gb
 
+# ---------------------------------------------------------------------------
+# Builder stage: prepares the files the runtime stage copies in.
+#
+# The -dev variant of the same DHI WordPress image, which adds a shell and apt.
+# Nothing from this stage reaches the runtime image except what it leaves in
+# /tmp: sysdeps (ghostscript, hunspell, the locale), wp (wp-cli), uploads and
+# optscripts.
+# ---------------------------------------------------------------------------
 FROM dhi.io/wordpress:${WORDPRESS_VERSION}-php${PHP_VERSION}-fpm-dev AS builder
 
-# PHP_VERSION is consumed by the FROM tags above and nothing else.
+# Root, for apt. The runtime stage runs as 65532.
 USER root
 
-# Nothing is compiled in this stage any more - the extension is built in
-# extbuilder above - so this is just what is needed to fetch and unpack: wp-cli
-# and the translation packs.
+# Tools for the downloads below.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
         unzip \
     && rm -rf /var/lib/apt/lists/*
 
-# External binaries the application shells out to. ImageMagick forks `gs` to
-# rasterise a PDF, so without it every PDF upload fails in
-# wp_generate_attachment_metadata; the justice theme forks `hunspell` to
-# spellcheck content on a cron hook, and without it that cron run dies on an
-# uncaught ProcessFailedException. Downloaded and unpacked rather than
-# installed, because dpkg cannot configure these packages in this image - and
-# the runtime needs their files, not their maintainer scripts. apt downloads
-# only what this stage lacks, so the COPY below shadows nothing. `ldconfig -n`
-# creates the SONAME symlinks dpkg-deb does not unpack.
-# Full reasoning in wordpress.dockerfile.
+# ghostscript, hunspell and the C.UTF-8 locale. PDF thumbnails run gs, and the
+# justice theme's spellcheck runs hunspell. The packages are downloaded and
+# unpacked into /tmp/sysdeps rather than installed, because dpkg can't
+# configure them in this image and the runtime only needs their files.
+# `ldconfig -n` adds the short library links (libgs.so.10) that unpacking
+# leaves out. wordpress.dockerfile explains each step.
 RUN mkdir -p /tmp/debs/partial /tmp/sysdeps \
     && apt-get update \
     && apt-get install -y --no-install-recommends --download-only \
@@ -138,11 +124,13 @@ RUN mkdir -p /tmp/debs/partial /tmp/sysdeps \
         | awk '$3 ~ /^\// {print $3}' | grep -v '^/tmp/sysdeps' | sort -u | sed 's/^/  /'
 
 
-# wp-cli, pinned and checksum-verified. Fetching an unpinned phar from a raw
-# git host and executing it is a supply-chain risk: this binary runs with full
-# database access during multisite bootstrap, so a swapped or compromised build
-# would be executing as us. Bump both values together - wp-cli publishes the
-# checksum alongside each release as wp-cli-<version>.phar.sha512.
+# wp-cli, downloaded here because the runtime image has no curl.
+#
+# Pinned and checked against its SHA-512. wp-cli runs with full database access
+# every time a container starts (config.sh), so a tampered download would too.
+# wp-cli publishes the checksum next to each release as
+# wp-cli-<version>.phar.sha512 - change WP_CLI_VERSION and WP_CLI_SHA512
+# together.
 ARG WP_CLI_VERSION=2.12.0
 ARG WP_CLI_SHA512=be928f6b8ca1e8dfb9d2f4b75a13aa4aee0896f8a9a0a1c45cd5d2c98605e6172e6d014dda2e27f88c98befc16c040cbb2bd1bfa121510ea5cdf5f6a30fe8832
 RUN curl -fsSL --retry 3 --retry-delay 2 --retry-all-errors -o /tmp/wp \
@@ -150,66 +138,84 @@ RUN curl -fsSL --retry 3 --retry-delay 2 --retry-all-errors -o /tmp/wp \
     && echo "${WP_CLI_SHA512}  /tmp/wp" | sha512sum -c - \
     && chmod +x /tmp/wp
 
-# /opt/scripts is a volume mount point locally; the directory has to exist and
-# the uploads folder is staged here because the runtime stage has no shell.
+# Two empty folders for the runtime stage, which only uses COPY: the uploads
+# folder, and /opt/scripts, which docker compose mounts ./opt/scripts over.
 RUN mkdir -p /tmp/uploads /tmp/optscripts
 
 # ---------------------------------------------------------------------------
-# Runtime stage. COPY only - no RUN, no package manager, no root.
+# Runtime stage: the image docker compose runs.
+#
+# No RUN instructions - only COPY, ENV, ENTRYPOINT and USER, as in
+# wordpress.dockerfile.
 # ---------------------------------------------------------------------------
 FROM dhi.io/wordpress:${WORDPRESS_VERSION}-php${PHP_VERSION}-fpm
 
-# Version-independent paths: the .so is referenced by absolute path from the
-# .ini, so neither the PHP version nor the ABI number appears here. PHP_INI_DIR
-# comes from the base image, so a PHP bump follows the FROM tag automatically.
+# PHPRedis, from the extbuilder stage. The .ini loads redis.so by its full
+# path, so these paths do not depend on the PHP version or on PHP's own
+# extension folder. PHP_INI_DIR is set by the base image and follows
+# PHP_VERSION.
 COPY --from=extbuilder /tmp/redis.so /usr/local/lib/php-extensions/redis.so
 COPY --from=extbuilder /tmp/docker-php-ext-redis.ini ${PHP_INI_DIR}/conf.d/docker-php-ext-redis.ini
 
+# wp-cli, from the builder stage.
 COPY --from=builder --chmod=0755 /tmp/wp /usr/local/bin/wp
 
-# Ghostscript (staged in the builder above), at its installed paths. Only files
-# absent from the base image are in the tree, so this adds and never replaces.
+# ghostscript with its fonts and libraries, hunspell, and the C.UTF-8 locale,
+# from the builder stage. The folder only holds packages this image does not
+# already have, so this COPY adds files and never replaces one.
 COPY --from=builder /tmp/sysdeps/ /
 
-# Hunspell dictionaries (Alpine stage above).
+# Hunspell dictionaries (en_GB and en_GB-large) from the dictionaries stage.
 COPY --from=dictionaries /usr/share/hunspell /usr/share/hunspell
 
-# DHI ships no locale data, so glibc reports ANSI_X3.4-1968 and hunspell fails
-# to convert accented personal-dictionary entries. C.utf8 is staged above.
+# Use the C.UTF-8 locale, from the builder stage. The DHI image has no locale
+# data of its own, so without it glibc reports ASCII and hunspell fails on every
+# accented word. See wordpress.dockerfile.
 ENV LANG=C.UTF-8
 
-# Add PHP multsite supporting files
+# Platform PHP files: the must-use plugin loader and Composer autoloader,
+# PHP error logging, and the script that runs cron for every site.
 COPY opt/php/load.php /usr/src/wordpress/wp-content/mu-plugins/load.php
 COPY opt/php/application.php /usr/src/wordpress/wp-content/mu-plugins/application.php
 COPY opt/php/error-handling.php /usr/src/wordpress/error-handling.php
 COPY opt/php/wp-cron-multisite.php /usr/src/wordpress/wp-cron-multisite.php
-# Health endpoint. Reachable only through the internal 8090 listener; the
-# public server block denies /healthz.php by path.
+# Health check script for /healthz. Only reachable through nginx's internal
+# port 8090 listener - the public site blocks /healthz.php.
 COPY opt/php/healthz.php /usr/src/wordpress/healthz.php
 
+# PHP-FPM pool settings for local: listens on port 9000 on every address,
+# because nginx runs in its own container.
 COPY opt/php/www.local.conf ${PHP_INI_DIR}/php-fpm.d/www.conf
 
-# Setup WordPress multisite and network
+# Start-up scripts. hale-entrypoint.sh runs the image's docker-entrypoint.sh
+# with config.sh added before php-fpm starts; config.sh sets up wp-config.php
+# and the multisite network; startup-patch.sh stops a harmless tar permissions
+# error on the webroot from failing start-up.
 COPY --chmod=0755 opt/scripts/hale-entrypoint.sh /usr/local/bin/
 COPY --chmod=0755 opt/scripts/config.sh /usr/local/bin/
 COPY --chmod=0755 opt/scripts/startup-patch.sh /usr/local/bin/
 
-# Composer and NPM artifacts. COPY copies a symlink as a symlink, so building
-# while the dev links created by opt/scripts/link-dev-packages.sh are in place
-# bakes dangling links to /mnt/dev into the image. The wp-content bind mount
-# hides that locally, so nothing reports it. `make build` deletes wordpress/
-# before composer runs, which is what keeps these directories real - build
-# through make, not with a bare `docker compose build`.
+# Plugins, themes and Composer packages. COPY copies a symlink as a symlink, so
+# building while opt/scripts/link-dev-packages.sh's dev links are in place puts
+# broken links to /mnt/dev into the image - and the wp-content bind mount hides
+# them locally, so nothing reports it. `make build` deletes wordpress/ before
+# composer runs, which turns the links back into real folders. Build with make,
+# not a bare `docker compose build`.
 COPY --chown=65532:65532 /wordpress/wp-content/plugins /usr/src/wordpress/wp-content/plugins
 COPY --chown=65532:65532 /wordpress/wp-content/mu-plugins /usr/src/wordpress/wp-content/mu-plugins
 COPY --chown=65532:65532 /wordpress/wp-content/themes /usr/src/wordpress/wp-content/themes
 COPY --chown=65532:65532 /vendor /usr/src/wordpress/wp-content/vendor
 
+# Empty uploads folder, from the builder stage.
 COPY --from=builder --chown=65532:65532 /tmp/uploads /usr/src/wordpress/wp-content/uploads
 
-# Volume mount point for ./opt/scripts - must exist before the bind mount
+# Mount point for ./opt/scripts. The folder has to exist before docker compose
+# can mount over it.
 COPY --from=builder --chown=65532:65532 /tmp/optscripts /opt/scripts
 
+# Start through hale-entrypoint.sh instead of the image's docker-entrypoint.sh.
 ENTRYPOINT ["/usr/local/bin/hale-entrypoint.sh"]
 
+# 65532 is already the base image's default user. Set here anyway so a change
+# to the base image can never make this container run as root.
 USER 65532
