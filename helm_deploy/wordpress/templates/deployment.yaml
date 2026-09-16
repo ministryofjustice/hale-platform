@@ -67,18 +67,8 @@ spec:
             - secretRef:
                 name: hale-wp-secrets-{{ .Release.Revision }}
           {{- if .Values.wp.probes.enabled }}
-          # startupProbe - has the entrypoint finished?
-          #
-          # It tests the loopback socket, which is the last thing to appear. The
-          # injected config.sh runs 49 wp-cli calls between the core copy and
-          # `exec php-fpm`, and nothing is listening until all of it is done -
-          # measured at 69s on a dev pod with 58 sites in the network. Testing
-          # for a file instead would pass long before the pod could serve, and
-          # instantly on a restart, guarding nothing.
-          #
-          # exec, not tcpSocket, because the pool binds 127.0.0.1 and an exec runs
-          # inside the pod's network namespace. php is already in the image, and
-          # the connect timeout keeps a wedged socket from hanging the probe.
+          # startupProbe - has the wordpress container finished starting
+          # and is something listening on 127.0.0.1:9000?
           #
           # failureThreshold 120 (240s) is load-bearing: the ceiling has to exceed
           # however long the entrypoint takes, or the container is killed and
@@ -94,25 +84,36 @@ spec:
             periodSeconds: 2
             timeoutSeconds: 5
             failureThreshold: 120
-          # No readinessProbe here, deliberately.
+          # This container has no readinessProbe, on purpose.
           #
-          # A tcpSocket probe on 9000 cannot pass: opt/php/www.conf binds
-          # php-fpm to 127.0.0.1:9000, and a tcpSocket probe dials the pod IP,
-          # so the connection is refused and the pod never becomes ready. The
-          # loopback binding is correct - nginx reaches php-fpm through the
-          # shared network namespace and nothing outside the pod can - so the
-          # probe is what gives way.
+          # php-fpm listens on 127.0.0.1:9000 (see opt/php/www.conf), so only
+          # containers in this pod can connect to it. nginx can, because
+          # containers in the same pod share 127.0.0.1. A tcpSocket probe
+          # can't: it connects to the pod's IP address instead, gets
+          # "connection refused", and the pod would never be marked ready.
           #
-          # nginx's readinessProbe below covers this container anyway: /healthz
-          # is a FastCGI round trip that only returns 200 when php-fpm is
-          # serving and this pod's webroot holds a readable WordPress.
+          # Listening on 127.0.0.1 is the right setting - it keeps php-fpm
+          # unreachable from outside the pod - so we drop the probe rather
+          # than open php-fpm up to make one work.
+          #
+          # This container is still checked. nginx's readinessProbe (below)
+          # requests /healthz, which nginx passes to php-fpm. It only returns
+          # 200 when php-fpm is handling requests and the WordPress files are
+          # in place and readable.
           {{- end }}
-          # preStop - endpoint removal and container shutdown happen at the same
-          # time, and endpoint removal is eventually consistent: ingress-nginx
-          # can still route here for a second or two after php-fpm starts
-          # draining. Sleeping first keeps this pod serving until the routing
-          # tables have caught up. SIGQUIT (the image's StopSignal) then lets
-          # in-flight requests finish, inside the 35s grace period.
+          # preStop - wait 10 seconds before the container starts shutting down.
+          #
+          # When a pod is deleted, Kubernetes does two things at the same time:
+          # it starts stopping the containers, and it tells ingress-nginx to
+          # stop sending traffic to this pod. That message takes a second or
+          # two to reach ingress-nginx, so without a pause some requests would
+          # still arrive after php-fpm has started shutting down, and fail.
+          #
+          # The sleep keeps the pod serving normally while ingress-nginx catches
+          # up. After it, Kubernetes sends SIGQUIT (the image's stop signal),
+          # which tells php-fpm to finish the requests it is already handling
+          # before it exits. The sleep and the shutdown together must fit in
+          # the 35s terminationGracePeriodSeconds, or the container is killed.
           lifecycle:
             preStop:
               exec:
