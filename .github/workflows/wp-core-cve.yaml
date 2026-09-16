@@ -11,13 +11,12 @@ name: WordPress Core CVE Check
 #
 # The core version is read from the ARG WORDPRESS_VERSION line in
 # wordpress.dockerfile, which the hardened multi-stage build interpolates into
-# both FROM tags. Dependabot cannot parse a version out of a tag built that
-# way, and has no credentials for the dhi.io registry, so it no longer opens
-# the core bump PR. That makes the info-level finding below the only record of
-# a lagging core version - it is in the job log, and the run exits non-zero,
-# but nothing is sent to Slack for it. nginx.dockerfile and wptools.dockerfile
-# still carry literal tags on public registries and remain covered by
-# Dependabot.
+# both FROM tags. Dependabot can't read a version out of a tag built that way,
+# and has no credentials for the dhi.io registry, so it can't open the core
+# bump PR. That makes the info-level finding below the only record of a lagging
+# core version - it is in the job log, and the run exits non-zero, but nothing
+# is sent to Slack for it. nginx.dockerfile and wptools.dockerfile use ordinary
+# tags on public registries, so Dependabot covers them.
 #
 # An alert is sent on first sight and then repeated every two days
 # (PING_GAP_DAYS) until the finding clears. The job runs daily, so the gap is

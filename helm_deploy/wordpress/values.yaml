@@ -32,8 +32,9 @@ nginx:
       # routes containerPort above and never this one.
       statusPort: 8090
 
-  # Readiness probing. On everywhere: every environment now runs more than one
-  # pod, so a failing probe shifts traffic instead of removing the only backend.
+  # Readiness probing, on in every environment. Every environment runs at least
+  # two pods, so a failing probe moves traffic to another pod instead of
+  # removing the only one.
   probes:
     enabled: true
 
@@ -142,11 +143,11 @@ updateStrategy:
   type: RollingUpdate
   rollingUpdate:
     maxSurge: 25%
-    ## Zero, so a rollout never drops below the desired replica count - it adds
-    ## a new pod, waits for it to pass readiness, then retires an old one. The
-    ## surge needs cluster headroom for 25% more pods for the length of the
-    ## rollout, which is the price of not dipping capacity while new pods spend
-    ## up to 60s on the startupProbe and 35s on the readiness delay.
+    ## Zero, so a rollout never drops below the desired number of pods: it adds
+    ## a new pod, waits for it to pass readiness, then stops an old one. The
+    ## cluster needs room for 25% more pods while the rollout runs. A new pod
+    ## takes 41-51s to become ready on dev, and the startupProbe allows up to
+    ## 240s.
     maxUnavailable: 0
 
 ## @param Turn on/off cron tasks
