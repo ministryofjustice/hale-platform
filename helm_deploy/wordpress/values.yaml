@@ -27,8 +27,9 @@ nginx:
     imagePullPolicy: Always
     ports:
       containerPort: 8080
-      # PHP-FPM health/metrics listener (/fpm-ping, /fpm-status). Internal only:
-      # the ingress routes containerPort above and never this one.
+      # Health and metrics listener: /healthz (the readiness probe),
+      # /healthz/deep, /fpm-ping and /fpm-status. Internal only: the ingress
+      # routes containerPort above and never this one.
       statusPort: 8090
 
   # Readiness probing. On everywhere: every environment now runs more than one
