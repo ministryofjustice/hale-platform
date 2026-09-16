@@ -444,12 +444,12 @@ jobs:
           fi
           url="https://$host/?deploy-smoke-test=${{ github.sha }}"
           echo "requesting $url"
-          code=$(curl -sS -o /tmp/smoke.html -w '%{http_code}' --max-time 30 "$url" || echo 000)
-          bytes=$(wc -c < /tmp/smoke.html | tr -d ' ')
-          echo "HTTP $code, $bytes bytes"
+          # Any curl failure - no connection, or a 200 whose body outran the
+          # timeout - counts as 000.
+          code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 "$url") || code=000
+          echo "HTTP $code"
           if [ "$code" != "200" ]; then
-            echo "::error::$host returned $code after deploy"
-            head -c 500 /tmp/smoke.html
+            echo "::error::$host returned $code after deploy - the new release may not be serving. Check the wordpress pod logs; if the release is the cause, roll back with helm rollback wordpress"
             exit 1
           fi
           echo "site is serving"
