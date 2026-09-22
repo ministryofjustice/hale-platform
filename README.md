@@ -1,6 +1,6 @@
 # Hale Platform
 
-This repository has everything needed to run the Hale WordPress multisite platform on Kubernetes. The WordPress container is built on the Docker Hardened Image for WordPress (`dhi.io/wordpress`): a Debian-based image with no package manager, which runs as a non-root user (UID 65532). It is set up to run a multisite network, and Composer pulls in the themes and plugins the sites use. Test clear scope cache
+This repository has everything needed to run the Hale WordPress multisite platform on Kubernetes. The WordPress container is built on the Docker Hardened Image for WordPress (`dhi.io/wordpress`): a Debian-based image with no package manager, which runs as a non-root user (UID 65532). It is set up to run a multisite network, and Composer pulls in the themes and plugins the sites use.
 
 Each pod runs three containers: `nginx`, which serves the site; `wordpress`, which runs PHP-FPM; and `wptools`, a sidecar with the database client.
 
