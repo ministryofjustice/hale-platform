@@ -14,8 +14,8 @@
 #   dictionaries  takes the hunspell dictionaries from Alpine
 #   builder       the DHI -dev image (adds a shell and apt). Stages
 #                 ghostscript, hunspell, the UTF-8 locale, wp-cli, the
-#                 translations, the uploads folder and the Query Monitor
-#                 drop-in
+#                 WordPress core patch, the translations, the uploads folder
+#                 and the Query Monitor drop-in
 #   (runtime)     the image that is deployed. Copies in everything above,
 #                 plus the platform's plugins, themes, config and scripts
 #
@@ -29,8 +29,7 @@
 #
 # PHP_VERSION picks three images: the DHI builder and runtime images, and the
 # official php image PHPRedis is compiled in. WORDPRESS_VERSION picks the two
-# DHI images, and the builder stage also uses it to download the matching
-# translations.
+# DHI images.
 #
 # The same versions are also declared in wordpress.local.dockerfile,
 # wptools.dockerfile (its Alpine php8X packages) and the CI workflow's
@@ -38,6 +37,25 @@
 # pull requests) fails if any of them disagree.
 ARG WORDPRESS_VERSION=7.0.4
 ARG PHP_VERSION=8.4
+
+# WordPress core patch. When PATCH_WORDPRESS_VERSION is set, the image runs that
+# WordPress release instead of the one in the DHI image: the builder stage
+# downloads it, the runtime stage copies its files over the DHI image's core,
+# and the translations are downloaded for it. This is for a WordPress release
+# DHI has not published an image for yet. Once DHI publishes it, set
+# WORDPRESS_VERSION to it and empty both ARGs below. The build fails if
+# PATCH_WORDPRESS_VERSION is not newer than WORDPRESS_VERSION, because the patch
+# would then downgrade core.
+#
+# wordpress.org publishes a SHA-1 for each release
+# (https://wordpress.org/wordpress-<version>.zip.sha1), not a SHA-256. To pin a
+# release, download the .zip, check it against that SHA-1, then put its
+# sha256sum here. Change the two ARGs together.
+#
+# bin/wp-core-cve-check.sh checks PATCH_WORDPRESS_VERSION for CVEs when it is
+# set, as the version the site runs.
+ARG PATCH_WORDPRESS_VERSION=7.0.5
+ARG PATCH_WORDPRESS_SHA256=d46c4120aadda8c7b63f2afbf651107a1ba03e7fb4f11729a5851b6b7af8743a
 
 # ---------------------------------------------------------------------------
 # Extension stage: build the PHPRedis extension (redis.so).
@@ -110,18 +128,21 @@ RUN apk add --no-cache hunspell-en-gb
 #
 # The -dev variant of the same DHI WordPress image, which adds a shell and apt.
 # Nothing from this stage reaches the runtime image except what it leaves in
-# /tmp: sysdeps (ghostscript, hunspell, the locale), wp (wp-cli), languages,
-# uploads and dropins.
+# /tmp: sysdeps (ghostscript, hunspell, the locale), wp (wp-cli), core (the
+# WordPress core patch), languages, uploads and dropins.
 # ---------------------------------------------------------------------------
 FROM --platform=linux/amd64 dhi.io/wordpress:${WORDPRESS_VERSION}-php${PHP_VERSION}-fpm-dev AS builder
 
 # An ARG set before the first FROM has to be declared again to be used inside a
-# stage. Only WORDPRESS_VERSION is needed here, for the translations.
+# stage. The WordPress versions are needed here, for the core patch and the
+# translations.
 ARG WORDPRESS_VERSION
+ARG PATCH_WORDPRESS_VERSION
+ARG PATCH_WORDPRESS_SHA256
 USER root
 
 # Tools for the downloads below: curl and ca-certificates for HTTPS, and unzip
-# for the translation packs.
+# for the WordPress release and the translation packs.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
@@ -220,6 +241,52 @@ RUN curl -fsSL --retry 3 --retry-delay 2 --retry-all-errors -o /tmp/wp \
     && echo "${WP_CLI_SHA512}  /tmp/wp" | sha512sum -c - \
     && chmod +x /tmp/wp
 
+# WordPress core patch: PATCH_WORDPRESS_VERSION's core files, staged in
+# /tmp/core for the runtime stage to copy over /usr/src/wordpress (see the ARGs
+# at the top of this file). With PATCH_WORDPRESS_VERSION empty, /tmp/core stays
+# empty and that COPY changes nothing.
+#
+# Only wp-admin, wp-includes and the release's top-level files are staged. The
+# release's wp-content (default themes, Akismet, Hello Dolly) is left out, so
+# wp-content is the same with or without the patch.
+#
+# The RUN fails if:
+#   - PATCH_WORDPRESS_VERSION is not newer than WORDPRESS_VERSION, so the patch
+#     would downgrade core.
+#   - the download does not match PATCH_WORDPRESS_SHA256.
+#   - a file in the DHI image's wp-admin or wp-includes is not in the release.
+#     COPY adds and replaces files but cannot delete them, so a file the
+#     release removed would stay in the image and in every webroot. This stage
+#     is the -dev variant of the same DHI image, so its /usr/src/wordpress is
+#     the core the runtime stage starts with.
+#   - the release's version.php does not report PATCH_WORDPRESS_VERSION.
+RUN set -e; \
+    mkdir -p /tmp/core; \
+    if [ -n "${PATCH_WORDPRESS_VERSION}" ]; then \
+        newest=$(printf '%s\n%s\n' "${WORDPRESS_VERSION}" "${PATCH_WORDPRESS_VERSION}" | sort -V | tail -n1); \
+        if [ "${PATCH_WORDPRESS_VERSION}" = "${WORDPRESS_VERSION}" ] || [ "${newest}" != "${PATCH_WORDPRESS_VERSION}" ]; then \
+            echo "PATCH_WORDPRESS_VERSION (${PATCH_WORDPRESS_VERSION}) is not newer than WORDPRESS_VERSION (${WORDPRESS_VERSION}). Empty it."; \
+            exit 1; \
+        fi; \
+        echo "Patching WordPress core from ${WORDPRESS_VERSION} to ${PATCH_WORDPRESS_VERSION}"; \
+        curl -fsSL --retry 3 --retry-delay 2 --retry-all-errors -o /tmp/wordpress.zip \
+            "https://wordpress.org/wordpress-${PATCH_WORDPRESS_VERSION}.zip"; \
+        echo "${PATCH_WORDPRESS_SHA256}  /tmp/wordpress.zip" | sha256sum -c -; \
+        unzip -q /tmp/wordpress.zip -d /tmp/release; \
+        (cd /usr/src/wordpress && find wp-admin wp-includes -type f) > /tmp/base-files; \
+        missing=$(while read -r f; do [ -e "/tmp/release/wordpress/$f" ] || echo "  $f"; done < /tmp/base-files); \
+        if [ -n "${missing}" ]; then \
+            echo "Files in the ${WORDPRESS_VERSION} core that ${PATCH_WORDPRESS_VERSION} does not have:"; \
+            echo "${missing}"; \
+            exit 1; \
+        fi; \
+        grep -qF "\$wp_version = '${PATCH_WORDPRESS_VERSION}';" /tmp/release/wordpress/wp-includes/version.php \
+            || { echo "version.php in the download is not ${PATCH_WORDPRESS_VERSION}"; exit 1; }; \
+        rm -rf /tmp/release/wordpress/wp-content; \
+        cp -a /tmp/release/wordpress/. /tmp/core/; \
+        rm -rf /tmp/wordpress.zip /tmp/release /tmp/base-files; \
+    fi
+
 # Translations: British English (en_GB) and Welsh (cy).
 #
 # They have to be in the image. The webroot is an emptyDir, so a language pack
@@ -229,9 +296,10 @@ RUN curl -fsSL --retry 3 --retry-delay 2 --retry-all-errors -o /tmp/wp \
 # Language dropdown. Which language a site uses is still a per-site setting in
 # the database.
 #
-# The packs match WORDPRESS_VERSION. If no pack is published for a language at
-# that version, the build fails here - better than shipping another version's
-# strings or leaving a language out.
+# The packs match the core version the image runs: PATCH_WORDPRESS_VERSION when
+# it is set, otherwise WORDPRESS_VERSION. If no pack is published for a
+# language at that version, the build fails here - better than shipping another
+# version's strings or leaving a language out.
 #
 # Not checksummed, unlike wp-cli and PHPRedis: a translation pack is rebuilt
 # every time a translator changes a string, so a pinned hash would break the
@@ -243,10 +311,11 @@ RUN curl -fsSL --retry 3 --retry-delay 2 --retry-all-errors -o /tmp/wp \
 # RUN by itself, so a language could silently go missing.
 ARG WP_LOCALES="en_GB cy"
 RUN mkdir -p /tmp/languages \
+    && core_version="${PATCH_WORDPRESS_VERSION:-${WORDPRESS_VERSION}}" \
     && for locale in ${WP_LOCALES}; do \
-    echo "Fetching ${locale} translations for ${WORDPRESS_VERSION}" \
+    echo "Fetching ${locale} translations for ${core_version}" \
     && curl -fsSL --retry 3 --retry-delay 2 --retry-all-errors -o /tmp/lang.zip \
-    "https://downloads.wordpress.org/translation/core/${WORDPRESS_VERSION}/${locale}.zip" \
+    "https://downloads.wordpress.org/translation/core/${core_version}/${locale}.zip" \
     && unzip -q -o /tmp/lang.zip -d /tmp/languages \
     || exit 1; \
     done \
@@ -311,6 +380,12 @@ COPY --from=dictionaries /usr/share/hunspell /usr/share/hunspell
 # PhpSpellcheck treats any error output as a failure and throws, which stops
 # the wp-cron.php run.
 ENV LANG=C.UTF-8
+
+# WordPress core patch from the builder stage: PATCH_WORDPRESS_VERSION's
+# wp-admin, wp-includes and top-level files, over the DHI image's core. The
+# folder is empty when PATCH_WORDPRESS_VERSION is empty, and this COPY then
+# changes nothing.
+COPY --from=builder --chown=65532:65532 /tmp/core/ /usr/src/wordpress/
 
 # Platform PHP files. load.php and application.php load the platform's
 # must-use plugins, the Composer autoloader and error-handling.php, which sets
