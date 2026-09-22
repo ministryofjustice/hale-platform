@@ -63,3 +63,9 @@ opt/lua/fixtures/*
 # AI
 # Ignore claude files until we have a team agreed set of rules/settings
 .claude
+
+##############################
+# Playwright Tests
+#############################
+test-results/
+playright-report/
