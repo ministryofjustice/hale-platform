@@ -54,8 +54,8 @@ ARG PHP_VERSION=8.4
 #
 # bin/wp-core-cve-check.sh checks PATCH_WORDPRESS_VERSION for CVEs when it is
 # set, as the version the site runs.
-ARG PATCH_WORDPRESS_VERSION=7.0.5
-ARG PATCH_WORDPRESS_SHA256=d46c4120aadda8c7b63f2afbf651107a1ba03e7fb4f11729a5851b6b7af8743a
+ARG PATCH_WORDPRESS_VERSION=7.0.6
+ARG PATCH_WORDPRESS_SHA256=ceea51247a0a78428a3a12cbf02bb869a5a215899a5aabd8b7fb6c0dba3554aa
 
 # ---------------------------------------------------------------------------
 # Extension stage: build the PHPRedis extension (redis.so).
