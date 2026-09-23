@@ -106,7 +106,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # unpacked into /tmp/sysdeps rather than installed, because dpkg can't
 # configure them in this image and the runtime only needs their files.
 # `ldconfig -n` adds the short library links (libgs.so.10) that unpacking
-# leaves out. wordpress.dockerfile explains each step.
+# leaves out. The multiarch library directory is discovered rather than named:
+# this image has no --platform pin, so it builds for the host architecture and
+# the directory is aarch64-linux-gnu on an Apple Silicon machine where
+# wordpress.dockerfile, pinned to amd64, always gets x86_64-linux-gnu.
+# wordpress.dockerfile explains each step.
 RUN mkdir -p /tmp/debs/partial /tmp/sysdeps \
     && apt-get update \
     && apt-get install -y --no-install-recommends --download-only \
@@ -123,17 +127,21 @@ RUN mkdir -p /tmp/debs/partial /tmp/sysdeps \
     && test -f /tmp/sysdeps/usr/lib/locale/C.utf8/LC_CTYPE \
     && rm -rf /tmp/libcdeb /tmp/libc /tmp/debs /var/lib/apt/lists/* \
     && rm -rf /tmp/sysdeps/usr/share/doc /tmp/sysdeps/usr/share/man /tmp/sysdeps/usr/share/lintian \
-    && ldconfig -n /tmp/sysdeps/usr/lib/x86_64-linux-gnu \
+    && libdir="$(ls -d /tmp/sysdeps/usr/lib/*-linux-gnu 2>/dev/null | head -n1)" \
+    && if [ -z "$libdir" ]; then \
+        echo "no multiarch library directory under /tmp/sysdeps/usr/lib"; exit 1; \
+    fi \
+    && ldconfig -n "$libdir" \
     && for bin in gs hunspell; do \
         test -x "/tmp/sysdeps/usr/bin/$bin" || exit 1; \
-        if LD_LIBRARY_PATH=/tmp/sysdeps/usr/lib/x86_64-linux-gnu \
+        if LD_LIBRARY_PATH="$libdir" \
             ldd "/tmp/sysdeps/usr/bin/$bin" | grep -q "not found"; then \
             echo "unresolved libraries for $bin"; exit 1; \
         fi; \
     done \
     && echo "libraries not staged, so expected in the runtime base:" \
     && { for bin in gs hunspell; do \
-            LD_LIBRARY_PATH=/tmp/sysdeps/usr/lib/x86_64-linux-gnu \
+            LD_LIBRARY_PATH="$libdir" \
                 ldd "/tmp/sysdeps/usr/bin/$bin"; \
         done; } \
         | awk '$3 ~ /^\// {print $3}' | grep -v '^/tmp/sysdeps' | sort -u | sed 's/^/  /'
