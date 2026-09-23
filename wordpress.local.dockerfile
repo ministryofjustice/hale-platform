@@ -247,6 +247,9 @@ COPY opt/php/healthz.php /usr/src/wordpress/healthz.php
 # because nginx runs in its own container.
 COPY opt/php/www.local.conf ${PHP_INI_DIR}/php-fpm.d/www.conf
 
+# Readiness-probe pool on port 9001. See wordpress.dockerfile.
+COPY opt/php/healthz.local.conf ${PHP_INI_DIR}/php-fpm.d/healthz.conf
+
 # Start-up scripts. hale-entrypoint.sh runs the image's docker-entrypoint.sh
 # with config.sh added before php-fpm starts; config.sh sets up wp-config.php
 # and the multisite network; startup-patch.sh stops a harmless tar permissions
