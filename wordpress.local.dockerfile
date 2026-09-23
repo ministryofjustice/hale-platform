@@ -7,7 +7,7 @@
 # Latest images at https://hub.docker.com/_/wordpress
 # No platform pin here: let docker-compose.yml (or `docker compose --platform`)
 # control the target architecture for local builds. Production (wordpress.dockerfile) stays amd64.
-FROM wordpress:7.0.2-php8.4-fpm-alpine
+FROM wordpress:7.0.4-php8.4-fpm-alpine
 
 # Install additional Alpine packages
 RUN apk update && \
@@ -31,9 +31,9 @@ RUN apk del .build-deps
 
 # Install a patched version of WordPress core, prior to release on Docker Hub.
 # Minimal implementation, edit the following 2 arguments directly.
-ARG PATCH_WORDPRESS_VERSION="7.0.3"
+ARG PATCH_WORDPRESS_VERSION="7.0.6"
 # Get value from https://wordpress.org/wordpress-<WORDPRESS_VERSION>.tar.gz.sha1
-ARG PATCH_WORDPRESS_SHA1="344b74d7cbf13c55ba0f12cad207c06cfee4368a"
+ARG PATCH_WORDPRESS_SHA1="18bfb0b6a009836f83389fe50538ca559dff2044"
 # Download and extract script from: https://github.com/docker-library/wordpress/blob/master/Dockerfile.template
 RUN set -ex; \
 	if [ -n "$PATCH_WORDPRESS_VERSION" ] && [ -n "$PATCH_WORDPRESS_SHA1" ]; then \
