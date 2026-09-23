@@ -247,7 +247,7 @@ function _M.req()
             end
         end
 
-        ngx.log(ngx.INFO, "[firewall] event=block phase=req mode=", mode,
+        ngx.log(ngx.NOTICE, "[firewall] event=block phase=req mode=", mode,
                 " ip=", ip,
                 " reason=", info.reason,
                 " cost=", request_cost,
@@ -345,13 +345,13 @@ function _M.res()
                     end
                 end
 
-                ngx.log(ngx.INFO, "[firewall] event=block phase=res mode=", mode,
+                ngx.log(ngx.NOTICE, "[firewall] event=block phase=res mode=", mode,
                         " ip=", ip,
                         " status=", status,
                         " cost=", total_cost,
                         " retry_after=", info.retry_after)
             else
-                ngx.log(ngx.INFO, "[firewall] event=res_charge phase=res ip=", ip,
+                ngx.log(ngx.NOTICE, "[firewall] event=res_charge phase=res ip=", ip,
                         " status=", status,
                         " cost=", total_cost)
             end

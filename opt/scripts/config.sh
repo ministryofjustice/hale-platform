@@ -13,6 +13,17 @@ wp config set COOKIEPATH "/"
 wp config set SITECOOKIEPATH "/"
 wp config set WP_ENVIRONMENT_TYPE "\$_SERVER['WP_ENVIRONMENT_TYPE']" --raw
 wp config set AUTOMATIC_UPDATER_DISABLED true --raw
+# Blocks anything that creates, deletes or updates core, plugin or theme files
+# at runtime: the plugin and theme installers, the updaters, and the built-in
+# file editors. Every plugin here arrives through composer and an image build,
+# so none of that should ever run in a container - and with the webroot on an
+# emptyDir it would be lost on the next pod start regardless. Closes the
+# code-execution path a compromised admin account would otherwise have.
+#
+# Uploads are explicitly excepted by core, so media and wp-document-revisions
+# are unaffected. Language packs are NOT excepted: a site set to a non-en_US
+# locale can no longer fetch its pack, so check before assuming this is free.
+wp config set DISALLOW_FILE_MODS true --raw
 wp config set FORCE_SSL_ADMIN true --raw
 wp config set S3_UPLOADS_BUCKET "\$_SERVER['S3_UPLOADS_BUCKET']" --raw
 wp config set S3_UPLOADS_REGION "\$_SERVER['S3_UPLOADS_REGION']" --raw
@@ -58,8 +69,31 @@ wp core multisite-install --title="Hale Multisite Platform" \
     --skip-email \
     --quiet;
 
-# Run DB check and update
-wp core update-db --network --url="${SERVER_NAME}"
+# Run DB check and update, but only when the schema is actually behind.
+#
+# `wp core update-db --network` walks every site in the network - 58 of them and
+# growing - and on all but the first pod after a core bump every one reports
+# "already at latest db version". That is a per-release migration sitting in a
+# per-pod boot path: it runs on every pod start, on every scale-up, before
+# php-fpm can listen, and several pods run it concurrently against one database.
+#
+# Comparing the code's $wp_db_version against the stored option costs two fast
+# wp-cli calls and skips the walk entirely when there is nothing to do. A core
+# bump moves every site together, so the main site's option is a sound proxy -
+# the case it would miss is a single subsite lagging on its own, which cannot
+# happen while every deploy has been running the full walk.
+#
+# If the comparison fails for any reason the values will not match and the walk
+# runs, which is the safe direction.
+CODE_DB_VERSION=$(wp eval 'global $wp_db_version; echo $wp_db_version;' --skip-plugins --skip-themes 2>/dev/null || echo "unknown")
+SITE_DB_VERSION=$(wp option get db_version --skip-plugins --skip-themes 2>/dev/null || echo "unset")
+
+if [ "$CODE_DB_VERSION" = "$SITE_DB_VERSION" ]; then
+    echo "Database already at version ${SITE_DB_VERSION}, skipping the network upgrade"
+else
+    echo "Database at ${SITE_DB_VERSION}, code expects ${CODE_DB_VERSION} - upgrading the network"
+    wp core update-db --network --url="${SERVER_NAME}"
+fi
 
 # Setup Hale theme
 wp theme enable hale --network --url="${SERVER_NAME}"

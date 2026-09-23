@@ -13,11 +13,7 @@ on:
         required: true
       ecr-repo:
         required: true
-      sentry-dsn: 
-        required: true
-      domain:
-        required: true
-      env-type:
+      sentry-dsn:
         required: true
       acf-user:
         required: true
@@ -220,6 +216,115 @@ jobs:
           REPOSITORY: ${{ secrets.ecr-repo }}
           IMAGE_TAG: ${{ github.sha }}
 
+      # Database tooling sidecar. The hardened WordPress image has no mysql
+      # client, so `wp db` subcommands run in this container instead.
+      - name: Build and Push wptools Image
+        run: |
+          docker buildx build \
+            --pull \
+            --push \
+            --platform linux/amd64 \
+            --tag $REGISTRY/$REPOSITORY:hale-platform_wptools-$IMAGE_TAG \
+            --file wptools.dockerfile .
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ secrets.ecr-repo }}
+          IMAGE_TAG: ${{ github.sha }}
+
+      # The wordpress and wptools images are built independently, from different
+      # bases, each with its own PHP. bin/check-versions.sh asserts the versions
+      # *declared* in the repo agree; this asserts the versions actually built do,
+      # that the sidecar can still bootstrap WordPress, and that the binaries the
+      # platform forks are present and working.
+      #
+      # It surfaces things nothing else does:
+      #   - the two PHPs drifting apart despite matching ARGs
+      #   - a distro renaming or dropping a package, so an extension the site
+      #     loads quietly disappears from the sidecar and every `wp` command
+      #     starts failing at bootstrap
+      #   - redis.so failing to load in the wordpress image, which is silent:
+      #     php-fpm logs a startup warning and serves on without it, and
+      #     /healthz does not check extensions
+      #   - ghostscript or hunspell missing or unusable, which is silent until a
+      #     PDF upload 500s or a cron run dies
+      #
+      # Advisory: every finding is a ::warning:: and the step always exits 0.
+      # None of this stops a deploy - the annotations on the run summary are the
+      # output. `set -e` is deliberately absent: each check is tested explicitly,
+      # and nothing unexpected should be able to fail the job either.
+      - name: Verify the images agree
+        run: |
+          set -uo pipefail
+          warnings=0
+          warn() { echo "::warning::$*"; warnings=$((warnings + 1)); }
+
+          WP="$REGISTRY/$REPOSITORY:hale-platform_wordpress-$IMAGE_TAG"
+          WT="$REGISTRY/$REPOSITORY:hale-platform_wptools-$IMAGE_TAG"
+          docker pull -q "$WP" >/dev/null || warn "could not pull the wordpress image - the checks below cannot run"
+          docker pull -q "$WT" >/dev/null || warn "could not pull the wptools image - the checks below cannot run"
+
+          php_of() { docker run --rm --entrypoint php "$1" -r 'echo PHP_VERSION;' 2>/dev/null; }
+          wp_php="$(php_of "$WP")"
+          wt_php="$(php_of "$WT")"
+          echo "wordpress PHP ${wp_php:-unknown}"
+          echo "wptools   PHP ${wt_php:-unknown}"
+
+          if [ -z "$wp_php" ] || [ -z "$wt_php" ]; then
+            warn "could not read the PHP version out of one of the images"
+          elif [ "${wp_php%.*}" != "${wt_php%.*}" ]; then
+            warn "PHP minor version mismatch - wordpress $wp_php, wptools $wt_php"
+          elif [ "$wp_php" != "$wt_php" ]; then
+            warn "PHP patch versions differ - wordpress $wp_php, wptools $wt_php"
+          fi
+
+          # wp-cli bootstraps WordPress, so the sidecar needs what the site loads.
+          for e in mysqli pdo_mysql phar mbstring xml dom simplexml curl openssl \
+                   session fileinfo tokenizer ctype iconv posix redis; do
+            docker run --rm --entrypoint php "$WT" -r "exit(extension_loaded('$e') ? 0 : 1);" \
+              || warn "wptools is missing the $e extension"
+          done
+
+          docker run --rm --entrypoint php "$WP" -r "exit(extension_loaded('redis') ? 0 : 1);" \
+            || warn "redis.so did not load in the wordpress image - check the ABI it was built against"
+
+          # PDF uploads. ImageMagick has no PDF decoder of its own, so a media
+          # library thumbnail for a PDF is a fork of /usr/bin/gs. Ghostscript is
+          # staged out of the builder rather than installed, and the -dev variant
+          # carries libraries the runtime does not - so this writes a PDF and
+          # reads it back in the runtime image, which is the only place the
+          # dependency is actually resolved. A missing gs surfaces here as
+          # "FailedToExecuteCommand" rather than as a 500 on first upload.
+          docker run --rm --tmpfs /tmp:rw,mode=1777 --entrypoint php "$WP" -r '$i=new Imagick(); $i->newImage(8,8,"white"); $i->setImageFormat("pdf"); $i->writeImage("/tmp/probe.pdf"); $j=new Imagick(); $j->readImage("/tmp/probe.pdf[0]"); exit($j->getImageWidth() > 0 ? 0 : 1);' \
+            || warn "the wordpress image cannot rasterise a PDF - check that ghostscript was staged into the runtime stage"
+
+          # Spellcheck. The justice theme forks hunspell from a cron hook, and
+          # PhpSpellcheck raises on a non-zero exit or on any stderr at all -
+          # which becomes an uncaught ProcessFailedException out of wp-cron.php.
+          # So this asserts silence, not just success, and exercises all three
+          # pieces that have to line up: the Debian binary, the en_GB-large
+          # wordlist from the Alpine stage, and a UTF-8 locale. The probe
+          # dictionary carries an accented entry on purpose - that is what
+          # hunspell cannot convert when glibc reports ANSI_X3.4-1968.
+          docker run --rm --tmpfs /tmp:rw,mode=1777 --entrypoint sh "$WP" -c '
+            printf "caf\303\251\nSchedule\n" > /tmp/probe.dic
+            printf "\nteh Schedule\n" | hunspell -p /tmp/probe.dic -i UTF-8 -a \
+                -d en_GB-large > /tmp/probe.out 2> /tmp/probe.err
+            if [ -s /tmp/probe.err ]; then
+              echo "hunspell wrote to stderr:"; cat /tmp/probe.err; exit 1
+            fi
+            grep -q "^&" /tmp/probe.out
+          ' || warn "hunspell cannot spellcheck cleanly against en_GB-large - check the dictionaries stage and LANG"
+
+          if [ "$warnings" -eq 0 ]; then
+            echo "images agree: PHP ${wp_php%.*}, extensions present, gs and hunspell working"
+          else
+            echo "$warnings check(s) reported - see the warning annotations on this run"
+          fi
+          exit 0
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ secrets.ecr-repo }}
+          IMAGE_TAG: ${{ github.sha }}
   deployImage:
     name: Deploy to Environment
     needs: [buildImage]
@@ -245,6 +350,7 @@ jobs:
           --install \
           --namespace ${{ secrets.kube-namespace }} \
           --values helm_deploy/wordpress/values.yaml \
+          --values helm_deploy/wordpress/values-${{ vars.ENV_TYPE }}.yaml \
           --set secrets.wpdbuser=${{ secrets.wp-db-user }} \
           --set secrets.wpdbhost=${{ secrets.wp-db-host }} \
           --set secrets.wpdbname=${{ secrets.wp-db-name }} \
@@ -273,9 +379,65 @@ jobs:
           --set secrets.redisauth=${{ secrets.redis-auth }} \
           --set secrets.redishost=${{ secrets.redis-host }} \
           --set alertSecrets.slackWebhookUrl=${{ secrets.alert-slack-webhook-url }} \
-          --set configmap.envtype=${{ vars.ENV_TYPE }} \
           --set configmap.sentrydns=${{ vars.PHP_DSN }} \
           --set ingress.metadata.annotations.setidentifier=hale-platform-ingress-${{ secrets.kube-namespace }}-green \
-          --set domain=${{ secrets.domain }} \
           --set nginx.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_nginx-${{ github.sha }} \
-          --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_wordpress-${{ github.sha }}
+          --set wp.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_wordpress-${{ github.sha }} \
+          --set wptools.image.repository=754256621582.dkr.ecr.eu-west-2.amazonaws.com/${{ secrets.ecr-repo }}:hale-platform_wptools-${{ github.sha }}
+
+      # helm upgrade returns as soon as the API server accepts the manifests -
+      # seconds, before a single new pod exists. Without this the job goes green
+      # whether or not the rollout ever completes, and maxUnavailable: 0 makes
+      # that quiet rather than loud: the old pods keep serving, so a stalled
+      # deploy looks exactly like a successful one.
+      #
+      # This changes no deployment behaviour, it only waits and reports. It
+      # returns the moment the rollout finishes - roughly 2-3 minutes in dev and
+      # 4-5 in prod - and the timeout is a ceiling for something genuinely stuck,
+      # at which point the Deployment's own progressDeadlineSeconds has already
+      # marked it ProgressDeadlineExceeded.
+      #
+      # No rollback: a red build here means "the new version is not serving",
+      # not "the site is down". The old pods are still up, and whether to roll
+      # back is a decision for a person.
+      - name: Wait for the rollout
+        run: |
+          kubectl rollout status deploy/wordpress \
+            --namespace ${{ secrets.kube-namespace }} \
+            --timeout=10m
+
+      # Readiness deliberately stops before WordPress renders anything - no
+      # plugins, no theme, no database - so every other check in this pipeline
+      # can pass while every page returns 500. This is the only test that
+      # exercises the path a visitor actually takes: ingress, TLS, nginx,
+      # FastCGI, php-fpm, WordPress, database, HTML.
+      #
+      # The host comes from the ingress so it is correct per environment with no
+      # extra inputs to keep in step.
+      #
+      # The cache-busting query string is load-bearing. A plain request can be
+      # served from the Redis page cache by nginx alone, with php-fpm completely
+      # dead, and would pass. A query string bypasses the cache and forces the
+      # request through PHP.
+      - name: Smoke test the deployed site
+        run: |
+          set -euo pipefail
+          host=$(kubectl get ingress hale-platform-ingress \
+            --namespace ${{ secrets.kube-namespace }} \
+            -o jsonpath='{.spec.rules[0].host}')
+          if [ -z "$host" ]; then
+            echo "::error::could not read a host from the ingress"
+            exit 1
+          fi
+          url="https://$host/?deploy-smoke-test=${{ github.sha }}"
+          echo "requesting $url"
+          # Any curl failure - no connection, or a 200 whose body outran the
+          # timeout - counts as 000.
+          code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 "$url") || code=000
+          echo "HTTP $code"
+          if [ "$code" != "200" ]; then
+            echo "::error::$host returned $code after deploy - the new release may not be serving. Check the wordpress pod logs; if the release is the cause, roll back with helm rollback wordpress"
+            exit 1
+          fi
+          echo "site is serving"
+
