@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2cf5037d5cd76636f8684478a2efe394",
+    "content-hash": "b47f4490f2b0a721218c58729f3ff0e5",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -1011,16 +1011,16 @@
         },
         {
             "name": "ministryofjustice/hale-components",
-            "version": "1.20.0",
+            "version": "1.20.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale-components.git",
-                "reference": "7c539b80171cc33db98f77eac170653304af8db2"
+                "reference": "2729f958bafb2c55e54e66c7090b06ad27ddde27"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/7c539b80171cc33db98f77eac170653304af8db2",
-                "reference": "7c539b80171cc33db98f77eac170653304af8db2",
+                "url": "https://api.github.com/repos/ministryofjustice/hale-components/zipball/2729f958bafb2c55e54e66c7090b06ad27ddde27",
+                "reference": "2729f958bafb2c55e54e66c7090b06ad27ddde27",
                 "shasum": ""
             },
             "require": {
@@ -1032,10 +1032,10 @@
                 "wordpress"
             ],
             "support": {
-                "source": "https://github.com/ministryofjustice/hale-components/tree/1.20.0",
+                "source": "https://github.com/ministryofjustice/hale-components/tree/1.20.1",
                 "issues": "https://github.com/ministryofjustice/hale-components/issues"
             },
-            "time": "2026-09-02T12:49:13+00:00"
+            "time": "2026-09-23T11:10:56+00:00"
         },
         {
             "name": "ministryofjustice/hale-dash",
