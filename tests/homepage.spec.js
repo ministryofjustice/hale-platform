@@ -17,7 +17,7 @@ test("Hale homepage has a main heading", async ({ page }) => {
 test("Home page contains a title ", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page).toHaveTitle("Ministry of Justice Website Build");
+  await expect(page).toHaveTitle("Ministry of Justice Website Builder");
 });
 
 test("user can navigate to the designing your site page", async ({ page }) => {

@@ -69,3 +69,8 @@ opt/lua/fixtures/*
 #############################
 test-results/
 playwright-report/
+
+##############################
+# Browserstack  Tests
+#############################
+log/

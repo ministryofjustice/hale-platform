@@ -1,0 +1,12 @@
+framework: playwright
+
+platforms:
+  - os: OS X
+    osVersion: Sequoia
+    browserName: Chrome
+    browserVersion: latest
+
+browserstackLocal: true
+
+projectName: Hale Platform
+buildName: Local Playwright Test
