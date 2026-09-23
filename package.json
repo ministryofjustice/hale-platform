@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/ministryofjustice/hale-platform#readme",
   "devDependencies": {
-    "@playwright/test": "^1.62.1"
+    "@playwright/test": "^1.62.1",
+    "browserstack-node-sdk": "^1.70.3"
   }
 }

@@ -68,4 +68,4 @@ opt/lua/fixtures/*
 # Playwright Tests
 #############################
 test-results/
-playright-report/
+playwright-report/
