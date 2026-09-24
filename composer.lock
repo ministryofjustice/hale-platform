@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b47f4490f2b0a721218c58729f3ff0e5",
+    "content-hash": "80bc99218cb9bd4d730ec8c1f5bbfbaa",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -115,16 +115,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.396.0",
+            "version": "3.397.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "0c289e1083c336efaf2ccd78a0520ed5c49af758"
+                "reference": "8d2c3adc6ab2d7c6160a9034867cd4bd2b535619"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/0c289e1083c336efaf2ccd78a0520ed5c49af758",
-                "reference": "0c289e1083c336efaf2ccd78a0520ed5c49af758",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/8d2c3adc6ab2d7c6160a9034867cd4bd2b535619",
+                "reference": "8d2c3adc6ab2d7c6160a9034867cd4bd2b535619",
                 "shasum": ""
             },
             "require": {
@@ -206,9 +206,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.396.0"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.397.0"
             },
-            "time": "2026-09-22T18:06:28+00:00"
+            "time": "2026-09-23T18:07:37+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -1164,16 +1164,16 @@
         },
         {
             "name": "ministryofjustice/website-builder-blocks",
-            "version": "2.3.0",
+            "version": "2.3.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/website-builder-blocks.git",
-                "reference": "5995eab0600e0ff6ac74adfab0f411d04a0b3ac4"
+                "reference": "1082682f32e7deb378f9ae7752a0df01bafe23e5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/5995eab0600e0ff6ac74adfab0f411d04a0b3ac4",
-                "reference": "5995eab0600e0ff6ac74adfab0f411d04a0b3ac4",
+                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/1082682f32e7deb378f9ae7752a0df01bafe23e5",
+                "reference": "1082682f32e7deb378f9ae7752a0df01bafe23e5",
                 "shasum": ""
             },
             "require-dev": {
@@ -1197,10 +1197,10 @@
             ],
             "description": "WP plugin that adds addtional blocks.",
             "support": {
-                "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/2.3.0",
+                "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/2.3.3",
                 "issues": "https://github.com/ministryofjustice/website-builder-blocks/issues"
             },
-            "time": "2026-09-15T12:45:13+00:00"
+            "time": "2026-09-24T12:10:00+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
@@ -3684,15 +3684,15 @@
         },
         {
             "name": "wpackagist-plugin/microsoft-clarity",
-            "version": "0.10.32",
+            "version": "0.10.33",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/microsoft-clarity/",
-                "reference": "tags/0.10.32"
+                "reference": "tags/0.10.33"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/microsoft-clarity.0.10.32.zip"
+                "url": "https://downloads.wordpress.org/plugin/microsoft-clarity.0.10.33.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -4043,5 +4043,5 @@
         "php": ">=8.0"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }
