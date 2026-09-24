@@ -62,6 +62,8 @@ metadata:
       # - the request starts with /search/
       # - the path contains repeated pagination segments, e.g. /page/3/page/2/page/5/...
       #   A legitimate paginated search only ever has a single /page/N segment.
+      # - match the decoded path (REQUEST_FILENAME excludes the query string) so that
+      #   URL-encoded slashes (%2Fpage%2F3...) are also caught.
       # Return a 403 status code for these requests to explicitly block spammy searches.
       # This rejects spam search traffic at the WAF level instead of shadow-banning it.
       SecRule REQUEST_HEADERS:Host "@rx (?i)^www\.justice\.gov\.uk(?::\d+)?$" \
@@ -74,7 +76,7 @@ metadata:
         tag:github_team=hale-platform,\
         tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }},\
         chain"
-      SecRule REQUEST_URI "@rx ^/search/.*/page/\d+/page/\d+" "t:none"
+      SecRule REQUEST_FILENAME "@rx ^/search/.*/page/\d+/page/\d+" "t:none,t:urlDecodeUni"
 
       # 301 redirect requests (NOT under /search) that include ANY query string
       # to the same path without the query.
