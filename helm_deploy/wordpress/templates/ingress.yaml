@@ -59,7 +59,7 @@ metadata:
       SecRule ARGS_GET_NAMES "!@rx ^(?:s|section|organisation|audience|type|parent|post_types|redirected|orderby)(?:\[[^\]]*\])?$" ""
 
       # Target spam search URIs, these are URIs that:
-      # - the request start with /search/
+      # - the request starts with /search/
       # - the path contains repeated pagination segments, e.g. /page/3/page/2/page/5/...
       #   A legitimate paginated search only ever has a single /page/N segment.
       # Return a 403 status code for these requests to explicitly block spammy searches.
