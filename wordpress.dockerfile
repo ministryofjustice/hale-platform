@@ -407,6 +407,11 @@ COPY opt/php/healthz.php /usr/src/wordpress/healthz.php
 # file but only sets user and group, so the settings here still apply.
 COPY opt/php/www.conf ${PHP_INI_DIR}/php-fpm.d/www.conf
 
+# Readiness-probe pool on 127.0.0.1:9001, so /healthz keeps answering while
+# every [www] worker is busy. Named to sort before www.conf, so the pool
+# zz-wordpress.conf follows is still [www], as it was before this file existed.
+COPY opt/php/healthz.conf ${PHP_INI_DIR}/php-fpm.d/healthz.conf
+
 # Start-up scripts. hale-entrypoint.sh (the ENTRYPOINT below) copies the
 # image's docker-entrypoint.sh, adds a call to config.sh just before php-fpm
 # starts, applies startup-patch.sh and runs the result. config.sh sets up

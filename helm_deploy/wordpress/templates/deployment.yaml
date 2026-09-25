@@ -164,6 +164,12 @@ spec:
           # httpGet, so the kubelet makes the request itself and the probe depends
           # on nothing being present in the image.
           #
+          # /healthz runs in its own two-worker php-fpm pool ([healthz], port
+          # 9001 - opt/php/healthz.conf), not the ten-worker [www] pool that
+          # serves the site. Before that, a pod with all ten workers busy on
+          # slow requests failed this probe and left the Service, pushing its
+          # traffic onto pods that then saturated the same way.
+          #
           # failureThreshold 6 gives 30s of sustained failure before a pod leaves
           # the Service. With pm.max_children = 10 a traffic spike slows every
           # pod at once, and a shorter window could empty the entire Service from

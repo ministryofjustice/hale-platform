@@ -808,7 +808,13 @@ one exported function each:
 **The request is eligible** (`request_cacheable()`) only if all of:
 
 - method is `GET`;
-- query string is empty (any query → assumed dynamic);
+- query string is empty (any query → assumed dynamic) **after** tracking
+  parameters are stripped. `fetch()` first removes `utm_*`, click IDs
+  (`gclid`, `dclid`, `fbclid`, `msclkid`, ...) and Relevanssi's `_rt` /
+  `_rt_nonce` (full list in `pagecache/params.lua`), from both `$args` and the
+  `REQUEST_URI` PHP receives (`$hale_request_uri`). An ad-campaign landing then
+  shares the clean URL's cache entry, and a MISS renders exactly what the
+  clean URL would. Analytics still sees the parameters in the browser;
 - URI matches none of the bypass patterns: `/wp-admin`, `/wp-login`,
   `/wp-json`, `/xmlrpc.php`, `wp-cron`, `/feed`, `sitemap`;
 - no personalisation cookie: `wordpress_logged_in`, `wordpress_<hash>`,

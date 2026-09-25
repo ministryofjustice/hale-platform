@@ -44,6 +44,7 @@
 -- ============================================================================
 
 local redis_pool = require "pagecache.redis"
+local params     = require "pagecache.params"
 local cjson      = require "cjson.safe"
 
 local _M = {}
@@ -176,6 +177,28 @@ local function cache_path()
     return uri
 end
 
+-- Drop analytics/ad-click parameters (see pagecache/params.lua) so a campaign
+-- landing like /page/?utm_source=spotify&dclid=... is cacheable as /page/.
+-- Both copies PHP sees are cleaned - $args becomes QUERY_STRING ($_GET), and
+-- $hale_request_uri becomes REQUEST_URI - so a MISS renders exactly what the
+-- clean URL would. Without the REQUEST_URI half, anything built with
+-- add_query_arg() would bake one visitor's utm values into the cached page.
+-- $hale_request_uri is a `set` in the .php location of both *wordpress.conf
+-- files; the pcall keeps a config without it failing open, not erroring.
+local function strip_tracking_args()
+    local args = ngx.var.args
+    if not args or args == "" then return end
+
+    local cleaned, removed = params.strip(args)
+    if not removed then return end
+
+    ngx.req.set_uri_args(cleaned)
+    local path = cache_path()
+    pcall(function()
+        ngx.var.hale_request_uri = cleaned == "" and path or (path .. "?" .. cleaned)
+    end)
+end
+
 -- Version and mode are snapshotted together per worker for STATE_TTL seconds
 -- behind a single MGET: same Redis round-trip count as fetching the version
 -- alone used to cost, at the price of a version bump (mass flush) or a mode
@@ -280,6 +303,7 @@ return 1
 -- ============================================================================
 function _M.fetch()
     if not ENABLED then set_status("off"); return end
+    strip_tracking_args()
     if not request_cacheable() then
         ngx.header["X-Page-Cache"] = "BYPASS"
         set_status("bypass")
