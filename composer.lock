@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c4a13fab203fd8334db939f0aaf23296",
+    "content-hash": "6cb9fed4baaea1e806d58ae5b8f2cad7",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -115,16 +115,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.395.2",
+            "version": "3.398.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "d027655c121cc80192275e72d189612efa8dd9a9"
+                "reference": "46b99f035965af7769750dd0a46a2f8a0b8880d9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/d027655c121cc80192275e72d189612efa8dd9a9",
-                "reference": "d027655c121cc80192275e72d189612efa8dd9a9",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/46b99f035965af7769750dd0a46a2f8a0b8880d9",
+                "reference": "46b99f035965af7769750dd0a46a2f8a0b8880d9",
                 "shasum": ""
             },
             "require": {
@@ -206,9 +206,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.395.2"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.398.2"
             },
-            "time": "2026-09-14T20:04:40+00:00"
+            "time": "2026-09-28T18:18:23+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -424,16 +424,16 @@
         },
         {
             "name": "firebase/php-jwt",
-            "version": "v7.1.1",
+            "version": "v7.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleapis/php-jwt.git",
-                "reference": "9bc93bd7e3ee5bead4cd23c365ec12f3c1fb0a6a"
+                "reference": "0501f5729b9e2448516674aff07c7d1727869b8e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleapis/php-jwt/zipball/9bc93bd7e3ee5bead4cd23c365ec12f3c1fb0a6a",
-                "reference": "9bc93bd7e3ee5bead4cd23c365ec12f3c1fb0a6a",
+                "url": "https://api.github.com/repos/googleapis/php-jwt/zipball/0501f5729b9e2448516674aff07c7d1727869b8e",
+                "reference": "0501f5729b9e2448516674aff07c7d1727869b8e",
                 "shasum": ""
             },
             "require": {
@@ -443,7 +443,7 @@
                 "guzzlehttp/guzzle": "^7.4||^8.0",
                 "phpfastcache/phpfastcache": "^9.2",
                 "phpseclib/phpseclib": "~3.0",
-                "phpspec/prophecy-phpunit": "^2.0",
+                "phpspec/prophecy-phpunit": "^2.2",
                 "phpunit/phpunit": "^9.5",
                 "psr/cache": "^2.0||^3.0",
                 "psr/http-client": "^1.0",
@@ -455,6 +455,14 @@
                 "phpseclib/phpseclib": "Support PS256 (RSASSA-PSS) signatures"
             },
             "type": "library",
+            "extra": {
+                "component": {
+                    "id": "jwt",
+                    "path": "Jwt",
+                    "entry": "README.md",
+                    "target": "googleapis/php-jwt.git"
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "Firebase\\JWT\\": "src"
@@ -484,9 +492,9 @@
             ],
             "support": {
                 "issues": "https://github.com/googleapis/php-jwt/issues",
-                "source": "https://github.com/googleapis/php-jwt/tree/v7.1.1"
+                "source": "https://github.com/googleapis/php-jwt/tree/v7.2.1"
             },
-            "time": "2026-09-14T17:48:47+00:00"
+            "time": "2026-09-28T17:51:46+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -1041,25 +1049,26 @@
         },
         {
             "name": "ministryofjustice/hale-dash",
-            "version": "dev-costs",
+            "version": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale-dash.git",
-                "reference": "19295f44988e74b3e5664e797d7641608b2e5874"
+                "reference": "a0558fdd20a36dac46704519d9067a198d30d35a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale-dash/zipball/19295f44988e74b3e5664e797d7641608b2e5874",
-                "reference": "19295f44988e74b3e5664e797d7641608b2e5874",
+                "url": "https://api.github.com/repos/ministryofjustice/hale-dash/zipball/a0558fdd20a36dac46704519d9067a198d30d35a",
+                "reference": "a0558fdd20a36dac46704519d9067a198d30d35a",
                 "shasum": ""
             },
+            "default-branch": true,
             "type": "wordpress-theme",
             "description": "Hale Dash theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/hale-dash/tree/costs",
+                "source": "https://github.com/ministryofjustice/hale-dash/tree/2.3.0",
                 "issues": "https://github.com/ministryofjustice/hale-dash/issues"
             },
-            "time": "2026-09-09T08:34:06+00:00"
+            "time": "2026-09-15T11:47:19+00:00"
         },
         {
             "name": "ministryofjustice/hale-showcase",
@@ -1135,12 +1144,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/website-builder-blocks.git",
-                "reference": "962e06aaf0451e5786dc4d55a42d535350de1717"
+                "reference": "c68369ea798ebf38ae65e3ecc654bea1364ee5b5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/962e06aaf0451e5786dc4d55a42d535350de1717",
-                "reference": "962e06aaf0451e5786dc4d55a42d535350de1717",
+                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/c68369ea798ebf38ae65e3ecc654bea1364ee5b5",
+                "reference": "c68369ea798ebf38ae65e3ecc654bea1364ee5b5",
                 "shasum": ""
             },
             "require-dev": {
@@ -1165,10 +1174,10 @@
             ],
             "description": "WP plugin that adds addtional blocks.",
             "support": {
-                "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/2.2.10",
+                "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/2.3.4",
                 "issues": "https://github.com/ministryofjustice/website-builder-blocks/issues"
             },
-            "time": "2026-09-10T13:02:58+00:00"
+            "time": "2026-09-29T08:13:39+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
@@ -1204,23 +1213,22 @@
         },
         {
             "name": "ministryofjustice/wp-moj-blocks",
-            "version": "dev-main",
+            "version": "dev-bullet-prefix",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-moj-blocks.git",
-                "reference": "c7046ef78d185ecabe876ab4d9534521e31063cc"
+                "reference": "950b2f9e2f9301da310554796cd43d0236bb9373"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/wp-moj-blocks/zipball/c7046ef78d185ecabe876ab4d9534521e31063cc",
-                "reference": "c7046ef78d185ecabe876ab4d9534521e31063cc",
+                "url": "https://api.github.com/repos/ministryofjustice/wp-moj-blocks/zipball/950b2f9e2f9301da310554796cd43d0236bb9373",
+                "reference": "950b2f9e2f9301da310554796cd43d0236bb9373",
                 "shasum": ""
             },
             "require-dev": {
                 "composer/composer": "*",
                 "squizlabs/php_codesniffer": "*"
             },
-            "default-branch": true,
             "type": "wordpress-plugin",
             "scripts": {
                 "phpcs-config-set": [
@@ -1238,10 +1246,10 @@
             ],
             "description": "WP plugin that adds addtional blocks.",
             "support": {
-                "source": "https://github.com/ministryofjustice/wp-moj-blocks/tree/4.2.1",
+                "source": "https://github.com/ministryofjustice/wp-moj-blocks/tree/bullet-prefix",
                 "issues": "https://github.com/ministryofjustice/wp-moj-blocks/issues"
             },
-            "time": "2026-09-03T09:05:42+00:00"
+            "time": "2026-09-29T13:13:54+00:00"
         },
         {
             "name": "ministryofjustice/wp-s3-uploads",
@@ -3635,15 +3643,15 @@
         },
         {
             "name": "wpackagist-plugin/ewww-image-optimizer",
-            "version": "8.7.7",
+            "version": "8.8.0",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/ewww-image-optimizer/",
-                "reference": "tags/8.7.7"
+                "reference": "tags/8.8.0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/ewww-image-optimizer.8.7.7.zip"
+                "url": "https://downloads.wordpress.org/plugin/ewww-image-optimizer.8.8.0.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -3653,15 +3661,15 @@
         },
         {
             "name": "wpackagist-plugin/microsoft-clarity",
-            "version": "0.10.31",
+            "version": "0.10.33",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/microsoft-clarity/",
-                "reference": "tags/0.10.31"
+                "reference": "tags/0.10.33"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/microsoft-clarity.0.10.31.zip"
+                "url": "https://downloads.wordpress.org/plugin/microsoft-clarity.0.10.33.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -3743,15 +3751,15 @@
         },
         {
             "name": "wpackagist-plugin/safe-svg",
-            "version": "2.5.0",
+            "version": "2.5.1",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/safe-svg/",
-                "reference": "tags/2.5.0"
+                "reference": "tags/2.5.1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/safe-svg.2.5.0.zip"
+                "url": "https://downloads.wordpress.org/plugin/safe-svg.2.5.1.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -4020,5 +4028,5 @@
         "php": ">=8.0"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }
