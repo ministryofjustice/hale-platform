@@ -1217,12 +1217,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-moj-blocks.git",
-                "reference": "950b2f9e2f9301da310554796cd43d0236bb9373"
+                "reference": "62b9c065102caff99f5c603b152de59ef0df82bd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/wp-moj-blocks/zipball/950b2f9e2f9301da310554796cd43d0236bb9373",
-                "reference": "950b2f9e2f9301da310554796cd43d0236bb9373",
+                "url": "https://api.github.com/repos/ministryofjustice/wp-moj-blocks/zipball/62b9c065102caff99f5c603b152de59ef0df82bd",
+                "reference": "62b9c065102caff99f5c603b152de59ef0df82bd",
                 "shasum": ""
             },
             "require-dev": {
@@ -1249,7 +1249,7 @@
                 "source": "https://github.com/ministryofjustice/wp-moj-blocks/tree/bullet-prefix",
                 "issues": "https://github.com/ministryofjustice/wp-moj-blocks/issues"
             },
-            "time": "2026-09-29T13:13:54+00:00"
+            "time": "2026-09-29T14:28:54+00:00"
         },
         {
             "name": "ministryofjustice/wp-s3-uploads",
@@ -2616,16 +2616,16 @@
         },
         {
             "name": "symfony/http-client",
-            "version": "v7.4.19",
+            "version": "v7.4.20",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-client.git",
-                "reference": "3a523f38dc399337ec45b2ab9628e8c37ceb23c7"
+                "reference": "750a420b8dd0af3d6e1c6c1412802abf2cdd2b6c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-client/zipball/3a523f38dc399337ec45b2ab9628e8c37ceb23c7",
-                "reference": "3a523f38dc399337ec45b2ab9628e8c37ceb23c7",
+                "url": "https://api.github.com/repos/symfony/http-client/zipball/750a420b8dd0af3d6e1c6c1412802abf2cdd2b6c",
+                "reference": "750a420b8dd0af3d6e1c6c1412802abf2cdd2b6c",
                 "shasum": ""
             },
             "require": {
@@ -2693,7 +2693,7 @@
                 "http"
             ],
             "support": {
-                "source": "https://github.com/symfony/http-client/tree/v7.4.19"
+                "source": "https://github.com/symfony/http-client/tree/v7.4.20"
             },
             "funding": [
                 {
@@ -2713,7 +2713,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-09-08T13:28:43+00:00"
+            "time": "2026-09-24T11:02:13+00:00"
         },
         {
             "name": "symfony/http-client-contracts",
