@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "27713f9caaef09d9494ef263684a77dc",
+    "content-hash": "b8494ed21432a2f11ae314982faffad5",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -1047,25 +1047,25 @@
         },
         {
             "name": "ministryofjustice/hale-dash",
-            "version": "2.4.0",
+            "version": "2.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale-dash.git",
-                "reference": "a0558fdd20a36dac46704519d9067a198d30d35a"
+                "reference": "1c640e4b8d3b9dfa6a873aa1553eef7e2bf28468"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale-dash/zipball/a0558fdd20a36dac46704519d9067a198d30d35a",
-                "reference": "a0558fdd20a36dac46704519d9067a198d30d35a",
+                "url": "https://api.github.com/repos/ministryofjustice/hale-dash/zipball/1c640e4b8d3b9dfa6a873aa1553eef7e2bf28468",
+                "reference": "1c640e4b8d3b9dfa6a873aa1553eef7e2bf28468",
                 "shasum": ""
             },
             "type": "wordpress-theme",
             "description": "Hale Dash theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/hale-dash/tree/2.4.0",
+                "source": "https://github.com/ministryofjustice/hale-dash/tree/2.5.0",
                 "issues": "https://github.com/ministryofjustice/hale-dash/issues"
             },
-            "time": "2026-09-15T11:47:19+00:00"
+            "time": "2026-10-06T13:43:19+00:00"
         },
         {
             "name": "ministryofjustice/hale-showcase",
