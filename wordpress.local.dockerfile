@@ -33,8 +33,8 @@ ARG PHP_VERSION=8.4
 # image's core, so local runs the version the cluster runs. Empty both when
 # WORDPRESS_VERSION catches up. Change the two together - the SHA-256 is the
 # sha256sum of the .zip, checked against wordpress.org's published SHA-1.
-ARG PATCH_WORDPRESS_VERSION=7.0.6
-ARG PATCH_WORDPRESS_SHA256=ceea51247a0a78428a3a12cbf02bb869a5a215899a5aabd8b7fb6c0dba3554aa
+ARG PATCH_WORDPRESS_VERSION=7.0.7
+ARG PATCH_WORDPRESS_SHA256=e476db676a2688d62fcc2c2828f4888d45877972459dbf84086e92614d317c0e
 
 # ---------------------------------------------------------------------------
 # Extension stage: build the PHPRedis extension (redis.so).
