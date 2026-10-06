@@ -74,3 +74,12 @@ add_filter('relevanssi_modify_wp_query', function ($query) {
 
     return $query;
 });
+
+/**
+ * Block cross site search
+ *
+ * Prevent a search query from searching content from other sites,
+ * by stripping the `searchblogs` query.
+ */
+
+add_filter('query_vars', fn ($vars) => array_diff($vars, ['searchblogs']), 20);
