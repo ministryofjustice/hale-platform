@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7db2848b0ca765ff8a5d69c2984583fd",
+    "content-hash": "27713f9caaef09d9494ef263684a77dc",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -1047,7 +1047,7 @@
         },
         {
             "name": "ministryofjustice/hale-dash",
-            "version": "2.3.0",
+            "version": "2.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale-dash.git",
@@ -1062,7 +1062,7 @@
             "type": "wordpress-theme",
             "description": "Hale Dash theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/hale-dash/tree/2.3.0",
+                "source": "https://github.com/ministryofjustice/hale-dash/tree/2.4.0",
                 "issues": "https://github.com/ministryofjustice/hale-dash/issues"
             },
             "time": "2026-09-15T11:47:19+00:00"
