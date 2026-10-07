@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b8494ed21432a2f11ae314982faffad5",
+    "content-hash": "d6200625a149a27c15861ec2f8cfea00",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -115,16 +115,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.399.1",
+            "version": "3.399.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "cd7cf43b7d42e49579bf3f09ab58d4724d64152c"
+                "reference": "a69c0b97b8464b059c8d2e147eab6daed5d5cd25"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/cd7cf43b7d42e49579bf3f09ab58d4724d64152c",
-                "reference": "cd7cf43b7d42e49579bf3f09ab58d4724d64152c",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/a69c0b97b8464b059c8d2e147eab6daed5d5cd25",
+                "reference": "a69c0b97b8464b059c8d2e147eab6daed5d5cd25",
                 "shasum": ""
             },
             "require": {
@@ -206,9 +206,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.399.1"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.399.2"
             },
-            "time": "2026-10-02T18:16:16+00:00"
+            "time": "2026-10-06T22:19:35+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -997,25 +997,25 @@
         },
         {
             "name": "ministryofjustice/hale",
-            "version": "4.35.3",
+            "version": "4.36.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale.git",
-                "reference": "8907081029402af1537ffdac6372d1cdd2fb9dab"
+                "reference": "80322062320a76ab745442b9e03e9852961bfe7d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/8907081029402af1537ffdac6372d1cdd2fb9dab",
-                "reference": "8907081029402af1537ffdac6372d1cdd2fb9dab",
+                "url": "https://api.github.com/repos/ministryofjustice/hale/zipball/80322062320a76ab745442b9e03e9852961bfe7d",
+                "reference": "80322062320a76ab745442b9e03e9852961bfe7d",
                 "shasum": ""
             },
             "type": "wordpress-theme",
             "description": "Hale theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/hale/tree/4.35.3",
+                "source": "https://github.com/ministryofjustice/hale/tree/4.36.0",
                 "issues": "https://github.com/ministryofjustice/hale/issues"
             },
-            "time": "2026-10-05T10:38:18+00:00"
+            "time": "2026-10-07T11:26:08+00:00"
         },
         {
             "name": "ministryofjustice/hale-components",
