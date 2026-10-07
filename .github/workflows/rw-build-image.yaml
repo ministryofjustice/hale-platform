@@ -91,7 +91,7 @@ on:
 jobs:
   buildImage:
     name: Build Image and push to ECR
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: ${{ inputs.environment }}
     permissions:
       id-token: write
@@ -328,7 +328,7 @@ jobs:
   deployImage:
     name: Deploy to Environment
     needs: [buildImage]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: ${{ inputs.environment }}
     steps:
       - name: Checkout

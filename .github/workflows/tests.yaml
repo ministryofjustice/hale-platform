@@ -6,7 +6,7 @@ on:
 jobs:
   tests:
     name: Run Lua Firewall Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       redis:
         image: redis:7-alpine
@@ -49,7 +49,7 @@ jobs:
   # paths run.
   helm-render:
     name: Render Helm chart for every environment
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
@@ -77,7 +77,7 @@ jobs:
   # does. Needs no secrets, no cluster and no images.
   versions:
     name: Version references agree
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
