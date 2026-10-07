@@ -157,7 +157,7 @@ jobs:
       auth0-env-domain: ${{ secrets.AUTH0_ENV_DOMAIN }}
 
   checkFriday:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       needs_approval: ${{ steps.day-check.outputs.friday }}
     steps:

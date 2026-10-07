@@ -5,7 +5,7 @@ on:
 
 jobs:
   check-source-branch:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Comment on PR for blocked branches
         if: github.head_ref == 'demo' || github.head_ref == 'dev'
