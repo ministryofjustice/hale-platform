@@ -24,8 +24,17 @@
 
 # Image versions. Keep them the same as wordpress.dockerfile -
 # bin/check-versions.sh (make check-versions) fails if they differ.
-ARG WORDPRESS_VERSION=7.1
-ARG PHP_VERSION=8.5
+ARG WORDPRESS_VERSION=7.1.2
+ARG PHP_VERSION=8.4
+
+# WordPress core patch. Same purpose and same two values as
+# wordpress.dockerfile, which explains them in full: the builder stage
+# downloads this release and the runtime stage copies its files over the DHI
+# image's core, so local runs the version the cluster runs. Empty both when
+# WORDPRESS_VERSION catches up. Change the two together - the SHA-256 is the
+# sha256sum of the .zip, checked against wordpress.org's published SHA-1.
+ARG PATCH_WORDPRESS_VERSION=7.1.3
+ARG PATCH_WORDPRESS_SHA256=eb58a90ed55147f90f7bd55d0d3334960a69b7e8a4cc142c8ddfea8965218227
 
 # ---------------------------------------------------------------------------
 # Extension stage: build the PHPRedis extension (redis.so).
@@ -71,10 +80,16 @@ RUN apk add --no-cache hunspell-en-gb
 #
 # The -dev variant of the same DHI WordPress image, which adds a shell and apt.
 # Nothing from this stage reaches the runtime image except what it leaves in
-# /tmp: sysdeps (ghostscript, hunspell, the locale), wp (wp-cli), uploads and
-# optscripts.
+# /tmp: sysdeps (ghostscript, hunspell, the locale), wp (wp-cli), core (the
+# WordPress core patch), uploads and optscripts.
 # ---------------------------------------------------------------------------
 FROM dhi.io/wordpress:${WORDPRESS_VERSION}-php${PHP_VERSION}-fpm-dev AS builder
+
+# An ARG set before the first FROM has to be declared again to be used inside
+# a stage. These are for the core patch below.
+ARG WORDPRESS_VERSION
+ARG PATCH_WORDPRESS_VERSION
+ARG PATCH_WORDPRESS_SHA256
 
 # Root, for apt. The runtime stage runs as 65532.
 USER root
@@ -91,7 +106,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # unpacked into /tmp/sysdeps rather than installed, because dpkg can't
 # configure them in this image and the runtime only needs their files.
 # `ldconfig -n` adds the short library links (libgs.so.10) that unpacking
-# leaves out. wordpress.dockerfile explains each step.
+# leaves out. The multiarch library directory is discovered rather than named:
+# this image has no --platform pin, so it builds for the host architecture and
+# the directory is aarch64-linux-gnu on an Apple Silicon machine where
+# wordpress.dockerfile, pinned to amd64, always gets x86_64-linux-gnu.
+# wordpress.dockerfile explains each step.
 RUN mkdir -p /tmp/debs/partial /tmp/sysdeps \
     && apt-get update \
     && apt-get install -y --no-install-recommends --download-only \
@@ -108,17 +127,21 @@ RUN mkdir -p /tmp/debs/partial /tmp/sysdeps \
     && test -f /tmp/sysdeps/usr/lib/locale/C.utf8/LC_CTYPE \
     && rm -rf /tmp/libcdeb /tmp/libc /tmp/debs /var/lib/apt/lists/* \
     && rm -rf /tmp/sysdeps/usr/share/doc /tmp/sysdeps/usr/share/man /tmp/sysdeps/usr/share/lintian \
-    && ldconfig -n /tmp/sysdeps/usr/lib/x86_64-linux-gnu \
+    && libdir="$(ls -d /tmp/sysdeps/usr/lib/*-linux-gnu 2>/dev/null | head -n1)" \
+    && if [ -z "$libdir" ]; then \
+        echo "no multiarch library directory under /tmp/sysdeps/usr/lib"; exit 1; \
+    fi \
+    && ldconfig -n "$libdir" \
     && for bin in gs hunspell; do \
         test -x "/tmp/sysdeps/usr/bin/$bin" || exit 1; \
-        if LD_LIBRARY_PATH=/tmp/sysdeps/usr/lib/x86_64-linux-gnu \
+        if LD_LIBRARY_PATH="$libdir" \
             ldd "/tmp/sysdeps/usr/bin/$bin" | grep -q "not found"; then \
             echo "unresolved libraries for $bin"; exit 1; \
         fi; \
     done \
     && echo "libraries not staged, so expected in the runtime base:" \
     && { for bin in gs hunspell; do \
-            LD_LIBRARY_PATH=/tmp/sysdeps/usr/lib/x86_64-linux-gnu \
+            LD_LIBRARY_PATH="$libdir" \
                 ldd "/tmp/sysdeps/usr/bin/$bin"; \
         done; } \
         | awk '$3 ~ /^\// {print $3}' | grep -v '^/tmp/sysdeps' | sort -u | sed 's/^/  /'
@@ -137,6 +160,38 @@ RUN curl -fsSL --retry 3 --retry-delay 2 --retry-all-errors -o /tmp/wp \
     "https://github.com/wp-cli/wp-cli/releases/download/v${WP_CLI_VERSION}/wp-cli-${WP_CLI_VERSION}.phar" \
     && echo "${WP_CLI_SHA512}  /tmp/wp" | sha512sum -c - \
     && chmod +x /tmp/wp
+
+# WordPress core patch: PATCH_WORDPRESS_VERSION's core files, staged in
+# /tmp/core for the runtime stage to copy over /usr/src/wordpress. The
+# release's own wp-content is left out, so wp-content is the same with or
+# without the patch. With PATCH_WORDPRESS_VERSION empty, /tmp/core stays empty
+# and that COPY changes nothing. wordpress.dockerfile explains each check.
+RUN set -e; \
+    mkdir -p /tmp/core; \
+    if [ -n "${PATCH_WORDPRESS_VERSION}" ]; then \
+        newest=$(printf '%s\n%s\n' "${WORDPRESS_VERSION}" "${PATCH_WORDPRESS_VERSION}" | sort -V | tail -n1); \
+        if [ "${PATCH_WORDPRESS_VERSION}" = "${WORDPRESS_VERSION}" ] || [ "${newest}" != "${PATCH_WORDPRESS_VERSION}" ]; then \
+            echo "PATCH_WORDPRESS_VERSION (${PATCH_WORDPRESS_VERSION}) is not newer than WORDPRESS_VERSION (${WORDPRESS_VERSION}). Empty it."; \
+            exit 1; \
+        fi; \
+        echo "Patching WordPress core from ${WORDPRESS_VERSION} to ${PATCH_WORDPRESS_VERSION}"; \
+        curl -fsSL --retry 3 --retry-delay 2 --retry-all-errors -o /tmp/wordpress.zip \
+            "https://wordpress.org/wordpress-${PATCH_WORDPRESS_VERSION}.zip"; \
+        echo "${PATCH_WORDPRESS_SHA256}  /tmp/wordpress.zip" | sha256sum -c -; \
+        unzip -q /tmp/wordpress.zip -d /tmp/release; \
+        (cd /usr/src/wordpress && find wp-admin wp-includes -type f) > /tmp/base-files; \
+        missing=$(while read -r f; do [ -e "/tmp/release/wordpress/$f" ] || echo "  $f"; done < /tmp/base-files); \
+        if [ -n "${missing}" ]; then \
+            echo "Files in the ${WORDPRESS_VERSION} core that ${PATCH_WORDPRESS_VERSION} does not have:"; \
+            echo "${missing}"; \
+            exit 1; \
+        fi; \
+        grep -qF "\$wp_version = '${PATCH_WORDPRESS_VERSION}';" /tmp/release/wordpress/wp-includes/version.php \
+            || { echo "version.php in the download is not ${PATCH_WORDPRESS_VERSION}"; exit 1; }; \
+        rm -rf /tmp/release/wordpress/wp-content; \
+        cp -a /tmp/release/wordpress/. /tmp/core/; \
+        rm -rf /tmp/wordpress.zip /tmp/release /tmp/base-files; \
+    fi
 
 # Two empty folders for the runtime stage, which only uses COPY: the uploads
 # folder, and /opt/scripts, which docker compose mounts ./opt/scripts over.
@@ -172,6 +227,11 @@ COPY --from=dictionaries /usr/share/hunspell /usr/share/hunspell
 # data of its own, so without it glibc reports ASCII and hunspell fails on every
 # accented word. See wordpress.dockerfile.
 ENV LANG=C.UTF-8
+
+# WordPress core patch from the builder stage, over the DHI image's core. The
+# folder is empty when PATCH_WORDPRESS_VERSION is empty, and this COPY then
+# changes nothing.
+COPY --from=builder --chown=65532:65532 /tmp/core/ /usr/src/wordpress/
 
 # Platform PHP files: the must-use plugin loader and Composer autoloader,
 # PHP error logging, and the script that runs cron for every site.

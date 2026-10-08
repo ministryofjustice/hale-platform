@@ -35,7 +35,7 @@
 # wptools.dockerfile (its Alpine php8X packages) and the CI workflow's
 # setup-php step. bin/check-versions.sh (make check-versions, also run in CI on
 # pull requests) fails if any of them disagree.
-ARG WORDPRESS_VERSION=7.0.4
+ARG WORDPRESS_VERSION=7.1.2
 ARG PHP_VERSION=8.4
 
 # WordPress core patch. When PATCH_WORDPRESS_VERSION is set, the image runs that
@@ -54,8 +54,8 @@ ARG PHP_VERSION=8.4
 #
 # bin/wp-core-cve-check.sh checks PATCH_WORDPRESS_VERSION for CVEs when it is
 # set, as the version the site runs.
-ARG PATCH_WORDPRESS_VERSION=7.0.5
-ARG PATCH_WORDPRESS_SHA256=d46c4120aadda8c7b63f2afbf651107a1ba03e7fb4f11729a5851b6b7af8743a
+ARG PATCH_WORDPRESS_VERSION=7.1.3
+ARG PATCH_WORDPRESS_SHA256=eb58a90ed55147f90f7bd55d0d3334960a69b7e8a4cc142c8ddfea8965218227
 
 # ---------------------------------------------------------------------------
 # Extension stage: build the PHPRedis extension (redis.so).
