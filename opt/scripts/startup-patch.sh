@@ -6,8 +6,13 @@
 #
 # Background:
 # WordPress's default docker-entrypoint.sh copies source code from /usr/src/wordpress
-# to /var/www/html using tar. On K8s, /var/www/html is an emptyDir volume owned by
-# root, and the container runs as non-root (UID 1002). When tar extracts, it tries
+# to /var/www/html using tar. fsGroup does NOT avoid this: it sets the group and
+# the setgid bit on the emptyDir, but the directory stays owned by root, and
+# chmod requires ownership. Removing this patch on the hardened-image branch
+# therefore reintroduced the restart - every dev pod exited 2 roughly 20-50s in,
+# then came back clean because the second run finds the webroot populated and
+# skips the copy entirely. On K8s, /var/www/html is an emptyDir volume owned by
+# root, and the container runs as non-root (UID 65532). When tar extracts, it tries
 # to chmod the mount point directory "." to rwxrwxrwx, which fails with:
 #   tar: .: Cannot change mode to rwxrwxrwx: Operation not permitted
 # The files themselves extract fine — only the chmod on "." fails — so it is safe
@@ -38,12 +43,17 @@ PATCH
 #   - the pipeline exited non-zero but produced no stderr we can inspect
 #     (a silent failure we shouldn't swallow).
 #
+# The backslash before the dot is doubled because awk processes escapes in a -v
+# assignment: a single \. reaches grep as a plain dot, which matches any single
+# character. Doubling it emits a literal \. so the pattern stays anchored to the
+# mount point itself.
+#
 # The ignorable lines are matched precisely so chmod failures against real
 # extracted files (e.g. "tar: ./wp-admin/foo: Cannot change mode ...") still
 # surface and fail the startup instead of being silently filtered out.
 IFS= read -r -d '' tar_error_check <<'PATCH' || true
 		filtered=$(echo "$tar_err" \
-			| grep -vE '^tar: \.: Cannot change mode to [rwx-]{9}: Operation not permitted$' \
+			| grep -vE '^tar: \\.: Cannot change mode to [rwx-]{9}: Operation not permitted$' \
 			| grep -vxF 'tar: Exiting with failure status due to previous errors' \
 			|| true)
 		if [ -n "$filtered" ] || { [ "$tar_status" -ne 0 ] && [ -z "$tar_err" ]; }; then

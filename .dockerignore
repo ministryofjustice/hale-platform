@@ -2,11 +2,19 @@
 /wordpress
 /squarepants
 
+# Local clones of the MoJ repositories (bin/clone-repos.sh). Bind-mounted into
+# the containers at /mnt/dev by docker-compose.yml, never COPYed by any
+# dockerfile - so shipping them to the daemon as build context is ~1GB of
+# node_modules and git history read over Docker Desktop's file sharing on every
+# build, for nothing.
+/dev
+
 # Database files
 *.sql
 
 # Other
 .git
+**/.git
 .DS_Store
 .env
 .env.local

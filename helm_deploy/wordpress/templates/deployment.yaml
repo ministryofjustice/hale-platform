@@ -1,3 +1,4 @@
+{{- include "wordpress.validateEnv" . -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -10,7 +11,7 @@ spec:
     matchLabels:
       app: wordpress
       tier: frontend-c
-  replicas: {{ include "wp.replicaCount" . }}
+  replicas: {{ .Values.replicaCount }}
   strategy:
     type: {{ .Values.updateStrategy.type }}
     rollingUpdate:
@@ -24,51 +25,99 @@ spec:
     spec:
       terminationGracePeriodSeconds: 35
       serviceAccountName: hale-platform-{{ .Values.configmap.envtype }}-service
+      # The hardened WordPress image runs as UID 65532. fsGroup makes the shared
+      # emptyDir group-owned and setgid so the wordpress and wptools containers
+      # can both write into it.
+      #
+      # It does not make the volume's own directory writable: that stays owned by
+      # root, so the entrypoint's tar still cannot chmod the mount point. See
+      # opt/scripts/startup-patch.sh, which tolerates exactly that one failure.
+      securityContext:
+        fsGroup: 65532
       containers:
         - name: wordpress
           image: {{ .Values.wp.image.repository }}
           imagePullPolicy: {{ .Values.wp.image.imagePullPolicy }}
           resources:
             limits:
-              cpu: {{ index .Values.wp.resources .Values.configmap.envtype "limits" "cpu" }}
-              memory: {{ index .Values.wp.resources .Values.configmap.envtype "limits" "memory" }}
+              cpu: {{ .Values.wp.resources.limits.cpu }}
+              memory: {{ .Values.wp.resources.limits.memory }}
             requests:
-              cpu: {{ index .Values.wp.resources .Values.configmap.envtype "requests" "cpu" }}
-              memory: {{ index .Values.wp.resources .Values.configmap.envtype "requests" "memory" }}
+              cpu: {{ .Values.wp.resources.requests.cpu }}
+              memory: {{ .Values.wp.resources.requests.memory }}
           env:
+            # Deliberately NOT under the image's own PHP directory. That path is
+            # version-stamped (/etc/php-<version>) and a PHP bump would leave
+            # this pointing at a directory that does not exist - the container
+            # would still start and silently ignore our php.ini overrides.
+            # The leading colon keeps the image's own conf.d on the scan path,
+            # so an arbitrary location here is additive, not a replacement.
             - name: PHP_INI_SCAN_DIR
-              value: :/usr/local/etc/php/conf.custom
+              value: :/opt/hale/php-conf
           ports:
             - containerPort: {{ .Values.wp.image.ports.containerPort }}
           volumeMounts:
             - name: wordpress-volume-file-mount
               mountPath: /var/www/html
             - name: hale-php-config
-              mountPath: /usr/local/etc/php/conf.custom
+              mountPath: /opt/hale/php-conf
           envFrom:
             - configMapRef:
                 name: hale-wp-config-{{ .Release.Revision }}
             - secretRef:
                 name: hale-wp-secrets-{{ .Release.Revision }}
-          {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
-          readinessProbe:
+          {{- if .Values.wp.probes.enabled }}
+          # startupProbe - has the wordpress container finished starting
+          # and is something listening on 127.0.0.1:9000?
+          #
+          # failureThreshold 120 (240s) is load-bearing: the ceiling has to exceed
+          # however long the entrypoint takes, or the container is killed and
+          # restarted in a loop. That work grows with the number of sites.
+          startupProbe:
             exec:
               command:
-                - /bin/sh
-                - -c
-                - |
-                  if [ -f /var/www/html/wp-load.php ] && ps aux | grep -q "[p]hp-fpm"
-                  then
-                    exit 0
-                  else
-                    exit 1
-                  fi
-            initialDelaySeconds: 30
-            periodSeconds: 3
-            timeoutSeconds: 10
-            successThreshold: 1
-            failureThreshold: 3
+                - php
+                - -r
+                # Quoted: the ": " inside would otherwise make YAML read this
+                # sequence entry as a mapping, not a string.
+                - "exit(@fsockopen('127.0.0.1', {{ .Values.wp.image.ports.containerPort }}, $e, $s, 1) ? 0 : 1);"
+            periodSeconds: 2
+            timeoutSeconds: 5
+            failureThreshold: 120
+          # This container has no readinessProbe, on purpose.
+          #
+          # php-fpm listens on 127.0.0.1:9000 (see opt/php/www.conf), so only
+          # containers in this pod can connect to it. nginx can, because
+          # containers in the same pod share 127.0.0.1. A tcpSocket probe
+          # can't: it connects to the pod's IP address instead, gets
+          # "connection refused", and the pod would never be marked ready.
+          #
+          # Listening on 127.0.0.1 is the right setting - it keeps php-fpm
+          # unreachable from outside the pod - so we drop the probe rather
+          # than open php-fpm up to make one work.
+          #
+          # This container is still checked. nginx's readinessProbe (below)
+          # requests /healthz, which nginx passes to php-fpm. It only returns
+          # 200 when php-fpm is handling requests and the WordPress files are
+          # in place and readable.
           {{- end }}
+          # preStop - wait 10 seconds before the container starts shutting down.
+          #
+          # When a pod is deleted, Kubernetes does two things at the same time:
+          # it starts stopping the containers, and it tells ingress-nginx to
+          # stop sending traffic to this pod. That message takes a second or
+          # two to reach ingress-nginx, so without a pause some requests would
+          # still arrive after php-fpm has started shutting down, and fail.
+          #
+          # The sleep keeps the pod serving normally while ingress-nginx catches
+          # up. After it, Kubernetes sends SIGQUIT (the image's stop signal),
+          # which tells php-fpm to finish the requests it is already handling
+          # before it exits. The sleep and the shutdown together must fit in
+          # the 35s terminationGracePeriodSeconds, or the container is killed.
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 10"]
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -82,13 +131,15 @@ spec:
           imagePullPolicy: {{ .Values.nginx.image.imagePullPolicy }}
           resources:
             limits:
-              cpu: {{ index .Values.nginx.resources .Values.configmap.envtype "limits" "cpu" }}
-              memory: {{ index .Values.nginx.resources .Values.configmap.envtype "limits" "memory" }}
+              cpu: {{ .Values.nginx.resources.limits.cpu }}
+              memory: {{ .Values.nginx.resources.limits.memory }}
             requests:
-              cpu: {{ index .Values.nginx.resources .Values.configmap.envtype "requests" "cpu" }}
-              memory: {{ index .Values.nginx.resources .Values.configmap.envtype "requests" "memory" }}
+              cpu: {{ .Values.nginx.resources.requests.cpu }}
+              memory: {{ .Values.nginx.resources.requests.memory }}
           ports:
             - containerPort: {{ .Values.nginx.image.ports.containerPort }}
+            - name: fpm-status
+              containerPort: {{ .Values.nginx.image.ports.statusPort }}
           volumeMounts:
             - name: wordpress-volume-file-mount
               mountPath: /var/www/html
@@ -97,24 +148,95 @@ spec:
                 name: hale-nginx-config-{{ .Release.Revision }}
             - secretRef:
                 name: hale-nginx-secrets-{{ .Release.Revision }}
-          {{- if or (eq .Values.configmap.envtype "prod") (eq .Values.configmap.envtype "staging") }}
+          {{- if .Values.nginx.probes.enabled }}
+          # This is the only readiness probe in the pod, so /healthz alone decides
+          # whether this pod receives traffic.
+          #
+          # /healthz (opt/php/healthz.php) proves what this pod needs to serve:
+          # nginx is up, FastCGI reaches php-fpm, PHP executes, and the webroot
+          # holds a readable WordPress. It does not query the database - every
+          # pod shares one, so a database check would mark the whole Deployment
+          # unready at once, and Kubernetes has no fail-open for an empty
+          # endpoint list. nginx can still serve page cache hits with no PHP and
+          # no database involved. /healthz/deep does query, for the uptime pod
+          # and alerting, and is deliberately not wired to any probe.
+          #
+          # httpGet, so the kubelet makes the request itself and the probe depends
+          # on nothing being present in the image.
+          #
+          # failureThreshold 6 gives 30s of sustained failure before a pod leaves
+          # the Service. With pm.max_children = 10 a traffic spike slows every
+          # pod at once, and a shorter window could empty the entire Service from
+          # a load problem that was slow but still serving.
+          #
+          # initialDelaySeconds 5 because /healthz answers in ~3ms and the
+          # wordpress container's startupProbe already holds the pod back until
+          # the entrypoint has finished. Any longer is dead time on every pod
+          # join, which serialises rollouts behind it while maxUnavailable is 0
+          # and delays every HPA scale-up.
           readinessProbe:
-            exec:
-              command:
-                - sh
-                - -c
-                - |
-                  if curl --silent --fail http://localhost:8080 >/dev/null; then
-                    exit 0
-                  else
-                    exit 1
-                  fi
-            initialDelaySeconds: 35
+            httpGet:
+              path: /healthz
+              port: {{ .Values.nginx.image.ports.statusPort }}
+            initialDelaySeconds: 5
             periodSeconds: 5
-            timeoutSeconds: 10
+            timeoutSeconds: 5
             successThreshold: 1
-            failureThreshold: 3
+            failureThreshold: 6
           {{- end }}
+          # preStop - see the wordpress container above. This is the one that
+          # matters: nginx stops accepting new connections as soon as it is
+          # signalled, so without the sleep, requests the ingress sends during
+          # the endpoint-propagation window are refused and the user gets a 502.
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 10"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+        # Database tooling sidecar. The hardened WordPress image ships no mysql
+        # client, so `wp db` subcommands run here. Every other wp-cli command
+        # still works in the wordpress container - only `wp db` shells out to
+        # the mysql binaries.
+        #
+        #   kubectl exec <pod> -c wptools -- wp db query "SELECT ..."
+        #
+        # Containers in a pod share a network namespace but not a filesystem,
+        # and by default not a PID namespace, so a PHP RCE in the wordpress
+        # container cannot execute this container's mysql binary.
+        #
+        # Idle (`tail -f /dev/null`) with no listening service, so it adds no
+        # attack surface of its own. No probes - it must not affect pod
+        # readiness.
+        - name: wptools
+          image: {{ .Values.wptools.image.repository }}
+          imagePullPolicy: {{ .Values.wptools.image.imagePullPolicy }}
+          workingDir: /var/www/html
+          resources:
+            limits:
+              cpu: {{ .Values.wptools.resources.limits.cpu }}
+              memory: {{ .Values.wptools.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.wptools.resources.requests.cpu }}
+              memory: {{ .Values.wptools.resources.requests.memory }}
+          volumeMounts:
+            # wp-cli reads wp-config.php from here for the database credentials.
+            - name: wordpress-volume-file-mount
+              mountPath: /var/www/html
+            # Exports go here, not under the webroot where nginx could serve them.
+            - name: wptools-scratch
+              mountPath: /scratch
+          envFrom:
+            - configMapRef:
+                name: hale-wp-config-{{ .Release.Revision }}
+            - secretRef:
+                name: hale-wp-secrets-{{ .Release.Revision }}
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -125,6 +247,8 @@ spec:
               type: RuntimeDefault
       volumes:
         - name: wordpress-volume-file-mount
+          emptyDir: {}
+        - name: wptools-scratch
           emptyDir: {}
         - name: hale-php-config
           configMap:

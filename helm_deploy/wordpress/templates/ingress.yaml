@@ -58,6 +58,26 @@ metadata:
       SecRule REQUEST_URI "@rx ^/search(?:$|/|\?)" "chain"
       SecRule ARGS_GET_NAMES "!@rx ^(?:s|section|organisation|audience|type|parent|post_types|redirected|orderby)(?:\[[^\]]*\])?$" ""
 
+      # Target spam search URIs, these are URIs that:
+      # - the request starts with /search/
+      # - the path contains repeated pagination segments, e.g. /page/3/page/2/page/5/...
+      #   A legitimate paginated search only ever has a single /page/N segment.
+      # - match the decoded path (REQUEST_FILENAME excludes the query string) so that
+      #   URL-encoded slashes (%2Fpage%2F3...) are also caught.
+      # Return a 403 status code for these requests to explicitly block spammy searches.
+      # This rejects spam search traffic at the WAF level instead of shadow-banning it.
+      SecRule REQUEST_HEADERS:Host "@rx (?i)^www\.justice\.gov\.uk(?::\d+)?$" \
+        "id:10300,\
+        phase:1,\
+        deny,\
+        nolog,\
+        status:403,\
+        t:none,\
+        tag:github_team=hale-platform,\
+        tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }},\
+        chain"
+      SecRule REQUEST_FILENAME "@rx ^/search/.*/page/\d+/page/\d+" "t:none,t:urlDecodeUni"
+
       # 301 redirect requests (NOT under /search) that include ANY query string
       # to the same path without the query.
       # - Declare the 301 redirect
@@ -130,17 +150,15 @@ metadata:
 spec:
   ingressClassName: modsec
   tls:
-{{- if not (eq .Values.configmap.envtype "prod") }}
+{{- if .Values.ingress.defaultHost.certName }}
   - hosts:
     - {{ .Values.domain }}
-    secretName: websitebuilder-{{ .Values.configmap.envtype }}-cert
+    secretName: {{ .Values.ingress.defaultHost.certName }}
 {{- end }}
-{{- if eq .Values.configmap.envtype "prod" }}
-  {{- range .Values.ingress.hosts }}
+{{- range .Values.ingress.hosts }}
   - hosts:
     - {{ .name }}
     secretName: {{ .certName }}
-  {{- end }}
 {{- end }}
   rules:
     - host: {{ .Values.domain }}
@@ -153,8 +171,7 @@ spec:
                 name: wordpress
                 port:
                   number: 8080
-  {{- if eq .Values.configmap.envtype "prod" }}
-    {{- range .Values.ingress.hosts }}
+  {{- range .Values.ingress.hosts }}
     - host: {{ .name }}
       http:
         paths:
@@ -165,6 +182,5 @@ spec:
                 name: wordpress
                 port:
                   number: 8080
-    {{- end }}
   {{- end }}
 {{- end }}
