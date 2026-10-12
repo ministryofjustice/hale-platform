@@ -71,6 +71,10 @@
     },
     {
       "type": "vcs",
+      "url": "https://github.com/ministryofjustice/website-builder-block-restrictions.git"
+    },
+    {
+      "type": "vcs",
       "url": "https://github.com/ministryofjustice/website-builder-blocks.git"
     },
     {
@@ -101,16 +105,17 @@
   "require": {
     "composer/installers": "^v2.0",
     "ministryofjustice/cookie-compliance": "1.3.7",
-    "ministryofjustice/govwind": "1.1.2",
-    "ministryofjustice/justice": "11.1.4",
-    "ministryofjustice/hale": "4.35.2",
-    "ministryofjustice/hale-components": "1.20.0",
-    "ministryofjustice/hale-dash": "2.2.1",
+    "ministryofjustice/govwind": "1.1.4",
+    "ministryofjustice/justice": "11.1.5",
+    "ministryofjustice/hale": "4.36.0",
+    "ministryofjustice/hale-components": "1.22.1",
+    "ministryofjustice/hale-dash": "2.5.0",
     "ministryofjustice/hale-showcase": "1.1.11",
     "ministryofjustice/ppo": "dev-main",
-    "ministryofjustice/website-builder-blocks": "2.2.5",
+    "ministryofjustice/website-builder-block-restrictions": "1.0.0",
+    "ministryofjustice/website-builder-blocks": "2.3.7",
     "ministryofjustice/wp-gov-uk-notify": "1.0.4",
-    "ministryofjustice/wp-moj-blocks": "4.2.0",
+    "ministryofjustice/wp-moj-blocks": "4.2.1",
     "ministryofjustice/wp-s3-uploads": "2.0.1",
     "oscarotero/env": "^1.0",
     "php": ">=8.0",
