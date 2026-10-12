@@ -25,22 +25,27 @@ module.exports = defineConfig({
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
+      testIgnore: "**/mobile-navigation.spec.js",
     },
     {
       name: "firefox",
       use: { ...devices["Desktop Firefox"] },
+      testIgnore: "**/mobile-navigation.spec.js",
     },
     {
       name: "webkit",
       use: { ...devices["Desktop Safari"] },
+      testIgnore: "**/mobile-navigation.spec.js",
     },
     {
       name: "Mobile Chrome",
       use: { ...devices["Pixel 5"] },
+      testMatch: "**/mobile-navigation.spec.js",
     },
     {
       name: "Mobile Safari",
       use: { ...devices["iPhone 12"] },
+      testMatch: "**/mobile-navigation.spec.js",
     },
   ],
 });

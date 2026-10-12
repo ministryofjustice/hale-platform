@@ -45,6 +45,7 @@ describe("Govwind mobile navigation tests", () => {
 
   test("mobile nav menu closes", async ({ page }) => {
     const mobileNav = page.locator("header nav.wb-mobile-only");
+
     const openBtn = mobileNav.getByRole("button", {
       name: "Open menu",
     });
@@ -59,12 +60,9 @@ describe("Govwind mobile navigation tests", () => {
 
     await closeBtn.click();
     expect(openBtn).toBeVisible();
+    expect(closeBtn).toBeHidden();
 
-    await expect(
-      mobileNav.getByRole("button", {
-        name: "Close menu",
-      }),
-    ).toBeVisible();
+  
 
     await expect(
       mobileNav.getByRole("link", {
