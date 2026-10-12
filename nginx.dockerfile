@@ -1,4 +1,4 @@
-FROM openresty/openresty:1.31.1.1-alpine
+FROM openresty/openresty:1.31.1.1-3-alpine
 
 # Install additional Alpine packages
 RUN apk add --no-cache curl ca-certificates
