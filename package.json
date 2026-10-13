@@ -9,7 +9,8 @@
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug",
     "test:report": "playwright show-report",
-    "test:browserstack": "PLAYWRIGHT_HTML_OPEN=never NODE_OPTIONS='-r dotenv/config' browserstack-node-sdk playwright test"
+    "test:browserstack:desktop": "PLAYWRIGHT_HTML_OPEN=never NODE_OPTIONS='-r dotenv/config' browserstack-node-sdk playwright test --project=desktop",
+    "test:browserstack:mobile": "PLAYWRIGHT_HTML_OPEN=never NODE_OPTIONS='-r dotenv/config' browserstack-node-sdk playwright test --project=mobile"
   },
   "repository": {
     "type": "git",
@@ -25,7 +26,7 @@
   "homepage": "https://github.com/ministryofjustice/hale-platform#readme",
   "devDependencies": {
     "@playwright/test": "^1.62.1",
-    "browserstack-node-sdk": "^1.72.3",
+    "browserstack-node-sdk": "^1.72.4",
     "dotenv": "^18.0.3"
   }
 }

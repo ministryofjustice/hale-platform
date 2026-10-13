@@ -1,11 +1,16 @@
 const { describe, test, expect, beforeEach } = require("@playwright/test");
 
 describe("Govwind mobile navigation tests", () => {
-  beforeEach(async ({ page }) => {
-    await page.goto("cjsm");
-  });
+  // beforeEach(async ({ page }) => {
+  //   await page.goto("cjsm");
+  // });
   test("mobile navigation is visible", async ({ page }) => {
+    // await page.setViewportSize({
+    //   width: 393,
+    //   height: 727,
+    // });
     await page.goto("/cjsm");
+    console.log("Viewport:", page.viewportSize());
 
     const mobileNav = page.locator("header nav.wb-mobile-only");
     await expect(mobileNav).toHaveCount(1);
@@ -21,6 +26,7 @@ describe("Govwind mobile navigation tests", () => {
   });
 
   test("mobile nav menu opens", async ({ page }) => {
+    await page.goto("/cjsm");
     const mobileNav = page.locator("header nav.wb-mobile-only");
     const menuBtn = mobileNav.getByRole("button", {
       name: "Open menu",
@@ -44,6 +50,7 @@ describe("Govwind mobile navigation tests", () => {
   });
 
   test("mobile nav menu closes", async ({ page }) => {
+    await page.goto("/cjsm");
     const mobileNav = page.locator("header nav.wb-mobile-only");
 
     const openBtn = mobileNav.getByRole("button", {
@@ -56,13 +63,11 @@ describe("Govwind mobile navigation tests", () => {
       name: "Close menu",
     });
 
-    expect(closeBtn).toBeVisible();
+    await expect(closeBtn).toBeVisible();
 
     await closeBtn.click();
-    expect(openBtn).toBeVisible();
-    expect(closeBtn).toBeHidden();
-
-  
+    await expect(openBtn).toBeVisible();
+    await expect(closeBtn).toBeHidden();
 
     await expect(
       mobileNav.getByRole("link", {
@@ -71,20 +76,22 @@ describe("Govwind mobile navigation tests", () => {
     ).toBeHidden();
   });
 
-  test("About CJSM mobile nav link works", async ({page})=>{
+  test("About CJSM mobile nav link works", async ({ page }) => {
+    await page.goto("/cjsm");
     const mobileNav = page.locator("header nav.wb-mobile-only");
 
-    mobileNav.getByRole("button", {
-      name: "Open menu",
-    }).click();
+    await mobileNav
+      .getByRole("button", {
+        name: "Open menu",
+      })
+      .click();
     const linkName = mobileNav.getByRole("link", {
-        name: "About CJSM",
-        exact:true,
-    }) ;
+      name: "About CJSM",
+      exact: true,
+    });
 
     await expect(linkName).toBeVisible();
     await linkName.click();
     await expect(page).toHaveURL(/\/cjsm\/about-cjsm/);
-
-  })
+  });
 });
