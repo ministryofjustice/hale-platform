@@ -1,15 +1,11 @@
 const { describe, test, expect, beforeEach } = require("@playwright/test");
 
 describe("Govwind mobile navigation tests", () => {
-  // beforeEach(async ({ page }) => {
-  //   await page.goto("cjsm");
-  // });
+  beforeEach(async ({ page }) => {
+    await page.goto("cjsm");
+  });
   test("mobile navigation is visible", async ({ page }) => {
-    // await page.setViewportSize({
-    //   width: 393,
-    //   height: 727,
-    // });
-    await page.goto("/cjsm");
+    
     console.log("Viewport:", page.viewportSize());
 
     const mobileNav = page.locator("header nav.wb-mobile-only");
@@ -18,15 +14,14 @@ describe("Govwind mobile navigation tests", () => {
   });
 
   test("desktop navigation is hidden", async ({ page }) => {
-    await page.goto("/cjsm");
-
+    
     const desktopNav = page.locator("header nav.wp-desktop-only");
     await expect(desktopNav).toHaveCount(0);
     await expect(desktopNav).toBeHidden();
   });
 
   test("mobile nav menu opens", async ({ page }) => {
-    await page.goto("/cjsm");
+   
     const mobileNav = page.locator("header nav.wb-mobile-only");
     const menuBtn = mobileNav.getByRole("button", {
       name: "Open menu",
@@ -50,7 +45,7 @@ describe("Govwind mobile navigation tests", () => {
   });
 
   test("mobile nav menu closes", async ({ page }) => {
-    await page.goto("/cjsm");
+   
     const mobileNav = page.locator("header nav.wb-mobile-only");
 
     const openBtn = mobileNav.getByRole("button", {
@@ -77,7 +72,7 @@ describe("Govwind mobile navigation tests", () => {
   });
 
   test("About CJSM mobile nav link works", async ({ page }) => {
-    await page.goto("/cjsm");
+   
     const mobileNav = page.locator("header nav.wb-mobile-only");
 
     await mobileNav

@@ -21,6 +21,7 @@ module.exports = defineConfig({
   },
 
   //run tests using chronium with a desktop chrome-like browser
+  //ensures tests are carried out on matching platform types
   projects: [
     {
       name: "chromium",
