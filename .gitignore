@@ -65,12 +65,15 @@ opt/lua/fixtures/*
 .claude
 
 ##############################
-# Playwright Tests
-#############################
-test-results/
-playwright-report/
-
-##############################
 # Browserstack  Tests
 #############################
 log/
+
+##############################
+# Playwright end-to-end stack
+#############################
+# Saved login sessions, the generated self-signed certificate, and run output
+tests/e2e/.auth/
+tests/e2e/.stack/
+tests/e2e/test-results/
+tests/e2e/playwright-report/

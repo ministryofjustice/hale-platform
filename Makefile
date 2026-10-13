@@ -6,7 +6,7 @@
 # Default target - list targets with their ## descriptions
 help: ## Show this help
 	@echo "Available commands:"
-	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | \
+	@grep -hE '^[a-zA-Z0-9_-]+:.*## ' $(MAKEFILE_LIST) | \
 		awk 'BEGIN {FS = ":.*## "}; {printf "  make %-22s - %s\n", $$1, $$2}'
 
 # Run site using Docker
@@ -217,3 +217,6 @@ clean: ## Remove dangling Docker images
 	@echo "Removing dangling Docker images..."
 	@docker image prune -f
 	@echo "✓ Cleanup complete"
+
+# Test commands (Playwright end-to-end tests) live in tests/Makefile.
+include tests/Makefile

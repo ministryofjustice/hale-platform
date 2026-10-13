@@ -5,11 +5,14 @@
   "main": "index.js",
   "scripts": {
     "test": "playwright test",
+    "test:e2e": "playwright test",
+    "test:e2e:build": "tests/e2e/stack/build.sh",
+    "test:e2e:down": "docker compose -f docker-compose.test.yml --profile seed down -v --remove-orphans",
     "test:headed": "playwright test --headed",
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug",
-    "test:report": "playwright show-report",
-    "test:browserstack": "PLAYWRIGHT_HTML_OPEN=never NODE_OPTIONS='-r dotenv/config' browserstack-node-sdk playwright test"
+    "test:report": "playwright show-report tests/e2e/playwright-report",
+    "test:browserstack": "PLAYWRIGHT_HTML_OPEN=never NODE_OPTIONS='-r dotenv/config' browserstack-node-sdk playwright test --browserstack.config tests/e2e/browserstack.yml"
   },
   "repository": {
     "type": "git",
@@ -24,6 +27,7 @@
   },
   "homepage": "https://github.com/ministryofjustice/hale-platform#readme",
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@playwright/test": "^1.62.1",
     "browserstack-node-sdk": "^1.70.3",
     "dotenv": "^18.0.3"

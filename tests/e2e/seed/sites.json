@@ -1,0 +1,34 @@
+[
+  {
+    "key": "hale",
+    "path": "",
+    "title": "Ministry of Justice Website Builder",
+    "theme": "hale",
+    "menuLocation": "main-menu",
+    "customBlocks": true
+  },
+  {
+    "key": "justice",
+    "path": "justice",
+    "title": "Justice E2E",
+    "theme": "justice",
+    "menuLocation": "header-menu",
+    "customBlocks": false
+  },
+  {
+    "key": "ppo",
+    "path": "ppo",
+    "title": "PPO E2E",
+    "theme": "ppo",
+    "menuLocation": "primary_navigation",
+    "customBlocks": true
+  },
+  {
+    "key": "govwind",
+    "path": "govwind",
+    "title": "Govwind E2E",
+    "theme": "govwind",
+    "menuLocation": null,
+    "customBlocks": true
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "frontPage": "home",
+  "postsPage": "news",
+  "menu": ["about", "designing-your-site", "blocks", "news"],
+  "items": [
+    { "id": 101, "type": "page", "slug": "home", "title": "Home", "file": "home.html" },
+    { "id": 102, "type": "page", "slug": "about", "title": "About this site", "file": "../shared/about.html" },
+    { "id": 103, "type": "page", "slug": "designing-your-site", "title": "Designing your site", "file": "designing-your-site.html" },
+    { "id": 104, "type": "page", "slug": "blocks", "title": "Custom blocks", "file": "../shared/blocks.html" },
+    { "id": 105, "type": "page", "slug": "news", "title": "News", "file": "../shared/news.html" },
+    { "id": 201, "type": "post", "slug": "first-news-story", "title": "First news story", "file": "../shared/news-story.html", "featuredImage": true }
+  ]
+}
