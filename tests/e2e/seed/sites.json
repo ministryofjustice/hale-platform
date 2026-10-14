@@ -12,7 +12,7 @@
     "path": "justice",
     "title": "Justice E2E",
     "theme": "justice",
-    "menuLocation": "header-menu",
+    "menuLocation": null,
     "customBlocks": false
   },
   {
@@ -28,6 +28,7 @@
     "path": "govwind",
     "title": "Govwind E2E",
     "theme": "govwind",
+    "blogId": 61,
     "menuLocation": null,
     "customBlocks": true
   }

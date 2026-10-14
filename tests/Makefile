@@ -10,7 +10,7 @@
 # The repo root, wherever make was started from.
 TESTS_REPO_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))..)
 
-.PHONY: test-e2e test-e2e-build test-e2e-up test-e2e-run test-e2e-ui test-e2e-down
+.PHONY: test-e2e test-e2e-build test-e2e-up test-e2e-run test-e2e-ui test-e2e-urls test-e2e-down
 
 # End-to-end tests: start the disposable test multisite (docker-compose.test.yml),
 # seed it, run Playwright against it and remove it, pass or fail.
@@ -49,6 +49,14 @@ test-e2e-run: ## Run specs on the running test stack (FILE=specs/...)
 #   make test-e2e-ui
 test-e2e-ui: ## Open Playwright UI mode on the running test stack
 	@cd $(TESTS_REPO_ROOT) && REUSE_STACK=1 npx playwright test --ui
+
+# Print every address the test stack serves and what it is for: each site,
+# the seeded pages, the login and admin screens and the HTML report. Follows
+# sites.json and HALE_TEST_PORT, and says whether the stack is running.
+#   make test-e2e-urls
+#   HALE_TEST_PORT=9443 make test-e2e-urls
+test-e2e-urls: ## List the test stack's localhost addresses and what they are for
+	@cd $(TESTS_REPO_ROOT) && node tests/e2e/stack/endpoints.js
 
 # Remove a test stack left running by test-e2e-up, KEEP_STACK=1 or a crashed run.
 #   make test-e2e-down

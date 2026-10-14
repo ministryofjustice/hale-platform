@@ -32,3 +32,8 @@ test("footer is visible", async ({ page }) => {
 
   await expect(footer).toBeVisible();
 });
+
+test("header shows the site name", async ({ page, site }) => {
+  await page.goto("./");
+  await expect(page.getByRole("banner").locator(".govuk-header__logo")).toContainText(site.title);
+});

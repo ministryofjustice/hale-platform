@@ -17,6 +17,14 @@ PASSWORD="${E2E_PASSWORD:?E2E_PASSWORD is not set}"
 
 cd /var/www/html
 
+# Plugin files that end in "?>" and a newline print blank lines on every
+# WP-CLI command. Drop blank lines from each command's output, keeping its exit
+# status (sh has no pipefail). Errors and warnings go to stderr, untouched.
+wp() {
+    if out="$(command wp "$@")"; then status=0; else status=$?; fi
+    printf '%s\n' "$out" | grep -v '^[[:space:]]*$' || true
+    return "$status"
+}
 wp_network() { wp --url="$NETWORK" "$@"; }
 
 # A fresh network has only the main site.
@@ -54,6 +62,10 @@ wp config set WP_ACCESSIBLE_HOSTS "nginx"
 #   wp-sentry-integration  - no DSN in the test stack
 #   query-monitor          - debug output in every admin page
 #   classic-editor         - the tests drive the block editor
+#   wordpress-seo          - not active on the live sites (they have no Yoast
+#                            tags). Its og:description runs the_content on an
+#                            excerpt with lists and custom blocks removed, and
+#                            the justice theme caches that as the page body.
 # ---------------------------------------------------------------------------
 wp_network eval-file /seed/activate-plugins.php \
     advanced-custom-fields-pro \
@@ -70,7 +82,6 @@ wp_network eval-file /seed/activate-plugins.php \
     unconfirmed \
     website-builder-block-restrictions \
     website-builder-blocks \
-    wordpress-seo \
     wp-document-revisions \
     wp-moj-blocks \
     wps-hide-login
@@ -96,9 +107,9 @@ done
 # separators, which would drop the main site's empty path.
 php -r '
     foreach (json_decode(file_get_contents("/seed/sites.json"), true) as $site) {
-        echo implode("|", [$site["key"], $site["path"], $site["theme"], $site["title"]]), "\n";
+        echo implode("|", [$site["key"], $site["path"], $site["theme"], $site["title"], $site["blogId"] ?? ""]), "\n";
     }
-' | while IFS="|" read -r key path theme title; do
+' | while IFS="|" read -r key path theme title blog_id; do
     echo "Seeding site '$key' ($theme)"
 
     if [ -z "$path" ]; then
@@ -106,8 +117,17 @@ php -r '
         wp --url="$url" option update blogname "$title"
     else
         url="$NETWORK/$path/"
-        wp_network site create --slug="$path" --title="$title" \
-            --email="e2eadmin@example.test"
+        # A theme that styles one site by its ID (govwind keys its IPA colours
+        # on .website-61) needs that site to have the same ID here.
+        if [ -n "$blog_id" ]; then
+            wp_network eval "global \$wpdb; \$wpdb->query('ALTER TABLE ' . \$wpdb->blogs . ' AUTO_INCREMENT = $blog_id');"
+        fi
+        created_id="$(wp_network site create --slug="$path" --title="$title" \
+            --email="e2eadmin@example.test" --porcelain)"
+        if [ -n "$blog_id" ] && [ "$created_id" != "$blog_id" ]; then
+            echo "Site '$key' was given ID $created_id, not $blog_id" >&2
+            exit 1
+        fi
     fi
     wp --url="$url" option update home "https://${url%/}"
     wp --url="$url" option update siteurl "https://${url%/}"
@@ -131,6 +151,9 @@ php -r '
     wp --url="$url" option update blog_public 0
 
     wp --url="$url" eval-file /seed/import-content.php "$key"
+    # After the content: it builds the colour stylesheet from the theme mods
+    # the content sets.
+    wp --url="$url" eval-file /seed/theme-setup.php
     wp --url="$url" rewrite flush
 done
 

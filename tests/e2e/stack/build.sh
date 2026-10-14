@@ -18,10 +18,13 @@ if [ ! -d wordpress/wp-content/plugins ] || [ ! -d vendor ]; then
     exit 1
 fi
 
-# The images COPY wordpress/wp-content, and COPY copies a symlink as a symlink.
-# Links made by opt/scripts/link-dev-packages.sh point into /mnt/dev, which the
-# test stack does not mount, so they would be dangling in the image.
-links=$(find wordpress/wp-content -maxdepth 2 -type l)
+# The images COPY wordpress/wp-content/{plugins,themes,mu-plugins}, and COPY
+# copies a symlink as a symlink. Links made by opt/scripts/link-dev-packages.sh
+# point into /mnt/dev, which the test stack does not mount, so they would be
+# dangling in the image. Only those three folders are checked: anything else in
+# wp-content (such as Query Monitor's db.php link) never goes into the image.
+links=$(find wordpress/wp-content/plugins wordpress/wp-content/themes \
+    wordpress/wp-content/mu-plugins -maxdepth 1 -type l)
 if [ -n "$links" ]; then
     echo "wordpress/wp-content holds symlinks (dev package links?):" >&2
     echo "$links" | sed 's/^/  /' >&2

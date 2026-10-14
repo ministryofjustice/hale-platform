@@ -1,11 +1,21 @@
 {
   "frontPage": "home",
-  "postsPage": "news",
-  "menu": ["about", "news"],
+  "documents": {
+    "pd-making-document": { "type": "pdf", "title": "PD Making Document" },
+    "cpr-email-address-list": { "type": "docx", "title": "CPR e-mail address list" },
+    "court-forms-destination-table": { "type": "xlsx", "title": "Court forms destination table" }
+  },
   "items": [
-    { "id": 101, "type": "page", "slug": "home", "title": "Home", "file": "home.html" },
-    { "id": 102, "type": "page", "slug": "about", "title": "About this site", "file": "../shared/about.html" },
-    { "id": 105, "type": "page", "slug": "news", "title": "News", "file": "../shared/news.html" },
-    { "id": 201, "type": "post", "slug": "first-news-story", "title": "First news story", "file": "../shared/news-story.html", "featuredImage": true }
+    {
+      "id": 101, "type": "page", "slug": "home", "title": "Justice.gov.uk", "file": "home.html", "template": "page_home.php",
+      "meta": { "_panel_brand": "0", "__panel_brand": "field_696a70a6f4e82", "_panel_popular": "1", "__panel_popular": "field_696a71b083d5b" }
+    },
+    { "id": 111, "type": "page", "slug": "courts", "title": "Courts", "file": "courts.html" },
+    { "id": 112, "type": "page", "slug": "procedure-rules", "title": "Procedure rules", "file": "procedure-rules.html", "parent": "courts" },
+    {
+      "id": 113, "type": "page", "slug": "civil", "title": "Civil Procedure Rules", "file": "civil.html", "parent": "procedure-rules",
+      "meta": { "_short_title": "Civil", "_panel_archived": "1", "__panel_archived": "field_696a70dd50c97" }
+    },
+    { "id": 102, "type": "page", "slug": "about", "title": "About this site", "file": "../shared/about.html" }
   ]
 }
