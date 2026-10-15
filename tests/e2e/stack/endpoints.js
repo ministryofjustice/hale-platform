@@ -49,7 +49,7 @@ if (justice) {
 }
 
 section("Admin");
-row(`${NETWORK_URL}${LOGIN_PATH}`, "Login (wps-hide-login path, as on every environment)");
+row(`${NETWORK_URL}${LOGIN_PATH}`, "Login (test-only wps-hide-login path)");
 row(`${NETWORK_URL}wp-admin/`, "Main site dashboard");
 row(`${NETWORK_URL}wp-admin/network/`, "Network admin");
 row(`${NETWORK_URL}wp-admin/network/sites.php`, "Network sites list, used by specs/network/");

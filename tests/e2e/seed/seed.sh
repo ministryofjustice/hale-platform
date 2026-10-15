@@ -86,8 +86,9 @@ wp_network eval-file /seed/activate-plugins.php \
     wp-moj-blocks \
     wps-hide-login
 
-# Same login path as every deployed environment (wps-hide-login).
-wp_network site option update whl_page hale-wpms-2020
+# A test-only login path (wps-hide-login), so the deployed one stays out of
+# the repo. support/stack.js has the same slug.
+wp_network site option update whl_page e2e-login
 
 # ---------------------------------------------------------------------------
 # Users

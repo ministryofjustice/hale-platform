@@ -14,7 +14,8 @@ const AUTH_DIR = path.join(E2E_DIR, ".auth");
 const PROJECT = process.env.HALE_TEST_PROJECT || "hale-test";
 const PORT = process.env.HALE_TEST_PORT || "8443";
 const NETWORK_URL = `https://localhost:${PORT}/`;
-const LOGIN_PATH = "hale-wpms-2020/";
+// Test-only wps-hide-login slug, set by seed/seed.sh.
+const LOGIN_PATH = "e2e-login/";
 const PASSWORD = process.env.E2E_PASSWORD || "hale-e2e-test-only";
 
 // Same file the seed reads, so a site added there gets a Playwright project.
