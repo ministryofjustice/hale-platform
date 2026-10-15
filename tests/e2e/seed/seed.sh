@@ -88,7 +88,7 @@ wp_network eval-file /seed/activate-plugins.php \
 
 # A test-only login path (wps-hide-login), so the deployed one stays out of
 # the repo. support/stack.js has the same slug.
-wp_network site option update whl_page e2e-login
+wp_network site option update whl_page e2e-test-login
 
 # ---------------------------------------------------------------------------
 # Users

@@ -125,8 +125,8 @@ exported or copied from anywhere.
 - Network-activates the plugins listed in the script. Plugins that take over
   login or call third parties are left off, each with the reason next to it.
   `composer.json` is the list of what is installed.
-- Moves the login page to `/e2e-login/` with wps-hide-login, as the deployed
-  environments move theirs. The test stack uses its own path.
+- Moves the login page to `/e2e-test-login/` with wps-hide-login, as the
+  deployed environments move theirs. The test stack uses its own path.
 - Blocks outbound HTTP from WordPress (`WP_HTTP_BLOCK_EXTERNAL`).
 - Creates the sites in `seed/sites.json`, activates each one's theme, and gives
   the test users their role on every site.
