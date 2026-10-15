@@ -11,7 +11,10 @@
     "test:headed": "playwright test --headed",
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug",
+    "test:report:temp": "playwright show-report",
     "test:report": "playwright show-report tests/e2e/playwright-report",
+    "test:browserstack:desktop": "PLAYWRIGHT_HTML_OPEN=never NODE_OPTIONS='-r dotenv/config' browserstack-node-sdk playwright test --project=desktop",
+    "test:browserstack:mobile": "PLAYWRIGHT_HTML_OPEN=never NODE_OPTIONS='-r dotenv/config' browserstack-node-sdk playwright test --project=mobile",
     "test:browserstack": "PLAYWRIGHT_HTML_OPEN=never NODE_OPTIONS='-r dotenv/config' browserstack-node-sdk playwright test --browserstack.config tests/e2e/browserstack.yml"
   },
   "repository": {
@@ -29,7 +32,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
     "@playwright/test": "^1.62.1",
-    "browserstack-node-sdk": "^1.70.3",
+    "browserstack-node-sdk": "^1.73.0",
     "dotenv": "^18.0.3"
   }
 }
