@@ -63,3 +63,17 @@ opt/lua/fixtures/*
 # AI
 # Ignore claude files until we have a team agreed set of rules/settings
 .claude
+
+##############################
+# Browserstack  Tests
+#############################
+log/
+
+##############################
+# Playwright end-to-end stack
+#############################
+# Saved login sessions, the generated self-signed certificate, and run output
+tests/e2e/.auth/
+tests/e2e/.stack/
+tests/e2e/test-results/
+tests/e2e/playwright-report/

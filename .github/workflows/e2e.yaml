@@ -1,0 +1,99 @@
+name: End-to-end tests
+
+# Builds the test stack images, then runs the Playwright suite against a
+# throwaway multisite (docker-compose.test.yml). Run by hand for now; whether it
+# becomes a required check on pull requests is still to be decided. See
+# tests/e2e/README.md.
+on:
+  workflow_dispatch:
+
+# The token is written to Composer's config, where package scripts can read it.
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: Playwright end-to-end tests
+    runs-on: ubuntu-26.04
+    # Composer needs the ACF Pro and Relevanssi Premium credentials, which are
+    # environment secrets.
+    environment: Development
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set PHP version
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2.37.2
+        with:
+          php-version: 8.4
+
+      # Without ~/.composer, Composer uses ~/.cache/composer on the runner and
+      # the cache below never fills. Same step as rw-build-image.yaml.
+      - name: Prepare Composer cache
+        run: mkdir -p ~/.composer/cache
+
+      - name: Cache Composer packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.composer/cache
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install plugins and themes
+        # Secrets go in through env, not ${{ }} in the script, so their values
+        # are never part of the generated shell script.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACF_USER: ${{ secrets.ACF_USER }}
+          ACF_PASSWORD: ${{ secrets.ACF_PASSWORD }}
+          RELEVANSSI_USER: ${{ secrets.RELEVANSSI_USER }}
+          RELEVANSSI_PASSWORD: ${{ secrets.RELEVANSSI_PASSWORD }}
+        run: |
+          composer config --global http-basic.github.com x-access-token "$GH_TOKEN"
+          composer config --global http-basic.connect.advancedcustomfields.com "$ACF_USER" "$ACF_PASSWORD"
+          composer config --global http-basic.relevanssi.com "$RELEVANSSI_USER" "$RELEVANSSI_PASSWORD"
+          composer install --prefer-dist --no-progress --no-interaction --optimize-autoloader
+
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Playwright
+        run: npm ci
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+
+      # The tests run on the runner, not in the Playwright container, because the
+      # global setup drives docker compose on the runner's Docker.
+      - name: Install Chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Install Chromium system dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      - name: Build test stack images
+        run: time tests/e2e/stack/build.sh
+
+      - name: Run end-to-end tests
+        run: npx playwright test
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-report
+          path: |
+            tests/e2e/playwright-report/
+            tests/e2e/test-results/
+          retention-days: 14
