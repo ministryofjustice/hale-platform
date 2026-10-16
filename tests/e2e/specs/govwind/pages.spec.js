@@ -19,7 +19,9 @@ test("site has the IPA colours", async ({ page }) => {
   await expect(page.locator("html")).toHaveClass(/\bwebsite-61\b/);
   // colour-Z exists only in the IPA style variation.
   const colourZ = await page.evaluate(() =>
-    getComputedStyle(document.documentElement).getPropertyValue("--wp--preset--color--colour-z").trim(),
+    getComputedStyle(document.documentElement)
+      .getPropertyValue("--wp--preset--color--colour-z")
+      .trim(),
   );
   expect(colourZ).not.toBe("");
 });
@@ -41,9 +43,23 @@ test("Get support opens its submenu", async ({ page }) => {
 
   const nav = page.getByRole("banner").locator("nav.wb-md-desktop-only");
   await nav.getByRole("button", { name: "Get support submenu" }).click();
-  await nav.getByRole("link", { name: "Get support from the Independent Public Advocate" }).click();
+  await nav
+    .getByRole("link", {
+      name: "Get support from the Independent Public Advocate",
+    })
+    .click();
 
-  await expect(page).toHaveURL(/\/get-support\/get-support-from-the-independent-public-advocate\/$/);
+  await expect(page).toHaveURL(
+    /\/get-support\/get-support-from-the-independent-public-advocate\/$/,
+  );
+});
+
+test("Mobile navigation is hidden", async ({ page }) => {
+  await page.goto("./");
+  const mobileNav = page.locator("header nav.wb-md-mobile-only");
+
+  await expect(mobileNav).toHaveCount(1);
+  await expect(mobileNav).toBeHidden();
 });
 
 for (const path of pages) {
