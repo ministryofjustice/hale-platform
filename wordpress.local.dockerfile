@@ -24,7 +24,7 @@
 
 # Image versions. Keep them the same as wordpress.dockerfile -
 # bin/check-versions.sh (make check-versions) fails if they differ.
-ARG WORDPRESS_VERSION=7.0.4
+ARG WORDPRESS_VERSION=7.1.3
 ARG PHP_VERSION=8.4
 
 # WordPress core patch. Same purpose and same two values as
@@ -33,8 +33,8 @@ ARG PHP_VERSION=8.4
 # image's core, so local runs the version the cluster runs. Empty both when
 # WORDPRESS_VERSION catches up. Change the two together - the SHA-256 is the
 # sha256sum of the .zip, checked against wordpress.org's published SHA-1.
-ARG PATCH_WORDPRESS_VERSION=7.0.7
-ARG PATCH_WORDPRESS_SHA256=e476db676a2688d62fcc2c2828f4888d45877972459dbf84086e92614d317c0e
+ARG PATCH_WORDPRESS_VERSION=
+ARG PATCH_WORDPRESS_SHA256=
 
 # ---------------------------------------------------------------------------
 # Extension stage: build the PHPRedis extension (redis.so).
