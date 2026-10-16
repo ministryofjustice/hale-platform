@@ -8,6 +8,11 @@ on:
       - "dev"
       - "demo"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+  queue: max
+
 # ============================================================
 # Deployment jobs
 # ============================================================
@@ -157,7 +162,7 @@ jobs:
       auth0-env-domain: ${{ secrets.AUTH0_ENV_DOMAIN }}
 
   checkFriday:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     outputs:
       needs_approval: ${{ steps.day-check.outputs.friday }}
     steps:
