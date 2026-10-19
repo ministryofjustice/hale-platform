@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "99cb1d64695aacfd7e15412870327d15",
+    "content-hash": "df07aa0f87dddd4e8ba618dda7013df7",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -1164,16 +1164,16 @@
         },
         {
             "name": "ministryofjustice/website-builder-blocks",
-            "version": "2.3.7",
+            "version": "2.3.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/website-builder-blocks.git",
-                "reference": "52573be821cae600bfb4f1fa6a59e246d789de7b"
+                "reference": "4d660ff915ff45d8ba17e31eb8958788a7f6c6a9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/52573be821cae600bfb4f1fa6a59e246d789de7b",
-                "reference": "52573be821cae600bfb4f1fa6a59e246d789de7b",
+                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/4d660ff915ff45d8ba17e31eb8958788a7f6c6a9",
+                "reference": "4d660ff915ff45d8ba17e31eb8958788a7f6c6a9",
                 "shasum": ""
             },
             "require-dev": {
@@ -1197,10 +1197,10 @@
             ],
             "description": "WP plugin that adds addtional blocks.",
             "support": {
-                "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/2.3.7",
+                "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/2.3.8",
                 "issues": "https://github.com/ministryofjustice/website-builder-blocks/issues"
             },
-            "time": "2026-10-08T14:49:04+00:00"
+            "time": "2026-10-19T09:57:44+00:00"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
