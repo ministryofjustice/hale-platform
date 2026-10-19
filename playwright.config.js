@@ -41,9 +41,21 @@ module.exports = defineConfig({
     ...sites.map((site) => ({
       name: site.key,
       testMatch: [/specs\/all-sites\/.*\.spec\.js/, new RegExp(`specs/${site.key}/.*\\.spec\\.js`)],
+      testIgnore:  /\.mobile\.spec\.js/,
       dependencies: ["setup"],
       use: { ...devices["Desktop Chrome"], baseURL: site.url, site },
     })),
+    //Mobile chrome tests for each site
+     ...sites.map((site) => ({
+      name: `${site.key}-mobile-chrome`,
+      testMatch: [/specs\/all-sites\/.*\.mobile\.spec\.js/, new RegExp(`specs/${site.key}/.*\.mobile\\.spec\\.js$`)],
+      dependencies: ["setup"],
+      use: { ...devices["Pixel 5"], baseURL: site.url, site },
+    })),
+
+
+
+
     {
       name: "network",
       testMatch: /specs\/network\/.*\.spec\.js/,
