@@ -216,6 +216,34 @@ services:
       - default
       - e2e
 
+  # The same tests on BrowserStack devices (make test-e2e-browserstack).
+  # browserstack-node-sdk runs Playwright here and opens a BrowserStack Local
+  # tunnel, through which the remote browsers reach https://localhost:8443/,
+  # served in this container by forward.js. Separate image, so the SDK and its
+  # dependencies never reach the offline playwright service. Needs the
+  # internet, so it is also on the default network.
+  browserstack:
+    extends:
+      service: playwright
+    image: hale-test/browserstack
+    profiles: ["browserstack"]
+    # The SDK downloads the BrowserStack Local binary into $HOME and runs it.
+    # The /tmp tmpfs is noexec, so $HOME is a tmpfs of its own that allows it.
+    tmpfs:
+      - /home/browserstack:exec,mode=1777
+    volumes:
+      # The SDK writes its logs to log/ in the working directory, which is
+      # otherwise read-only.
+      - ./tests/e2e/log:/hale/tests/e2e/log
+    environment:
+      HOME: /home/browserstack
+      # From the environment or the repo root .env, which compose reads.
+      BROWSERSTACK_USERNAME: ${BROWSERSTACK_USERNAME:-}
+      BROWSERSTACK_ACCESS_KEY: ${BROWSERSTACK_ACCESS_KEY:-}
+    networks:
+      - default
+      - e2e
+
 networks:
   # Joins the playwright container to nginx and nothing else. internal: no
   # route to the host or the internet, so a compromised npm package in the

@@ -10,7 +10,7 @@
 # The repo root, wherever make was started from.
 TESTS_REPO_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))..)
 
-.PHONY: test-e2e test-e2e-build test-e2e-up test-e2e-run test-e2e-ui test-e2e-report test-e2e-urls test-e2e-lock test-e2e-down
+.PHONY: test-e2e test-e2e-build test-e2e-up test-e2e-run test-e2e-browserstack test-e2e-ui test-e2e-report test-e2e-urls test-e2e-lock test-e2e-down
 
 # Playwright and its npm packages run only in the hale-test/playwright
 # container; the host needs Docker, bash, git and openssl, not Node. Every
@@ -50,6 +50,17 @@ test-e2e-up: ## Start and seed the end-to-end test stack and leave it running
 #   make test-e2e-run FILE=specs/all-sites/
 test-e2e-run: ## Run specs on the running test stack (FILE=specs/...)
 	@REUSE_STACK=1 $(TESTS_STACK) test $(FILE)
+
+# The same tests on BrowserStack devices: a fresh stack, seeded, then
+# browserstack-node-sdk in the hale-test/browserstack container runs them
+# through a BrowserStack Local tunnel. Platforms are in
+# tests/e2e/browserstack.yml. Needs BROWSERSTACK_USERNAME and
+# BROWSERSTACK_ACCESS_KEY in the environment or in .env at the repo root.
+# ARGS, KEEP_STACK and REUSE_STACK work as for test-e2e.
+#   make test-e2e-browserstack
+#   make test-e2e-browserstack ARGS=--project=justice
+test-e2e-browserstack: ## Run the end-to-end tests on BrowserStack devices
+	@$(TESTS_STACK) browserstack $(ARGS)
 
 # Playwright UI mode on the running test stack, at http://localhost:9323
 # (E2E_UI_PORT). Turn on watch (the eye icon next to a test) to rerun it on

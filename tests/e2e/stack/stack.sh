@@ -11,6 +11,9 @@
 #   test [args]    start and seed a fresh stack, run `playwright test [args]`
 #                  in the container, remove the stack. KEEP_STACK=1 leaves it
 #                  running; REUSE_STACK=1 uses (and keeps) one already running.
+#   browserstack [args]
+#                  the same, with the tests run on BrowserStack devices by
+#                  browserstack-node-sdk (platforms in browserstack.yml)
 #   up             start and seed a fresh stack and leave it running
 #   down           remove the stack, its network and volumes
 #   ui             Playwright UI mode on the running stack (starts one if none)
@@ -21,7 +24,8 @@
 #
 # E2E_BUILD=1 rebuilds every image first. Otherwise images are rebuilt when
 # missing, or when composer.lock or tests/e2e/package-lock.json has changed
-# since they were built.
+# since they were built. hale-test/browserstack is left out of both: the
+# browserstack command builds it when it is missing or stale.
 
 set -euo pipefail
 
@@ -61,14 +65,15 @@ stack_images_current() {
         [ "$(label hale-test/wordpress hale-test.composer-lock)" = "$(git hash-object composer.lock)" ]
 }
 
-playwright_image_current() {
-    [ "$(label hale-test/playwright hale-test.package-lock)" = "$(git hash-object "$E2E_DIR/package-lock.json")" ]
+# True when hale-test/<name> was built from the current package-lock.json.
+npm_image_current() {
+    [ "$(label "hale-test/$1" hale-test.package-lock)" = "$(git hash-object "$E2E_DIR/package-lock.json")" ]
 }
 
 build_if_stale() {
     if [ "${E2E_BUILD:-}" = "1" ] || ! stack_images_current; then
         timed "build images" "$E2E_DIR/stack/build.sh"
-    elif ! playwright_image_current; then
+    elif ! npm_image_current playwright; then
         timed "build playwright image" "$E2E_DIR/stack/build.sh" playwright
     fi
 }
@@ -102,7 +107,7 @@ down() {
         # shellcheck disable=SC2086
         docker rm -f $oneoff >/dev/null
     fi
-    compose --profile seed --profile playwright --profile playwright-ui down -v --remove-orphans
+    compose --profile seed --profile playwright --profile playwright-ui --profile browserstack down -v --remove-orphans
 }
 
 # Every run starts from an empty database: anything a previous run left behind
@@ -133,6 +138,30 @@ pw() {
     output_dirs
     if [ -t 1 ]; then export FORCE_COLOR=1; fi
     compose run --rm -T playwright "$@"
+}
+
+# browserstack-node-sdk runs Playwright in the browserstack service and sends
+# the browsers to BrowserStack, which reaches the stack through BrowserStack
+# Local. Its logs go to tests/e2e/log/.
+bs() {
+    output_dirs
+    mkdir -p "$E2E_DIR/log"
+    npm_image_current browserstack || timed "build browserstack image" "$E2E_DIR/stack/build.sh" browserstack
+    if [ -t 1 ]; then export FORCE_COLOR=1; fi
+    compose run --rm -T browserstack \
+        browserstack-node-sdk playwright test --browserstack.config browserstack.yml "$@"
+}
+
+# compose reads the credentials from the environment or the repo root .env.
+# Checked before a stack is started for nothing.
+require_browserstack_credentials() {
+    local name
+    for name in BROWSERSTACK_USERNAME BROWSERSTACK_ACCESS_KEY; do
+        if [ -z "${!name:-}" ] && ! grep -q "^$name=." .env 2>/dev/null; then
+            echo "[e2e] $name is not set. Set it in the environment or in .env at the repo root." >&2
+            return 1
+        fi
+    done
 }
 
 pw_ui() {
@@ -171,16 +200,17 @@ leave_running() {
     echo "[e2e] Remove it with: make test-e2e-down"
 }
 
+# Usage: run_tests <runner> [args], where the runner is pw test or bs.
 run_tests() {
     if [ "${REUSE_STACK:-}" = "1" ] && is_running; then
         echo "[e2e] Reusing the running $HALE_TEST_PROJECT stack"
-        playwright_image_current || timed "build playwright image" "$E2E_DIR/stack/build.sh" playwright
+        npm_image_current playwright || timed "build playwright image" "$E2E_DIR/stack/build.sh" playwright
     else
         up
     fi
 
     local status=0
-    pw test "$@" || status=$?
+    "$@" || status=$?
 
     if [ "${KEEP_STACK:-}" = "1" ] || [ "${REUSE_STACK:-}" = "1" ]; then
         leave_running
@@ -195,7 +225,8 @@ command=${1:-}
 shift || true
 
 case "$command" in
-    test) run_tests "$@" ;;
+    test) run_tests pw test "$@" ;;
+    browserstack) require_browserstack_credentials && run_tests bs "$@" ;;
     up) up && pw test --project=setup && leave_running ;;
     down) down ;;
     ui)
@@ -204,7 +235,7 @@ case "$command" in
         ;;
     report) pw_ui show-report output/playwright-report --host=0.0.0.0 --port=9323 ;;
     urls)
-        playwright_image_current || "$E2E_DIR/stack/build.sh" playwright
+        npm_image_current playwright || "$E2E_DIR/stack/build.sh" playwright
         export E2E_STACK_RUNNING=0
         is_running && E2E_STACK_RUNNING=1
         pw node /hale/tests/e2e/stack/endpoints.js
@@ -215,7 +246,7 @@ case "$command" in
         ;;
     pw) pw "$@" ;;
     *)
-        sed -n '3,24p' "$0" | sed 's/^# \{0,1\}//'
+        sed -n '3,28p' "$0" | sed 's/^# \{0,1\}//'
         exit 1
         ;;
 esac

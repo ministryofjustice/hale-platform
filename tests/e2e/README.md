@@ -10,7 +10,8 @@ make test-e2e
 ```
 
 Playwright, Chromium and the npm packages run only inside a container
-(`hale-test/playwright`). Nothing from npm is installed or run on the host.
+(`hale-test/playwright`, or `hale-test/browserstack` for BrowserStack runs).
+Nothing from npm is installed or run on the host.
 
 The test stack runs alongside hale.docker and never touches it. They share
 code, never state.
@@ -127,7 +128,7 @@ little as the tests need:
 
 | | |
 | --- | --- |
-| Packages | `@playwright/test` and `@axe-core/playwright`, installed by `npm ci --ignore-scripts` from `package-lock.json` at image build time. No install scripts run. |
+| Packages | `@playwright/test` and `@axe-core/playwright`, installed by `npm ci --ignore-scripts` from `package-lock.json` at image build time (`--omit=dev`, so not `browserstack-node-sdk`). No install scripts run. |
 | Network | The `e2e` network only, which is `internal`: nginx is the one thing it can reach. No internet, no host. |
 | Files | `tests/e2e` read-only. Writable: `.auth/` and `output/` only. |
 | Docker | No socket. Starting, seeding and removing the stack happens on the host. |
@@ -136,6 +137,12 @@ little as the tests need:
 `make test-e2e-ui` and `make test-e2e-report` use the `playwright-ui`
 service instead: the same container plus a port on `127.0.0.1`, which needs
 the default network, so those two can reach the internet.
+
+`make test-e2e-browserstack` uses the `browserstack` service: the same
+limits, but a separate image that adds `browserstack-node-sdk`, the default
+network so it can reach BrowserStack, and a writable `log/` for the SDK's
+logs. The SDK is a `devDependency` in `package.json`, so the `playwright`
+image is built with `npm ci --omit=dev` and never holds it.
 
 To change a package, edit `package.json`, then update the lockfile and
 rebuild the image. `make test-e2e-lock` runs npm in the Playwright image with
@@ -262,14 +269,20 @@ tests/
     docker/                the Playwright image and its entrypoint
     support/               stack settings, the shared `test` fixture, the forwarder
     playwright.config.js   Playwright configuration
-    package.json           Playwright and axe-core, installed in the image only
+    browserstack.yml       BrowserStack platforms
+    package.json           Playwright, axe-core and browserstack-node-sdk, installed in the images only
     output/                run output (not committed):
       playwright-report/   last HTML report
       test-results/        screenshots, videos and traces of failures
+    log/                   browserstack-node-sdk logs (not committed)
 ```
 
 `docker-compose.test.yml` stays in the repo root.
 
+- Name a spec `<name>.mobile.spec.js` to run it on a phone: Playwright runs
+  those in the `<site>-mobile-chrome` projects (Pixel 5 emulation) and leaves
+  them out of the desktop ones. BrowserStack's `mobile` platform picks the
+  same files.
 - Import `test` and `expect` from `support/test.js`. Its `site` fixture is
   the `sites.json` entry for the project running the test.
 - Use relative paths: `page.goto("about/")`. `baseURL` is the site's URL, and
@@ -277,6 +290,33 @@ tests/
 - Start logged in with `test.use({ storageState: authFile("editor") })`.
 - Tests share one stack, so a test that creates content gives it a unique
   title rather than assuming it is the only one.
+
+## BrowserStack
+
+The same specs run on real browsers and devices on BrowserStack, against the
+local test stack. BrowserStack Local opens a tunnel from inside the
+`browserstack` container, so the remote browsers reach the stack at
+`https://localhost:8443/` through the same forwarder as the local tests.
+
+Set the credentials in the environment or in `.env` at the repo root (ignored
+by git), which compose reads:
+
+```
+BROWSERSTACK_USERNAME=your_username
+BROWSERSTACK_ACCESS_KEY=your_access_key
+```
+
+```
+make test-e2e-browserstack
+make test-e2e-browserstack ARGS=--project=mobile
+```
+
+It starts, seeds and removes a stack as `make test-e2e` does, and takes the
+same `ARGS`, `KEEP_STACK` and `REUSE_STACK`. The first run builds
+`hale-test/browserstack`. Platforms are in `browserstack.yml`: Chrome on
+macOS for the desktop specs, and Chrome on a Samsung Galaxy for the
+`*.mobile.spec.js` specs. Results and recordings are in the BrowserStack
+Automate dashboard; the SDK's own logs are in `tests/e2e/log/`.
 
 ## CI
 

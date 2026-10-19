@@ -1,11 +1,14 @@
 {
   "name": "hale-platform-e2e",
   "private": true,
-  "description": "Playwright end-to-end tests for hale-platform. Installed and run inside the hale-test/playwright image only; see README.md.",
+  "description": "Playwright end-to-end tests for hale-platform. Installed and run inside the hale-test/playwright and hale-test/browserstack images only; see README.md. dependencies go in both images, devDependencies only in hale-test/browserstack.",
   "license": "MIT",
   "type": "commonjs",
-  "devDependencies": {
+  "dependencies": {
     "@axe-core/playwright": "^4.13.0",
     "@playwright/test": "1.62.1"
+  },
+  "devDependencies": {
+    "browserstack-node-sdk": "^1.73.0"
   }
 }
