@@ -56,37 +56,13 @@ jobs:
           composer config --global http-basic.relevanssi.com "$RELEVANSSI_USER" "$RELEVANSSI_PASSWORD"
           composer install --prefer-dist --no-progress --no-interaction --optimize-autoloader
 
-      - name: Set up Node
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 22
-          cache: npm
-
-      - name: Install Playwright
-        run: npm ci
-
-      - name: Cache Playwright browsers
-        id: playwright-cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
-
-      # The tests run on the runner, not in the Playwright container, because the
-      # global setup drives docker compose on the runner's Docker.
-      - name: Install Chromium
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium
-
-      - name: Install Chromium system dependencies
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium
-
+      # Playwright runs in the hale-test/playwright container, built with the
+      # other test images; the runner needs no Node.
       - name: Build test stack images
         run: time tests/e2e/stack/build.sh
 
       - name: Run end-to-end tests
-        run: npx playwright test
+        run: make test-e2e
 
       - name: Upload Playwright report
         if: failure()
@@ -94,6 +70,5 @@ jobs:
         with:
           name: playwright-report
           path: |
-            tests/e2e/playwright-report/
-            tests/e2e/test-results/
+            tests/e2e/output/
           retention-days: 14

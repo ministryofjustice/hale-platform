@@ -6,8 +6,11 @@ One command builds the stack, seeds it, runs the tests and removes it again,
 pass or fail.
 
 ```
-make test-e2e        # or: npm run test:e2e
+make test-e2e
 ```
+
+Playwright, Chromium and the npm packages run only inside a container
+(`hale-test/playwright`). Nothing from npm is installed or run on the host.
 
 The test stack runs alongside hale.docker and never touches it. They share
 code, never state.
@@ -22,39 +25,32 @@ code, never state.
 
 ## Requirements
 
-- Docker
-- Node.js and npm
+- Docker, bash, git and openssl. Not Node.js or npm.
 - `composer install` has been run, so `./wordpress` and `./vendor` exist. The
   stack is built from them, so the plugin and theme versions are whatever
   `composer.lock` gives.
 - `./wordpress/wp-content` holds real folders, not dev package links. The
   build stops if it finds symlinks; `composer install` restores the folders.
 
-First time:
-
-```
-npm ci
-npx playwright install chromium
-```
-
 ## Running tests
 
 | Command | Purpose |
 | --- | --- |
-| `make test-e2e` / `npm run test:e2e` | Start, seed, test, remove. The HTML report opens when a test fails. |
-| `npm run test:headed` | The same, with the browser visible. |
-| `npm run test:ui` | Playwright UI mode. |
-| `npm run test:debug` | Step through tests with the Playwright Inspector. |
-| `npm run test:report` | Open the last HTML report. |
-| `make test-e2e-build` / `npm run test:e2e:build` | Rebuild the `hale-test/*` images. |
-| `make test-e2e-down` / `npm run test:e2e:down` | Remove a stack left running. |
+| `make test-e2e` | Start, seed, test, remove. |
+| `make test-e2e-report` | Serve the last HTML report, with screenshots, videos and traces, at http://localhost:9323. |
+| `make test-e2e-build` | Rebuild the `hale-test/*` images, including `hale-test/playwright`. |
+| `make test-e2e-down` | Remove a stack left running. |
 
-Run one site or one file with Playwright's usual arguments:
+Pass Playwright's usual arguments in `ARGS` to run one site or one file:
 
 ```
-npx playwright test --project=justice
-npx playwright test specs/hale/editor-block.spec.js
+make test-e2e ARGS=--project=justice
+make test-e2e ARGS=specs/hale/editor-block.spec.js
 ```
+
+The browser has no display in the container, so there is no headed or
+Inspector mode. UI mode (`make test-e2e-ui`, below) shows the browser, each
+step and its DOM snapshot, and lets you pick locators.
 
 Each of those starts, seeds and removes a stack, about 45 seconds before the
 first test. While writing a test, keep one stack running and rerun against it:
@@ -71,7 +67,7 @@ make test-e2e-down                                        # remove it when you a
 | --- | --- |
 | `make test-e2e-up` | Start and seed a stack and leave it running. Replaces any stack already running. |
 | `make test-e2e-run FILE=...` | Run specs on the running stack, skipping the setup. |
-| `make test-e2e-ui` | Playwright UI mode on the running stack. |
+| `make test-e2e-ui` | Playwright UI mode on the running stack, at http://localhost:9323. Ctrl-C stops it; the stack keeps running. |
 | `make test-e2e-urls` | List every address the stack serves (sites, seeded pages, login, admin, report) and whether it is running. |
 
 A running stack picks up changes to spec files straight away. After changing
@@ -86,34 +82,74 @@ runs.
 | --- | --- |
 | `KEEP_STACK=1` | Leave the stack running after the run, to look at it in a browser or with `docker compose -f docker-compose.test.yml logs`. Also keeps it when the setup fails. |
 | `REUSE_STACK=1` | Use a stack that is still running instead of starting a new one, and leave it running. Use it with `KEEP_STACK=1` for a fast edit-and-rerun loop. Tests that add content add more on each run. |
-| `E2E_BUILD=1` | Rebuild the images before the run. Without it they are rebuilt only when missing or when `composer.lock` has changed since the last build, so set it after a Dockerfile or theme change. |
+| `E2E_BUILD=1` | Rebuild the images before the run. Without it they are rebuilt only when missing or when `composer.lock` or `tests/e2e/package-lock.json` has changed since the last build, so set it after a Dockerfile or theme change. |
 | `HALE_TEST_PORT` | Host port, default `8443`. |
 | `HALE_TEST_PROJECT` | Compose project name, default `hale-test`. Set a different one with a different port to run two stacks at once. |
 | `E2E_PASSWORD` | Password for every test user, default `hale-e2e-test-only`. |
+| `E2E_UI_PORT` | Host port for UI mode and the report, default `9323`. |
 
 ## How a run works
+
+`stack/stack.sh` runs every step on the host except the tests themselves,
+which run in the `playwright` service of `docker-compose.test.yml`.
 
 1. **Images.** `tests/e2e/stack/build.sh` builds `hale-test/wordpress-base`
    from `wordpress.local.dockerfile`, then `hale-test/wordpress` on top of it
    with the theme CSS and JavaScript compiled (`stack/wordpress.dockerfile`,
    the same `npm run production` loop as the deploy workflow). It also builds
-   `hale-test/nginx` and `hale-test/wptools`. Separate tags, so hale.docker's
-   images are never replaced.
-2. **Start.** The global setup (`global-setup.js`) removes any earlier stack,
-   generates a self-signed certificate for `localhost` in `tests/e2e/.stack/`,
-   and runs `docker compose up --wait`. `config.sh` installs the network
-   when the wordpress container starts.
+   `hale-test/nginx`, `hale-test/wptools` and `hale-test/playwright`
+   (`docker/playwright.dockerfile`). Separate tags, so hale.docker's images
+   are never replaced.
+2. **Start.** `stack.sh` removes any earlier stack, generates a self-signed
+   certificate for `localhost` in `tests/e2e/.stack/`, and runs
+   `docker compose up --wait`. `config.sh` installs the network when the
+   wordpress container starts.
 3. **Seed.** A one-shot `seed` container runs `seed/seed.sh`, then exits.
-4. **Ready check.** Every site has to return 200 before a test starts.
-5. **Log in once.** The `setup` project (`auth.setup.js`) logs in as each
+4. **Playwright container.** `docker compose run --rm playwright test ...`.
+   Its entrypoint (`docker/entrypoint.sh`) starts `support/forward.js`, which
+   listens on `localhost:8443` inside the container and passes connections to
+   nginx, so the browser uses the same address as the sites' stored domain.
+5. **Ready check.** The global setup (`global-setup.js`) waits for every site
+   to return 200.
+6. **Log in once.** The `setup` project (`auth.setup.js`) logs in as each
    role and saves the session to `tests/e2e/.auth/`.
-6. **Tests.** One Playwright project per site, each with its own `baseURL`,
+7. **Tests.** One Playwright project per site, each with its own `baseURL`,
    plus a `network` project for the network admin.
-7. **Teardown.** `global-teardown.js` runs
-   `docker compose down -v --remove-orphans`: containers, network and volumes
-   go.
+8. **Teardown.** `stack.sh` runs `docker compose down -v --remove-orphans`:
+   containers, networks and volumes go.
 
-The global setup prints how long each step took.
+`stack.sh` prints how long each step took.
+
+## Isolation
+
+The `playwright` container is the only place npm code runs, and it gets as
+little as the tests need:
+
+| | |
+| --- | --- |
+| Packages | `@playwright/test` and `@axe-core/playwright`, installed by `npm ci --ignore-scripts` from `package-lock.json` at image build time. No install scripts run. |
+| Network | The `e2e` network only, which is `internal`: nginx is the one thing it can reach. No internet, no host. |
+| Files | `tests/e2e` read-only. Writable: `.auth/` and `output/` only. |
+| Docker | No socket. Starting, seeding and removing the stack happens on the host. |
+| Process | Non-root, all capabilities dropped, `no-new-privileges`, read-only root filesystem. |
+
+`make test-e2e-ui` and `make test-e2e-report` use the `playwright-ui`
+service instead: the same container plus a port on `127.0.0.1`, which needs
+the default network, so those two can reach the internet.
+
+To change a package, edit `package.json`, then update the lockfile and
+rebuild the image. `make test-e2e-lock` runs npm in the Playwright image with
+`--package-lock-only --ignore-scripts`, so it downloads metadata only and runs
+no package code:
+
+```
+make test-e2e-lock
+make test-e2e-build
+```
+
+The `hale-test/playwright` base image carries the browsers, so its tag in
+`docker/playwright.dockerfile` must match the `@playwright/test` version.
+Dependabot raises both.
 
 ## Seeded data
 
@@ -222,14 +258,17 @@ tests/
     specs/<site>/          run for that site only
     specs/network/         network admin, run against the main site
     seed/                  seed script, sites and content fixtures
-    stack/                 test image build
-    support/               stack settings and the shared `test` fixture
-    browserstack.yml       BrowserStack platforms
-    playwright-report/     last HTML report (not committed)
-    test-results/          screenshots, videos and traces of failures (not committed)
+    stack/                 image build and stack.sh, which runs the stack
+    docker/                the Playwright image and its entrypoint
+    support/               stack settings, the shared `test` fixture, the forwarder
+    playwright.config.js   Playwright configuration
+    package.json           Playwright and axe-core, installed in the image only
+    output/                run output (not committed):
+      playwright-report/   last HTML report
+      test-results/        screenshots, videos and traces of failures
 ```
 
-`playwright.config.js` and `docker-compose.test.yml` stay in the repo root.
+`docker-compose.test.yml` stays in the repo root.
 
 - Import `test` and `expect` from `support/test.js`. Its `site` fixture is
   the `sites.json` entry for the project running the test.
@@ -241,29 +280,9 @@ tests/
 
 ## CI
 
-`.github/workflows/e2e.yaml` runs the same build and command on GitHub
-Actions. It is started by hand (`workflow_dispatch`). It installs Chromium
-with `npx playwright install --with-deps` rather than using the Playwright
-container, because the global setup drives Docker on the runner. On failure
-it uploads the HTML report and traces.
-
-## BrowserStack
-
-The same tests can run on BrowserStack against the local test stack, through
-BrowserStack Local. Credentials are read from a `.env` file at the project
-root (ignored by git):
-
-```
-BROWSERSTACK_USERNAME=your_username
-BROWSERSTACK_ACCESS_KEY=your_access_key
-```
-
-```
-npm run test:browserstack
-```
-
-Platforms are set in `tests/e2e/browserstack.yml`. Results and recordings are in the
-BrowserStack Automate dashboard.
+`.github/workflows/e2e.yaml` runs `make test-e2e` on GitHub Actions, the same
+command and the same Playwright container as locally. It is started by hand
+(`workflow_dispatch`). On failure it uploads the HTML report and traces.
 
 ## Cleaning up
 

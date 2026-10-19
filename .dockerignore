@@ -9,8 +9,8 @@
 # build, for nothing.
 /dev
 
-# Playwright and BrowserStack packages (package.json), used on the host only.
-# No dockerfile copies them.
+# Never installed on the host; the Playwright packages live only in the
+# hale-test/playwright image (tests/e2e/docker/playwright.dockerfile).
 /node_modules
 
 # Database files

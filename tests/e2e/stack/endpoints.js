@@ -1,8 +1,10 @@
 // Print the test stack's addresses and what each one is for. Run by
-// `make test-e2e-urls`. Reads the sites and port from support/stack.js, so it
-// follows sites.json and HALE_TEST_PORT.
+// `make test-e2e-urls` in the playwright container. Reads the sites and port
+// from support/stack.js, so it follows sites.json and HALE_TEST_PORT.
+// stack.sh checks on the host whether the stack is up and passes the answer in
+// E2E_STACK_RUNNING, since the container cannot ask Docker.
 
-const { NETWORK_URL, LOGIN_PATH, PASSWORD, PORT, PROJECT, sites, users, isRunning } = require("../support/stack");
+const { NETWORK_URL, LOGIN_PATH, PASSWORD, PORT, PROJECT, sites, users } = require("../support/stack");
 
 const rows = [];
 const section = (title) => rows.push(["", ""], [title, ""]);
@@ -58,12 +60,12 @@ for (const site of sites.filter((s) => s.path)) {
 }
 
 section("Reports");
-row("http://localhost:9323/", "HTML report, served by npm run test:report");
+row("http://localhost:9323/", "HTML report, served by make test-e2e-report");
 
 const width = Math.max(...rows.filter(([, purpose]) => purpose).map(([url]) => url.length));
 console.log(`Test stack (${PROJECT}) at ${NETWORK_URL}`);
 console.log(
-  isRunning()
+  process.env.E2E_STACK_RUNNING === "1"
     ? "Status: running"
     : "Status: not running. Start it with make test-e2e-up (or check Docker is reachable).",
 );

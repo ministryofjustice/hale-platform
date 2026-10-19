@@ -1,18 +1,11 @@
-// Start the test stack, seed it and wait until every site answers.
+// Wait until every site answers before any test starts.
 //
-// Every run starts from an empty database: anything a previous run left
-// behind is removed first. REUSE_STACK=1 skips all of this when a stack from
-// an earlier KEEP_STACK=1 run is still up, for a faster edit-and-rerun loop.
+// stack/stack.sh has already started and seeded the stack by the time
+// Playwright runs; this covers the moment between the seed finishing and
+// nginx serving every site, and the forwarder (support/forward.js) starting.
 
 const { request } = require("@playwright/test");
 const stack = require("./support/stack");
-
-function timed(label, fn) {
-  const start = Date.now();
-  const result = fn();
-  console.log(`[e2e] ${label}: ${((Date.now() - start) / 1000).toFixed(1)}s`);
-  return result;
-}
 
 async function waitForSites(timeoutMs = 60_000) {
   const context = await request.newContext({ ignoreHTTPSErrors: true });
@@ -37,28 +30,7 @@ async function waitForSites(timeoutMs = 60_000) {
 }
 
 module.exports = async function globalSetup() {
-  if (process.env.REUSE_STACK === "1" && stack.isRunning()) {
-    console.log(`[e2e] Reusing the running ${stack.PROJECT} stack`);
-    return;
-  }
-
   const start = Date.now();
-  try {
-    if (process.env.E2E_BUILD === "1" || !stack.imagesCurrent()) {
-      timed("build images", () => stack.run("tests/e2e/stack/build.sh", []));
-    }
-    stack.ensureCertificate();
-    timed("remove previous stack", () => stack.down());
-    timed("start stack", () =>
-      stack.compose("up", "-d", "--wait", "--wait-timeout", "300", "nginx"),
-    );
-    timed("seed", () => stack.compose("--profile", "seed", "run", "--rm", "seed"));
-    const ready = Date.now();
-    await waitForSites();
-    console.log(`[e2e] sites ready: ${((Date.now() - ready) / 1000).toFixed(1)}s`);
-  } catch (error) {
-    if (process.env.KEEP_STACK !== "1") stack.down();
-    throw error;
-  }
-  console.log(`[e2e] stack ready in ${((Date.now() - start) / 1000).toFixed(1)}s at ${stack.NETWORK_URL}`);
+  await waitForSites();
+  console.log(`[e2e] sites ready in ${((Date.now() - start) / 1000).toFixed(1)}s at ${stack.NETWORK_URL}`);
 };

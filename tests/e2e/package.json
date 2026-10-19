@@ -1,0 +1,11 @@
+{
+  "name": "hale-platform-e2e",
+  "private": true,
+  "description": "Playwright end-to-end tests for hale-platform. Installed and run inside the hale-test/playwright image only; see README.md.",
+  "license": "MIT",
+  "type": "commonjs",
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "1.62.1"
+  }
+}

@@ -15,6 +15,11 @@ test("homepage renders with the site's theme", async ({ page, site }) => {
 // Listed here so the test still catches anything new; each is shown as an
 // annotation in the report. Remove an entry once its plugin is fixed.
 const KNOWN_MISSING = {
+  // ppo loads jQuery from ajax.googleapis.com and falls back to this file when
+  // that fails, which it always does from the test container (no internet).
+  // On the live site it 404s only for visitors who cannot reach the CDN.
+  "/wp-content/themes/ppo/assets/js/vendor/jquery.min.js":
+    "ppo's jQuery CDN fallback points at assets/js/vendor/jquery.min.js, which the theme does not ship",
   // wp-moj-blocks enqueues it on every theme but Hale, which dequeues it.
   "/wp-content/plugins/wp-moj-blocks/build/mojblocks.min.js":
     "wp-moj-blocks enqueues build/mojblocks.min.js, which its build does not produce",
