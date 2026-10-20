@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ef18637573f111cedc854c4b6b45426b",
+    "content-hash": "0597f2397fda8424e0f4b187d1242de9",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -975,25 +975,25 @@
         },
         {
             "name": "ministryofjustice/govwind",
-            "version": "1.1.5",
+            "version": "1.1.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/govwind.git",
-                "reference": "332a11cdf9e28854715063656a69957fb43a38b1"
+                "reference": "2a8efcf9a37b055e178c6c1dc5cf5072ecf76caf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/332a11cdf9e28854715063656a69957fb43a38b1",
-                "reference": "332a11cdf9e28854715063656a69957fb43a38b1",
+                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/2a8efcf9a37b055e178c6c1dc5cf5072ecf76caf",
+                "reference": "2a8efcf9a37b055e178c6c1dc5cf5072ecf76caf",
                 "shasum": ""
             },
             "type": "wordpress-theme",
             "description": "Govwind theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/govwind/tree/1.1.5",
+                "source": "https://github.com/ministryofjustice/govwind/tree/1.1.6",
                 "issues": "https://github.com/ministryofjustice/govwind/issues"
             },
-            "time": "2026-10-19T08:18:54+00:00"
+            "time": "2026-10-20T08:58:57+00:00"
         },
         {
             "name": "ministryofjustice/hale",
