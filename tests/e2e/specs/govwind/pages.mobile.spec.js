@@ -15,16 +15,15 @@ test.describe("Govwind mobile tests", () => {
     await page.goto("./");
   });
   test("mobile navigation is visible", async ({ page }) => {
-    console.log("Viewport:", page.viewportSize());
-
     const mobileNav = page.locator("header nav.wb-md-mobile-only");
     await expect(mobileNav).toHaveCount(1);
     await expect(mobileNav).toBeVisible();
   });
 
   test("desktop navigation is hidden", async ({ page }) => {
-    const desktopNav = page.locator("header nav.wp-md-desktop-only");
-    await expect(desktopNav).toHaveCount(0);
+    // In the page, as on desktop, but hidden by the theme's CSS.
+    const desktopNav = page.locator("header nav.wb-md-desktop-only");
+    await expect(desktopNav).toHaveCount(1);
     await expect(desktopNav).toBeHidden();
   });
 

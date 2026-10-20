@@ -62,7 +62,7 @@ jobs:
         run: time tests/e2e/stack/build.sh
 
       - name: Run end-to-end tests
-        run: make test-e2e
+        run: make test-e2e-release
 
       - name: Upload Playwright report
         if: failure()

@@ -105,12 +105,22 @@ done
 # Sites
 # ---------------------------------------------------------------------------
 # Fields are split on "|", not a tab: read collapses runs of whitespace
-# separators, which would drop the main site's empty path.
-php -r '
-    foreach (json_decode(file_get_contents("/seed/sites.json"), true) as $site) {
+# separators, which would drop the main site's empty path. Read into a variable
+# first: sh has no pipefail, so a php failure inside the pipe would be lost
+# and the seed would finish with no sites.
+sites="$(php -r '
+    $sites = json_decode(file_get_contents("/seed/sites.json"), true, 512, JSON_THROW_ON_ERROR);
+    foreach ($sites as $i => $site) {
+        foreach (["key", "path", "theme", "title"] as $field) {
+            if (!isset($site[$field])) {
+                fwrite(STDERR, "sites.json: site $i has no $field\n");
+                exit(1);
+            }
+        }
         echo implode("|", [$site["key"], $site["path"], $site["theme"], $site["title"], $site["blogId"] ?? ""]), "\n";
     }
-' | while IFS="|" read -r key path theme title blog_id; do
+')"
+printf '%s\n' "$sites" | while IFS="|" read -r key path theme title blog_id; do
     echo "Seeding site '$key' ($theme)"
 
     if [ -z "$path" ]; then

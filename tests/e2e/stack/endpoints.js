@@ -60,7 +60,7 @@ for (const site of sites.filter((s) => s.path)) {
 }
 
 section("Reports");
-row("http://localhost:9323/", "HTML report, served by make test-e2e-report");
+row(`http://localhost:${process.env.E2E_UI_PORT || "9323"}/`, "HTML report, served by make test-e2e-report");
 
 const width = Math.max(...rows.filter(([, purpose]) => purpose).map(([url]) => url.length));
 console.log(`Test stack (${PROJECT}) at ${NETWORK_URL}`);

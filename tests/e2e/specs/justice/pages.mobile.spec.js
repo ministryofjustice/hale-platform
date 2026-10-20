@@ -74,7 +74,7 @@ test("navigation links are stacked", async ({ page })=> {
 });
 
 
-test("mobile sidebar and and main content are stacked vertically", async ({ page })=>{
+test("mobile sidebar and main content are stacked vertically", async ({ page })=>{
     await page.goto("./");
 
     const popular = page.locator(".one-sidebar__sidebar--mobile section.sidebar-block--list");
@@ -87,12 +87,12 @@ test("mobile sidebar and and main content are stacked vertically", async ({ page
     
     expect(popularBox).not.toBeNull();
     expect(scalesImageBox).not.toBeNull();
-    expect(content).not.toBeNull();
+    expect(contentBox).not.toBeNull();
 
     //Most popular appears above image
     expect(scalesImageBox.y).toBeGreaterThanOrEqual(popularBox.y + popularBox.height);
     //Image appears above content
-    expect(contentBox.y).toBeLessThanOrEqual(scalesImageBox.y + scalesImageBox.height)
+    expect(contentBox.y).toBeGreaterThanOrEqual(scalesImageBox.y + scalesImageBox.height);
 
 });
 
@@ -136,7 +136,7 @@ test("Most popular accordion opens and closes", async ({page})=>{
 });
 
 //linksare external apart from Procedure rules - using href to check correctness
-test("Most popular accoridon links contain correct information", async ({ page })=> {
+test("Most popular accordion links contain correct information", async ({ page })=> {
     await page.goto('./');
 
   const accordion = page.locator(".one-sidebar__sidebar--mobile")

@@ -10,11 +10,14 @@ test("editor publishes a page with a reveal block", async ({ page }) => {
   await page.waitForFunction(() => window.wp?.data?.select("core/editor")?.getCurrentPostId());
 
   // A new user gets the welcome guide, and a new page may offer patterns.
+  // Either can open a moment after the editor loads, so Playwright closes any
+  // dialog whenever one is in the way of the next action.
   await page.evaluate(() => {
     window.wp.data.dispatch("core/preferences").set("core/edit-post", "welcomeGuide", false);
   });
-  const dialog = page.getByRole("dialog");
-  if (await dialog.isVisible()) await page.keyboard.press("Escape");
+  await page.addLocatorHandler(page.getByRole("dialog"), async () => {
+    await page.keyboard.press("Escape");
+  });
 
   // The block an editor on a hale site can insert: the theme's allow-list
   // (hale/inc/restrict-blocks.php) has mojblocks/reveal, not wb-blocks/reveal,

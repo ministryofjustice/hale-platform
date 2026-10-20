@@ -26,18 +26,31 @@ code, never state.
 
 ## Requirements
 
-- Docker, bash, git and openssl. Not Node.js or npm.
+- Docker with Compose v2 and BuildKit (Docker Desktop has both), bash, git,
+  openssl, and PHP and Composer, which `make build` already needs. Not
+  Node.js or npm. The scripts run on the bash 3.2 and LibreSSL that macOS
+  ships, and on Intel and Apple silicon Macs.
+- The repo checked out under your home folder, or another folder Docker
+  Desktop shares (Settings, Resources, File sharing): the stack mounts
+  `tests/e2e` into its containers.
 - `composer install` has been run, so `./wordpress` and `./vendor` exist. The
   stack is built from them, so the plugin and theme versions are whatever
   `composer.lock` gives.
-- `./wordpress/wp-content` holds real folders, not dev package links. The
-  build stops if it finds symlinks; `composer install` restores the folders.
+- Dev package links (`make symlink`) can stay. `make test-e2e` builds the
+  clones they point to; `make test-e2e-release` needs the composer versions,
+  so when it finds links it offers to swap them for those (`composer install`)
+  and runs `make symlink` once the images are built. hale.docker serves the
+  composer versions in between. Without a terminal, or in CI, it stops
+  instead unless `E2E_RESTORE_LINKS=1` is set. See
+  [dev/ clones and composer.lock](#dev-clones-and-composerlock).
 
 ## Running tests
 
 | Command | Purpose |
 | --- | --- |
-| `make test-e2e` | Start, seed, test, remove. |
+| `make test-e2e-cmds` | List these commands and the main options. |
+| `make test-e2e` | Start, seed, test, remove, on a stack with your linked `dev/` clones. With BrowserStack credentials it also runs the tests on BrowserStack before removing the stack; without them it prints `No credentials available, skipping BrowserStack tests`. It checks the BrowserStack account first: when BrowserStack rejects the credentials, or the account has no Automate plan, an orange warning at the start says the BrowserStack tests will be skipped, and the run does not fail on that alone. |
+| `make test-e2e-release` | The same, with every package at its `composer.lock` version, as CI runs it. See [dev/ clones and composer.lock](#dev-clones-and-composerlock). |
 | `make test-e2e-report` | Serve the last HTML report, with screenshots, videos and traces, at http://localhost:9323. |
 | `make test-e2e-build` | Rebuild the `hale-test/*` images, including `hale-test/playwright`. |
 | `make test-e2e-down` | Remove a stack left running. |
@@ -73,8 +86,9 @@ make test-e2e-down                                        # remove it when you a
 
 A running stack picks up changes to spec files straight away. After changing
 the seed or content fixtures, run `make test-e2e-up` again for a fresh stack.
-After changing theme or plugin code, run `E2E_BUILD=1 make test-e2e-up` to
-rebuild the images too. Content your tests create stays on the stack between
+After `composer update` or a change in `opt/` or a Dockerfile,
+`make test-e2e-up` rebuilds the images itself; after editing theme or plugin
+code inside `./wordpress` by hand, run `E2E_BUILD=1 make test-e2e-up`. Content your tests create stays on the stack between
 runs.
 
 ### Environment variables
@@ -83,9 +97,12 @@ runs.
 | --- | --- |
 | `KEEP_STACK=1` | Leave the stack running after the run, to look at it in a browser or with `docker compose -f docker-compose.test.yml logs`. Also keeps it when the setup fails. |
 | `REUSE_STACK=1` | Use a stack that is still running instead of starting a new one, and leave it running. Use it with `KEEP_STACK=1` for a fast edit-and-rerun loop. Tests that add content add more on each run. |
-| `E2E_BUILD=1` | Rebuild the images before the run. Without it they are rebuilt only when missing or when `composer.lock` or `tests/e2e/package-lock.json` has changed since the last build, so set it after a Dockerfile or theme change. |
+| `E2E_BUILD=1` | Rebuild the images before the run. Without it they are rebuilt only when missing or when their build inputs have changed since the last build: the Dockerfiles, anything in `opt/`, `composer.lock` or `tests/e2e/package-lock.json` (`stack/image-inputs.sh`). Set it after editing a file inside `./wordpress` by hand, which is not checked. |
+| `E2E_RESTORE_LINKS=1` | When a build finds dev package links in `./wordpress/wp-content`, swap them for the composer versions and link them again afterwards without asking. |
+| `E2E_DEV=0` | Build with every package at its `composer.lock` version, on any command. Every command but `make test-e2e-release` defaults to `E2E_DEV=1`, the linked `dev/` clones. |
 | `HALE_TEST_PORT` | Host port, default `8443`. |
 | `HALE_TEST_PROJECT` | Compose project name, default `hale-test`. Set a different one with a different port to run two stacks at once. |
+| `E2E_VERBOSE=1` | Show all of browserstack-node-sdk's logging in the terminal during a BrowserStack run. By default only Playwright's output, each distinct SDK warning or error once, and the build report link are shown; the full SDK log is always in `tests/e2e/log/usage.log`. |
 | `E2E_PASSWORD` | Password for every test user, default `hale-e2e-test-only`. |
 | `E2E_UI_PORT` | Host port for UI mode and the report, default `9323`. |
 
@@ -269,11 +286,15 @@ tests/
     docker/                the Playwright image and its entrypoint
     support/               stack settings, the shared `test` fixture, the forwarder
     playwright.config.js   Playwright configuration
+    playwright.browserstack-skipped.config.js
+                           lists the BrowserStack tests as skipped, for the report
     browserstack.yml       BrowserStack platforms
     package.json           Playwright, axe-core and browserstack-node-sdk, installed in the images only
     output/                run output (not committed):
-      playwright-report/   last HTML report
+      playwright-report/   last HTML report, local and BrowserStack tests together
       test-results/        screenshots, videos and traces of failures
+      blob/                the local run's blob report, merged into the HTML report
+      browserstack/        the BrowserStack run's own report, results and blob
     log/                   browserstack-node-sdk logs (not committed)
 ```
 
@@ -290,6 +311,45 @@ tests/
 - Start logged in with `test.use({ storageState: authFile("editor") })`.
 - Tests share one stack, so a test that creates content gives it a unique
   title rather than assuming it is the only one.
+
+## dev/ clones and composer.lock
+
+`make test-e2e`, and every other command that builds or starts a stack, tests
+what your local site serves: each `dev/` clone that `make symlink` linked, in
+place of its `composer.lock` version. Packages that are not linked are their
+`composer.lock` versions, so with no clones linked it tests the same thing as
+`make test-e2e-release`. `E2E_DEV=0` turns the clones off for any command.
+
+A clone goes in as `git status` sees it: the checked-out branch, uncommitted
+changes and new files, but nothing `.gitignore` covers (`node_modules`, built
+assets, local leftovers). That is what the package holds once the change is
+committed. `./wordpress` is not changed. The build lists the clones it uses,
+and the run ends with:
+
+```
+[e2e] Ran dev/ clones, not the composer.lock versions.
+```
+
+The build warns about a clone that does not include the commit
+`composer.lock` pins for it, which would test older code than
+`make test-e2e-release`, and about an untracked `package-lock.json` in a
+theme clone, which the theme build would use. The warning comes before
+anything is built, gives the commands that fix each clone, and asks whether to
+go on with the clones as they are. Without a terminal it goes on.
+
+`make test-e2e-release` tests every package at its `composer.lock` version,
+as it would be deployed, and is what CI runs. A change in a package reaches
+it once it is pushed and `composer.lock` points at it
+(`composer update ministryofjustice/<package>`; a branch works, as
+`dev-<branch>` in `composer.json`). A pass on `make test-e2e` shows the
+change works; a pass on `make test-e2e-release` shows it works from
+`composer.lock`.
+
+Switching between the two rebuilds `hale-test/wordpress`. With clones
+linked, every build runs, since a clone can change without anything the
+stale check hashes changing; Docker's cache keeps an unchanged rebuild short.
+`make test-e2e-run` and `REUSE_STACK=1` use a running stack as it was built,
+and the run ends by naming the clones it holds.
 
 ## BrowserStack
 
@@ -312,16 +372,57 @@ make test-e2e-browserstack ARGS=--project=mobile
 ```
 
 It starts, seeds and removes a stack as `make test-e2e` does, and takes the
-same `ARGS`, `KEEP_STACK` and `REUSE_STACK`. The first run builds
+same `ARGS`, `KEEP_STACK` and `REUSE_STACK`. `make test-e2e` runs it too,
+after the local tests and on the same stack, whenever the credentials are
+set; `make test-e2e-run` never does.
+
+On BrowserStack the projects are the platforms in `browserstack.yml`,
+`desktop` and `mobile`, in place of one project per site. Each spec in
+`specs/<site>/` runs against its own site and the rest (`all-sites/`,
+`network/`) against the main site, so `all-sites/` covers one site there, not
+every one. `make test-e2e` passes `ARGS` to the BrowserStack run without
+`--project`, as the local project names do not exist there.
+`make test-e2e-browserstack` logs the test users in on its new stack before
+the tests, as the local run's `setup` project does.
+
+At the start of the run, before anything is built,
+`support/browserstack-account.js` checks the account: BrowserStack's
+Automate plan API for the credentials, then one BrowserStack browser session,
+opened and closed at once, because an expired plan still looks active in the
+plan API and only refuses sessions. That session shows in Automate as a
+`Hale account check` build. When BrowserStack rejects the credentials, cannot
+be reached, or will not start a browser (an expired plan), an
+orange `[e2e] BrowserStack account check failed: ...` warning gives the
+reason. `make test-e2e` then says the BrowserStack tests will be skipped, runs
+the local tests, and repeats the warning where the BrowserStack tests would
+have run; the skip is not a failure. `make test-e2e-browserstack` stops with
+an error before it starts a stack. `NO_COLOR` turns the colour off.
+
+A BrowserStack run writes its results to `output/browserstack/`, so the
+local run's stay in `output/`. Both runs also write a blob report, and once
+the BrowserStack tests have run, `stack.sh` merges the blobs with Playwright's
+`merge-reports` into `output/playwright-report/`, so `make test-e2e-report`
+shows the local tests and the BrowserStack ones (projects `desktop` and
+`mobile`) on one page. When the BrowserStack tests are skipped, an offline run
+of `playwright.browserstack-skipped.config.js` lists each of them as skipped,
+with the reason, and that goes into the same report. The report leaves
+skipped tests out of its default list: open the Skipped tab, or the
+`#?q=s:skipped` link the run prints at the end. The first run builds
 `hale-test/browserstack`. Platforms are in `browserstack.yml`: Chrome on
 macOS for the desktop specs, and Chrome on a Samsung Galaxy for the
 `*.mobile.spec.js` specs. Results and recordings are in the BrowserStack
-Automate dashboard; the SDK's own logs are in `tests/e2e/log/`.
+Automate dashboard; the SDK's own logs are in `tests/e2e/log/`, which only
+you can read: the SDK's helper writes the access key into its debug log
+there, unredacted. Do not attach that folder to an issue or share it. The
+terminal shows Playwright's output and the SDK's warnings and errors, each
+once; `E2E_VERBOSE=1` shows the SDK's full logging there too.
+The helper binary the SDK downloads is kept in `tests/e2e/.stack/browserstack/`
+between runs; delete that folder to make it download a fresh one.
 
 ## CI
 
-`.github/workflows/e2e.yaml` runs `make test-e2e` on GitHub Actions, the same
-command and the same Playwright container as locally. It is started by hand
+`.github/workflows/e2e.yaml` runs `make test-e2e-release` on GitHub Actions,
+the same command and the same Playwright container as locally. It is started by hand
 (`workflow_dispatch`). On failure it uploads the HTML report and traces.
 
 ## Cleaning up

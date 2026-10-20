@@ -1,8 +1,21 @@
 // @ts-check
+const path = require("node:path");
 const { defineConfig, devices } = require("@playwright/test");
 const { NETWORK_URL, sites } = require("./support/stack");
 
-const REPORT_DIR = "./output/playwright-report";
+// The browserstack service sets E2E_OUTPUT_DIR, so a BrowserStack run after
+// the local one (make test-e2e) does not replace its report and traces.
+const OUTPUT_DIR = process.env.E2E_OUTPUT_DIR || "./output";
+const REPORT_DIR = `${OUTPUT_DIR}/playwright-report`;
+
+// Each run also writes a blob report, named after its output folder
+// (output.zip, browserstack.zip). After a BrowserStack run, or the skipped
+// listing of one, stack/stack.sh merges the blobs into output/playwright-report,
+// so the report page shows the local and the BrowserStack tests together.
+const BLOB = ["blob", {
+  outputDir: `${OUTPUT_DIR}/blob`,
+  fileName: `${path.basename(path.resolve(OUTPUT_DIR))}.zip`,
+}];
 
 // End-to-end tests against the disposable test multisite in
 // docker-compose.test.yml. Runs inside the playwright container, after
@@ -10,7 +23,7 @@ const REPORT_DIR = "./output/playwright-report";
 // waits for the sites to answer. See README.md.
 module.exports = defineConfig({
   testDir: ".",
-  outputDir: "./output/test-results",
+  outputDir: `${OUTPUT_DIR}/test-results`,
 
   globalSetup: require.resolve("./global-setup"),
 
@@ -20,8 +33,8 @@ module.exports = defineConfig({
   // The report is never opened from here: a report server inside the
   // container would keep the run from exiting. make test-e2e-report serves it.
   reporter: process.env.CI
-    ? [["html", { outputFolder: REPORT_DIR, open: "never" }], ["github"]]
-    : [["html", { outputFolder: REPORT_DIR, open: "never" }], ["list"]],
+    ? [["html", { outputFolder: REPORT_DIR, open: "never" }], BLOB, ["github"]]
+    : [["html", { outputFolder: REPORT_DIR, open: "never" }], BLOB, ["list"]],
 
   use: {
     // Self-signed certificate on the test stack.

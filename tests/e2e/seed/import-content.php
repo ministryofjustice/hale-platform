@@ -17,7 +17,7 @@
  *                  placeholder image), parent (slug of an earlier page),
  *                  template (page template), meta (post meta to set) and date
  *   images         placeholder images, by name: width, height and optionally
- *                  alt
+ *                  alt. Without alt the image is decorative (alt="")
  *   documents      WP Document Revisions documents with generated files, by
  *                  name: type (pdf, docx or xlsx), and optionally title,
  *                  slug and lines of text

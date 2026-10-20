@@ -189,6 +189,7 @@ services:
       CI: ${CI:-}
       HALE_TEST_PROJECT: ${HALE_TEST_PROJECT:-hale-test}
       HALE_TEST_PORT: ${HALE_TEST_PORT:-8443}
+      E2E_UI_PORT: ${E2E_UI_PORT:-9323}
       E2E_PASSWORD: ${E2E_PASSWORD:-hale-e2e-test-only}
       E2E_STACK_RUNNING: ${E2E_STACK_RUNNING:-}
       # Set by stack.sh when the host has a terminal: tests run without a TTY
@@ -229,14 +230,21 @@ services:
     profiles: ["browserstack"]
     # The SDK downloads the BrowserStack Local binary into $HOME and runs it.
     # The /tmp tmpfs is noexec, so $HOME is a tmpfs of its own that allows it.
+    # The SDK also writes setup files into its working directory, so the
+    # entrypoint runs it from a copy of tests/e2e in /hale/browserstack-run.
     tmpfs:
       - /home/browserstack:exec,mode=1777
+      - /hale/browserstack-run:mode=1777
     volumes:
-      # The SDK writes its logs to log/ in the working directory, which is
-      # otherwise read-only.
+      # The SDK's logs, through the copy's log/ link.
       - ./tests/e2e/log:/hale/tests/e2e/log
+      # The helper binary the SDK downloads into ~/.browserstack, kept between
+      # runs so it is not downloaded again into the tmpfs every time.
+      - ./tests/e2e/.stack/browserstack:/home/browserstack/.browserstack
     environment:
       HOME: /home/browserstack
+      # Report and results beside the local run's, not over them.
+      E2E_OUTPUT_DIR: ./output/browserstack
       # From the environment or the repo root .env, which compose reads.
       BROWSERSTACK_USERNAME: ${BROWSERSTACK_USERNAME:-}
       BROWSERSTACK_ACCESS_KEY: ${BROWSERSTACK_ACCESS_KEY:-}
