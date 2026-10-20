@@ -15,8 +15,7 @@ const event = {
     message_type: "test",
   },
   secrets: {
-    NOTIFY_API_KEY:
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    NOTIFY_API_KEY: "test",
     NOTIFY_TEMPLATE_ID: "template-id",
   },
 };

@@ -67,7 +67,7 @@ exports.onExecuteCustomEmailProvider = async (event, api) => {
     return api.notification.retry(`Notify unreachable: ${message}`);
   }
 
-  const text = await res.text();
+  const text = await res.text().catch(() => "Response body unavailable");
   if (res.status === 429 || res.status >= 500) {
     return api.notification.retry(`Notify: ${res.status}, ${text}`);
   }
