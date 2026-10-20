@@ -126,6 +126,7 @@
     "wpackagist-plugin/auth0": "^4.0.0",
     "wpackagist-plugin/breadcrumb-block": "1.1.0",
     "wpackagist-plugin/classic-editor": "^1.0",
+    "wpackagist-plugin/display-a-meta-field-as-block": "^1.6.1",
     "wpackagist-plugin/ewww-image-optimizer": "^8.0",
     "wpackagist-plugin/microsoft-clarity": "^0.10.8",
     "wpackagist-plugin/option-tree": "^2.0",
