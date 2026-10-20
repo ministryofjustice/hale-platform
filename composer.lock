@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "097724293f5e18eea979e72f6b845e6e",
+    "content-hash": "0597f2397fda8424e0f4b187d1242de9",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -3665,6 +3665,24 @@
             "homepage": "https://wordpress.org/plugins/cms-tree-page-view/"
         },
         {
+            "name": "wpackagist-plugin/display-a-meta-field-as-block",
+            "version": "1.6.1",
+            "source": {
+                "type": "svn",
+                "url": "https://plugins.svn.wordpress.org/display-a-meta-field-as-block/",
+                "reference": "tags/1.6.1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://downloads.wordpress.org/plugin/display-a-meta-field-as-block.1.6.1.zip"
+            },
+            "require": {
+                "composer/installers": "^1.0 || ^2.0"
+            },
+            "type": "wordpress-plugin",
+            "homepage": "https://wordpress.org/plugins/display-a-meta-field-as-block/"
+        },
+        {
             "name": "wpackagist-plugin/ewww-image-optimizer",
             "version": "8.9.0",
             "source": {
@@ -4043,5 +4061,5 @@
         "php": ">=8.0"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
