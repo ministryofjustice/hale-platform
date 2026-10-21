@@ -23,6 +23,9 @@ metadata:
       # Content-Type header, so sending two does not get around it.
       # This must stay above rule 1001 so it applies regardless of the WB_CONFIG cookie.
       # Phase 1 rejects on the headers alone, before the body is read or parsed.
+      # Never use a single quote anywhere in this snippet, comments and msg values
+      # included: ingress-nginx wraps the snippet in a single-quoted
+      # modsecurity_rules string, and a quote ends that string early.
       SecRule REQUEST_HEADERS:Content-Type "@contains multipart" \
         "id:300150,\
         phase:1,\
@@ -30,7 +33,8 @@ metadata:
         deny,\
         status:403,\
         t:none,t:lowercase,\
-        msg:'multipart request blocked',\
+        ctl:ruleEngine=On,\
+        msg:multipart-request-blocked,\
         tag:github_team=hale-platform,\
         tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }}"
 
