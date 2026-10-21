@@ -15,6 +15,13 @@ data:
     ; This is PHP_INI_PERDIR, so it has to be set here - ini_set() cannot change it.
     session.upload_progress.enabled = Off
 
+    ; PHP errors for the CLI (wp-cli in this container), which does not read
+    ; the PHP-FPM pool file. The pool sets the same for web requests
+    ; (opt/php/www.conf). With no error_log set, the CLI logs to stderr.
+    error_reporting = E_ALL
+    log_errors = On
+    display_errors = Off
+
     ; Opcache. Everything below was previously at the base image's defaults,
     ; which are sized for a small application rather than a WordPress multisite.
     ;
