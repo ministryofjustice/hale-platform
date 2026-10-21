@@ -162,9 +162,11 @@ metadata:
             <title>Error, service unavailable</title>
           </head>
           <body>
-            <h1>Thank you for visiting our website</h1>
-            <p>We&#39;re carrying out essential maintenance and improvements. The website is temporarily unavailable while this work is completed.</p>
-            <p>We apologise for any inconvenience and appreciate your patience.</p>
+            <main style="max-width: 1000px;margin: 1rem auto;font-family: sans-serif;font-size: 1.2rem;">
+              <h1>Thank you for visiting our website</h1>
+              <p>We&rsquo;re carrying out essential maintenance and improvements. The website is temporarily unavailable while this work is completed.</p>
+              <p>We apologise for any inconvenience and appreciate your patience.</p>
+            </main>
           </body>
         </html>
         ';
