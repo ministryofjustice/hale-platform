@@ -17,6 +17,21 @@ metadata:
         log,\
         tag:github_team=hale-platform,\
         tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }}"
+
+      # Block all multipart/form-data POST requests, on every host.
+      # This must stay above rule 1001 so it applies regardless of the WB_CONFIG cookie.
+      # Phase 1 rejects on the headers alone, before the body is read or parsed.
+      SecRule REQUEST_METHOD "@streq POST" \
+        "id:300150,\
+        phase:1,\
+        log,\
+        deny,\
+        t:none,\
+        tag:github_team=hale-platform,\
+        tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }},\
+        chain"
+      SecRule REQUEST_HEADERS:Content-Type "@contains multipart/form-data" "t:none,t:lowercase"
+
       # Set WAF Config for Authenticated Users
       SecRule REQUEST_HEADERS:Cookie "@contains WB_CONFIG={{ .Values.secrets.wbconfig }}"
         "id:1001,\
