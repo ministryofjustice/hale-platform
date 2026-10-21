@@ -9,7 +9,17 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-body-size: "400m"
     nginx.ingress.kubernetes.io/enable-modsecurity: "true"
     nginx.ingress.kubernetes.io/modsecurity-snippet: |
-      # Default WAF rules
+      {{- /*
+      ingress-nginx renders this whole snippet as ONE single-quoted nginx
+      parameter: modsecurity_rules '...'. Two limits follow from that:
+        - No single quote anywhere in the rendered text, msg values included.
+          A quote ends the parameter early.
+        - The rendered text must stay under 4096 bytes, the longest parameter
+          nginx accepts. Over it, the admission webhook rejects the Ingress with
+          "too long parameter, probably missing terminating ' character".
+      So every comment in this snippet is a Helm comment like this one, which is
+      stripped at render time and costs nothing. Do not use # comments here.
+      */}}
       SecRuleEngine On
       SecDefaultAction 
         "phase:2,\
@@ -18,21 +28,26 @@ metadata:
         tag:github_team=hale-platform,\
         tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }}"
 
-      # Block all multipart/form-data POST requests, on every host.
-      # This must stay above rule 1001 so it applies regardless of the WB_CONFIG cookie.
-      # Phase 1 rejects on the headers alone, before the body is read or parsed.
-      SecRule REQUEST_METHOD "@streq POST" \
+      {{- /*
+      Block every request whose Content-Type mentions multipart, whatever the
+      method or letter case. REQUEST_HEADERS:Content-Type checks every
+      Content-Type header, so sending two does not get around it.
+      This must stay above rule 1001 so it applies regardless of the WB_CONFIG cookie.
+      Phase 1 rejects on the headers alone, before the body is read or parsed.
+      */}}
+      SecRule REQUEST_HEADERS:Content-Type "@contains multipart" \
         "id:300150,\
         phase:1,\
         log,\
         deny,\
-        t:none,\
+        status:403,\
+        t:none,t:lowercase,\
+        ctl:ruleEngine=On,\
+        msg:multipart-request-blocked,\
         tag:github_team=hale-platform,\
-        tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }},\
-        chain"
-      SecRule REQUEST_HEADERS:Content-Type "@contains multipart/form-data" "t:none,t:lowercase"
+        tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }}"
 
-      # Set WAF Config for Authenticated Users
+      {{- /* Set WAF Config for Authenticated Users */}}
       SecRule REQUEST_HEADERS:Cookie "@contains WB_CONFIG={{ .Values.secrets.wbconfig }}"
         "id:1001,\
         phase:1,\
@@ -41,7 +56,7 @@ metadata:
         tag:github_team=hale-platform,\
         tag:environment=hale-platform-{{ .Values.configmap.envtype }}-auth,\
         ctl:ruleEngine=DetectionOnly"
-      # Exclude posthog cookie
+      {{- /* Exclude posthog cookie */}}
       SecRuleUpdateTargetById 942290 "!REQUEST_COOKIES:/^ph_phc_.*_posthog$/"
     nginx.ingress.kubernetes.io/server-snippet: |
       location = /.well-known/security.txt {
