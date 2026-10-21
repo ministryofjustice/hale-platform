@@ -278,3 +278,8 @@ ingress:
   # Additional hostnames served by this environment, each with its own cert.
   # Only prod has any: see values-prod.yaml.
   hosts: []
+
+  # Serve a static holding page from the ingress for every host instead of
+  # WordPress and the host redirects. Only /.well-known/ paths are unaffected.
+  holdingPage:
+    enabled: true
