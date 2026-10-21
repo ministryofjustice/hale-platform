@@ -159,11 +159,12 @@ metadata:
           <head>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1">
-            <title>Holding page</title>
+            <title>Error, service unavailable</title>
           </head>
           <body>
-            <h1>Holding page</h1>
-            <p>Placeholder text.</p>
+            <h1>Thank you for visiting our website</h1>
+            <p>We&#39;re carrying out essential maintenance and improvements. The website is temporarily unavailable while this work is completed.</p>
+            <p>We apologise for any inconvenience and appreciate your patience.</p>
           </body>
         </html>
         ';

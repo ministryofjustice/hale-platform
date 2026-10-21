@@ -282,4 +282,4 @@ ingress:
   # Serve a static holding page from the ingress for every host instead of
   # WordPress and the host redirects. Only /.well-known/ paths are unaffected.
   holdingPage:
-    enabled: false
+    enabled: true
