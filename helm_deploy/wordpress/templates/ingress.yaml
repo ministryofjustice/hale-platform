@@ -9,7 +9,17 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-body-size: "400m"
     nginx.ingress.kubernetes.io/enable-modsecurity: "true"
     nginx.ingress.kubernetes.io/modsecurity-snippet: |
-      # Default WAF rules
+      {{- /*
+      ingress-nginx renders this whole snippet as ONE single-quoted nginx
+      parameter: modsecurity_rules '...'. Two limits follow from that:
+        - No single quote anywhere in the rendered text, msg values included.
+          A quote ends the parameter early.
+        - The rendered text must stay under 4096 bytes, the longest parameter
+          nginx accepts. Over it, the admission webhook rejects the Ingress with
+          "too long parameter, probably missing terminating ' character".
+      So every comment in this snippet is a Helm comment like this one, which is
+      stripped at render time and costs nothing. Do not use # comments here.
+      */}}
       SecRuleEngine On
       SecDefaultAction 
         "phase:2,\
@@ -18,14 +28,13 @@ metadata:
         tag:github_team=hale-platform,\
         tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }}"
 
-      # Block every request whose Content-Type mentions multipart, whatever the
-      # method or letter case. REQUEST_HEADERS:Content-Type checks every
-      # Content-Type header, so sending two does not get around it.
-      # This must stay above rule 1001 so it applies regardless of the WB_CONFIG cookie.
-      # Phase 1 rejects on the headers alone, before the body is read or parsed.
-      # Never use a single quote anywhere in this snippet, comments and msg values
-      # included: ingress-nginx wraps the snippet in a single-quoted
-      # modsecurity_rules string, and a quote ends that string early.
+      {{- /*
+      Block every request whose Content-Type mentions multipart, whatever the
+      method or letter case. REQUEST_HEADERS:Content-Type checks every
+      Content-Type header, so sending two does not get around it.
+      This must stay above rule 1001 so it applies regardless of the WB_CONFIG cookie.
+      Phase 1 rejects on the headers alone, before the body is read or parsed.
+      */}}
       SecRule REQUEST_HEADERS:Content-Type "@contains multipart" \
         "id:300150,\
         phase:1,\
@@ -38,7 +47,7 @@ metadata:
         tag:github_team=hale-platform,\
         tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }}"
 
-      # Set WAF Config for Authenticated Users
+      {{- /* Set WAF Config for Authenticated Users */}}
       SecRule REQUEST_HEADERS:Cookie "@contains WB_CONFIG={{ .Values.secrets.wbconfig }}"
         "id:1001,\
         phase:1,\
@@ -47,12 +56,12 @@ metadata:
         tag:github_team=hale-platform,\
         tag:environment=hale-platform-{{ .Values.configmap.envtype }}-auth,\
         ctl:ruleEngine=DetectionOnly"
-      # Exclude posthog cookie
+      {{- /* Exclude posthog cookie */}}
       SecRuleUpdateTargetById 942290 "!REQUEST_COOKIES:/^ph_phc_.*_posthog$/"
 
-      # --- www.justice.gov.uk only rules ---
+      {{- /* --- www.justice.gov.uk only rules --- */}}
 
-      # Block POST requests on www.justice.gov.uk
+      {{- /* Block POST requests on www.justice.gov.uk */}}
       SecRule REQUEST_HEADERS:Host "@rx (?i)^www\.justice\.gov\.uk(?::\d+)?$" \
         "id:300140,\
         phase:1,\
@@ -64,8 +73,10 @@ metadata:
         chain"
       SecRule REQUEST_METHOD "@streq POST" "t:none"
 
-      # Allow only specific parameters on search requests,
-      # this applies to all users, regardless of logged in state.
+      {{- /*
+      Allow only specific parameters on search requests,
+      this applies to all users, regardless of logged in state.
+      */}}
       SecRule REQUEST_HEADERS:Host "@rx (?i)^www\.justice\.gov\.uk(?::\d+)?$" \
         "id:100100,\
         phase:1,\
@@ -78,14 +89,16 @@ metadata:
       SecRule REQUEST_URI "@rx ^/search(?:$|/|\?)" "chain"
       SecRule ARGS_GET_NAMES "!@rx ^(?:s|section|organisation|audience|type|parent|post_types|redirected|orderby)(?:\[[^\]]*\])?$" ""
 
-      # Target spam search URIs, these are URIs that:
-      # - the request starts with /search/
-      # - the path contains repeated pagination segments, e.g. /page/3/page/2/page/5/...
-      #   A legitimate paginated search only ever has a single /page/N segment.
-      # - match the decoded path (REQUEST_FILENAME excludes the query string) so that
-      #   URL-encoded slashes (%2Fpage%2F3...) are also caught.
-      # Return a 403 status code for these requests to explicitly block spammy searches.
-      # This rejects spam search traffic at the WAF level instead of shadow-banning it.
+      {{- /*
+      Target spam search URIs, these are URIs that:
+      - the request starts with /search/
+      - the path contains repeated pagination segments, e.g. /page/3/page/2/page/5/...
+        A legitimate paginated search only ever has a single /page/N segment.
+      - match the decoded path (REQUEST_FILENAME excludes the query string) so that
+        URL-encoded slashes (%2Fpage%2F3...) are also caught.
+      Return a 403 status code for these requests to explicitly block spammy searches.
+      This rejects spam search traffic at the WAF level instead of shadow-banning it.
+      */}}
       SecRule REQUEST_HEADERS:Host "@rx (?i)^www\.justice\.gov\.uk(?::\d+)?$" \
         "id:10300,\
         phase:1,\
@@ -98,14 +111,16 @@ metadata:
         chain"
       SecRule REQUEST_FILENAME "@rx ^/search/.*/page/\d+/page/\d+" "t:none,t:urlDecodeUni"
 
-      # 301 redirect requests (NOT under /search) that include ANY query string
-      # to the same path without the query.
-      # - Declare the 301 redirect
-      # - Only apply to www.justice.gov.uk
-      # - Exclude /search* from this behavior
-      # - Only do this when there IS a query string (i.e., at least one GET param)
-      # - Require that at least one param name is NOT in the allowlist
-      #   (requests with only s, parent, ver, auth0, code, state params pass through)
+      {{- /*
+      301 redirect requests (NOT under /search) that include ANY query string
+      to the same path without the query.
+      - Declare the 301 redirect
+      - Only apply to www.justice.gov.uk
+      - Exclude /search* from this behavior
+      - Only do this when there IS a query string (i.e., at least one GET param)
+      - Require that at least one param name is NOT in the allowlist
+        (requests with only s, parent, ver, auth0, code, state params pass through)
+      */}}
       SecRule REQUEST_URI "@rx ^/([^?]*)" \
         "id:300130,\
         phase:1,\
