@@ -16,6 +16,8 @@
 #                 ghostscript, hunspell, the UTF-8 locale, wp-cli, the
 #                 WordPress core patch, the translations, the uploads folder
 #                 and the Query Monitor drop-in
+#   phpbuilder    the same DHI -dev image. Compiles PATCH_PHP_VERSION from
+#                 source when it is set
 #   (runtime)     the image that is deployed. Copies in everything above,
 #                 plus the platform's plugins, themes, config and scripts
 #
@@ -56,6 +58,20 @@ ARG PHP_VERSION=8.4
 # set, as the version the site runs.
 ARG PATCH_WORDPRESS_VERSION=7.1.3
 ARG PATCH_WORDPRESS_SHA256=eb58a90ed55147f90f7bd55d0d3334960a69b7e8a4cc142c8ddfea8965218227
+
+# PHP patch. When PATCH_PHP_VERSION is set, the image runs that PHP release
+# instead of the one in the DHI image: the phpbuilder stage compiles it from
+# the php.net source with the DHI build's configure options, and the runtime
+# stage copies the binaries and extensions over the DHI image's. This is for a
+# PHP security release DHI has not published an image for yet. Once DHI
+# publishes it, empty both ARGs below. The build fails if PATCH_PHP_VERSION is
+# not in the PHP_VERSION series, or is not newer than the DHI image's PHP.
+#
+# php.net publishes a SHA-256 for each release
+# (https://www.php.net/releases/index.php?json&version=<minor>). Change the two
+# ARGs together.
+ARG PATCH_PHP_VERSION=8.4.27
+ARG PATCH_PHP_SHA256=5bafed9994c1a49796b25b5f61c22c9183bfe046b6acc7b363842d03c77f972f
 
 # ---------------------------------------------------------------------------
 # Extension stage: build the PHPRedis extension (redis.so).
@@ -344,12 +360,232 @@ RUN mkdir -p /tmp/dropins \
     && ln -s plugins/query-monitor/wp-content/db.php /tmp/dropins/db.php
 
 # ---------------------------------------------------------------------------
+# PHP stage: compiles PATCH_PHP_VERSION, for the runtime stage to copy over the
+# DHI image's PHP (see the ARGs at the top of this file). With
+# PATCH_PHP_VERSION empty, every RUN here stops straight away, /tmp/php stays
+# empty and the runtime stage's COPY changes nothing.
+#
+# Built in the -dev variant of the same DHI image, so PHP is compiled against
+# the libraries the runtime image has, and the build can be checked by
+# installing it over this stage's own PHP and running it.
+#
+# How the build matches the DHI one:
+#   - configure gets the options DHI used, read from the "Configure Command"
+#     line of `php -i`.
+#   - CFLAGS and LDFLAGS are the official php image's hardening flags. `php -i`
+#     does not show the flags DHI compiled with.
+#   - bundled extensions built separately with phpize (the way the official
+#     image adds gd, intl, zip and others) are not in that configure line. Any
+#     .so in the extension folder that the main build did not replace, and
+#     that has a folder under ext/ in the PHP source, is rebuilt from the same
+#     source with phpize.
+#
+# Only files that already exist in this image and that the build changed are
+# staged in /tmp/php: the PHP binaries and the extension .so files. PECL
+# extensions in the DHI image (imagick) are kept as they are. They load in any
+# build of the same PHP minor version, for the reason given at the extbuilder
+# stage.
+#
+# The RUNs fail if:
+#   - PATCH_PHP_VERSION is not in the PHP_VERSION series, or not newer than the
+#     DHI image's PHP.
+#   - the download does not match PATCH_PHP_SHA256.
+#   - installing the build tools changes the version of a package this image
+#     already has. PHP would then be compiled against a library newer than the
+#     one in the runtime image.
+#   - after the install, php or php-fpm does not report PATCH_PHP_VERSION, or
+#     lists different modules than before.
+#   - a bundled extension in the extension folder was not rebuilt.
+#   - a staged file links a library its DHI version did not, as the runtime
+#     image may not have it.
+# The last RUN also prints the difference in `php -i` before and after, for
+# review.
+# ---------------------------------------------------------------------------
+FROM --platform=linux/amd64 dhi.io/wordpress:${WORDPRESS_VERSION}-php${PHP_VERSION}-fpm-dev AS phpbuilder
+
+ARG PHP_VERSION
+ARG PATCH_PHP_VERSION
+ARG PATCH_PHP_SHA256
+USER root
+
+# Checks the versions, records the DHI PHP (paths, modules, `php -i`, and a
+# copy and checksum of each file the install can replace) in /tmp/before, and
+# installs the build tools.
+RUN set -e; \
+    export LC_ALL=C; \
+    mkdir -p /tmp/php; \
+    [ -n "${PATCH_PHP_VERSION}" ] || exit 0; \
+    current=$(php -r 'echo PHP_VERSION;'); \
+    case "${PATCH_PHP_VERSION}" in \
+        "${PHP_VERSION}".*) ;; \
+        *) echo "PATCH_PHP_VERSION (${PATCH_PHP_VERSION}) is not a PHP ${PHP_VERSION} release."; exit 1 ;; \
+    esac; \
+    newest=$(printf '%s\n%s\n' "${current}" "${PATCH_PHP_VERSION}" | sort -V | tail -n1); \
+    if [ "${PATCH_PHP_VERSION}" = "${current}" ] || [ "${newest}" != "${PATCH_PHP_VERSION}" ]; then \
+        echo "The DHI image has PHP ${current}, so PATCH_PHP_VERSION (${PATCH_PHP_VERSION}) is not needed. Empty it."; \
+        exit 1; \
+    fi; \
+    echo "Patching PHP from ${current} to ${PATCH_PHP_VERSION}"; \
+    bin=$(readlink -f "$(php -r 'echo PHP_BINARY;')"); \
+    bindir=$(dirname "${bin}"); \
+    fpm=$(command -v php-fpm || echo "$(dirname "${bindir}")/sbin/php-fpm"); \
+    fpm=$(readlink -f "${fpm}"); \
+    test -x "${fpm}"; \
+    sbindir=$(dirname "${fpm}"); \
+    extdir=$(php -r 'echo PHP_EXTENSION_DIR;'); \
+    mkdir -p /tmp/before/files; \
+    printf 'bindir=%s\nsbindir=%s\nfpm=%s\nextdir=%s\n' "${bindir}" "${sbindir}" "${fpm}" "${extdir}" > /tmp/before/env; \
+    cat /tmp/before/env; \
+    php -m > /tmp/before/php-m; \
+    "${fpm}" -m > /tmp/before/fpm-m; \
+    php -i > /tmp/before/php-i; \
+    find "${bindir}" "${sbindir}" "${extdir}" -maxdepth 1 -type f | sort -u > /tmp/before/list; \
+    while read -r f; do \
+        sha256sum "${f}" >> /tmp/before/sums; \
+        mkdir -p "/tmp/before/files$(dirname "${f}")"; \
+        cp -a "${f}" "/tmp/before/files${f}"; \
+    done < /tmp/before/list; \
+    dpkg-query -W -f '${Package}:${Architecture} ${Version}\n' | sort -k1,1 > /tmp/before/pkgs; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        autoconf \
+        ca-certificates \
+        curl \
+        g++ \
+        gcc \
+        make \
+        pkg-config \
+        libargon2-dev \
+        libavif-dev \
+        libbz2-dev \
+        libcurl4-openssl-dev \
+        libedit-dev \
+        libfreetype-dev \
+        libgmp-dev \
+        libicu-dev \
+        libjpeg62-turbo-dev \
+        libonig-dev \
+        libpng-dev \
+        libreadline-dev \
+        libsodium-dev \
+        libsqlite3-dev \
+        libssl-dev \
+        libwebp-dev \
+        libxml2-dev \
+        libxslt1-dev \
+        libzip-dev \
+        zlib1g-dev; \
+    rm -rf /var/lib/apt/lists/*; \
+    dpkg-query -W -f '${Package}:${Architecture} ${Version}\n' | sort -k1,1 > /tmp/after-pkgs; \
+    changed=$(join /tmp/before/pkgs /tmp/after-pkgs | awk '$2 != $3'); \
+    if [ -n "${changed}" ]; then \
+        echo "Installing the build tools changed these packages (package, before, after):"; \
+        echo "${changed}"; \
+        exit 1; \
+    fi
+
+# Downloads and compiles PATCH_PHP_VERSION, installs it over this stage's PHP,
+# then rebuilds the bundled extensions the main build did not replace.
+#
+# Only the install targets for the binaries, extensions, headers and the
+# phpize tools are run. A plain `make install` also runs the PEAR installer,
+# which downloads from pear.php.net.
+RUN set -e; \
+    [ -n "${PATCH_PHP_VERSION}" ] || exit 0; \
+    . /tmp/before/env; \
+    unchanged() { grep -qxF "$(sha256sum "$1")" /tmp/before/sums; }; \
+    curl -fsSL --retry 3 --retry-delay 2 --retry-all-errors -o /tmp/php.tar.gz \
+        "https://www.php.net/distributions/php-${PATCH_PHP_VERSION}.tar.gz"; \
+    echo "${PATCH_PHP_SHA256}  /tmp/php.tar.gz" | sha256sum -c -; \
+    mkdir -p /tmp/php-src; \
+    tar -xzf /tmp/php.tar.gz -C /tmp/php-src --strip-components=1; \
+    configure=$(sed -n 's/^Configure Command => *//p' /tmp/before/php-i); \
+    [ -n "${configure}" ] || { echo "php -i has no Configure Command line"; exit 1; }; \
+    echo "DHI configure command: ${configure}"; \
+    eval "set -- ${configure}"; \
+    shift; \
+    export CFLAGS="-fstack-protector-strong -fpic -fpie -O2 -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"; \
+    export CPPFLAGS="${CFLAGS}" LDFLAGS="-Wl,-O1 -pie"; \
+    cd /tmp/php-src; \
+    ./configure "$@"; \
+    make -j"$(nproc)"; \
+    make install-sapi install-binaries install-modules install-build install-headers install-programs; \
+    for so in "${extdir}"/*.so; do \
+        name=$(basename "${so}" .so); \
+        [ -d "/tmp/php-src/ext/${name}" ] || continue; \
+        unchanged "${so}" || continue; \
+        case "${name}" in \
+            gd) opts="--with-avif --with-freetype --with-jpeg --with-webp" ;; \
+            *) opts="" ;; \
+        esac; \
+        echo "Rebuilding the ${name} extension with phpize ${opts}"; \
+        ( cd "/tmp/php-src/ext/${name}" \
+            && "${bindir}/phpize" \
+            && ./configure --with-php-config="${bindir}/php-config" ${opts} \
+            && make -j"$(nproc)" \
+            && make install ) || exit 1; \
+    done
+
+# Checks the installed PHP against the DHI one, and stages the changed files in
+# /tmp/php for the runtime stage.
+RUN set -e; \
+    export LC_ALL=C; \
+    [ -n "${PATCH_PHP_VERSION}" ] || exit 0; \
+    . /tmp/before/env; \
+    unchanged() { grep -qxF "$(sha256sum "$1")" /tmp/before/sums; }; \
+    needed() { readelf -d "$1" 2>/dev/null | sed -n 's/.*(NEEDED).*\[\(.*\)\]/\1/p' | sort -u; }; \
+    php_version=$(php -r 'echo PHP_VERSION;'); \
+    [ "${php_version}" = "${PATCH_PHP_VERSION}" ] \
+        || { echo "php reports ${php_version}, not ${PATCH_PHP_VERSION}"; exit 1; }; \
+    "${fpm}" -v | grep -qF "PHP ${PATCH_PHP_VERSION} " \
+        || { echo "php-fpm does not report ${PATCH_PHP_VERSION}:"; "${fpm}" -v; exit 1; }; \
+    php -m > /tmp/after-php-m; \
+    "${fpm}" -m > /tmp/after-fpm-m; \
+    diff /tmp/before/php-m /tmp/after-php-m \
+        || { echo "php modules differ (< DHI, > patched)"; exit 1; }; \
+    diff /tmp/before/fpm-m /tmp/after-fpm-m \
+        || { echo "php-fpm modules differ (< DHI, > patched)"; exit 1; }; \
+    kept=""; \
+    for so in "${extdir}"/*.so; do \
+        name=$(basename "${so}" .so); \
+        if unchanged "${so}"; then \
+            if [ -d "/tmp/php-src/ext/${name}" ]; then \
+                echo "The bundled ${name} extension was not rebuilt"; \
+                exit 1; \
+            fi; \
+            kept="${kept} ${name}"; \
+        fi; \
+    done; \
+    echo "Extensions kept from the DHI image:${kept:- none}"; \
+    while read -r f; do \
+        unchanged "${f}" && continue; \
+        extra=$(needed "/tmp/before/files${f}" > /tmp/needed-old; needed "${f}" | comm -23 - /tmp/needed-old); \
+        if [ -n "${extra}" ]; then \
+            echo "${f} links libraries the DHI build did not:"; \
+            echo "${extra}"; \
+            exit 1; \
+        fi; \
+        echo "Staging ${f}"; \
+        mkdir -p "/tmp/php$(dirname "${f}")"; \
+        cp -a "${f}" "/tmp/php${f}"; \
+    done < /tmp/before/list; \
+    php -i > /tmp/after-php-i; \
+    echo "php -i differences (< DHI, > patched), for review:"; \
+    diff /tmp/before/php-i /tmp/after-php-i || true
+
+# ---------------------------------------------------------------------------
 # Runtime stage: the image that is deployed.
 #
 # No RUN instructions - only COPY, ENV, ENTRYPOINT and USER. Everything that
 # needed a package manager or root was prepared in the stages above.
 # ---------------------------------------------------------------------------
 FROM --platform=linux/amd64 dhi.io/wordpress:${WORDPRESS_VERSION}-php${PHP_VERSION}-fpm
+
+# PHP patch from the phpbuilder stage: PATCH_PHP_VERSION's binaries and
+# extensions, over the DHI image's. Each file is at the path of the one it
+# replaces. The folder is empty when PATCH_PHP_VERSION is empty, and this COPY
+# then changes nothing.
+COPY --from=phpbuilder /tmp/php/ /
 
 # PHPRedis, from the extbuilder stage. The .ini loads redis.so by its full
 # path, so these paths do not depend on the PHP version or on PHP's own
