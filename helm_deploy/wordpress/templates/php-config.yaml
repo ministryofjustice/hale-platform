@@ -5,11 +5,13 @@ metadata:
   namespace: hale-platform-{{ .Values.configmap.envtype }}
 data:
   wordpress-custom.ini: |-
-    upload_max_filesize = 400M
-    post_max_size = 512M
+    ; Request size and memory limits. The PHP-FPM pool (opt/php/www.conf) sets the
+    ; same with php_admin and explains them; these apply to the CLI.
+    upload_max_filesize = 30M
+    post_max_size = 32M
     max_execution_time = 600
     max_input_time = 600
-    memory_limit = 512M
+    memory_limit = -1
 
     ; Stop PHP writing upload progress into session data during multipart POSTs.
     ; This is PHP_INI_PERDIR, so it has to be set here - ini_set() cannot change it.
