@@ -372,8 +372,11 @@ RUN mkdir -p /tmp/dropins \
 # How the build matches the DHI one:
 #   - configure gets the options DHI used, read from the "Configure Command"
 #     line of `php -i`.
-#   - CFLAGS and LDFLAGS are the official php image's hardening flags. `php -i`
-#     does not show the flags DHI compiled with.
+#   - CFLAGS and LDFLAGS are the official php image's hardening flags, without
+#     -fpie and -pie. `php -i` does not show the flags DHI compiled with.
+#     Debian's gcc already builds executables position-independent, and the
+#     same flags are used for the extensions, which are shared libraries, not
+#     executables.
 #   - bundled extensions built separately with phpize (the way the official
 #     image adds gd, intl, zip and others) are not in that configure line. Any
 #     .so in the extension folder that the main build did not replace, and
@@ -397,7 +400,10 @@ RUN mkdir -p /tmp/dropins \
 #     lists different modules than before.
 #   - a bundled extension in the extension folder was not rebuilt.
 #   - a staged file links a library its DHI version did not, as the runtime
-#     image may not have it.
+#     image may not have it. The dynamic loader (ld-linux) is
+#     not counted: every program in the image already runs through it.
+#   - a staged file is a different ELF type from its DHI version (a
+#     position-independent executable built as a fixed-address one, say).
 # The last RUN also prints the difference in `php -i` before and after, for
 # review.
 # ---------------------------------------------------------------------------
@@ -451,8 +457,10 @@ RUN set -e; \
         autoconf \
         ca-certificates \
         curl \
+        diffutils \
         g++ \
         gcc \
+        gzip \
         make \
         pkg-config \
         libargon2-dev \
@@ -465,6 +473,7 @@ RUN set -e; \
         libicu-dev \
         libjpeg62-turbo-dev \
         libonig-dev \
+        libpcre2-dev \
         libpng-dev \
         libreadline-dev \
         libsodium-dev \
@@ -493,6 +502,7 @@ RUN set -e; \
 RUN set -e; \
     [ -n "${PATCH_PHP_VERSION}" ] || exit 0; \
     . /tmp/before/env; \
+    suffix=$(basename "${fpm}" | sed "s/^php-fpm//"); \
     unchanged() { grep -qxF "$(sha256sum "$1")" /tmp/before/sums; }; \
     curl -fsSL --retry 3 --retry-delay 2 --retry-all-errors -o /tmp/php.tar.gz \
         "https://www.php.net/distributions/php-${PATCH_PHP_VERSION}.tar.gz"; \
@@ -504,12 +514,13 @@ RUN set -e; \
     echo "DHI configure command: ${configure}"; \
     eval "set -- ${configure}"; \
     shift; \
-    export CFLAGS="-fstack-protector-strong -fpic -fpie -O2 -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"; \
-    export CPPFLAGS="${CFLAGS}" LDFLAGS="-Wl,-O1 -pie"; \
+    export CFLAGS="-fstack-protector-strong -fpic -O2 -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"; \
+    export CPPFLAGS="${CFLAGS}" LDFLAGS="-Wl,-O1"; \
     cd /tmp/php-src; \
     ./configure "$@"; \
     make -j"$(nproc)"; \
     make install-sapi install-binaries install-modules install-build install-headers install-programs; \
+    echo "Extension folder: $(ls "${extdir}" | tr "\n" " ")"; \
     for so in "${extdir}"/*.so; do \
         name=$(basename "${so}" .so); \
         [ -d "/tmp/php-src/ext/${name}" ] || continue; \
@@ -520,8 +531,8 @@ RUN set -e; \
         esac; \
         echo "Rebuilding the ${name} extension with phpize ${opts}"; \
         ( cd "/tmp/php-src/ext/${name}" \
-            && "${bindir}/phpize" \
-            && ./configure --with-php-config="${bindir}/php-config" ${opts} \
+            && "${bindir}/phpize${suffix}" \
+            && ./configure --with-php-config="${bindir}/php-config${suffix}" ${opts} \
             && make -j"$(nproc)" \
             && make install ) || exit 1; \
     done
@@ -533,7 +544,8 @@ RUN set -e; \
     [ -n "${PATCH_PHP_VERSION}" ] || exit 0; \
     . /tmp/before/env; \
     unchanged() { grep -qxF "$(sha256sum "$1")" /tmp/before/sums; }; \
-    needed() { readelf -d "$1" 2>/dev/null | sed -n 's/.*(NEEDED).*\[\(.*\)\]/\1/p' | sort -u; }; \
+    needed() { readelf -d "$1" 2>/dev/null | sed -n 's/.*(NEEDED).*\[\(.*\)\]/\1/p' | sed '/^ld-linux-/d' | sort -u; }; \
+    elftype() { readelf -h "$1" 2>/dev/null | awk '$1 == "Type:" {print $2}'; }; \
     php_version=$(php -r 'echo PHP_VERSION;'); \
     [ "${php_version}" = "${PATCH_PHP_VERSION}" ] \
         || { echo "php reports ${php_version}, not ${PATCH_PHP_VERSION}"; exit 1; }; \
@@ -563,6 +575,10 @@ RUN set -e; \
         if [ -n "${extra}" ]; then \
             echo "${f} links libraries the DHI build did not:"; \
             echo "${extra}"; \
+            exit 1; \
+        fi; \
+        if [ "$(elftype "${f}")" != "$(elftype "/tmp/before/files${f}")" ]; then \
+            echo "${f} is ELF type $(elftype "${f}"), the DHI build is $(elftype "/tmp/before/files${f}")"; \
             exit 1; \
         fi; \
         echo "Staging ${f}"; \
