@@ -11,6 +11,10 @@ data:
     max_input_time = 600
     memory_limit = 512M
 
+    ; Stop PHP writing upload progress into session data during multipart POSTs.
+    ; This is PHP_INI_PERDIR, so it has to be set here - ini_set() cannot change it.
+    session.upload_progress.enabled = Off
+
     ; Opcache. Everything below was previously at the base image's defaults,
     ; which are sized for a small application rather than a WordPress multisite.
     ;
