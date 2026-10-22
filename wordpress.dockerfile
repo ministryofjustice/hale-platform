@@ -73,6 +73,15 @@ ARG PATCH_WORDPRESS_SHA256=
 ARG PATCH_PHP_VERSION=
 ARG PATCH_PHP_SHA256=
 
+# The oldest PHP release this image may run: the first 8.4 release with the
+# fixes for the PHP out-of-memory and stale global state advisories
+# (GHSA-w8hw-w9fx-j79w, GHSA-6wmf-4rv5-p3rp). The runtime stage fails the build
+# if its php or php-fpm is older, whether that PHP came from the DHI image or
+# from PATCH_PHP_VERSION. The DHI tag above names only the PHP minor version,
+# so without this check a cached or older image would build without error.
+# wordpress.local.dockerfile and wptools.dockerfile set the same value.
+ARG PHP_MIN_VERSION=8.4.27
+
 # ---------------------------------------------------------------------------
 # Extension stage: build the PHPRedis extension (redis.so).
 #
@@ -592,8 +601,9 @@ RUN set -e; \
 # ---------------------------------------------------------------------------
 # Runtime stage: the image that is deployed.
 #
-# No RUN instructions - only COPY, ENV, ENTRYPOINT and USER. Everything that
-# needed a package manager or root was prepared in the stages above.
+# Only COPY, ENV, ENTRYPOINT and USER, plus one RUN that checks the PHP version
+# and changes nothing. Everything that needed a package manager or root was
+# prepared in the stages above.
 # ---------------------------------------------------------------------------
 FROM --platform=linux/amd64 dhi.io/wordpress:${WORDPRESS_VERSION}-php${PHP_VERSION}-fpm
 
@@ -602,6 +612,14 @@ FROM --platform=linux/amd64 dhi.io/wordpress:${WORDPRESS_VERSION}-php${PHP_VERSI
 # replaces. The folder is empty when PATCH_PHP_VERSION is empty, and this COPY
 # then changes nothing.
 COPY --from=phpbuilder /tmp/php/ /
+
+# Fails the build if php or php-fpm in this image is older than
+# PHP_MIN_VERSION (see the ARG at the top of this file). It runs here, on the
+# image that is deployed, after the PHP patch is applied, so it checks the PHP
+# the containers will run, whichever image it came from. Exec form, so it needs
+# no shell, and it changes no files.
+ARG PHP_MIN_VERSION
+RUN ["php", "-r", "$min = (string) getenv('PHP_MIN_VERSION'); if ($min === '') { fwrite(STDERR, 'PHP_MIN_VERSION is not set' . PHP_EOL); exit(1); } $fpm = ''; $p = proc_open(['php-fpm', '-v'], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes); if (is_resource($p)) { $fpm = explode(' ', (string) fgets($pipes[1]))[1] ?? ''; proc_close($p); } foreach (['php' => PHP_VERSION, 'php-fpm' => $fpm] as $bin => $v) { if ($v === '') { fwrite(STDERR, $bin . ' -v did not report a PHP version' . PHP_EOL); exit(1); } if (version_compare($v, $min, '<')) { fwrite(STDERR, $bin . ' runs PHP ' . $v . ', older than PHP_MIN_VERSION ' . $min . PHP_EOL); exit(1); } } echo 'php and php-fpm run PHP ' . PHP_VERSION . ', at least PHP_MIN_VERSION ' . $min . PHP_EOL;"]
 
 # PHPRedis, from the extbuilder stage. The .ini loads redis.so by its full
 # path, so these paths do not depend on the PHP version or on PHP's own

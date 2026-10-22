@@ -40,6 +40,18 @@ RUN apk add --no-cache git \
 
 FROM alpine:3.24
 
+# The oldest PHP release this image may run: the first 8.4 release with the
+# fixes for the PHP out-of-memory and stale global state advisories (the same
+# value as wordpress.dockerfile). The check after the PHP settings below fails
+# the build if apk installed an older one.
+#
+# Declared before the apk add on purpose. A build arg in scope is part of each
+# RUN's cache key, so changing this value rebuilds the apk layer as well,
+# instead of reusing a cached one with an older php84. A cached layer can
+# outlive the PHP it was built with, as alpine:3.24 itself does not change
+# when Alpine publishes a new php84.
+ARG PHP_MIN_VERSION=8.4.27
+
 # mariadb-client provides mysql/mysqldump/mysqlcheck, which is what `wp db`
 # shells out to. The php84-* set covers what wp-cli needs to bootstrap
 # WordPress far enough to read wp-config.php.
@@ -98,10 +110,8 @@ RUN for b in mysql mysqldump mysqlcheck; do \
 COPY opt/php/wptools.ini /etc/php84/conf.d/zz-hale.ini
 
 # apk installs whatever php84 Alpine's index has on the day of the build, so
-# this fails the build if that is older than PHP_MIN_VERSION, the oldest
-# release with the fixes for the advisories above, or if the settings in
-# zz-hale.ini are not the ones PHP runs with.
-ARG PHP_MIN_VERSION=8.4.27
+# this fails the build if that is older than PHP_MIN_VERSION (see the ARG
+# above), or if the settings in zz-hale.ini are not the ones PHP runs with.
 RUN php -r ' \
         $min = getenv("PHP_MIN_VERSION"); \
         if (version_compare(PHP_VERSION, $min, "<")) { \

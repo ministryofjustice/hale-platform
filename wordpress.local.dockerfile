@@ -44,6 +44,10 @@ ARG PATCH_WORDPRESS_SHA256=
 ARG PATCH_PHP_VERSION=
 ARG PATCH_PHP_SHA256=
 
+# The oldest PHP release this image may run. Same value and same check as
+# wordpress.dockerfile, which explains them.
+ARG PHP_MIN_VERSION=8.4.27
+
 # ---------------------------------------------------------------------------
 # Extension stage: build the PHPRedis extension (redis.so).
 #
@@ -396,7 +400,7 @@ RUN set -e; \
 # ---------------------------------------------------------------------------
 # Runtime stage: the image docker compose runs.
 #
-# No RUN instructions - only COPY, ENV, ENTRYPOINT and USER, as in
+# Only COPY, ENV, ENTRYPOINT and USER, plus the PHP version check, as in
 # wordpress.dockerfile.
 # ---------------------------------------------------------------------------
 FROM dhi.io/wordpress:${WORDPRESS_VERSION}-php${PHP_VERSION}-fpm
@@ -405,6 +409,11 @@ FROM dhi.io/wordpress:${WORDPRESS_VERSION}-php${PHP_VERSION}-fpm
 # extensions, over the DHI image's. Changes nothing when PATCH_PHP_VERSION is
 # empty.
 COPY --from=phpbuilder /tmp/php/ /
+
+# Fails the build if php or php-fpm in this image is older than
+# PHP_MIN_VERSION. The same check as wordpress.dockerfile, which explains it.
+ARG PHP_MIN_VERSION
+RUN ["php", "-r", "$min = (string) getenv('PHP_MIN_VERSION'); if ($min === '') { fwrite(STDERR, 'PHP_MIN_VERSION is not set' . PHP_EOL); exit(1); } $fpm = ''; $p = proc_open(['php-fpm', '-v'], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes); if (is_resource($p)) { $fpm = explode(' ', (string) fgets($pipes[1]))[1] ?? ''; proc_close($p); } foreach (['php' => PHP_VERSION, 'php-fpm' => $fpm] as $bin => $v) { if ($v === '') { fwrite(STDERR, $bin . ' -v did not report a PHP version' . PHP_EOL); exit(1); } if (version_compare($v, $min, '<')) { fwrite(STDERR, $bin . ' runs PHP ' . $v . ', older than PHP_MIN_VERSION ' . $min . PHP_EOL); exit(1); } } echo 'php and php-fpm run PHP ' . PHP_VERSION . ', at least PHP_MIN_VERSION ' . $min . PHP_EOL;"]
 
 # PHPRedis, from the extbuilder stage. The .ini loads redis.so by its full
 # path, so these paths do not depend on the PHP version or on PHP's own
