@@ -41,8 +41,12 @@ ARG PATCH_WORDPRESS_SHA256=
 # DHI build's configure options, and the runtime stage copies its binaries and
 # extensions over the DHI image's PHP. Empty both once DHI publishes it. Change
 # the two together - the SHA-256 is published by php.net.
-ARG PATCH_PHP_VERSION=8.4.27
-ARG PATCH_PHP_SHA256=5bafed9994c1a49796b25b5f61c22c9183bfe046b6acc7b363842d03c77f972f
+ARG PATCH_PHP_VERSION=
+ARG PATCH_PHP_SHA256=
+
+# The oldest PHP release this image may run. Same value and same check as
+# wordpress.dockerfile, which explains them.
+ARG PHP_MIN_VERSION=8.4.27
 
 # ---------------------------------------------------------------------------
 # Extension stage: build the PHPRedis extension (redis.so).
@@ -396,7 +400,7 @@ RUN set -e; \
 # ---------------------------------------------------------------------------
 # Runtime stage: the image docker compose runs.
 #
-# No RUN instructions - only COPY, ENV, ENTRYPOINT and USER, as in
+# Only COPY, ENV, ENTRYPOINT and USER, plus the PHP version check, as in
 # wordpress.dockerfile.
 # ---------------------------------------------------------------------------
 FROM dhi.io/wordpress:${WORDPRESS_VERSION}-php${PHP_VERSION}-fpm
