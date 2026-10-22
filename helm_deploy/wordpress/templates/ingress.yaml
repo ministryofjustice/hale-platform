@@ -137,39 +137,6 @@ metadata:
       SecRule &ARGS_GET_NAMES "@gt 0" "t:none,chain"
       SecRule ARGS_GET_NAMES "!@rx ^(?:s|parent|ver|auth0|code|state)(?:\[[^\]]*\])?$" "t:none"
     nginx.ingress.kubernetes.io/server-snippet: |
-      {{- if .Values.ingress.holdingPage.enabled }}
-      {{- /*
-      Holding page: every request outside /.well-known/ is answered by the
-      ingress itself and never reaches WordPress. It sits first in the snippet,
-      so it also takes precedence over the host redirects and /bold below.
-      /.well-known/ is left alone for security.txt and cert-manager ACME
-      challenges. The HTML is one single-quoted nginx string, so it must not
-      contain a single quote, and every line must stay indented under the
-      server-snippet key or the YAML block ends early.
-      */}}
-      if ($uri !~ ^/\.well-known/) {
-        rewrite ^ /__holding-page last;
-      }
-      location = /__holding-page {
-        internal;
-        default_type text/html;
-        add_header Cache-Control "no-store" always;
-        return 200 '<!DOCTYPE html>
-        <html lang="en">
-          <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <title>Error, service unavailable</title>
-          </head>
-          <body>
-            <h1>Thank you for visiting our website</h1>
-            <p>We&#39;re carrying out essential maintenance and improvements. The website is temporarily unavailable while this work is completed.</p>
-            <p>We apologise for any inconvenience and appreciate your patience.</p>
-          </body>
-        </html>
-        ';
-      }
-      {{- end }}
       location = /.well-known/security.txt {
         auth_basic off;
         return 301 https://raw.githubusercontent.com/ministryofjustice/security-guidance/main/contact/vulnerability-disclosure-security.txt;
@@ -215,6 +182,84 @@ metadata:
       if ($host = 'www.brookhouseinquiry.org.uk') {
         return 301 https://webarchive.nationalarchives.gov.uk/ukgwa/20241002135959/https://brookhouseinquiry.org.uk/;
       }
+      {{- if .Values.ingress.holdingPage.enabled }}
+      {{- /*
+      Holding page. nginx runs the server-level if, return and rewrite
+      directives in the order they appear, before it chooses a location. This
+      block is last in the snippet, so the host redirects above it, and the
+      holding page redirects at its start, are answered first. Every other
+      request outside /.well-known/ is then answered by the ingress itself and
+      never reaches WordPress. /bold is a location, chosen after that rewrite,
+      so it is behind the holding page too.
+
+      /.well-known/ is left alone for security.txt and cert-manager ACME
+      challenges. The HTML is one single-quoted nginx string, so it must not
+      contain a single quote, and every line must stay indented under the
+      server-snippet key or the YAML block ends early.
+      */}}
+      {{- if .Values.ingress.holdingPage.redirects.enabled }}
+      {{- /*
+      Holding page redirects (ingress.holdingPage.redirects in values.yaml): a
+      302 for each listed host, to one fixed URL whatever the path. nginx's if
+      takes one condition, so each host sets $hale_holding_redirect, a
+      /.well-known/ request clears it again - so security.txt and cert-manager
+      ACME challenges still work for these hosts, as they do for the holding
+      page - and the redirect fires only if it is still set.
+
+      Each entry is checked here, so a bad one fails the deploy instead of
+      rendering broken nginx: the host must be one this ingress serves, or the
+      redirect would never be reached, and the target must be an https:// URL
+      with no quote or backslash to end its quoted string, no $ for nginx to
+      read as a variable, and no space, ; or brace.
+      */}}
+      set $hale_holding_redirect '';
+      {{- $served := list .Values.domain }}
+      {{- range .Values.ingress.hosts }}
+      {{- $served = append $served .name }}
+      {{- end }}
+      {{- range $i, $redirect := .Values.ingress.holdingPage.redirects.hosts }}
+      {{- $from := required (printf "ingress.holdingPage.redirects.hosts[%d].host is required" $i) $redirect.host }}
+      {{- $to := required (printf "ingress.holdingPage.redirects.hosts[%d].to is required" $i) $redirect.to }}
+      {{- if not (has $from $served) }}
+      {{- fail (printf "ingress.holdingPage.redirects.hosts[%d]: %s is not domain or a name under ingress.hosts, so this ingress never receives requests for it" $i $from) }}
+      {{- end }}
+      {{- if not (regexMatch "^https://[^'\\\\$\\s;{}]+$" $to) }}
+      {{- fail (printf "ingress.holdingPage.redirects.hosts[%d]: to (%s) must be an https:// URL with no quote, backslash, $, space, ; or brace" $i $to) }}
+      {{- end }}
+      if ($host = '{{ $from }}') {
+        set $hale_holding_redirect '{{ $to }}';
+      }
+      {{- end }}
+      if ($uri ~ ^/\.well-known/) {
+        set $hale_holding_redirect '';
+      }
+      if ($hale_holding_redirect) {
+        return 302 $hale_holding_redirect;
+      }
+      {{- end }}
+      if ($uri !~ ^/\.well-known/) {
+        rewrite ^ /__holding-page last;
+      }
+      location = /__holding-page {
+        internal;
+        default_type text/html;
+        add_header Cache-Control "no-store" always;
+        return 200 '<!DOCTYPE html>
+        <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Error, service unavailable</title>
+          </head>
+          <body>
+            <h1>Thank you for visiting our website</h1>
+            <p>We&#39;re carrying out essential maintenance and improvements. The website is temporarily unavailable while this work is completed.</p>
+            <p>We apologise for any inconvenience and appreciate your patience.</p>
+          </body>
+        </html>
+        ';
+      }
+      {{- end }}
 spec:
   ingressClassName: modsec
   tls:

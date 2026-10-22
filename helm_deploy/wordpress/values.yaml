@@ -280,6 +280,17 @@ ingress:
   hosts: []
 
   # Serve a static holding page from the ingress for every host instead of
-  # WordPress and the host redirects. Only /.well-known/ paths are unaffected.
+  # WordPress. The host redirects in ingress.yaml still apply, and so do the
+  # holding page redirects below when they are on. Only /.well-known/ paths are
+  # otherwise unaffected.
   holdingPage:
     enabled: false
+    # Hosts sent elsewhere while the holding page is up, and only then: they
+    # apply when both holdingPage.enabled and redirects.enabled are true. Each
+    # is a 302 to one fixed URL, whatever the path. A host must be one this
+    # environment serves: domain, or a name under ingress.hosts.
+    redirects:
+      enabled: false
+      hosts: []
+      #   - host: example.service.justice.gov.uk
+      #     to: https://www.gov.uk/government/organisations/ministry-of-justice
