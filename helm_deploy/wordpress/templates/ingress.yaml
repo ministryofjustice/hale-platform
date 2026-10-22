@@ -28,25 +28,6 @@ metadata:
         tag:github_team=hale-platform,\
         tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }}"
 
-      {{- /*
-      Block every request whose Content-Type mentions multipart, whatever the
-      method or letter case. REQUEST_HEADERS:Content-Type checks every
-      Content-Type header, so sending two does not get around it.
-      This must stay above rule 1001 so it applies regardless of the WB_CONFIG cookie.
-      Phase 1 rejects on the headers alone, before the body is read or parsed.
-      */}}
-      SecRule REQUEST_HEADERS:Content-Type "@contains multipart" \
-        "id:300150,\
-        phase:1,\
-        log,\
-        deny,\
-        status:403,\
-        t:none,t:lowercase,\
-        ctl:ruleEngine=On,\
-        msg:multipart-request-blocked,\
-        tag:github_team=hale-platform,\
-        tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }}"
-
       {{- /* Set WAF Config for Authenticated Users */}}
       SecRule REQUEST_HEADERS:Cookie "@contains WB_CONFIG={{ .Values.secrets.wbconfig }}"
         "id:1001,\
@@ -261,7 +242,7 @@ metadata:
       }
       {{- end }}
 spec:
-  ingressClassName: modsec
+  ingressClassName: modsec-v2
   tls:
 {{- if .Values.ingress.defaultHost.certName }}
   - hosts:
