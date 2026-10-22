@@ -1,0 +1,24 @@
+framework: playwright
+
+platforms:
+  - os: OS X
+    osVersion: Sequoia
+    browserName: Chrome
+    browserVersion: latest
+    playwrightConfigOptions:
+      name: desktop
+      testIgnore: "**/mobile-*.spec.js"
+
+  - browserName: chrome
+    osVersion: 15.0
+    deviceName: Samsung Galaxy S25 Ultra
+    playwrightConfigOptions:
+      name: mobile
+      testMatch: "**/mobile-*.spec.js"
+
+browserstack.acceptInsecureCerts: true
+
+browserstackLocal: true
+
+projectName: Hale Platform
+buildName: Local Playwright Test
