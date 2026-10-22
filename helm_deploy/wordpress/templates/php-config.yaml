@@ -12,6 +12,9 @@ data:
     max_execution_time = 600
     max_input_time = 600
     memory_limit = -1
+    max_input_vars = 1000
+    max_input_nesting_level = 64
+    max_multipart_body_parts = 1020
 
     ; Stop PHP writing upload progress into session data during multipart POSTs.
     ; This is PHP_INI_PERDIR, so it has to be set here - ini_set() cannot change it.
