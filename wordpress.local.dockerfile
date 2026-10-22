@@ -41,8 +41,8 @@ ARG PATCH_WORDPRESS_SHA256=
 # DHI build's configure options, and the runtime stage copies its binaries and
 # extensions over the DHI image's PHP. Empty both once DHI publishes it. Change
 # the two together - the SHA-256 is published by php.net.
-ARG PATCH_PHP_VERSION=8.4.27
-ARG PATCH_PHP_SHA256=5bafed9994c1a49796b25b5f61c22c9183bfe046b6acc7b363842d03c77f972f
+ARG PATCH_PHP_VERSION=
+ARG PATCH_PHP_SHA256=
 
 # ---------------------------------------------------------------------------
 # Extension stage: build the PHPRedis extension (redis.so).

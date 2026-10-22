@@ -91,6 +91,36 @@ RUN for b in mysql mysqldump mysqlcheck; do \
         fi; \
     done; true
 
+# PHP settings shared with the wordpress container (see opt/php/wptools.ini).
+# zz- sorts it after Alpine's own conf.d files, so its values win. The folder
+# is named for the php84 packages: change it with them, or the check below
+# fails the build.
+COPY opt/php/wptools.ini /etc/php84/conf.d/zz-hale.ini
+
+# apk installs whatever php84 Alpine's index has on the day of the build, so
+# this fails the build if that is older than PHP_MIN_VERSION, the oldest
+# release with the fixes for the advisories above, or if the settings in
+# zz-hale.ini are not the ones PHP runs with.
+ARG PHP_MIN_VERSION=8.4.27
+RUN php -r ' \
+        $min = getenv("PHP_MIN_VERSION"); \
+        if (version_compare(PHP_VERSION, $min, "<")) { \
+            fwrite(STDERR, "Alpine has PHP " . PHP_VERSION . ", older than " . $min . PHP_EOL); \
+            exit(1); \
+        } \
+        $want = ["memory_limit" => "-1", "post_max_size" => "32M", "upload_max_filesize" => "30M"]; \
+        foreach ($want as $key => $value) { \
+            if (ini_get($key) !== $value) { \
+                fwrite(STDERR, $key . " is \"" . ini_get($key) . "\", not \"" . $value . "\"" . PHP_EOL); \
+                exit(1); \
+            } \
+        } \
+        if (filter_var(ini_get("session.upload_progress.enabled"), FILTER_VALIDATE_BOOLEAN)) { \
+            fwrite(STDERR, "session.upload_progress.enabled is on" . PHP_EOL); \
+            exit(1); \
+        } \
+        echo "PHP " . PHP_VERSION . PHP_EOL;'
+
 # wp-cli, pinned and checksum-verified. Fetching an unpinned phar from a raw
 # git host and executing it is a supply-chain risk: this binary runs with full
 # database access during multisite bootstrap, so a swapped or compromised build

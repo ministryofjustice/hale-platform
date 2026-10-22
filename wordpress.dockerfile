@@ -70,8 +70,8 @@ ARG PATCH_WORDPRESS_SHA256=
 # php.net publishes a SHA-256 for each release
 # (https://www.php.net/releases/index.php?json&version=<minor>). Change the two
 # ARGs together.
-ARG PATCH_PHP_VERSION=8.4.27
-ARG PATCH_PHP_SHA256=5bafed9994c1a49796b25b5f61c22c9183bfe046b6acc7b363842d03c77f972f
+ARG PATCH_PHP_VERSION=
+ARG PATCH_PHP_SHA256=
 
 # ---------------------------------------------------------------------------
 # Extension stage: build the PHPRedis extension (redis.so).
