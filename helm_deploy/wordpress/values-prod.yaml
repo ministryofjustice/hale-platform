@@ -233,9 +233,9 @@ ingress:
   # holdingPage.enabled and holdingPage.redirects.enabled are true (see
   # values.yaml). Each host must also be in the hosts list above.
   holdingPage:
-    enabled: true
+    enabled: false
     redirects:
-      enabled: true
+      enabled: false
       hosts:
         - host: prisonandprobationjobs.gov.uk
           to: https://jobs.justice.gov.uk/careers/SearchJobs
