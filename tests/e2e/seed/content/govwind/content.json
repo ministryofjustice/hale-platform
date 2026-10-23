@@ -1,0 +1,33 @@
+{
+  "frontPage": "home",
+  "styleVariation": "IPA palette",
+  "logo": "ipa-logo",
+  "images": {
+    "ipa-logo": { "width": 197, "height": 70, "alt": "Govwind E2E home" },
+    "hero-art": { "width": 339, "height": 226 },
+    "advocate-photo": { "width": 1024, "height": 683 },
+    "portrait": { "width": 150, "height": 150, "alt": "Portrait of the Independent Public Advocate" }
+  },
+  "navigations": {
+    "header": "navigation-header.html",
+    "footer": "navigation-footer.html"
+  },
+  "templateParts": {
+    "header-default": { "area": "header", "file": "header-default.html" },
+    "footer": { "area": "footer", "file": "footer.html" }
+  },
+  "items": [
+    { "id": 101, "type": "page", "slug": "home", "title": "Standing with victims of all major incidents", "file": "home.html", "template": "page-no-title" },
+    { "id": 106, "type": "page", "slug": "about-us", "title": "About us", "file": "about-us.html" },
+    { "id": 107, "type": "page", "slug": "get-support", "title": "Get support", "file": "get-support.html", "template": "page-no-title" },
+    { "id": 108, "type": "page", "slug": "get-support-from-the-independent-public-advocate", "title": "Get support from the Independent Public Advocate", "file": "get-support-from-the-independent-public-advocate.html", "parent": "get-support" },
+    { "id": 105, "type": "page", "slug": "news", "title": "News", "file": "news.html", "template": "page-no-title" },
+    { "id": 109, "type": "page", "slug": "briefings", "title": "Briefings", "file": "briefings.html" },
+    { "id": 110, "type": "page", "slug": "contact-us", "title": "Contact us", "file": "contact-us.html" },
+    { "id": 102, "type": "page", "slug": "about", "title": "About this site", "file": "../shared/about.html" },
+    { "id": 104, "type": "page", "slug": "blocks", "title": "Custom blocks", "file": "../shared/blocks.html" },
+    { "id": 201, "type": "post", "slug": "first-news-story", "title": "First news story", "file": "../shared/news-story.html", "featuredImage": true, "date": "2026-01-05 09:00:00" },
+    { "id": 202, "type": "post", "slug": "second-news-story", "title": "Second news story", "file": "../shared/news-story.html", "date": "2026-01-12 09:00:00" },
+    { "id": 203, "type": "post", "slug": "third-news-story", "title": "Third news story", "file": "../shared/news-story.html", "date": "2026-01-19 09:00:00" }
+  ]
+}

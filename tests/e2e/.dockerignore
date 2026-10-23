@@ -1,0 +1,5 @@
+# Build context of tests/e2e/docker/playwright.dockerfile: the image needs the
+# npm manifests and nothing else (not the saved logins in .auth/).
+*
+!package.json
+!package-lock.json
