@@ -4,7 +4,7 @@
 # WordPress config.
 # ##################################################
 
-FROM openresty/openresty:1.31.1.1-alpine AS nginx
+FROM openresty/openresty:1.31.1.1-4-alpine AS nginx
 
 ENV ENV=local
 
@@ -53,7 +53,7 @@ CMD ["/usr/local/openresty/bin/openresty", "-g", "daemon off;"]
 # integration specs that connect to Redis directly).
 # ##################################################
 
-FROM openresty/openresty:1.31.1.1-alpine-fat AS test
+FROM openresty/openresty:1.31.1.1-4-alpine-fat AS test
 
 # The -alpine-fat image already ships LuaRocks built against OpenResty's
 # bundled LuaJIT 2.1 at /usr/local/openresty/luajit/bin/luarocks.
