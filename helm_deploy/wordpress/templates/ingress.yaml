@@ -6,7 +6,7 @@ metadata:
   annotations:
     external-dns.alpha.kubernetes.io/set-identifier: {{ .Values.ingress.metadata.annotations.setidentifier }}
     external-dns.alpha.kubernetes.io/aws-weight: "100"
-    nginx.ingress.kubernetes.io/proxy-body-size: "400m"
+    nginx.ingress.kubernetes.io/proxy-body-size: "32m"
     nginx.ingress.kubernetes.io/enable-modsecurity: "true"
     nginx.ingress.kubernetes.io/modsecurity-snippet: |
       {{- /*
@@ -25,25 +25,6 @@ metadata:
         "phase:2,\
         pass,\
         log,\
-        tag:github_team=hale-platform,\
-        tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }}"
-
-      {{- /*
-      Block every request whose Content-Type mentions multipart, whatever the
-      method or letter case. REQUEST_HEADERS:Content-Type checks every
-      Content-Type header, so sending two does not get around it.
-      This must stay above rule 1001 so it applies regardless of the WB_CONFIG cookie.
-      Phase 1 rejects on the headers alone, before the body is read or parsed.
-      */}}
-      SecRule REQUEST_HEADERS:Content-Type "@contains multipart" \
-        "id:300150,\
-        phase:1,\
-        log,\
-        deny,\
-        status:403,\
-        t:none,t:lowercase,\
-        ctl:ruleEngine=On,\
-        msg:multipart-request-blocked,\
         tag:github_team=hale-platform,\
         tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }}"
 
@@ -105,7 +86,7 @@ metadata:
         return 301 https://webarchive.nationalarchives.gov.uk/ukgwa/20241002135959/https://brookhouseinquiry.org.uk/;
       }
 spec:
-  ingressClassName: modsec-non-prod
+  ingressClassName: modsec-v2
   tls:
 {{- if not (eq .Values.configmap.envtype "prod") }}
   - hosts:
