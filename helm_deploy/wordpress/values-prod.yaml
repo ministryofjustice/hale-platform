@@ -74,6 +74,8 @@ ingress:
       certName: victimscode-cym-cert
     - name: dashboard.websitebuilder.service.justice.gov.uk
       certName: websitebuilder-dashboard-cert
+    - name: deathsindetention.independent-panel.uk
+      certName: iapdd-cert
     - name: developers.websitebuilder.service.justice.gov.uk
       certName: websitebuilder-developers-cert
     - name: finucane.independent-inquiry.uk
@@ -164,6 +166,8 @@ ingress:
       certName: justiceinspectorates-cjji-www-cert
     - name: www.cjsm.justice.gov.uk
       certName: cjsm-www-cert
+    - name: www.deathsindetention.independent-panel.uk
+      certName: iapdd-cert-www
     - name: www.finucane.independent-inquiry.uk
       certName: finucane-www-cert
     - name: www.hmcpsi.justiceinspectorates.gov.uk
