@@ -2,6 +2,7 @@
 const path = require("node:path");
 const { defineConfig, devices } = require("@playwright/test");
 const { NETWORK_URL, sites } = require("./support/stack");
+const { auth0Sites } = require("./support/auth0");
 
 // The browserstack service sets E2E_OUTPUT_DIR, so a BrowserStack run after
 // the local one (make test-e2e) does not replace its report and traces.
@@ -75,6 +76,24 @@ module.exports = defineConfig({
       testMatch: /specs\/network\/.*\.spec\.js/,
       dependencies: ["setup"],
       use: { ...devices["Desktop Chrome"], baseURL: NETWORK_URL },
+    },
+    // Login through the mock Auth0 tenant, on the sites seed.sh activates the
+    // Auth0 plugin on. These start logged out, but log in as the seeded users,
+    // and WordPress keeps a user's sessions in one user meta value it rewrites
+    // without a lock: two logins as one user at the same moment can each drop
+    // the other's session. So one test at a time, after setup's logins.
+    {
+      name: "auth0",
+      testMatch: /specs\/auth0\/.*\.spec\.js/,
+      dependencies: ["setup"],
+      workers: 1,
+      use: { ...devices["Desktop Chrome"], baseURL: auth0Sites.main.url },
+    },
+    // What the plugin sent the tenant during the auth0 project's tests.
+    {
+      name: "auth0-requests",
+      testMatch: /specs\/auth0-requests\/.*\.spec\.js/,
+      dependencies: ["auth0"],
     },
   ],
 });

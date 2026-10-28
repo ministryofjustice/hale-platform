@@ -121,6 +121,28 @@ ensure_certificate() {
     chmod 644 "$dir/hale.docker-key.pem"
 }
 
+# The mock Auth0 tenant's certificates (auth0-mock in docker-compose.test.yml):
+# its TLS certificate for auth0.e2e.test, which WordPress is told to trust
+# (seed/mu-plugins/e2e-auth0-mock.php), and the key it signs ID tokens with.
+# The JWKS publishes that key as a certificate (x5c), as Auth0 does, so it is
+# one too. Test-only and world readable, like the localhost key.
+ensure_auth0_mock_certificates() {
+    local dir=$E2E_DIR/.stack/certs
+    mkdir -p "$dir"
+    if [ ! -f "$dir/auth0-mock.pem" ] || [ ! -f "$dir/auth0-mock-key.pem" ]; then
+        openssl req -x509 -newkey rsa:2048 -nodes -days 3650 \
+            -subj /CN=auth0.e2e.test \
+            -addext "subjectAltName=DNS:auth0.e2e.test" \
+            -keyout "$dir/auth0-mock-key.pem" -out "$dir/auth0-mock.pem" 2>/dev/null
+    fi
+    if [ ! -f "$dir/auth0-signing.pem" ] || [ ! -f "$dir/auth0-signing-key.pem" ]; then
+        openssl req -x509 -newkey rsa:2048 -nodes -days 3650 \
+            -subj /CN=auth0.e2e.test \
+            -keyout "$dir/auth0-signing-key.pem" -out "$dir/auth0-signing.pem" 2>/dev/null
+    fi
+    chmod 644 "$dir/auth0-mock-key.pem" "$dir/auth0-signing-key.pem"
+}
+
 is_running() {
     [ -n "$(compose ps --status running -q nginx 2>/dev/null)" ]
 }
@@ -178,6 +200,7 @@ up() {
     local start=$SECONDS
     build_if_stale || return 1
     ensure_certificate || return 1
+    ensure_auth0_mock_certificates || return 1
     timed "remove previous stack" down || return 1
     if ! timed "start stack" compose up -d --wait --wait-timeout 300 nginx ||
         ! timed "seed" compose --profile seed run --rm seed; then

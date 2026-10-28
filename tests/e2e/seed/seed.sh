@@ -44,9 +44,10 @@ wp_network site option update siteurl "https://$NETWORK/"
 
 # No outbound HTTP from WordPress: no update checks, licence checks, Notify
 # emails or other third-party calls. nginx stays reachable for anything that
-# calls NGINX_INTERNAL_URL.
+# calls NGINX_INTERNAL_URL, and so does the mock Auth0 tenant, which the Auth0
+# test sites (below) call for tokens and keys.
 wp config set WP_HTTP_BLOCK_EXTERNAL true --raw
-wp config set WP_ACCESSIBLE_HOSTS "nginx"
+wp config set WP_ACCESSIBLE_HOSTS "nginx,${AUTH0_ENV_DOMAIN:?AUTH0_ENV_DOMAIN is not set}"
 
 # ---------------------------------------------------------------------------
 # Plugins
@@ -55,7 +56,8 @@ wp config set WP_ACCESSIBLE_HOSTS "nginx"
 # below or deliberately left off, with the reason.
 #
 # Left off:
-#   auth0                  - replaces the WordPress login form
+#   auth0                  - replaces the WordPress login form. Activated
+#                            on the Auth0 test sites only (end of this file)
 #   wp-force-login         - puts every page behind a login
 #   microsoft-clarity      - sends visitor data to clarity.ms
 #   ewww-image-optimizer   - sends uploads to its cloud service
@@ -167,5 +169,85 @@ printf '%s\n' "$sites" | while IFS="|" read -r key path theme title blog_id; do
     wp --url="$url" eval-file /seed/theme-setup.php
     wp --url="$url" rewrite flush
 done
+
+# ---------------------------------------------------------------------------
+# Auth0 test sites
+#
+# Sites with the Auth0 plugin active on them alone, for specs/auth0/. They
+# sign in through the mock tenant (auth0-mock in docker-compose.test.yml),
+# whose Allowed Callback and Logout URLs list these paths. support/auth0.js
+# has them too. Not in sites.json: they have no seeded content, and the
+# all-sites specs log in with the WordPress form, which Auth0 replaces.
+#
+#   auth0          the plugin's default settings. e2esiteadmin is its
+#                  administrator: a site admin, not a network admin
+#   auth0-two      the same, for moving between two Auth0 sites on one domain.
+#                  hale-components' switch user (impersonation) is on
+#   auth0-private  also wp-force-login, as a site that is not public yet
+#   auth0-network  the plugin active without its activation hook having run
+#                  on the site, as on every site but one when the plugin is
+#                  network-activated
+#   auth0-legacy   the plugin listed as active by the 4.x plugin's file name,
+#                  auth0/WP_Auth0.php, as on every site activated before the
+#                  upgrade from 4.x. 5.x and later's file is auth0/wpAuth0.php
+#
+# Each has a members-area page. The plugin is activated last: it saves its
+# default settings on activation, and the default address to send users to
+# after login is the site's home URL, so home must already be https.
+# ---------------------------------------------------------------------------
+
+# Trust the mock tenant's certificate (see the file).
+cp /seed/mu-plugins/e2e-auth0-mock.php wp-content/mu-plugins/
+
+wp_network user create e2esiteadmin e2esiteadmin@example.test \
+    --role=subscriber --user_pass="$PASSWORD" --display_name="E2E site admin"
+
+for path in auth0 auth0-two auth0-private auth0-network auth0-legacy; do
+    echo "Seeding Auth0 site '$path'"
+    url="$NETWORK/$path/"
+    wp_network site create --slug="$path" --title="Auth0 E2E ($path)" \
+        --email="e2eadmin@example.test" --porcelain >/dev/null
+    wp --url="$url" option update home "https://${url%/}"
+    wp --url="$url" option update siteurl "https://${url%/}"
+    wp --url="$url" theme activate hale
+    wp --url="$url" option update revisionary_activation_done 1
+    wp --url="$url" option update revisionary_activation 0
+    for role in editor author contributor; do
+        wp --url="$url" user set-role "e2e$role" "$role"
+    done
+    wp --url="$url" option update permalink_structure "/%postname%/"
+    wp --url="$url" option update blog_public 0
+    wp --url="$url" post create --post_type=page --post_status=publish \
+        --post_title="Members area" --post_name=members-area \
+        --post_content="<!-- wp:paragraph --><p>Only for signed-in users.</p><!-- /wp:paragraph -->" \
+        >/dev/null
+    wp --url="$url" eval-file /seed/theme-setup.php
+    wp --url="$url" rewrite flush
+    if [ "$path" = auth0-network ]; then
+        # In the site's active plugins, as a network activation would make it
+        # active there, but without activate_plugin(): no activation hook.
+        wp --url="$url" eval '
+            require_once ABSPATH . "wp-admin/includes/plugin.php";
+            $plugin = "auth0/" . array_key_first(get_plugins("/auth0"));
+            update_option("active_plugins", array_merge((array) get_option("active_plugins", []), [$plugin]));
+            echo "Plugin $plugin active without its activation hook.\n";'
+    elif [ "$path" = auth0-legacy ]; then
+        # The 4.x file name, whichever version is installed, and no activation
+        # hook: what a site activated before the upgrade has stored.
+        wp --url="$url" option update active_plugins '["auth0/WP_Auth0.php"]' --format=json
+    else
+        wp --url="$url" plugin activate auth0
+    fi
+done
+# activate_plugin() reports success even when the plugin stops with a fatal
+# error as it loads, so check that every site really runs it: is-active fails
+# when the plugin is inactive, and when loading it stops WordPress.
+for path in auth0 auth0-two auth0-private auth0-network auth0-legacy; do
+    wp --url="$NETWORK/$path/" plugin is-active auth0 ||
+        { echo "The Auth0 plugin is not running on /$path/" >&2; exit 1; }
+done
+wp --url="$NETWORK/auth0/" user set-role e2esiteadmin administrator
+wp --url="$NETWORK/auth0-two/" option update moj_component_settings '{"user_switch_active":"yes"}' --format=json
+wp --url="$NETWORK/auth0-private/" plugin activate wp-force-login
 
 echo "Seed complete"
