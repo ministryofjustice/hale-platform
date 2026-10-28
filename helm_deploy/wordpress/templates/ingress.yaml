@@ -160,7 +160,7 @@ metadata:
       if ($host = 'iapdeathsincustody.independent.gov.uk') {
         return 301 https://deathsindetention.independent-panel.uk;
       }
-      if ($host = 'www.iapdeathsincustody.independent.gov.uk) {
+      if ($host = 'www.iapdeathsincustody.independent.gov.uk') {
         return 301 https://deathsindetention.independent-panel.uk;
       }
       if ($host = 'brookhouseinquiry.org.uk') {
