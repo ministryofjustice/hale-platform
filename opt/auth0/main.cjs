@@ -42,6 +42,12 @@ exports.onExecuteCustomEmailProvider = async (event, api) => {
     return api.notification.drop("Empty text body");
   }
 
+  // Without this, a missing key throws inside the try below and is retried as "Notify unreachable".
+  const { NOTIFY_API_KEY, NOTIFY_TEMPLATE_ID } = event.secrets;
+  if (!NOTIFY_API_KEY || !NOTIFY_TEMPLATE_ID) {
+    return api.notification.drop("Notify secrets missing");
+  }
+
   let res;
 
   try {
@@ -50,12 +56,12 @@ exports.onExecuteCustomEmailProvider = async (event, api) => {
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${notifyJwt(event.secrets.NOTIFY_API_KEY)}`,
+          Authorization: `Bearer ${notifyJwt(NOTIFY_API_KEY)}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           email_address: n.to,
-          template_id: event.secrets.NOTIFY_TEMPLATE_ID,
+          template_id: NOTIFY_TEMPLATE_ID,
           personalisation: { subject: n.subject, body: n.text },
           reference: n.message_type, // must not contain personal data
         }),

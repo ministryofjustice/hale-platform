@@ -49,6 +49,34 @@ test("drops empty body", async () => {
   });
 });
 
+test("drops when secrets are missing", async (t) => {
+  const originalFetch = global.fetch;
+
+  t.after(() => {
+    global.fetch = originalFetch;
+  });
+
+  global.fetch = async () => {
+    throw new Error("fetch should not be called");
+  };
+
+  for (const secrets of [
+    { NOTIFY_TEMPLATE_ID: "template-id" },
+    { NOTIFY_API_KEY: "", NOTIFY_TEMPLATE_ID: "template-id" },
+    { NOTIFY_API_KEY: "test" },
+  ]) {
+    const result = await onExecuteCustomEmailProvider(
+      { ...event, secrets },
+      makeApi(),
+    );
+
+    assert.deepEqual(result, {
+      type: "drop",
+      reason: "Notify secrets missing",
+    });
+  }
+});
+
 test("retries when fetch throws", async (t) => {
   const originalFetch = global.fetch;
 
