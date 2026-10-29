@@ -660,11 +660,13 @@ COPY --from=builder --chown=65532:65532 /tmp/core/ /usr/src/wordpress/
 # Platform PHP files. load.php and application.php load the platform's
 # must-use plugins, the Composer autoloader and error-handling.php, which sets
 # PHP error logging per environment. wpdr-document-upload-dir.php makes
-# wp-document-revisions store documents through S3. wp-cron-multisite.php runs
+# wp-document-revisions store documents through S3. auth0.php configures the
+# Auth0 plugin from the AUTH0_ENV_* constants. wp-cron-multisite.php runs
 # cron for every site, and is called by the cron-wp-multisite CronJob.
 COPY opt/php/load.php /usr/src/wordpress/wp-content/mu-plugins/load.php
 COPY opt/php/application.php /usr/src/wordpress/wp-content/mu-plugins/application.php
 COPY opt/php/wpdr-document-upload-dir.php /usr/src/wordpress/wp-content/mu-plugins/wpdr-document-upload-dir.php
+COPY opt/php/auth0.php /usr/src/wordpress/wp-content/mu-plugins/auth0.php
 COPY opt/php/error-handling.php /usr/src/wordpress/error-handling.php
 COPY opt/php/wp-cron-multisite.php /usr/src/wordpress/wp-cron-multisite.php
 # Health check script for /healthz. Only reachable through nginx's internal

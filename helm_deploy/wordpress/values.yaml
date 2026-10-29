@@ -255,6 +255,8 @@ secrets:
   auth0envclientid: ""
   auth0envclientsecret: ""
   auth0envdomain: ""
+  auth0envfallbackparam: ""
+  auth0envfallbacksecret: ""
   redisauth: ""
   redishost: ""
 

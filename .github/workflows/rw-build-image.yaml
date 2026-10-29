@@ -83,6 +83,10 @@ on:
         required: true
       auth0-env-domain:
         required: true
+      auth0-env-fallback-param:
+        required: false
+      auth0-env-fallback-secret:
+        required: false
       redis-auth:
         required: true
       redis-host:
@@ -388,6 +392,8 @@ jobs:
           --set secrets.auth0envclientid=${{ secrets.auth0-env-client-id }} \
           --set secrets.auth0envclientsecret=${{ secrets.auth0-env-client-secret }} \
           --set secrets.auth0envdomain=${{ secrets.auth0-env-domain }} \
+          --set-string secrets.auth0envfallbackparam=${{ secrets.auth0-env-fallback-param }} \
+          --set-string secrets.auth0envfallbacksecret=${{ secrets.auth0-env-fallback-secret }} \
           --set secrets.acftoken=${{ secrets.acf-token }} \
           --set secrets.redisauth=${{ secrets.redis-auth }} \
           --set secrets.redishost=${{ secrets.redis-host }} \
