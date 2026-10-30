@@ -37,7 +37,7 @@
 # wptools.dockerfile (its Alpine php8X packages) and the CI workflow's
 # setup-php step. bin/check-versions.sh (make check-versions, also run in CI on
 # pull requests) fails if any of them disagree.
-ARG WORDPRESS_VERSION=7.1.3
+ARG WORDPRESS_VERSION=7.1.4
 ARG PHP_VERSION=8.4
 
 # WordPress core patch. When PATCH_WORDPRESS_VERSION is set, the image runs that
@@ -222,12 +222,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # ---------------------------------------------------------------------------
 RUN mkdir -p /tmp/debs/partial /tmp/sysdeps \
     && apt-get update \
-    && apt-get install -y --no-install-recommends --download-only \
+    && ncurses=$(apt-cache policy libncursesw6 | awk '/Candidate:/ {print $2}') \
+    && tinfo=$(dpkg-query -W -f '${Version}' libtinfo6) \
+    && [ "${ncurses%%+d*}" = "${tinfo%%+d*}" ] \
+       || { echo "libncursesw6 ${ncurses} and installed libtinfo6 ${tinfo} are different ncurses releases"; exit 1; } \
+    && apt-get install -y --no-install-recommends --download-only --allow-downgrades \
         -o Dir::Cache::archives=/tmp/debs \
         -o APT::Keep-Downloaded-Packages=true \
         ghostscript \
         fonts-urw-base35 \
         hunspell \
+        "libtinfo6=${ncurses}" \
+    && rm -f /tmp/debs/libtinfo6_*.deb \
     && for deb in /tmp/debs/*.deb; do dpkg-deb -x "$deb" /tmp/sysdeps; done \
     && mkdir -p /tmp/libcdeb /tmp/sysdeps/usr/lib/locale \
     && ( cd /tmp/libcdeb && apt-get download libc-bin ) \
