@@ -24,7 +24,7 @@
 
 # Image versions. Keep them the same as wordpress.dockerfile -
 # bin/check-versions.sh (make check-versions) fails if they differ.
-ARG WORDPRESS_VERSION=7.1.3
+ARG WORDPRESS_VERSION=7.1.4
 ARG PHP_VERSION=8.4
 
 # WordPress core patch. Same purpose and same two values as

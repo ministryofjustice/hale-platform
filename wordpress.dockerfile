@@ -37,7 +37,7 @@
 # wptools.dockerfile (its Alpine php8X packages) and the CI workflow's
 # setup-php step. bin/check-versions.sh (make check-versions, also run in CI on
 # pull requests) fails if any of them disagree.
-ARG WORDPRESS_VERSION=7.1.3
+ARG WORDPRESS_VERSION=7.1.4
 ARG PHP_VERSION=8.4
 
 # WordPress core patch. When PATCH_WORDPRESS_VERSION is set, the image runs that
