@@ -125,12 +125,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # wordpress.dockerfile explains each step.
 RUN mkdir -p /tmp/debs/partial /tmp/sysdeps \
     && apt-get update \
-    && apt-get install -y --no-install-recommends --download-only \
+    && ncurses=$(apt-cache policy libncursesw6 | awk '/Candidate:/ {print $2}') \
+    && tinfo=$(dpkg-query -W -f '${Version}' libtinfo6) \
+    && [ "${ncurses%%+d*}" = "${tinfo%%+d*}" ] \
+       || { echo "libncursesw6 ${ncurses} and installed libtinfo6 ${tinfo} are different ncurses releases"; exit 1; } \
+    && apt-get install -y --no-install-recommends --download-only --allow-downgrades \
         -o Dir::Cache::archives=/tmp/debs \
         -o APT::Keep-Downloaded-Packages=true \
         ghostscript \
         fonts-urw-base35 \
         hunspell \
+        "libtinfo6=${ncurses}" \
+    && rm -f /tmp/debs/libtinfo6_*.deb \
     && for deb in /tmp/debs/*.deb; do dpkg-deb -x "$deb" /tmp/sysdeps; done \
     && mkdir -p /tmp/libcdeb /tmp/sysdeps/usr/lib/locale \
     && ( cd /tmp/libcdeb && apt-get download libc-bin ) \
