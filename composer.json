@@ -99,6 +99,8 @@
     }
   ],
   "require": {
+    "auth0/auth0-php": "9.4.0",
+    "auth0/wordpress": "6.0.0-beta.1",
     "composer/installers": "^v2.0",
     "ministryofjustice/cookie-compliance": "dev-main",
     "ministryofjustice/govwind": "dev-main",
@@ -118,7 +120,6 @@
     "sentry/sdk": "^3.3",
     "vlucas/phpdotenv": "^3.0",
     "tigitz/php-spellchecker": "^0.8.0",
-    "wpackagist-plugin/auth0": "^4.0.0",
     "wpackagist-plugin/breadcrumb-block": "1.1.0",
     "wpackagist-plugin/classic-editor": "^1.0",
     "wpackagist-plugin/ewww-image-optimizer": "^8.0",
@@ -149,6 +150,9 @@
         "ministryofjustice/hale-components",
         "ministryofjustice/wp-gov-uk-notify",
         "ministryofjustice/wp-s3-uploads"
+      ],
+      "wordpress/wp-content/plugins/auth0/": [
+        "auth0/wordpress"
       ],
       "wordpress/wp-content/plugins/{$name}/": [
         "type:wordpress-plugin"

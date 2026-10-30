@@ -33,6 +33,10 @@ wp config set S3_UPLOADS_USE_INSTANCE_PROFILE "\$_SERVER['S3_UPLOADS_USE_INSTANC
 wp config set AUTH0_ENV_CLIENT_ID "\$_SERVER['AUTH0_ENV_CLIENT_ID']" --raw
 wp config set AUTH0_ENV_CLIENT_SECRET "\$_SERVER['AUTH0_ENV_CLIENT_SECRET']" --raw
 wp config set AUTH0_ENV_DOMAIN "\$_SERVER['AUTH0_ENV_DOMAIN']" --raw
+# The login bypass parameter and secret (opt/php/auth0.php). Either empty or
+# unset: no bypass.
+wp config set AUTH0_ENV_FALLBACK_PARAM "\$_SERVER['AUTH0_ENV_FALLBACK_PARAM'] ?? ''" --raw
+wp config set AUTH0_ENV_FALLBACK_SECRET "\$_SERVER['AUTH0_ENV_FALLBACK_SECRET'] ?? ''" --raw
 wp config set CLOUDFRONT_DISTRIBUTION_ID "\$_SERVER['CLOUDFRONT_DISTRIBUTION_ID']" --raw
 
 # Release identity of this image, used to build release-scoped CDN asset URLs
@@ -53,7 +57,7 @@ wp config set WP_SENTRY_PHP_DSN "\$_SERVER['PHP_DSN']" --raw
 wp config set WP_SENTRY_BROWSER_DSN "\$_SERVER['PHP_DSN']" --raw
 wp config set WP_SENTRY_ENV "\$_SERVER['WP_ENVIRONMENT_TYPE']" --raw
 wp config set WP_SENTRY_BROWSER_ADMIN_ENABLED true --raw
-wp config set WP_SENTRY_BROWSER_LOGIN_ENABLED true --raw
+wp config set WP_SENTRY_BROWSER_LOGIN_ENABLED false --raw
 wp config set WP_SENTRY_BROWSER_FRONTEND_ENABLED true --raw
 wp config set WP_SENTRY_BROWSER_TRACES_SAMPLE_RATE "0.2" --raw # sample ~30% of traffic
 wp config set WP_SENTRY_BROWSER_REPLAYS_ON_ERROR_SAMPLE_RATE "1.0" --raw
