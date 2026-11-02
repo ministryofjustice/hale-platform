@@ -59,37 +59,37 @@ spl_autoload_register(function (string $class): void {
  * no change either. Only while the new file is there and the old one is not.
  * mu-plugins load before WordPress reads either list (wp-settings.php).
  */
-const HC_AUTH0_PLUGIN_4X = 'auth0/WP_Auth0.php';
-const HC_AUTH0_PLUGIN = 'auth0/wpAuth0.php';
+const WB_AUTH0_PLUGIN_4X = 'auth0/WP_Auth0.php';
+const WB_AUTH0_PLUGIN = 'auth0/wpAuth0.php';
 
-function hc_auth0_renamed(): bool
+function wb_auth0_renamed(): bool
 {
     static $renamed = null;
-    $renamed ??= is_file(WP_PLUGIN_DIR . '/' . HC_AUTH0_PLUGIN) && !is_file(WP_PLUGIN_DIR . '/' . HC_AUTH0_PLUGIN_4X);
+    $renamed ??= is_file(WP_PLUGIN_DIR . '/' . WB_AUTH0_PLUGIN) && !is_file(WP_PLUGIN_DIR . '/' . WB_AUTH0_PLUGIN_4X);
 
     return $renamed;
 }
 
 // A site's plugins: a list of files.
 add_filter('option_active_plugins', function ($plugins) {
-    if (!is_array($plugins) || !hc_auth0_renamed() || !in_array(HC_AUTH0_PLUGIN_4X, $plugins, true)) {
+    if (!is_array($plugins) || !wb_auth0_renamed() || !in_array(WB_AUTH0_PLUGIN_4X, $plugins, true)) {
         return $plugins;
     }
 
     return array_values(array_unique(array_map(
-        fn ($plugin) => $plugin === HC_AUTH0_PLUGIN_4X ? HC_AUTH0_PLUGIN : $plugin,
+        fn ($plugin) => $plugin === WB_AUTH0_PLUGIN_4X ? WB_AUTH0_PLUGIN : $plugin,
         $plugins
     )));
 });
 
 // Network-activated plugins: file => activation time.
 add_filter('site_option_active_sitewide_plugins', function ($plugins) {
-    if (!is_array($plugins) || !hc_auth0_renamed() || !isset($plugins[HC_AUTH0_PLUGIN_4X])) {
+    if (!is_array($plugins) || !wb_auth0_renamed() || !isset($plugins[WB_AUTH0_PLUGIN_4X])) {
         return $plugins;
     }
 
-    $plugins[HC_AUTH0_PLUGIN] ??= $plugins[HC_AUTH0_PLUGIN_4X];
-    unset($plugins[HC_AUTH0_PLUGIN_4X]);
+    $plugins[WB_AUTH0_PLUGIN] ??= $plugins[WB_AUTH0_PLUGIN_4X];
+    unset($plugins[WB_AUTH0_PLUGIN_4X]);
 
     return $plugins;
 });
@@ -104,7 +104,7 @@ if (!defined('AUTH0_ENV_DOMAIN') || !defined('AUTH0_ENV_CLIENT_ID') || !defined(
  * The plugin's options, by option name. Booleans are the strings 'true' and
  * 'false' and pair_sessions an integer: the plugin compares them strictly.
  */
-$hc_auth0_options = [
+$wb_auth0_options = [
     // On, wherever the plugin is active.
     'auth0_state' => ['enable' => 'true'],
     'auth0_client' => [
@@ -161,15 +161,15 @@ $hc_auth0_options = [
     'auth0_tokens' => [],
 ];
 
-foreach ($hc_auth0_options as $hc_auth0_option => $hc_auth0_value) {
-    add_filter("pre_option_{$hc_auth0_option}", fn () => $hc_auth0_value);
+foreach ($wb_auth0_options as $wb_auth0_option => $wb_auth0_value) {
+    add_filter("pre_option_{$wb_auth0_option}", fn () => $wb_auth0_value);
 }
-unset($hc_auth0_options, $hc_auth0_option, $hc_auth0_value);
+unset($wb_auth0_options, $wb_auth0_option, $wb_auth0_value);
 
 /**
  * Whether the Auth0 plugin is loaded and handling logins on this site.
  */
-function hc_auth0_active(): bool
+function wb_auth0_active(): bool
 {
     return function_exists('wpAuth0') && wpAuth0()->isEnabled() && wpAuth0()->isReady();
 }
@@ -181,7 +181,7 @@ function hc_auth0_active(): bool
  * WordPress does without the plugin. Runs before the plugin's own handler.
  */
 add_action('login_form_logout', function () {
-    if (hc_auth0_active()) {
+    if (wb_auth0_active()) {
         check_admin_referer('log-out');
     }
 }, 9);
@@ -191,7 +191,7 @@ add_action('login_form_logout', function () {
  * filter below. Runs before the plugin's own handler.
  */
 add_action('login_form_login', function () {
-    $GLOBALS['hc_auth0_callback'] = hc_auth0_active() && isset($_GET['code'], $_GET['state']);
+    $GLOBALS['wb_auth0_callback'] = wb_auth0_active() && isset($_GET['code'], $_GET['state']);
 }, 9);
 
 /**
@@ -209,7 +209,7 @@ add_action('login_form_login', function () {
 add_filter('send_auth_cookies', function ($send, $expire, $expiration, $user_id, $scheme, $token) {
     static $reissuing = false;
 
-    if (!$send || $reissuing || empty($GLOBALS['hc_auth0_callback']) || !$user_id || !$expire || $token === '') {
+    if (!$send || $reissuing || empty($GLOBALS['wb_auth0_callback']) || !$user_id || !$expire || $token === '') {
         return $send;
     }
 
@@ -228,14 +228,14 @@ add_filter('send_auth_cookies', function ($send, $expire, $expiration, $user_id,
  * Both come from the environment, so neither is in the code. Without either
  * there is no bypass.
  */
-function hc_auth0_login_bypass_param(): string
+function wb_auth0_login_bypass_param(): string
 {
     return defined('AUTH0_ENV_FALLBACK_PARAM') ? (string) AUTH0_ENV_FALLBACK_PARAM : '';
 }
 
-function hc_auth0_login_bypass(): bool
+function wb_auth0_login_bypass(): bool
 {
-    $param = hc_auth0_login_bypass_param();
+    $param = wb_auth0_login_bypass_param();
     $secret = defined('AUTH0_ENV_FALLBACK_SECRET') ? (string) AUTH0_ENV_FALLBACK_SECRET : '';
     $given = $param !== '' && isset($_REQUEST[$param]) && is_string($_REQUEST[$param]) ? wp_unslash($_REQUEST[$param]) : '';
 
@@ -249,7 +249,7 @@ function hc_auth0_login_bypass(): bool
  * that sends the password is let through too.
  */
 add_action('login_form_login', function () {
-    if (hc_auth0_active() && hc_auth0_login_bypass()) {
+    if (wb_auth0_active() && wb_auth0_login_bypass()) {
         remove_action(
             'login_form_login',
             [wpAuth0()->getClassInstance(\Auth0\WordPress\Actions\Authentication::class), 'onLogin'],
@@ -259,11 +259,28 @@ add_action('login_form_login', function () {
 }, 9);
 
 add_action('login_form', function () {
-    if (hc_auth0_active() && hc_auth0_login_bypass()) {
-        $param = hc_auth0_login_bypass_param();
+    if (wb_auth0_active() && wb_auth0_login_bypass()) {
+        $param = wb_auth0_login_bypass_param();
         printf('<input type="hidden" name="%s" value="%s">', esc_attr($param), esc_attr(wp_unslash($_REQUEST[$param])));
     }
 });
+
+/**
+ * No password sign-in without the bypass secret. The plugin only replaces the
+ * login action, but wp-login.php checks a posted password on others too: with
+ * action=entered_recovery_mode it does so without firing login_form_login, so
+ * a WordPress password would sign in without Auth0 or the secret. Refused
+ * whether or not the password is right, so the answer does not reveal it.
+ * After WordPress's own checks (priority 20), which would replace an earlier
+ * error.
+ */
+add_filter('authenticate', function ($user, $username, $password) {
+    if (((string) $username === '' && (string) $password === '') || !wb_auth0_active() || wb_auth0_login_bypass()) {
+        return $user;
+    }
+
+    return new WP_Error('auth0_password_login', __('<strong>Error:</strong> This site does not accept WordPress passwords.'));
+}, 100, 3);
 
 /**
  * Someone Auth0 signed in, but who has no WordPress account here. The plugin
@@ -273,7 +290,7 @@ add_action('login_form', function () {
  * the plugin's Auth0 session so the next login starts again.
  */
 add_filter('wp_redirect', function ($location) {
-    if (empty($GLOBALS['hc_auth0_callback']) || is_user_logged_in()) {
+    if (empty($GLOBALS['wb_auth0_callback']) || is_user_logged_in()) {
         return $location;
     }
 
@@ -291,8 +308,8 @@ add_filter('wp_redirect', function ($location) {
  * The screens are left out of everyone else's menu, refused if opened
  * directly, and their forms refused if posted.
  */
-const HC_AUTH0_SETTINGS_SCREENS = ['auth0', 'auth0_sync', 'auth0_advanced', 'auth0_tools'];
-const HC_AUTH0_SETTINGS_GROUPS = ['auth0_configuration', 'auth0_sync', 'auth0_advanced', 'auth0_tools'];
+const WB_AUTH0_SETTINGS_SCREENS = ['auth0', 'auth0_sync', 'auth0_advanced', 'auth0_tools'];
+const WB_AUTH0_SETTINGS_GROUPS = ['auth0_configuration', 'auth0_sync', 'auth0_advanced', 'auth0_tools'];
 
 add_action('admin_menu', function () {
     if (!is_super_admin()) {
@@ -302,12 +319,12 @@ add_action('admin_menu', function () {
 
 add_action('admin_init', function () {
     $screen = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
-    if (in_array($screen, HC_AUTH0_SETTINGS_SCREENS, true) && !is_super_admin()) {
+    if (in_array($screen, WB_AUTH0_SETTINGS_SCREENS, true) && !is_super_admin()) {
         wp_die(esc_html__('Sorry, you are not allowed to access this page.'), 403);
     }
 });
 
-foreach (HC_AUTH0_SETTINGS_GROUPS as $hc_auth0_group) {
-    add_filter("option_page_capability_{$hc_auth0_group}", fn () => 'manage_network_options');
+foreach (WB_AUTH0_SETTINGS_GROUPS as $wb_auth0_group) {
+    add_filter("option_page_capability_{$wb_auth0_group}", fn () => 'manage_network_options');
 }
-unset($hc_auth0_group);
+unset($wb_auth0_group);
