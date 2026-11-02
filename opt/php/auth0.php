@@ -33,7 +33,10 @@
  * at a folder that doesn't exist and the plugin stops with a fatal error on
  * every request. The SDK and the plugin's other dependencies live inside
  * vendor/ and load as normal. Registered whether or not Auth0 is configured:
- * the plugin needs its classes wherever it is active.
+ * the plugin needs its classes wherever it is active. Registered ahead of
+ * Composer's: CI builds with --optimize-autoloader, which lists each class's
+ * file in a class map, and Composer includes a listed file without checking
+ * it exists, so a PHP warning for every class would come before this.
  */
 spl_autoload_register(function (string $class): void {
     $prefix = 'Auth0\\WordPress\\';
@@ -44,7 +47,7 @@ spl_autoload_register(function (string $class): void {
     if (is_file($file)) {
         require $file;
     }
-});
+}, true, true);
 
 /**
  * Keep the plugin active across the upgrade from 4.x. Its main file was
@@ -130,6 +133,9 @@ $hc_auth0_options = [
         // form sends the password straight back to Auth0. See the login
         // bypass below instead.
         'allow_fallback' => 'false',
+        // Unused, but without one the plugin's back-channel logout check
+        // compares an empty ?auth0_bcl= to an empty secret and accepts it.
+        'backchannel_logout_secret' => hash_hmac('sha256', 'auth0 backchannel logout', AUTH_KEY . AUTH_SALT),
     ],
     'auth0_sessions' => [
         // Off. Rolling sessions start a new WordPress session on every page
