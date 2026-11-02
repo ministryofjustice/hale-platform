@@ -94,6 +94,43 @@ add_filter('site_option_active_sitewide_plugins', function ($plugins) {
     return $plugins;
 });
 
+/**
+ * A WordPress login cookie that is no longer valid: expired, malformed, or
+ * from a session that has gone. The plugin's handlers for these end its own
+ * Auth0 session, and they break signing in again:
+ *
+ * - They run whenever WordPress checks the cookie, which can be before every
+ *   plugin has loaded: hale-components checks the current user on
+ *   plugins_loaded, before WPS Hide Login starts. The first use of the
+ *   plugin's SDK fixes its callback address for the request, then the
+ *   unfiltered wp-login.php, and WPS Hide Login rewrites any redirect that
+ *   mentions wp-login.php: the redirect to Auth0 goes to the site's own login
+ *   page instead, again on every try.
+ * - Once WPS Hide Login has started, its site_url filter checks the current
+ *   user too, so the SDK looking up the login page's address checks the
+ *   cookie again, and the request never finishes.
+ * - They also clear the state of a login that is under way, so the callback
+ *   from Auth0 could not be completed.
+ *
+ * A login cookie WordPress does not accept already means nobody is signed in,
+ * and the Auth0 session is not used to sign anyone in (pair_sessions below),
+ * so nothing needs ending. Removed as soon as the plugin has loaded, before
+ * anything can check the cookie. Before the check for credentials below: the
+ * handlers would fail without them.
+ */
+foreach (['network_plugin_loaded', 'plugin_loaded'] as $wb_auth0_hook) {
+    add_action($wb_auth0_hook, function (string $file) {
+        if (plugin_basename($file) !== WB_AUTH0_PLUGIN || !function_exists('wpAuth0')) {
+            return;
+        }
+
+        $authentication = wpAuth0()->getClassInstance(\Auth0\WordPress\Actions\Authentication::class);
+        foreach (['auth_cookie_malformed', 'auth_cookie_expired', 'auth_cookie_bad_username', 'auth_cookie_bad_session_token', 'auth_cookie_bad_hash'] as $event) {
+            $authentication->removeAction($event);
+        }
+    });
+}
+
 if (!defined('AUTH0_ENV_DOMAIN') || !defined('AUTH0_ENV_CLIENT_ID') || !defined('AUTH0_ENV_CLIENT_SECRET')
     || AUTH0_ENV_DOMAIN === '' || AUTH0_ENV_CLIENT_ID === '' || AUTH0_ENV_CLIENT_SECRET === ''
     || AUTH0_ENV_DOMAIN === null || AUTH0_ENV_CLIENT_ID === null || AUTH0_ENV_CLIENT_SECRET === null) {
