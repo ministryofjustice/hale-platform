@@ -74,6 +74,8 @@ ingress:
       certName: victimscode-cym-cert
     - name: dashboard.websitebuilder.service.justice.gov.uk
       certName: websitebuilder-dashboard-cert
+    - name: deathsindetention.independent-panel.uk
+      certName: iapdd-cert
     - name: developers.websitebuilder.service.justice.gov.uk
       certName: websitebuilder-developers-cert
     - name: finucane.independent-inquiry.uk
@@ -164,6 +166,8 @@ ingress:
       certName: justiceinspectorates-cjji-www-cert
     - name: www.cjsm.justice.gov.uk
       certName: cjsm-www-cert
+    - name: www.deathsindetention.independent-panel.uk
+      certName: iapdd-www-cert
     - name: www.finucane.independent-inquiry.uk
       certName: finucane-www-cert
     - name: www.hmcpsi.justiceinspectorates.gov.uk
@@ -228,3 +232,18 @@ ingress:
       certName: victimscode-www-cert
     - name: www.websitebuilder.service.justice.gov.uk
       certName: websitebuilder-www-cert
+
+  # Redirects that apply only while the holding page is up, when both
+  # holdingPage.enabled and holdingPage.redirects.enabled are true (see
+  # values.yaml). Each host must also be in the hosts list above.
+  holdingPage:
+    enabled: false
+    redirects:
+      enabled: false
+      hosts:
+        - host: prisonandprobationjobs.gov.uk
+          to: https://jobs.justice.gov.uk/careers/SearchJobs
+        - host: www.prisonandprobationjobs.gov.uk
+          to: https://jobs.justice.gov.uk/careers/SearchJobs
+        - host: magistrates.judiciary.uk
+          to: https://magistrates.affinixats.co.uk/jobtools/jncustomsearch.searchResults?in_organid=20425&in_jobDate=All
