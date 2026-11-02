@@ -1,0 +1,28 @@
+# BrowserStack platforms for make test-e2e-browserstack, read by
+# browserstack-node-sdk in the browserstack service of docker-compose.test.yml.
+# Credentials come from BROWSERSTACK_USERNAME and BROWSERSTACK_ACCESS_KEY.
+# Mobile specs are the *.mobile.spec.js files; every other spec runs on desktop.
+framework: playwright
+
+platforms:
+  - os: OS X
+    osVersion: Sequoia
+    browserName: Chrome
+    browserVersion: latest
+    playwrightConfigOptions:
+      name: desktop
+      testIgnore: "**/*.mobile.spec.js"
+
+  - browserName: chrome
+    osVersion: 15.0
+    deviceName: Samsung Galaxy S25 Ultra
+    playwrightConfigOptions:
+      name: mobile
+      testMatch: "**/*.mobile.spec.js"
+
+browserstack.acceptInsecureCerts: true
+
+browserstackLocal: true
+
+projectName: Hale Platform
+buildName: Local Playwright Test
