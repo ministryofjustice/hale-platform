@@ -362,6 +362,9 @@ jobs:
       # hale-components builds CDN asset URLs from it. If the two ever drift,
       # every theme stylesheet and script 404s.
       - name: Apply Helm chart
+        env:
+          AUTH0_ENV_FALLBACK_PARAM: ${{ secrets.auth0-env-fallback-param }}
+          AUTH0_ENV_FALLBACK_SECRET: ${{ secrets.auth0-env-fallback-secret }}
         run: |
           helm upgrade wordpress helm_deploy/wordpress \
           --install \
@@ -392,8 +395,8 @@ jobs:
           --set secrets.auth0envclientid=${{ secrets.auth0-env-client-id }} \
           --set secrets.auth0envclientsecret=${{ secrets.auth0-env-client-secret }} \
           --set secrets.auth0envdomain=${{ secrets.auth0-env-domain }} \
-          --set-string secrets.auth0envfallbackparam=${{ secrets.auth0-env-fallback-param }} \
-          --set-string secrets.auth0envfallbacksecret=${{ secrets.auth0-env-fallback-secret }} \
+          --set-literal "secrets.auth0envfallbackparam=${AUTH0_ENV_FALLBACK_PARAM}" \
+          --set-literal "secrets.auth0envfallbacksecret=${AUTH0_ENV_FALLBACK_SECRET}" \
           --set secrets.acftoken=${{ secrets.acf-token }} \
           --set secrets.redisauth=${{ secrets.redis-auth }} \
           --set secrets.redishost=${{ secrets.redis-host }} \
