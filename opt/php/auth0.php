@@ -134,6 +134,31 @@ foreach (['network_plugin_loaded', 'plugin_loaded'] as $wb_auth0_hook) {
 if (!defined('AUTH0_ENV_DOMAIN') || !defined('AUTH0_ENV_CLIENT_ID') || !defined('AUTH0_ENV_CLIENT_SECRET')
     || AUTH0_ENV_DOMAIN === '' || AUTH0_ENV_CLIENT_ID === '' || AUTH0_ENV_CLIENT_SECRET === ''
     || AUTH0_ENV_DOMAIN === null || AUTH0_ENV_CLIENT_ID === null || AUTH0_ENV_CLIENT_SECRET === null) {
+    /*
+     * No tenant: a local stack, or an environment without its secrets. The
+     * plugin is kept from loading, so the site has WordPress's own login.
+     * Loaded anyway, its handlers for logout and for every page a signed-in
+     * user sees call the SDK without checking it is configured, and fail.
+     * Hidden only while WordPress reads the lists to load plugins: anything
+     * that saves them later, such as activating another plugin, sees the real
+     * lists and keeps the plugin in them. After the filters above, which give
+     * a 4.x activation the new file name.
+     */
+    $wb_auth0_site_plugins = fn ($plugins) => is_array($plugins) ? array_values(array_diff($plugins, [WB_AUTH0_PLUGIN])) : $plugins;
+    $wb_auth0_network_plugins = function ($plugins) {
+        if (is_array($plugins)) {
+            unset($plugins[WB_AUTH0_PLUGIN]);
+        }
+
+        return $plugins;
+    };
+    add_filter('option_active_plugins', $wb_auth0_site_plugins, PHP_INT_MAX);
+    add_filter('site_option_active_sitewide_plugins', $wb_auth0_network_plugins, PHP_INT_MAX);
+    add_action('plugins_loaded', function () use ($wb_auth0_site_plugins, $wb_auth0_network_plugins) {
+        remove_filter('option_active_plugins', $wb_auth0_site_plugins, PHP_INT_MAX);
+        remove_filter('site_option_active_sitewide_plugins', $wb_auth0_network_plugins, PHP_INT_MAX);
+    }, PHP_INT_MIN);
+
     return;
 }
 
