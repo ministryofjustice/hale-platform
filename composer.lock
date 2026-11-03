@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "be9a9c2208cc380a415bf68cd892905e",
+    "content-hash": "3d988f03b1b47781c8810a3b315b2745",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -1252,26 +1252,12 @@
         },
         {
             "name": "ministryofjustice/govwind",
-            "version": "dev-main",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/ministryofjustice/govwind.git",
-                "reference": "079420be8675bc9dd743970754318d5499122c30"
-            },
+            "version": "dev-preview-preview-test-9777b4b",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/079420be8675bc9dd743970754318d5499122c30",
-                "reference": "079420be8675bc9dd743970754318d5499122c30",
-                "shasum": ""
+                "url": "https://github.com/ministryofjustice/govwind/releases/download/preview-preview-test-9777b4b/govwind-preview-preview-test-9777b4b.zip"
             },
-            "default-branch": true,
-            "type": "wordpress-theme",
-            "description": "Govwind theme",
-            "support": {
-                "source": "https://github.com/ministryofjustice/govwind/tree/1.1.8",
-                "issues": "https://github.com/ministryofjustice/govwind/issues"
-            },
-            "time": "2026-10-27T09:22:16+00:00"
+            "type": "wordpress-theme"
         },
         {
             "name": "ministryofjustice/hale",

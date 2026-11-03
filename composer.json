@@ -43,10 +43,6 @@
     },
     {
       "type": "vcs",
-      "url": "https://github.com/ministryofjustice/govwind.git"
-    },
-    {
-      "type": "vcs",
       "url": "https://github.com/ministryofjustice/hale-components.git"
     },
     {
@@ -84,6 +80,18 @@
     {
       "type": "package",
       "package": {
+        "name": "ministryofjustice/govwind",
+        "version": "dev-preview-preview-test-9777b4b",
+        "type": "wordpress-theme",
+        "dist": {
+          "type": "zip",
+          "url": "https://github.com/ministryofjustice/govwind/releases/download/preview-preview-test-9777b4b/govwind-preview-preview-test-9777b4b.zip"
+        }
+      }
+    },
+    {
+      "type": "package",
+      "package": {
         "name": "ministryofjustice/website-builder-blocks",
         "version": "2.3.9",
         "type": "wordpress-plugin",
@@ -114,7 +122,7 @@
     "auth0/wordpress": "6.0.0-beta.1",
     "composer/installers": "^v2.0",
     "ministryofjustice/cookie-compliance": "dev-main",
-    "ministryofjustice/govwind": "dev-main",
+    "ministryofjustice/govwind": "dev-preview-preview-test-9777b4b",
     "ministryofjustice/justice": "dev-main",
     "ministryofjustice/hale": "dev-invalidate-colours-css-cache",
     "ministryofjustice/hale-components": "dev-cdn-assets",
