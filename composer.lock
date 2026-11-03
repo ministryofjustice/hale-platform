@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7149eff8411f715c5b7beab0c3038011",
+    "content-hash": "be9a9c2208cc380a415bf68cd892905e",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -314,16 +314,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.402.2",
+            "version": "3.402.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "8c6f1eeb8975212ec90fb7a22f332ba6b17f990c"
+                "reference": "ffff4dbeda1c386f66e7e819afbd55406aa9799b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/8c6f1eeb8975212ec90fb7a22f332ba6b17f990c",
-                "reference": "8c6f1eeb8975212ec90fb7a22f332ba6b17f990c",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/ffff4dbeda1c386f66e7e819afbd55406aa9799b",
+                "reference": "ffff4dbeda1c386f66e7e819afbd55406aa9799b",
                 "shasum": ""
             },
             "require": {
@@ -405,9 +405,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.402.2"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.402.5"
             },
-            "time": "2026-10-27T18:08:49+00:00"
+            "time": "2026-10-30T18:04:02+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -623,16 +623,16 @@
         },
         {
             "name": "composer/semver",
-            "version": "3.5.2",
+            "version": "3.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/semver.git",
-                "reference": "9dfce66f1e97360ea5e6d3e38ab14277e4cc591e"
+                "reference": "d92543b7ede9c4ec6b59853cefb061e39866d2cf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/semver/zipball/9dfce66f1e97360ea5e6d3e38ab14277e4cc591e",
-                "reference": "9dfce66f1e97360ea5e6d3e38ab14277e4cc591e",
+                "url": "https://api.github.com/repos/composer/semver/zipball/d92543b7ede9c4ec6b59853cefb061e39866d2cf",
+                "reference": "d92543b7ede9c4ec6b59853cefb061e39866d2cf",
                 "shasum": ""
             },
             "require": {
@@ -684,7 +684,7 @@
             "support": {
                 "irc": "ircs://irc.libera.chat:6697/composer",
                 "issues": "https://github.com/composer/semver/issues",
-                "source": "https://github.com/composer/semver/tree/3.5.2"
+                "source": "https://github.com/composer/semver/tree/3.6.0"
             },
             "funding": [
                 {
@@ -696,7 +696,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-22T15:37:26+00:00"
+            "time": "2026-10-29T09:13:34+00:00"
         },
         {
             "name": "firebase/php-jwt",
@@ -1416,44 +1416,15 @@
         },
         {
             "name": "ministryofjustice/website-builder-blocks",
-            "version": "dev-main",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/ministryofjustice/website-builder-blocks.git",
-                "reference": "4d660ff915ff45d8ba17e31eb8958788a7f6c6a9"
-            },
+            "version": "2.3.9",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/4d660ff915ff45d8ba17e31eb8958788a7f6c6a9",
-                "reference": "4d660ff915ff45d8ba17e31eb8958788a7f6c6a9",
-                "shasum": ""
+                "url": "https://github.com/ministryofjustice/website-builder-blocks/releases/download/2.3.9/website-builder-blocks-2.3.9.zip"
             },
-            "require-dev": {
-                "composer/composer": "*",
-                "squizlabs/php_codesniffer": "*"
+            "require": {
+                "composer/installers": "^2.0"
             },
-            "default-branch": true,
-            "type": "wordpress-plugin",
-            "scripts": {
-                "phpcs-config-set": [
-                    "phpcs --config-set ignore_warnings_on_exit 1"
-                ],
-                "phpcs": [
-                    "phpcs --extensions=php --ignore=*/vendor/* --standard=PSR12 ."
-                ],
-                "phpcbf": [
-                    "phpcbf --extensions=php --ignore=*/vendor/* --standard=PSR12 ."
-                ]
-            },
-            "license": [
-                "MIT"
-            ],
-            "description": "WP plugin that adds addtional blocks.",
-            "support": {
-                "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/2.3.8",
-                "issues": "https://github.com/ministryofjustice/website-builder-blocks/issues"
-            },
-            "time": "2026-10-19T09:57:44+00:00"
+            "type": "wordpress-plugin"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
@@ -1493,12 +1464,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/wp-moj-blocks.git",
-                "reference": "4ab45a4ce05d78cf19487bf68c9d392792faccd4"
+                "reference": "60b00fd52bd2e2a844d7902731582261e469c476"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/wp-moj-blocks/zipball/4ab45a4ce05d78cf19487bf68c9d392792faccd4",
-                "reference": "4ab45a4ce05d78cf19487bf68c9d392792faccd4",
+                "url": "https://api.github.com/repos/ministryofjustice/wp-moj-blocks/zipball/60b00fd52bd2e2a844d7902731582261e469c476",
+                "reference": "60b00fd52bd2e2a844d7902731582261e469c476",
                 "shasum": ""
             },
             "require-dev": {
@@ -1525,7 +1496,7 @@
                 "source": "https://github.com/ministryofjustice/wp-moj-blocks/tree/numbered-paragraphs",
                 "issues": "https://github.com/ministryofjustice/wp-moj-blocks/issues"
             },
-            "time": "2026-10-28T12:31:06+00:00"
+            "time": "2026-10-29T13:07:32+00:00"
         },
         {
             "name": "ministryofjustice/wp-s3-uploads",
@@ -3637,16 +3608,16 @@
         },
         {
             "name": "symfony/http-client",
-            "version": "v7.4.21",
+            "version": "v7.4.22",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-client.git",
-                "reference": "121bf3a973bfd852db85ec32d0d64e9fbed4449b"
+                "reference": "9dd7ba9dc326b37d7f6e19588de79b5d91b20d66"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-client/zipball/121bf3a973bfd852db85ec32d0d64e9fbed4449b",
-                "reference": "121bf3a973bfd852db85ec32d0d64e9fbed4449b",
+                "url": "https://api.github.com/repos/symfony/http-client/zipball/9dd7ba9dc326b37d7f6e19588de79b5d91b20d66",
+                "reference": "9dd7ba9dc326b37d7f6e19588de79b5d91b20d66",
                 "shasum": ""
             },
             "require": {
@@ -3714,7 +3685,7 @@
                 "http"
             ],
             "support": {
-                "source": "https://github.com/symfony/http-client/tree/v7.4.21"
+                "source": "https://github.com/symfony/http-client/tree/v7.4.22"
             },
             "funding": [
                 {
@@ -3734,7 +3705,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-10-13T15:31:38+00:00"
+            "time": "2026-10-26T21:52:50+00:00"
         },
         {
             "name": "symfony/http-client-contracts",
@@ -3820,16 +3791,16 @@
         },
         {
             "name": "symfony/options-resolver",
-            "version": "v7.4.8",
+            "version": "v7.4.22",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/options-resolver.git",
-                "reference": "2888fcdc4dc2fd5f7c7397be78631e8af12e02b4"
+                "reference": "c95dd81729944936b48f9fecb38ff524eeaf97c0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/options-resolver/zipball/2888fcdc4dc2fd5f7c7397be78631e8af12e02b4",
-                "reference": "2888fcdc4dc2fd5f7c7397be78631e8af12e02b4",
+                "url": "https://api.github.com/repos/symfony/options-resolver/zipball/c95dd81729944936b48f9fecb38ff524eeaf97c0",
+                "reference": "c95dd81729944936b48f9fecb38ff524eeaf97c0",
                 "shasum": ""
             },
             "require": {
@@ -3867,7 +3838,7 @@
                 "options"
             ],
             "support": {
-                "source": "https://github.com/symfony/options-resolver/tree/v7.4.8"
+                "source": "https://github.com/symfony/options-resolver/tree/v7.4.22"
             },
             "funding": [
                 {
@@ -3887,7 +3858,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-03-24T13:12:05+00:00"
+            "time": "2026-10-18T14:39:27+00:00"
         },
         {
             "name": "symfony/polyfill-ctype",
@@ -4223,16 +4194,16 @@
         },
         {
             "name": "symfony/process",
-            "version": "v7.4.21",
+            "version": "v7.4.22",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
-                "reference": "e5247f4a5e0797d232ad8e8e6803aeb341843c83"
+                "reference": "a5a6912edbbfc4c98cd080bc4bbe37c8e7eeb20a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/process/zipball/e5247f4a5e0797d232ad8e8e6803aeb341843c83",
-                "reference": "e5247f4a5e0797d232ad8e8e6803aeb341843c83",
+                "url": "https://api.github.com/repos/symfony/process/zipball/a5a6912edbbfc4c98cd080bc4bbe37c8e7eeb20a",
+                "reference": "a5a6912edbbfc4c98cd080bc4bbe37c8e7eeb20a",
                 "shasum": ""
             },
             "require": {
@@ -4264,7 +4235,7 @@
             "description": "Executes commands in sub-processes",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/process/tree/v7.4.21"
+                "source": "https://github.com/symfony/process/tree/v7.4.22"
             },
             "funding": [
                 {
@@ -4284,7 +4255,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-10-08T16:56:12+00:00"
+            "time": "2026-10-25T14:40:16+00:00"
         },
         {
             "name": "symfony/service-contracts",
@@ -4646,15 +4617,15 @@
         },
         {
             "name": "wpackagist-plugin/ewww-image-optimizer",
-            "version": "8.9.0",
+            "version": "8.9.1",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/ewww-image-optimizer/",
-                "reference": "tags/8.9.0"
+                "reference": "tags/8.9.1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/ewww-image-optimizer.8.9.0.zip"
+                "url": "https://downloads.wordpress.org/plugin/ewww-image-optimizer.8.9.1.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -4916,10 +4887,10 @@
         },
         {
             "name": "wpengine/advanced-custom-fields-pro",
-            "version": "6.8.10",
+            "version": "6.8.11",
             "dist": {
                 "type": "zip",
-                "url": "https://connect.advancedcustomfields.com/v2/plugins/composer_download?s=composer&p=pro&t=6.8.10"
+                "url": "https://connect.advancedcustomfields.com/v2/plugins/composer_download?s=composer&p=pro&t=6.8.11"
             },
             "require": {
                 "composer/installers": "~1.0 || ~2.0"
@@ -5023,7 +4994,6 @@
         "ministryofjustice/hale-dash": 20,
         "ministryofjustice/justice": 20,
         "ministryofjustice/ppo": 20,
-        "ministryofjustice/website-builder-blocks": 20,
         "ministryofjustice/wp-moj-blocks": 20
     },
     "prefer-stable": true,
