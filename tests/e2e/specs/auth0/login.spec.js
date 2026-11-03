@@ -1,10 +1,10 @@
 // Signing in and out through Auth0, on the sites seed.sh activates the Auth0
-// plugin on, against the mock tenant (auth0-mock/server.js). Every test starts
+// plugin on, against the mock tenant (stack/auth0-mock.js). Every test starts
 // with a fresh browser: no saved WordPress login and no tenant session.
 //
 // The assertions are about what a person sees, not how the plugin gets there,
 // so they hold for any version of the plugin that keeps the same behaviour.
-// specs/auth0-requests/ checks what it sends the tenant.
+// request-shapes.spec.js checks what it sends the tenant.
 
 const { test, expect } = require("../../support/test");
 const { LOGIN_PATH } = require("../../support/stack");

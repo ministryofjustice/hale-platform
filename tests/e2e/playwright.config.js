@@ -85,6 +85,7 @@ module.exports = defineConfig({
     {
       name: "auth0",
       testMatch: /specs\/auth0\/.*\.spec\.js/,
+      testIgnore: /specs\/auth0\/request-shapes\.spec\.js/,
       dependencies: ["setup"],
       workers: 1,
       use: { ...devices["Desktop Chrome"], baseURL: auth0Sites.main.url },
@@ -92,7 +93,7 @@ module.exports = defineConfig({
     // What the plugin sent the tenant during the auth0 project's tests.
     {
       name: "auth0-requests",
-      testMatch: /specs\/auth0-requests\/.*\.spec\.js/,
+      testMatch: /specs\/auth0\/request-shapes\.spec\.js/,
       dependencies: ["auth0"],
     },
   ],

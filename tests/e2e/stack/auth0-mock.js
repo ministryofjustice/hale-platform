@@ -28,8 +28,9 @@
 // plugin that sends users back to a different address fails here as it would
 // against the real tenant.
 //
-// Every request except /__test/* and the favicon is recorded;
-// GET /__test/requests returns them. specs/auth0-requests/ compares their shape with a baseline.
+// Every request except /__test/* and the favicon is recorded; GET
+// /__test/requests returns them. specs/auth0/request-shapes.spec.js compares
+// their shape with a baseline.
 //
 // No npm packages: it runs on the plain node image.
 

@@ -1,13 +1,12 @@
 // The mock Auth0 tenant and the sites that sign in through it, shared by
-// specs/auth0/, specs/auth0-requests/ and playwright.config.js. See "Auth0
-// login tests" in README.md.
+// specs/auth0/ and playwright.config.js. See "Auth0 login tests" in README.md.
 
 const { expect } = require("@playwright/test");
 const { NETWORK_URL } = require("./stack");
 
 // The tenant's domain and the test application's client ID:
 // x-auth0-tenant in docker-compose.test.yml, which WordPress and the mock
-// (auth0-mock/server.js) both read.
+// (stack/auth0-mock.js) both read.
 const AUTH0_DOMAIN = "auth0.e2e.test";
 const AUTH0_URL = `https://${AUTH0_DOMAIN}/`;
 const CLIENT_ID = "e2e-auth0-client-id";
@@ -20,7 +19,7 @@ const CLIENT_SECRET = "e2e-auth0-client-secret-test-only";
 const FALLBACK_PARAM = "e2e_login_bypass";
 const FALLBACK_SECRET = "e2e-login-bypass-secret-test-only";
 
-// The mock's session cookie (SESSION_COOKIE in auth0-mock/server.js).
+// The mock's session cookie (SESSION_COOKIE in stack/auth0-mock.js).
 const SESSION_COOKIE = "auth0_mock_session";
 
 // The sites seed.sh activates the Auth0 plugin on. The mock's Allowed
@@ -97,8 +96,8 @@ async function loggedInCookie(context) {
 }
 
 // The version of the Auth0 plugin the test sites run, which they send in a
-// header (seed/mu-plugins/e2e-auth0-mock.php). For anything that differs by
-// version on purpose.
+// header (seed/e2e-auth0-mock.php). For anything that differs by version on
+// purpose.
 async function auth0PluginVersion(request) {
   return (await request.get(auth0Sites.main.url)).headers()["x-e2e-auth0-plugin"];
 }

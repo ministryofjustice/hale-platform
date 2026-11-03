@@ -16,7 +16,7 @@
 # and nothing here can collide with the hale-platform project.
 name: ${HALE_TEST_PROJECT:-hale-test}
 
-# The mock Auth0 tenant (auth0-mock below, tests/e2e/auth0-mock/server.js):
+# The mock Auth0 tenant (auth0-mock below, tests/e2e/stack/auth0-mock.js):
 # its domain and the test application's credentials. WordPress reads them as
 # it reads the real tenant's (opt/scripts/config.sh), and the mock reads the
 # same variables. The Auth0 plugin is active only on the sites seed.sh creates
@@ -99,7 +99,7 @@ services:
     volumes:
       - wpcore:/var/www/html
       # The mock Auth0 tenant's TLS certificate, which WordPress's HTTP API is
-      # told to trust by seed/mu-plugins/e2e-auth0-mock.php.
+      # told to trust by seed/e2e-auth0-mock.php.
       - ./tests/e2e/.stack/certs/auth0-mock.pem:/etc/hale-e2e/auth0-mock.pem:ro
     environment:
       <<: *wp-env
@@ -143,7 +143,7 @@ services:
       timeout: 3s
       retries: 30
 
-  # Mock Auth0 tenant (tests/e2e/auth0-mock/server.js) for specs/auth0/. At
+  # Mock Auth0 tenant (tests/e2e/stack/auth0-mock.js) for specs/auth0/. At
   # https://auth0.e2e.test/ on both networks, so the browser and WordPress
   # reach it at the same address. stack.sh generates its certificates. The
   # callbacks cover both plugin versions: index.php?auth0=1 for 4.x, the login
@@ -151,7 +151,7 @@ services:
   auth0-mock:
     image: node:24.22.1-alpine3.24
     user: node
-    command: ["node", "/auth0-mock/server.js"]
+    command: ["node", "/auth0-mock.js"]
     init: true
     read_only: true
     cap_drop: [ALL]
@@ -161,7 +161,7 @@ services:
     sysctls:
       net.ipv4.ip_unprivileged_port_start: 0
     volumes:
-      - ./tests/e2e/auth0-mock:/auth0-mock:ro
+      - ./tests/e2e/stack/auth0-mock.js:/auth0-mock.js:ro
       - ./tests/e2e/.stack/certs:/certs:ro
     environment:
       <<: *auth0-tenant

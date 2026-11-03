@@ -197,7 +197,7 @@ done
 # ---------------------------------------------------------------------------
 
 # Trust the mock tenant's certificate (see the file).
-cp /seed/mu-plugins/e2e-auth0-mock.php wp-content/mu-plugins/
+cp /seed/e2e-auth0-mock.php wp-content/mu-plugins/
 
 wp_network user create e2esiteadmin e2esiteadmin@example.test \
     --role=subscriber --user_pass="$PASSWORD" --display_name="E2E site admin"

@@ -123,7 +123,7 @@ ensure_certificate() {
 
 # The mock Auth0 tenant's certificates (auth0-mock in docker-compose.test.yml):
 # its TLS certificate for auth0.e2e.test, which WordPress is told to trust
-# (seed/mu-plugins/e2e-auth0-mock.php), and the key it signs ID tokens with.
+# (seed/e2e-auth0-mock.php), and the key it signs ID tokens with.
 # The JWKS publishes that key as a certificate (x5c), as Auth0 does, so it is
 # one too. Test-only and world readable, like the localhost key.
 ensure_auth0_mock_certificates() {
