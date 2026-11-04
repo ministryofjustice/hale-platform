@@ -224,53 +224,17 @@ metadata:
         return 302 $hale_holding_redirect;
       }
       {{- end }}
-      if ($uri !~ ^/\.well-known/) {
-        rewrite ^ /__holding-page last;
+      #     if ($uri !~ ^/\.well-known/) {
+      #       rewrite ^ /__holding-page last;
+      #     }
+      if ($arg_holdingpage = "1") {
+          rewrite ^ /__holding-page last;
       }
       location = /__holding-page {
         internal;
         default_type text/html;
         add_header Cache-Control "no-store" always;
-        return 200 '<!DOCTYPE html>
-        <html lang="en">
-          <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <title>Error, service unavailable</title>
-            <script defer>
-              const url = window.location.href;
-              const sites = [
-                {
-                  title: 'CCRC',
-                  url: 'websitebuilder.service.justice.gov.uk/ccrc',
-                  extraContent: '<p>For careers, please visit <a href="https://careers.ccrc.gov.uk/">The CCRC vacancies site</a>.</p>',
-                },
-                {
-                  title: 'the Prison and Probation Jobs website',
-                  url: 'websitebuilder.service.justice.gov.uk/ppj',
-                  extraContent: '<p>For job listings, please go to <a href="https://jobs.justice.gov.uk/careers/SearchJobs">The Justice Jobs website</a>.</p>',
-                },
-              ];
-              const siteName = document.getElementById("site-name");
-              const extra = document.getElementById("extra");
-              sites.forEach(site => {
-                if ((window.location.hostname + window.location.pathname).includes(site.url)) {
-                  siteName.innerHTML = site.title;
-                  extra.innerHTML = site.extraContent;
-                }
-              });
-            </script>
-          </head>
-          <body>
-            <main style="max-width: 1000px;margin: 1rem auto;font-family: sans-serif;font-size: 1.2rem;">
-              <h1 id="title">Thank you for visiting <span id="site-name">our website</span></h1>
-              <p>We&rsquo;re carrying out essential maintenance and improvements. The website is temporarily unavailable while this work is completed.</p>
-              <p>We apologise for any inconvenience and appreciate your patience.</p>
-              <p id="extra"></p>
-            </main>
-          </body>
-        </html>
-        ';
+        return 200 '{{ .Files.Get "templates/holding-page.html" }}';
       }
       {{- end }}
 spec:

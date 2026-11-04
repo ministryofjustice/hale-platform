@@ -284,7 +284,7 @@ ingress:
   # holding page redirects below when they are on. Only /.well-known/ paths are
   # otherwise unaffected.
   holdingPage:
-    enabled: false
+    enabled: true
     # Hosts sent elsewhere while the holding page is up, and only then: they
     # apply when both holdingPage.enabled and redirects.enabled are true. Each
     # is a 302 to one fixed URL, whatever the path. A host must be one this
