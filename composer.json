@@ -120,7 +120,7 @@
     "ministryofjustice/wp-moj-blocks": "4.3.0",
     "ministryofjustice/wp-s3-uploads": "2.0.1",
     "oscarotero/env": "^1.0",
-    "php": ">=8.0",
+    "php": ">=8.2",
     "relevanssi/relevanssi-premium": "2.29.0",
     "sentry/sdk": "^3.3",
     "vlucas/phpdotenv": "^3.0",
