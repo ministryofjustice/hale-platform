@@ -229,7 +229,19 @@ metadata:
         internal;
         default_type text/html;
         add_header Cache-Control "no-store" always;
-        return 200 '{{ .Files.Get "files/holding-page.html" | replace "\\" "\\\\" | replace "\t" "" |  replace "\n" "" | replace "\r" "" }}';
+        if ($arg_site = "icrir") {
+          return 503 '{{ regexReplaceAll "(?s)<!--.*?-->" (.Files.Get "files/icrir.html") "" | replace "'" "&#39;" | replace "\\" "\\\\" | replace "\t" "" | replace "\n" "" | replace "\r" "" }}';
+        }
+        if ($host = "icrir.independent-inquiry.uk") {
+          return 503 '{{ regexReplaceAll "(?s)<!--.*?-->" (.Files.Get "files/icrir.html") "" | replace "'" "&#39;" | replace "\\" "\\\\" | replace "\t" "" | replace "\n" "" | replace "\r" "" }}';
+        }
+        if ($arg_site = "ppj") {
+          return 503 '{{ regexReplaceAll "<!--[\\s\\S]*?-->" (.Files.Get "files/ppj.html") "" | replace "'" "&#39;" | replace "\\" "\\\\" | replace "\t" "" | replace "\n" "" | replace "\r" "" }}';
+        }
+        if ($host = "prisonandprobationjobs.gov.uk/") {
+          return 503 '{{ regexReplaceAll "<!--[\\s\\S]*?-->" (.Files.Get "files/ppj.html") "" | replace "'" "&#39;" | replace "\\" "\\\\" | replace "\t" "" | replace "\n" "" | replace "\r" "" }}';
+        }
+        return 503 '{{ regexReplaceAll "<!--[\\s\\S]*?-->" (.Files.Get "files/holding-page.html") "" | replace "'" "&#39;" | replace "\\" "\\\\" | replace "\t" "" | replace "\n" "" | replace "\r" "" }}';
       }
       {{- end }}
 spec:
