@@ -90,6 +90,14 @@ wp_network eval-file /seed/activate-plugins.php \
 # the repo. support/stack.js has the same slug.
 wp_network site option update whl_page e2e-test-login
 
+# Uploads. fileupload_maxk matches PHP's upload_max_filesize (30MB,
+# opt/php/www.conf), so PHP sets the limit. upload_filetypes is the network's
+# type list, which the themes add to or take from. specs/all-sites/uploads.spec.js
+# and specs/hale/upload-size.spec.js test both.
+wp_network site option update fileupload_maxk 30720
+wp_network site option update upload_filetypes \
+    "jpg jpeg png gif webp mov avi mpg 3gp 3g2 midi mid pdf doc ppt odt pptx docx pps ppsx xls xlsx key mp3 ogg flac m4a wav mp4 m4v webm ogv flv"
+
 # ---------------------------------------------------------------------------
 # Users
 #
