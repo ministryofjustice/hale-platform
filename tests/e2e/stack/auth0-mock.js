@@ -17,6 +17,7 @@
 //   GET  /userinfo
 //   GET  /api/v2/users/{id}            Management API, client_credentials token
 //   GET  /v2/logout, /oidc/logout      ends the mock session
+//   GET  /avatar/{name}                the profile picture in the ID token
 //
 // Who signs in, and whether Auth0 returns an error instead, is the mock
 // session: a cookie on this domain holding the identity as JSON. A test sets
@@ -53,6 +54,10 @@ const CERTS = process.env.AUTH0_MOCK_CERTS || "/certs";
 const PORT = Number(process.env.AUTH0_MOCK_PORT || "443");
 
 const SESSION_COOKIE = "auth0_mock_session";
+const AVATAR_PNG = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+  "base64",
+);
 const MANAGEMENT_SCOPE = "read:users update:users create:users delete:users create:user_tickets read:connections";
 const CODE_TTL_MS = 60_000;
 const TOKEN_TTL_S = 86_400;
@@ -541,6 +546,11 @@ function route(req, res, url, rawBody) {
   }
 
   if (url.pathname.startsWith("/api/v2/")) return managementApi(req, res, url);
+  // Everyone's profile picture (picture in profileClaims): one blank pixel.
+  if (req.method === "GET" && url.pathname.startsWith("/avatar/")) {
+    res.writeHead(200, { "Content-Type": "image/png", "Cache-Control": "no-store" });
+    return res.end(AVATAR_PNG);
+  }
 
   return send(res, 404, { error: "not_found", error_description: `The mock tenant has no ${key}` });
 }
