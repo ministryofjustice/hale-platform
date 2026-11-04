@@ -146,7 +146,7 @@ little as the tests need:
 | | |
 | --- | --- |
 | Packages | `@playwright/test` and `@axe-core/playwright`, installed by `npm ci --ignore-scripts` from `package-lock.json` at image build time (`--omit=dev`, so not `browserstack-node-sdk`). No install scripts run. |
-| Network | The `e2e` network only, which is `internal`: nginx is the one thing it can reach. No internet, no host. |
+| Network | The `e2e` network only, which is `internal`: nginx and the mock Auth0 tenant are the only things it can reach. No internet, no host. |
 | Files | `tests/e2e` read-only. Writable: `.auth/` and `output/` only. |
 | Docker | No socket. Starting, seeding and removing the stack happens on the host. |
 | Process | Non-root, all capabilities dropped, `no-new-privileges`, read-only root filesystem. |
@@ -281,8 +281,9 @@ tests/
     specs/all-sites/       run once for every site
     specs/<site>/          run for that site only
     specs/network/         network admin, run against the main site
+    specs/auth0/           login through the mock Auth0 tenant
     seed/                  seed script, sites and content fixtures
-    stack/                 image build and stack.sh, which runs the stack
+    stack/                 image build, stack.sh, which runs the stack, and the mock Auth0 tenant
     docker/                the Playwright image and its entrypoint
     support/               stack settings, the shared `test` fixture, the forwarder
     playwright.config.js   Playwright configuration
@@ -311,6 +312,66 @@ tests/
 - Start logged in with `test.use({ storageState: authFile("editor") })`.
 - Tests share one stack, so a test that creates content gives it a unique
   title rather than assuming it is the only one.
+
+## Auth0 login tests
+
+The deployed sites log in through Auth0 (the `auth0` plugin, Login by Auth0).
+The test stack runs a mock Auth0 tenant, so the login can be tested end to end
+without the real one, and before and after a plugin upgrade.
+
+- **The tenant.** `stack/auth0-mock.js`, the `auth0-mock` service in
+  `docker-compose.test.yml`, at `https://auth0.e2e.test/`. It implements what
+  the plugin calls: `/authorize` (a one-field login page), `/oauth/token`,
+  the JWKS, `/userinfo`, the Management API's `GET /api/v2/users/{id}` and
+  logout. ID tokens are signed and checked as real ones are. Like the real
+  tenant, it refuses callback and logout addresses that are not in its
+  Allowed Callback URLs and Allowed Logout URLs, which are set in
+  `docker-compose.test.yml`. It runs on the plain `node` Alpine image and has
+  no npm packages.
+- **The sites.** The seed creates `/auth0/`, `/auth0-two/`,
+  `/auth0-private/` (wp-force-login) and `/auth0-network/` and activates the
+  plugin on those alone, with its default settings. On `/auth0-network/` it is
+  active without its activation hook having run there, as on every site but
+  one when the plugin is network-activated. `/auth0-two/` has hale-components'
+  switch user on, and `e2esiteadmin` is the administrator of `/auth0/` only. Every other site keeps the WordPress login form,
+  so the rest of the tests are unaffected. `x-auth0-tenant` in
+  `docker-compose.test.yml` gives WordPress the tenant's domain and client
+  credentials, as the deployed environments' secrets do.
+- **Who signs in.** The tenant's session is a cookie on its own domain, so
+  tests running in parallel never share one. `support/auth0.js` signs in
+  through the login page (`signInAtAuth0`) or sets the session directly
+  (`setAuth0Session`), which can also make the tenant return an error. Its
+  `identities` are the seeded users' email addresses, plus one with no
+  WordPress account and one whose address is not verified.
+- **Certificates.** `stack/stack.sh` generates the tenant's TLS certificate
+  and ID token signing key in `.stack/certs/`. WordPress checks the TLS
+  certificate against its own CA bundle, so the seed copies
+  `seed/e2e-auth0-mock.php` into the test site, which makes it trust the
+  mock's certificate for requests to the tenant.
+
+`specs/auth0/` tests what a person sees: signing in, returning to the page
+they asked for, moving between two Auth0 sites, logging out of both WordPress
+and Auth0 (and not without WordPress's nonce), the errors for someone Auth0
+signs in but WordPress must not, the WordPress session the login leaves,
+signing in on a site the plugin was network-activated onto, switching user,
+and that a site administrator cannot read or change the tenant settings.
+
+`specs/auth0/request-shapes.spec.js` runs after them, as its own project
+(`auth0-requests`), and compares every kind of request the plugin sent the
+tenant during the run (the global setup clears the mock's log first) with
+the baseline for the plugin's major version,
+`specs/auth0/request-shapes.v<major>.json`, with the values that change on
+every request (state, nonce, code) left out. The sites send the version they
+run in an `X-E2E-Auth0-Plugin` header (from the seed's test-only mu-plugin).
+Each run writes its shapes to `output/auth0-request-shapes.v<major>.json`.
+When the plugin changes what it sends, review the difference, then copy the
+new file over that version's baseline.
+
+    make test-e2e-run FILE=specs/auth0/
+
+runs the Auth0 tests, the request check included. Name a single spec to leave
+the check out: it compares every request the full run makes. They need the
+local stack: a BrowserStack browser cannot reach the tenant.
 
 ## dev/ clones and composer.lock
 
