@@ -106,6 +106,8 @@ ingress:
       certName: judicialappointments-cert
     - name: justiceinspectorates.gov.uk
       certName: justiceinspectorates-cert
+    - name: laa.jobs.justice.gov.uk
+      certName: laajobs-cert
     - name: lawcom.gov.uk
       certName: lawcom-cert
     - name: layobservers.org
@@ -194,6 +196,8 @@ ingress:
       certName: justice-www-cert
     - name: www.justiceinspectorates.gov.uk
       certName: justiceinspectorates-www-cert
+    - name: www.laa.jobs.justice.gov.uk
+      certName: laajobs-www-cert
     - name: www.lawcom.gov.uk
       certName: lawcom-www-cert
     - name: www.layobservers.org
