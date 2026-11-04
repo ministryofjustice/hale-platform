@@ -191,63 +191,25 @@ done
 #                  auth0/WP_Auth0.php, as on every site activated before the
 #                  upgrade from 4.x. 5.x and later's file is auth0/wpAuth0.php
 #
-# Each has a members-area page. The plugin is activated last: it saves its
-# default settings on activation, and the default address to send users to
-# after login is the site's home URL, so home must already be https.
+# Each has a members-area page. auth0-sites.php sets them up, booting
+# WordPress once for the network and once for each site. The plugin is
+# activated last: it saves its default settings on activation, and the default
+# address to send users to after login is the site's home URL, so home must
+# already be https.
 # ---------------------------------------------------------------------------
 
 # Trust the mock tenant's certificate (see the file).
 cp /seed/e2e-auth0-mock.php wp-content/mu-plugins/
 
-wp_network user create e2esiteadmin e2esiteadmin@example.test \
-    --role=subscriber --user_pass="$PASSWORD" --display_name="E2E site admin"
-
-for path in auth0 auth0-two auth0-private auth0-network auth0-legacy; do
-    echo "Seeding Auth0 site '$path'"
-    url="$NETWORK/$path/"
-    wp_network site create --slug="$path" --title="Auth0 E2E ($path)" \
-        --email="e2eadmin@example.test" --porcelain >/dev/null
-    wp --url="$url" option update home "https://${url%/}"
-    wp --url="$url" option update siteurl "https://${url%/}"
-    wp --url="$url" theme activate hale
-    wp --url="$url" option update revisionary_activation_done 1
-    wp --url="$url" option update revisionary_activation 0
-    for role in editor author contributor; do
-        wp --url="$url" user set-role "e2e$role" "$role"
-    done
-    wp --url="$url" option update permalink_structure "/%postname%/"
-    wp --url="$url" option update blog_public 0
-    wp --url="$url" post create --post_type=page --post_status=publish \
-        --post_title="Members area" --post_name=members-area \
-        --post_content="<!-- wp:paragraph --><p>Only for signed-in users.</p><!-- /wp:paragraph -->" \
-        >/dev/null
-    wp --url="$url" eval-file /seed/theme-setup.php
-    wp --url="$url" rewrite flush
-    if [ "$path" = auth0-network ]; then
-        # In the site's active plugins, as a network activation would make it
-        # active there, but without activate_plugin(): no activation hook.
-        wp --url="$url" eval '
-            require_once ABSPATH . "wp-admin/includes/plugin.php";
-            $plugin = "auth0/" . array_key_first(get_plugins("/auth0"));
-            update_option("active_plugins", array_merge((array) get_option("active_plugins", []), [$plugin]));
-            echo "Plugin $plugin active without its activation hook.\n";'
-    elif [ "$path" = auth0-legacy ]; then
-        # The 4.x file name, whichever version is installed, and no activation
-        # hook: what a site activated before the upgrade has stored.
-        wp --url="$url" option update active_plugins '["auth0/WP_Auth0.php"]' --format=json
-    else
-        wp --url="$url" plugin activate auth0
-    fi
-done
-# activate_plugin() reports success even when the plugin stops with a fatal
-# error as it loads, so check that every site really runs it: is-active fails
-# when the plugin is inactive, and when loading it stops WordPress.
-for path in auth0 auth0-two auth0-private auth0-network auth0-legacy; do
+auth0_sites="auth0 auth0-two auth0-private auth0-network auth0-legacy"
+wp_network eval-file /seed/auth0-sites.php create $auth0_sites
+for path in $auth0_sites; do
+    wp --url="$NETWORK/$path/" eval-file /seed/auth0-sites.php finish "$path"
+    # activate_plugin() reports success even when the plugin stops with a fatal
+    # error as it loads, so check that the site really runs it: is-active fails
+    # when the plugin is inactive, and when loading it stops WordPress.
     wp --url="$NETWORK/$path/" plugin is-active auth0 ||
         { echo "The Auth0 plugin is not running on /$path/" >&2; exit 1; }
 done
-wp --url="$NETWORK/auth0/" user set-role e2esiteadmin administrator
-wp --url="$NETWORK/auth0-two/" option update moj_component_settings '{"user_switch_active":"yes"}' --format=json
-wp --url="$NETWORK/auth0-private/" plugin activate wp-force-login
 
 echo "Seed complete"
