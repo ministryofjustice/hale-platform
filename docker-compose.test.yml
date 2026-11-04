@@ -223,8 +223,8 @@ services:
   # The Playwright tests. Node, Chromium and the npm packages live only in
   # this image (tests/e2e/docker/playwright.dockerfile), never on the host, and
   # the container gets as little as the tests need:
-  # - the e2e network only, which has no route out: nginx is the one thing it
-  #   can reach
+  # - the e2e network only, which has no route out: nginx and the mock Auth0
+  #   tenant are the only things it can reach
   # - tests/e2e read-only, so nothing in it can change code the host later
   #   runs (stack.sh, build.sh, the seed); writable mounts for its output only.
   #   Playwright deletes and recreates its results and report folders, which
@@ -325,9 +325,9 @@ services:
       - e2e
 
 networks:
-  # Joins the playwright container to nginx and nothing else. internal: no
-  # route to the host or the internet, so a compromised npm package in the
-  # image has nowhere to send anything.
+  # Joins the playwright container to nginx and the mock Auth0 tenant, and
+  # nothing else. internal: no route to the host or the internet, so a
+  # compromised npm package in the image has nowhere to send anything.
   e2e:
     internal: true
 

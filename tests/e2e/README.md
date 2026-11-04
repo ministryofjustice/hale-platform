@@ -146,7 +146,7 @@ little as the tests need:
 | | |
 | --- | --- |
 | Packages | `@playwright/test` and `@axe-core/playwright`, installed by `npm ci --ignore-scripts` from `package-lock.json` at image build time (`--omit=dev`, so not `browserstack-node-sdk`). No install scripts run. |
-| Network | The `e2e` network only, which is `internal`: nginx is the one thing it can reach. No internet, no host. |
+| Network | The `e2e` network only, which is `internal`: nginx and the mock Auth0 tenant are the only things it can reach. No internet, no host. |
 | Files | `tests/e2e` read-only. Writable: `.auth/` and `output/` only. |
 | Docker | No socket. Starting, seeding and removing the stack happens on the host. |
 | Process | Non-root, all capabilities dropped, `no-new-privileges`, read-only root filesystem. |
@@ -358,7 +358,8 @@ and that a site administrator cannot read or change the tenant settings.
 
 `specs/auth0/request-shapes.spec.js` runs after them, as its own project
 (`auth0-requests`), and compares every kind of request the plugin sent the
-tenant with the baseline for the plugin's major version,
+tenant during the run (the global setup clears the mock's log first) with
+the baseline for the plugin's major version,
 `specs/auth0/request-shapes.v<major>.json`, with the values that change on
 every request (state, nonce, code) left out. The sites send the version they
 run in an `X-E2E-Auth0-Plugin` header (from the seed's test-only mu-plugin).

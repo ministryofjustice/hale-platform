@@ -29,8 +29,9 @@
 // against the real tenant.
 //
 // Every request except /__test/* and the favicon is recorded; GET
-// /__test/requests returns them. specs/auth0/request-shapes.spec.js compares
-// their shape with a baseline.
+// /__test/requests returns them and DELETE clears them (global-setup.js, at
+// the start of every run). specs/auth0/request-shapes.spec.js compares their
+// shape with a baseline.
 //
 // No npm packages: it runs on the plain node image.
 
@@ -46,8 +47,8 @@ const CLIENT_ID = required("AUTH0_ENV_CLIENT_ID");
 const CLIENT_SECRET = required("AUTH0_ENV_CLIENT_SECRET");
 const ISSUER = `https://${DOMAIN}/`;
 const MANAGEMENT_AUDIENCE = `${ISSUER}api/v2/`;
-const CALLBACKS = list(process.env.AUTH0_MOCK_CALLBACKS);
-const LOGOUT_URLS = list(process.env.AUTH0_MOCK_LOGOUT_URLS);
+const CALLBACKS = list(required("AUTH0_MOCK_CALLBACKS"));
+const LOGOUT_URLS = list(required("AUTH0_MOCK_LOGOUT_URLS"));
 const CERTS = process.env.AUTH0_MOCK_CERTS || "/certs";
 const PORT = Number(process.env.AUTH0_MOCK_PORT || "443");
 
@@ -332,7 +333,7 @@ function authorize(req, res, url) {
   if (params.client_id !== CLIENT_ID) {
     return send(res, 400, page("Unknown client", `<p>client_id ${escapeHtml(params.client_id ?? "(none)")} is not an application on this tenant.</p>`));
   }
-  if (!redirectUri || (CALLBACKS.length && !CALLBACKS.includes(redirectUri))) {
+  if (!redirectUri || !CALLBACKS.includes(redirectUri)) {
     return send(res, 400, page("Callback URL mismatch", `<p>${escapeHtml(redirectUri ?? "(none)")} is not in the list of Allowed Callback URLs.</p>`));
   }
   if (params.response_type !== "code") {
@@ -496,7 +497,7 @@ function logout(req, res, url, returnParam) {
   if (!returnTo) {
     return send(res, 200, page("Logged out", "<p>You have been logged out.</p>"), { "Set-Cookie": CLEAR_SESSION });
   }
-  if (LOGOUT_URLS.length && !LOGOUT_URLS.includes(returnTo)) {
+  if (!LOGOUT_URLS.includes(returnTo)) {
     return send(res, 400, page("Logout URL mismatch", `<p>${escapeHtml(returnTo)} is not in the list of Allowed Logout URLs.</p>`), { "Set-Cookie": CLEAR_SESSION });
   }
   return redirect(res, returnTo, { "Set-Cookie": CLEAR_SESSION });
@@ -551,6 +552,9 @@ function testEndpoint(req, res, url) {
       return send(res, 200, { ok: true });
     case "GET /__test/requests":
       return send(res, 200, { requests });
+    case "DELETE /__test/requests":
+      requests.length = 0;
+      return send(res, 204, "");
     default:
       return send(res, 404, { error: "not_found" });
   }
@@ -569,7 +573,7 @@ const server = https.createServer({ key: read("auth0-mock-key.pem"), cert: read(
       record(req, url, rawBody);
       route(req, res, url, rawBody);
     } catch (error) {
-      console.error(`[auth0-mock] ${req.method} ${req.url}:`, error);
+      console.error("[auth0-mock] %s %s:", req.method, req.url, error);
       send(res, 500, { error: "server_error", error_description: String(error) });
     }
   });
@@ -577,6 +581,6 @@ const server = https.createServer({ key: read("auth0-mock-key.pem"), cert: read(
 
 server.listen(PORT, () => {
   console.log(`[auth0-mock] ${ISSUER} listening on ${PORT}`);
-  console.log(`[auth0-mock] Allowed Callback URLs: ${CALLBACKS.join(", ") || "(any)"}`);
-  console.log(`[auth0-mock] Allowed Logout URLs: ${LOGOUT_URLS.join(", ") || "(any)"}`);
+  console.log(`[auth0-mock] Allowed Callback URLs: ${CALLBACKS.join(", ")}`);
+  console.log(`[auth0-mock] Allowed Logout URLs: ${LOGOUT_URLS.join(", ")}`);
 });

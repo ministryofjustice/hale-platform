@@ -33,3 +33,14 @@ add_action('send_headers', function () {
         header('X-E2E-Auth0-Plugin: ' . $version);
     }
 });
+
+/**
+ * No cached tenant keys or API token: the 4.x plugin keeps them in
+ * transients, so on a stack kept between runs it would skip those requests
+ * and request-shapes.spec.js would miss their shapes. Each run fetches them
+ * again, so the request log depends on that run alone. The token's scope
+ * is left alone: the plugin reads it back as soon as it stores a new token.
+ */
+foreach (['WP_Auth0_JWKS_cache', 'auth0_api_token'] as $e2e_auth0_transient) {
+    add_filter("transient_{$e2e_auth0_transient}", '__return_false');
+}

@@ -126,19 +126,28 @@ ensure_certificate() {
 # (seed/e2e-auth0-mock.php), and the key it signs ID tokens with.
 # The JWKS publishes that key as a certificate (x5c), as Auth0 does, so it is
 # one too. Test-only and world readable, like the localhost key.
+#
+# docker-compose.test.yml mounts auth0-mock.pem on its own, and Docker makes
+# an empty directory in place of a missing file it is asked to mount.
 ensure_auth0_mock_certificates() {
-    local dir=$E2E_DIR/.stack/certs
-    mkdir -p "$dir"
+    local dir=$E2E_DIR/.stack/certs out
+    mkdir -p "$dir" || return 1
+    if [ -d "$dir/auth0-mock.pem" ] && ! rmdir "$dir/auth0-mock.pem"; then
+        echo "[e2e] $dir/auth0-mock.pem is a directory. Remove it and try again." >&2
+        return 1
+    fi
     if [ ! -f "$dir/auth0-mock.pem" ] || [ ! -f "$dir/auth0-mock-key.pem" ]; then
-        openssl req -x509 -newkey rsa:2048 -nodes -days 3650 \
+        out=$(openssl req -x509 -newkey rsa:2048 -nodes -days 3650 \
             -subj /CN=auth0.e2e.test \
             -addext "subjectAltName=DNS:auth0.e2e.test" \
-            -keyout "$dir/auth0-mock-key.pem" -out "$dir/auth0-mock.pem" 2>/dev/null
+            -keyout "$dir/auth0-mock-key.pem" -out "$dir/auth0-mock.pem" 2>&1) ||
+            { echo "[e2e] Could not make the mock Auth0 tenant's TLS certificate: $out" >&2; return 1; }
     fi
     if [ ! -f "$dir/auth0-signing.pem" ] || [ ! -f "$dir/auth0-signing-key.pem" ]; then
-        openssl req -x509 -newkey rsa:2048 -nodes -days 3650 \
+        out=$(openssl req -x509 -newkey rsa:2048 -nodes -days 3650 \
             -subj /CN=auth0.e2e.test \
-            -keyout "$dir/auth0-signing-key.pem" -out "$dir/auth0-signing.pem" 2>/dev/null
+            -keyout "$dir/auth0-signing-key.pem" -out "$dir/auth0-signing.pem" 2>&1) ||
+            { echo "[e2e] Could not make the mock Auth0 tenant's signing key: $out" >&2; return 1; }
     fi
     chmod 644 "$dir/auth0-mock-key.pem" "$dir/auth0-signing-key.pem"
 }

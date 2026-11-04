@@ -22,7 +22,9 @@ const { auth0PluginVersion, requestShapes, tenantRequests } = require("../../sup
 test("the plugin sends Auth0 the same requests as before", async ({ request }, testInfo) => {
   const version = await auth0PluginVersion(request);
   expect(version, "the site did not say which Auth0 plugin version it runs (X-E2E-Auth0-Plugin)").toBeTruthy();
-  const major = version.split(".")[0];
+  // Digits only: the major version is part of two file paths below.
+  const major = /^(\d+)\./.exec(version)?.[1];
+  expect(major, `X-E2E-Auth0-Plugin is not a version number: ${version}`).toBeTruthy();
   testInfo.annotations.push({ type: "auth0 plugin", description: version });
 
   const baseline = path.resolve(__dirname, `request-shapes.v${major}.json`);

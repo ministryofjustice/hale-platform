@@ -1,4 +1,5 @@
-// Wait until every site answers before any test starts.
+// Wait until every site answers before any test starts, then clear the mock
+// Auth0 tenant's request log.
 //
 // stack/stack.sh has already started and seeded the stack by the time
 // Playwright runs; this covers the moment between the seed finishing and
@@ -6,6 +7,7 @@
 
 const { request } = require("@playwright/test");
 const stack = require("./support/stack");
+const { AUTH0_URL } = require("./support/auth0");
 
 async function waitForSites(timeoutMs = 60_000) {
   const context = await request.newContext({ ignoreHTTPSErrors: true });
@@ -29,8 +31,23 @@ async function waitForSites(timeoutMs = 60_000) {
   }
 }
 
+// Clear the mock Auth0 tenant's request log, so specs/auth0/request-shapes.spec.js
+// compares this run's requests alone, also on a stack kept between runs.
+async function clearAuth0Requests() {
+  const context = await request.newContext({ ignoreHTTPSErrors: true });
+  try {
+    const response = await context.delete(`${AUTH0_URL}__test/requests`);
+    if (!response.ok()) {
+      throw new Error(`The mock Auth0 tenant did not clear its request log (status ${response.status()})`);
+    }
+  } finally {
+    await context.dispose();
+  }
+}
+
 module.exports = async function globalSetup() {
   const start = Date.now();
   await waitForSites();
   console.log(`[e2e] sites ready in ${((Date.now() - start) / 1000).toFixed(1)}s at ${stack.NETWORK_URL}`);
+  await clearAuth0Requests();
 };
