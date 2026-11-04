@@ -96,7 +96,7 @@ wp_network site option update whl_page e2e-test-login
 # and specs/hale/upload-size.spec.js test both.
 wp_network site option update fileupload_maxk 30720
 wp_network site option update upload_filetypes \
-    "jpg jpeg png gif webp mov avi mpg 3gp 3g2 midi mid pdf doc ppt odt pptx docx pps ppsx xls xlsx key mp3 ogg flac m4a wav mp4 m4v webm ogv flv"
+    "jpg jpeg png gif webp avif mov avi mpg 3gp 3g2 midi mid pdf doc ppt odt pptx docx pps ppsx xls xlsx key mp3 ogg flac m4a wav mp4 m4v webm ogv flv"
 
 # ---------------------------------------------------------------------------
 # Users

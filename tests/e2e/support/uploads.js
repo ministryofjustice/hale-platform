@@ -10,6 +10,14 @@ const { expect } = require("@playwright/test");
 
 const MB = 1024 * 1024;
 
+// The upload size limit: PHP's upload_max_filesize (opt/php/www.conf), which
+// seed/seed.sh matches with the network's fileupload_maxk. nginx and the
+// ingress accept a 32MB request, so a file at the limit gets to PHP.
+const UPLOAD_LIMIT = 30 * MB;
+
+// Attachments each page has uploaded, for deleteUploads().
+const uploaded = new WeakMap();
+
 // The file types and size limit WordPress gives the uploader for this site and
 // user. The Media Library prints them for its uploader in _wpPluploadSettings.
 async function uploadSettings(page) {
@@ -25,9 +33,9 @@ async function uploadSettings(page) {
 
 // Upload one file on media-new.php and wait for the uploader's answer:
 // { uploaded: true, url } or { uploaded: false, message }. Each file gets its
-// own .media-item: an Edit link and a Copy URL button once the attachment
-// exists, or an error, from the server (.error-div) or from the browser's
-// size check (.media-item.error).
+// own .media-item: an Edit link (to post.php?post=<attachment ID>) and a Copy
+// URL button once the attachment exists, or an error, from the server
+// (.error-div) or from the browser's size check (.media-item.error).
 async function uploadFile(page, file, { timeout = 30_000 } = {}) {
   if (!new URL(page.url()).pathname.endsWith("/wp-admin/media-new.php")) {
     await page.goto("wp-admin/media-new.php");
@@ -48,8 +56,13 @@ async function uploadFile(page, file, { timeout = 30_000 } = {}) {
           return null;
         }
         result = await item.evaluate((el) => {
-          if (el.querySelector(".edit-attachment")) {
-            return { uploaded: true, url: el.querySelector(".copy-attachment-url")?.dataset.clipboardText };
+          const edit = el.querySelector("a.edit-attachment");
+          if (edit) {
+            return {
+              uploaded: true,
+              id: new URL(edit.href).searchParams.get("post"),
+              url: el.querySelector(".copy-attachment-url")?.dataset.clipboardText,
+            };
           }
           if (el.matches(".error") || el.querySelector(".error-div")) {
             const message = el.innerText.replace(/^\s*Dismiss\s*/, "").replace(/\s+/g, " ").trim();
@@ -63,7 +76,35 @@ async function uploadFile(page, file, { timeout = 30_000 } = {}) {
     )
     .not.toBeNull();
 
+  if (result.uploaded) {
+    uploaded.set(page, [...(uploaded.get(page) ?? []), result.id]);
+  }
   return result;
+}
+
+// Delete the attachments uploadFile() added on this page, so a reused stack
+// does not fill up with test files. Through the REST API, with the nonce
+// WordPress gives a logged-in user at admin-ajax.php?action=rest-nonce.
+async function deleteUploads(page) {
+  const ids = uploaded.get(page) ?? [];
+  uploaded.delete(page);
+  if (!ids.length) {
+    return;
+  }
+
+  // Trimmed: anything on the network that prints whitespace ends up around it.
+  const body = await (await page.request.get("wp-admin/admin-ajax.php?action=rest-nonce")).text();
+  const nonce = body.trim();
+  if (!/^[0-9a-f]{10}$/.test(nonce)) {
+    throw new Error(`admin-ajax.php?action=rest-nonce returned ${JSON.stringify(body.slice(0, 200))}, not a nonce`);
+  }
+
+  for (const id of ids) {
+    const response = await page.request.delete(`wp-json/wp/v2/media/${id}?force=true`, {
+      headers: { "X-WP-Nonce": nonce },
+    });
+    expect(response.status(), `delete attachment ${id}`).toBe(200);
+  }
 }
 
 // Bytes that PHP's fileinfo reads as plain binary (application/octet-stream).
@@ -167,4 +208,13 @@ async function pngOfSize(page, size, name) {
   return { name, mimeType: "image/png", buffer };
 }
 
-module.exports = { MB, uploadSettings, uploadFile, syntheticFile, fillerBytes, pngOfSize };
+module.exports = {
+  MB,
+  UPLOAD_LIMIT,
+  uploadSettings,
+  uploadFile,
+  deleteUploads,
+  syntheticFile,
+  fillerBytes,
+  pngOfSize,
+};

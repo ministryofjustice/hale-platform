@@ -1,14 +1,14 @@
 const { test, expect } = require("../../support/test");
 const { authFile } = require("../../support/stack");
-const { MB, uploadSettings, uploadFile, syntheticFile, pngOfSize } = require("../../support/uploads");
+const { MB, UPLOAD_LIMIT, uploadFile, deleteUploads, syntheticFile, pngOfSize } = require("../../support/uploads");
 
 test.use({ storageState: authFile("editor") });
+test.afterEach(async ({ page }) => deleteUploads(page));
 
 // The size limit is the same on every site, so it is tested on the main site
-// only. It is PHP's upload_max_filesize (opt/php/www.conf), which seed/seed.sh
-// matches with the network's fileupload_maxk. nginx and the ingress accept a
-// 32MB request, so a file at the limit gets to PHP.
-const MAX_BYTES = 30 * MB;
+// only. specs/all-sites/uploads.spec.js checks the site's limit is
+// UPLOAD_LIMIT. Not on BrowserStack: these push about 70MB through its tunnel.
+test.skip(!!process.env.BROWSERSTACK_USERNAME, "Large uploads are too slow through the BrowserStack tunnel");
 
 // The stored file is fetched back, to show it arrived whole.
 async function expectUploaded(page, file) {
@@ -21,12 +21,7 @@ async function expectUploaded(page, file) {
 }
 
 test.describe("upload sizes", () => {
-  test.setTimeout(180_000);
-
-  test.beforeEach(async ({ page }) => {
-    const { maxBytes } = await uploadSettings(page);
-    expect(maxBytes, "upload size limit").toBe(MAX_BYTES);
-  });
+  test.describe.configure({ timeout: 180_000 });
 
   test("a very small file uploads", async ({ page }) => {
     const file = await syntheticFile(page, "png");
@@ -38,12 +33,12 @@ test.describe("upload sizes", () => {
     await expectUploaded(page, await pngOfSize(page, 10 * MB, "e2e-10mb.png"));
   });
 
-  test("a file of exactly the 30MB limit uploads", async ({ page }) => {
-    await expectUploaded(page, await pngOfSize(page, MAX_BYTES, "e2e-30mb.png"));
+  test("a file of exactly the limit uploads", async ({ page }) => {
+    await expectUploaded(page, await pngOfSize(page, UPLOAD_LIMIT, "e2e-at-limit.png"));
   });
 
   test("a file one byte over the limit is refused", async ({ page }) => {
-    const result = await uploadFile(page, await pngOfSize(page, MAX_BYTES + 1, "e2e-over-30mb.png"));
+    const result = await uploadFile(page, await pngOfSize(page, UPLOAD_LIMIT + 1, "e2e-over-limit.png"));
 
     expect(result.uploaded).toBe(false);
     expect(result.message).toContain("exceeds the maximum upload size for this site");

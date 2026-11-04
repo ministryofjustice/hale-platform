@@ -1,14 +1,21 @@
 const { test, expect } = require("../../support/test");
 const { authFile } = require("../../support/stack");
-const { MB, uploadSettings, uploadFile, syntheticFile, fillerBytes } = require("../../support/uploads");
+const {
+  UPLOAD_LIMIT,
+  uploadSettings,
+  uploadFile,
+  deleteUploads,
+  syntheticFile,
+  fillerBytes,
+} = require("../../support/uploads");
 
 test.use({ storageState: authFile("editor") });
+test.afterEach(async ({ page }) => deleteUploads(page));
 
 // The network's type list and size limit are set by seed/seed.sh. The themes
 // change the list: hale adds SVG (hale/inc/image-management.php), and justice
 // keeps documents out of the Media Library, for WP Document Revisions only
 // (justice/inc/documents/documents.php).
-const MAX_BYTES = 30 * MB;
 const THEME_TYPES = {
   hale: { adds: ["svg", "svgz"] },
   justice: { removes: ["doc", "docx", "pdf", "xls", "xlsx"] },
@@ -21,7 +28,7 @@ test("Media Library allows the expected file types, up to 30MB", async ({ page, 
   const { extensions, maxBytes } = await uploadSettings(page);
   test.info().annotations.push({ type: "allowed types", description: extensions.join(", ") });
 
-  expect(maxBytes, "upload size limit").toBe(MAX_BYTES);
+  expect(maxBytes, "upload size limit").toBe(UPLOAD_LIMIT);
   expect(extensions.filter((ext) => NEVER.includes(ext)), "types no site may accept").toEqual([]);
 
   const { adds = [], removes = [] } = THEME_TYPES[site.theme] ?? {};
