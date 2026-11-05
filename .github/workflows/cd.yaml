@@ -52,6 +52,8 @@ jobs:
       auth0-env-client-id: ${{ secrets.AUTH0_ENV_CLIENT_ID }}
       auth0-env-client-secret: ${{ secrets.AUTH0_ENV_CLIENT_SECRET }}
       auth0-env-domain: ${{ secrets.AUTH0_ENV_DOMAIN }}
+      auth0-env-fallback-param: ${{ secrets.AUTH0_ENV_FALLBACK_PARAM }}
+      auth0-env-fallback-secret: ${{ secrets.AUTH0_ENV_FALLBACK_SECRET }}
       s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
       s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}
       s3-uploads-bucket-url: ${{ secrets.S3_UPLOADS_BUCKET_URL }}
@@ -102,6 +104,8 @@ jobs:
       auth0-env-client-id: ${{ secrets.AUTH0_ENV_CLIENT_ID }}
       auth0-env-client-secret: ${{ secrets.AUTH0_ENV_CLIENT_SECRET }}
       auth0-env-domain: ${{ secrets.AUTH0_ENV_DOMAIN }}
+      auth0-env-fallback-param: ${{ secrets.AUTH0_ENV_FALLBACK_PARAM }}
+      auth0-env-fallback-secret: ${{ secrets.AUTH0_ENV_FALLBACK_SECRET }}
       s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
       s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}
       s3-uploads-bucket-url: ${{ secrets.S3_UPLOADS_BUCKET_URL }}
@@ -152,6 +156,8 @@ jobs:
       auth0-env-client-id: ${{ secrets.AUTH0_ENV_CLIENT_ID }}
       auth0-env-client-secret: ${{ secrets.AUTH0_ENV_CLIENT_SECRET }}
       auth0-env-domain: ${{ secrets.AUTH0_ENV_DOMAIN }}
+      auth0-env-fallback-param: ${{ secrets.AUTH0_ENV_FALLBACK_PARAM }}
+      auth0-env-fallback-secret: ${{ secrets.AUTH0_ENV_FALLBACK_SECRET }}
       s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
       s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}
       s3-uploads-bucket-url: ${{ secrets.S3_UPLOADS_BUCKET_URL }}
@@ -203,6 +209,8 @@ jobs:
       auth0-env-client-id: ${{ secrets.AUTH0_ENV_CLIENT_ID }}
       auth0-env-client-secret: ${{ secrets.AUTH0_ENV_CLIENT_SECRET }}
       auth0-env-domain: ${{ secrets.AUTH0_ENV_DOMAIN }}
+      auth0-env-fallback-param: ${{ secrets.AUTH0_ENV_FALLBACK_PARAM }}
+      auth0-env-fallback-secret: ${{ secrets.AUTH0_ENV_FALLBACK_SECRET }}
       s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
       s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}
       s3-uploads-bucket-url: ${{ secrets.S3_UPLOADS_BUCKET_URL }}

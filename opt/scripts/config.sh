@@ -17,6 +17,10 @@ wp config set FORCE_SSL_ADMIN true --raw
 wp config set AUTH0_ENV_CLIENT_ID "\$_SERVER['AUTH0_ENV_CLIENT_ID']" --raw
 wp config set AUTH0_ENV_CLIENT_SECRET "\$_SERVER['AUTH0_ENV_CLIENT_SECRET']" --raw
 wp config set AUTH0_ENV_DOMAIN "\$_SERVER['AUTH0_ENV_DOMAIN']" --raw
+# The login bypass parameter and secret (opt/php/auth0.php). Either empty or
+# unset: no bypass.
+wp config set AUTH0_ENV_FALLBACK_PARAM "\$_SERVER['AUTH0_ENV_FALLBACK_PARAM'] ?? ''" --raw
+wp config set AUTH0_ENV_FALLBACK_SECRET "\$_SERVER['AUTH0_ENV_FALLBACK_SECRET'] ?? ''" --raw
 wp config set S3_UPLOADS_BUCKET "\$_SERVER['S3_UPLOADS_BUCKET']" --raw
 wp config set S3_UPLOADS_REGION "\$_SERVER['S3_UPLOADS_REGION']" --raw
 wp config set S3_UPLOADS_BUCKET_URL "\$_SERVER['S3_UPLOADS_BUCKET_URL']" --raw
@@ -32,7 +36,7 @@ wp config set WP_SENTRY_PHP_DSN "\$_SERVER['PHP_DSN']" --raw
 wp config set WP_SENTRY_BROWSER_DSN "\$_SERVER['PHP_DSN']" --raw
 wp config set WP_SENTRY_ENV "\$_SERVER['WP_ENVIRONMENT_TYPE']" --raw
 wp config set WP_SENTRY_BROWSER_ADMIN_ENABLED true --raw
-wp config set WP_SENTRY_BROWSER_LOGIN_ENABLED true --raw
+wp config set WP_SENTRY_BROWSER_LOGIN_ENABLED false --raw
 wp config set WP_SENTRY_BROWSER_FRONTEND_ENABLED true --raw
 wp config set WP_SENTRY_BROWSER_TRACES_SAMPLE_RATE "0.2" --raw # sample ~30% of traffic
 wp config set WP_SENTRY_BROWSER_REPLAYS_ON_ERROR_SAMPLE_RATE "1.0" --raw
