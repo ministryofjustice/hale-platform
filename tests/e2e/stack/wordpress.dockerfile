@@ -33,9 +33,11 @@ COPY --from=dev /themes /themes
 # after a theme change does not download every theme's dependencies again.
 RUN --mount=type=cache,target=/root/.npm \
     set -e; \
-    for theme in hale hale-dash hale-showcase ppo justice; do \
-        echo "Building theme $theme"; \
+    for theme in hale hale-dash hale-showcase ppo govwind justice; do \
         cd "/themes/$theme"; \
+        [ -f package.json ] || { echo "Skipping $theme (prebuilt)"; continue; }; \
+        echo "Building theme $theme"; \
+        
         if [ -f package-lock.json ]; then \
             npm ci --no-audit --no-fund; \
         else \
