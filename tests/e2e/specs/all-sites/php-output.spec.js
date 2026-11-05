@@ -3,7 +3,8 @@ const { test, expect } = require("../../support/test");
 // PHP that reaches the visitor instead of running: source from a file PHP did
 // not parse (a short open tag with short_open_tag off, a template served as
 // text), and error messages printed into the page. display_errors is off in
-// opt/php/www.conf, so an error message here means that stopped holding.
+// opt/php/www.conf, so an error message here means that stopped holding. Also
+// phpinfo() output left in a template, which lists the server's environment.
 // Checked in the HTML as sent, since a browser hides <?php ... ?> as a comment.
 const PHP_OUTPUT = [
   { name: "PHP open tag", pattern: /<\?(?:php\b|=|\s)/i },
@@ -14,6 +15,7 @@ const PHP_OUTPUT = [
   },
   { name: "PHP stack trace", pattern: /Stack trace:\s*(?:<br \/>\s*)?#0 / },
   { name: "WordPress critical error", pattern: /There has been a critical error on this website/ },
+  { name: "phpinfo() output", pattern: /<title>PHP [^<]* - phpinfo\(\)<\/title>|<h1 class="p">PHP Version / },
 ];
 
 // Templates the seeded content does not reach.
