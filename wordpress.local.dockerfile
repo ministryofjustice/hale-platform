@@ -450,11 +450,12 @@ ENV LANG=C.UTF-8
 COPY --from=builder --chown=65532:65532 /tmp/core/ /usr/src/wordpress/
 
 # Platform PHP files: the must-use plugin loader and Composer autoloader,
-# the Relevanssi search operator limits, PHP error logging, and the script
-# that runs cron for every site.
+# the Relevanssi search operator limits, the Auth0 plugin's configuration,
+# PHP error logging, and the script that runs cron for every site.
 COPY opt/php/load.php /usr/src/wordpress/wp-content/mu-plugins/load.php
 COPY opt/php/application.php /usr/src/wordpress/wp-content/mu-plugins/application.php
 COPY opt/php/search-term-limit.php /usr/src/wordpress/wp-content/mu-plugins/search-term-limit.php
+COPY opt/php/auth0.php /usr/src/wordpress/wp-content/mu-plugins/auth0.php
 COPY opt/php/error-handling.php /usr/src/wordpress/error-handling.php
 COPY opt/php/wp-cron-multisite.php /usr/src/wordpress/wp-cron-multisite.php
 # Health check script for /healthz. Only reachable through nginx's internal

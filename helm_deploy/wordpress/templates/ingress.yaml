@@ -100,7 +100,10 @@ metadata:
       - Exclude /search* from this behavior
       - Only do this when there IS a query string (i.e., at least one GET param)
       - Require that at least one param name is NOT in the allowlist
-        (requests with only s, parent, ver, auth0, code, state params pass through)
+        (requests with only s, parent, ver, auth0, code, state, error and
+        error_description params pass through. code, state, error and
+        error_description are Auth0 returning to the login page; auth0 was the
+        callback parameter of the 4.x Auth0 plugin)
       */}}
       SecRule REQUEST_URI "@rx ^/([^?]*)" \
         "id:300130,\
@@ -116,7 +119,7 @@ metadata:
       SecRule REQUEST_HEADERS:Host "@rx (?i)^www\.justice\.gov\.uk(?::\d+)?$" "t:none,chain"
       SecRule REQUEST_URI "!@rx ^/search(?:$|/|\?)" "t:none,chain"
       SecRule &ARGS_GET_NAMES "@gt 0" "t:none,chain"
-      SecRule ARGS_GET_NAMES "!@rx ^(?:s|parent|ver|auth0|code|state)(?:\[[^\]]*\])?$" "t:none"
+      SecRule ARGS_GET_NAMES "!@rx ^(?:s|parent|ver|auth0|code|state|error|error_description)(?:\[[^\]]*\])?$" "t:none"
     nginx.ingress.kubernetes.io/server-snippet: |
       location = /.well-known/security.txt {
         auth_basic off;
