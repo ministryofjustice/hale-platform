@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5b4778993164a53f427b215e9387f7e5",
+    "content-hash": "3671493b3d61a3697a86c7bd384c9c0c",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -314,16 +314,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.402.5",
+            "version": "3.402.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "ffff4dbeda1c386f66e7e819afbd55406aa9799b"
+                "reference": "237d6b55518f052cb136a55d4727ecc7d0073d05"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/ffff4dbeda1c386f66e7e819afbd55406aa9799b",
-                "reference": "ffff4dbeda1c386f66e7e819afbd55406aa9799b",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/237d6b55518f052cb136a55d4727ecc7d0073d05",
+                "reference": "237d6b55518f052cb136a55d4727ecc7d0073d05",
                 "shasum": ""
             },
             "require": {
@@ -405,9 +405,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.402.5"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.402.6"
             },
-            "time": "2026-10-30T18:04:02+00:00"
+            "time": "2026-11-04T20:11:50+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -1251,25 +1251,12 @@
         },
         {
             "name": "ministryofjustice/govwind",
-            "version": "1.1.9",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/ministryofjustice/govwind.git",
-                "reference": "64e317624b3daaa462a895ff68f55c39c7a7c485"
-            },
+            "version": "1.2.0",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/govwind/zipball/64e317624b3daaa462a895ff68f55c39c7a7c485",
-                "reference": "64e317624b3daaa462a895ff68f55c39c7a7c485",
-                "shasum": ""
+                "url": "https://github.com/ministryofjustice/govwind/releases/download/1.2.0/govwind-1.2.0.zip"
             },
-            "type": "wordpress-theme",
-            "description": "Govwind theme",
-            "support": {
-                "source": "https://github.com/ministryofjustice/govwind/tree/1.1.9",
-                "issues": "https://github.com/ministryofjustice/govwind/issues"
-            },
-            "time": "2026-11-03T12:39:43+00:00"
+            "type": "wordpress-theme"
         },
         {
             "name": "ministryofjustice/hale",
@@ -1440,43 +1427,15 @@
         },
         {
             "name": "ministryofjustice/website-builder-blocks",
-            "version": "2.3.8",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/ministryofjustice/website-builder-blocks.git",
-                "reference": "4d660ff915ff45d8ba17e31eb8958788a7f6c6a9"
-            },
+            "version": "2.3.9",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/website-builder-blocks/zipball/4d660ff915ff45d8ba17e31eb8958788a7f6c6a9",
-                "reference": "4d660ff915ff45d8ba17e31eb8958788a7f6c6a9",
-                "shasum": ""
+                "url": "https://github.com/ministryofjustice/website-builder-blocks/releases/download/2.3.9/website-builder-blocks-2.3.9.zip"
             },
-            "require-dev": {
-                "composer/composer": "*",
-                "squizlabs/php_codesniffer": "*"
+            "require": {
+                "composer/installers": "^2.0"
             },
-            "type": "wordpress-plugin",
-            "scripts": {
-                "phpcs-config-set": [
-                    "phpcs --config-set ignore_warnings_on_exit 1"
-                ],
-                "phpcs": [
-                    "phpcs --extensions=php --ignore=*/vendor/* --standard=PSR12 ."
-                ],
-                "phpcbf": [
-                    "phpcbf --extensions=php --ignore=*/vendor/* --standard=PSR12 ."
-                ]
-            },
-            "license": [
-                "MIT"
-            ],
-            "description": "WP plugin that adds addtional blocks.",
-            "support": {
-                "source": "https://github.com/ministryofjustice/website-builder-blocks/tree/2.3.8",
-                "issues": "https://github.com/ministryofjustice/website-builder-blocks/issues"
-            },
-            "time": "2026-10-19T09:57:44+00:00"
+            "type": "wordpress-plugin"
         },
         {
             "name": "ministryofjustice/wp-gov-uk-notify",
