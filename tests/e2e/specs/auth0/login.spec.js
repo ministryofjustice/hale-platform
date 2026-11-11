@@ -93,20 +93,27 @@ test("logging out ends the WordPress and the Auth0 session", async ({ page }) =>
   expect(new URL(page.url()).hostname).toBe(AUTH0_DOMAIN);
 });
 
-test("a logout link without WordPress's nonce does not log anyone out", async ({ page, context }) => {
-  await page.goto(LOGIN_PATH);
-  await signInAtAuth0(page, identities.editor);
-  await expect(page.locator("#wpadminbar")).toBeVisible();
+// WordPress answers a logout link without its nonce with a 403 confirmation
+// page, which is the behaviour under test, so the browser's console error for
+// it is expected.
+test.describe("a logout link without the nonce", () => {
+  test.use({ ignoreConsoleErrors: true });
 
-  // What a link or image on another site could point the browser at. Without
-  // the nonce WordPress asks the person to confirm instead of logging out.
-  await page.goto(`${LOGIN_PATH}?action=logout`);
+  test("a logout link without WordPress's nonce does not log anyone out", async ({ page, context }) => {
+    await page.goto(LOGIN_PATH);
+    await signInAtAuth0(page, identities.editor);
+    await expect(page.locator("#wpadminbar")).toBeVisible();
 
-  await page.goto(main.url);
-  await expect(page.locator("#wpadminbar")).toBeVisible();
-  // Nor did it go to the tenant to end the Auth0 session.
-  const tenantSession = (await context.cookies(`https://${AUTH0_DOMAIN}/`)).find(
-    (cookie) => cookie.name === "auth0_mock_session",
-  );
-  expect(tenantSession).toBeTruthy();
+    // What a link or image on another site could point the browser at. Without
+    // the nonce WordPress asks the person to confirm instead of logging out.
+    await page.goto(`${LOGIN_PATH}?action=logout`);
+
+    await page.goto(main.url);
+    await expect(page.locator("#wpadminbar")).toBeVisible();
+    // Nor did it go to the tenant to end the Auth0 session.
+    const tenantSession = (await context.cookies(`https://${AUTH0_DOMAIN}/`)).find(
+      (cookie) => cookie.name === "auth0_mock_session",
+    );
+    expect(tenantSession).toBeTruthy();
+  });
 });
