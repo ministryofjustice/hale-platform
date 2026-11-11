@@ -1,4 +1,5 @@
 const { test, expect } = require("../../support/test");
+const { seededItems } = require("../../support/content");
 
 // PHP that reaches the visitor instead of running: source from a file PHP did
 // not parse (a short open tag with short_open_tag off, a template served as
@@ -23,11 +24,15 @@ const OTHER_PATHS = ["?s=e2e", "e2e-page-that-does-not-exist/"];
 
 // The site's seeded pages and posts, from the content.json the seed reads, so
 // a page added there is checked too. Permalinks are /%postname%/
-// (seed/seed.sh): a page sits below its parents, a post at its slug.
+// (seed/seed.sh): a page sits below its parents, a post at its slug, and an
+// ACF post type's posts below its key (ACF's default rewrite slug).
 function seededPaths(site) {
-  const { items, frontPage } = require(`../../seed/content/${site.key}/content.json`);
+  const { frontPage } = require(`../../seed/content/${site.key}/content.json`);
+  const items = seededItems(site);
   const bySlug = new Map(items.map((item) => [item.slug, item]));
-  const pathOf = (item) => (item.parent ? pathOf(bySlug.get(item.parent)) : "") + `${item.slug}/`;
+  const pathOf = (item) =>
+    (item.parent ? pathOf(bySlug.get(item.parent)) : ["page", "post"].includes(item.type) ? "" : `${item.type}/`) +
+    `${item.slug}/`;
   return items.map((item) => (item.slug === frontPage ? "./" : pathOf(item)));
 }
 
