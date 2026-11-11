@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "561e041b07777c6851b09918fbabf641",
+    "content-hash": "d8959692caae349aabe499ab14fd0a46",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -318,16 +318,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.403.2",
+            "version": "3.403.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "20e883c6952986c3de686515a99b63caeb8dfafe"
+                "reference": "50a3ac24774b729bf8a2ac28f2b469630aaff73a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/20e883c6952986c3de686515a99b63caeb8dfafe",
-                "reference": "20e883c6952986c3de686515a99b63caeb8dfafe",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/50a3ac24774b729bf8a2ac28f2b469630aaff73a",
+                "reference": "50a3ac24774b729bf8a2ac28f2b469630aaff73a",
                 "shasum": ""
             },
             "require": {
@@ -409,10 +409,10 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.403.2"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.403.3"
             },
-            "time": "2026-11-09T19:36:28+00:00",
-            "published-time": "2026-11-09T19:45:32+00:00"
+            "time": "2026-11-10T19:04:16+00:00",
+            "published-time": "2026-11-10T19:12:17+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -1265,10 +1265,10 @@
         },
         {
             "name": "ministryofjustice/govwind",
-            "version": "1.2.0",
+            "version": "1.2.2",
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/ministryofjustice/govwind/releases/download/1.2.0/govwind-1.2.0.zip"
+                "url": "https://github.com/ministryofjustice/govwind/releases/download/1.2.2/govwind-1.2.2.zip"
             },
             "type": "wordpress-theme"
         },
@@ -4704,15 +4704,15 @@
         },
         {
             "name": "wpackagist-plugin/ewww-image-optimizer",
-            "version": "8.9.1",
+            "version": "8.9.2",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/ewww-image-optimizer/",
-                "reference": "tags/8.9.1"
+                "reference": "tags/8.9.2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/ewww-image-optimizer.8.9.1.zip"
+                "url": "https://downloads.wordpress.org/plugin/ewww-image-optimizer.8.9.2.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
@@ -4722,15 +4722,15 @@
         },
         {
             "name": "wpackagist-plugin/microsoft-clarity",
-            "version": "0.10.37",
+            "version": "0.10.38",
             "source": {
                 "type": "svn",
                 "url": "https://plugins.svn.wordpress.org/microsoft-clarity/",
-                "reference": "tags/0.10.37"
+                "reference": "tags/0.10.38"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/microsoft-clarity.0.10.37.zip"
+                "url": "https://downloads.wordpress.org/plugin/microsoft-clarity.0.10.38.zip"
             },
             "require": {
                 "composer/installers": "^1.0 || ^2.0"
