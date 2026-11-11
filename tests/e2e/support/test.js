@@ -44,12 +44,12 @@ const PIXEL = Buffer.from("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBR
 
 const EXTERNAL_MOCKS = [
   // ppo's jQuery, and the plugin that restores old APIs.
-  { match: ({ host, pathname }) => host === "ajax.googleapis.com" && /^\/ajax\/libs\/jquery\/[^/]+\/jquery\.min\.js$/.test(pathname),
+  { match: ({ host, pathname }) => host === "ajax.googleapis.com" && pathname.startsWith("/ajax/libs/jquery/") && pathname.endsWith("/jquery.min.js"),
     type: "application/javascript", body: JQUERY },
-  { match: ({ host, pathname }) => host === "code.jquery.com" && /^\/jquery-migrate-[^/]+\.js$/.test(pathname),
+  { match: ({ host, pathname }) => host === "code.jquery.com" && pathname.startsWith("/jquery-migrate-") && pathname.endsWith(".js"),
     type: "application/javascript", body: JQUERY_MIGRATE },
   // The Auth0 plugin's verify-email page and the Option Tree plugin.
-  { match: ({ host, pathname }) => host === "code.jquery.com" && /^\/jquery-[\d.]+\.js$/.test(pathname),
+  { match: ({ host, pathname }) => host === "code.jquery.com" && pathname.startsWith("/jquery-") && pathname.endsWith(".js"),
     type: "application/javascript", body: JQUERY },
   // Google Fonts' stylesheets (css, css2); no stylesheet means no font files.
   { match: ({ host }) => host === "fonts.googleapis.com", type: "text/css", body: "" },
@@ -75,7 +75,7 @@ const test = base.test.extend({
   site: [async ({}, use, testInfo) => use(siteForSpec(testInfo.file)), { option: true }],
   baseURL: async ({ baseURL, site }, use) => use(baseURL ?? site.url),
   externalMocks: [
-    async ({ context }, use) => {
+    async ({ skipAll, context }, use) => {
       await context.route(/^https?:\/\/(?!localhost[:/])/, (route) => {
         const url = new URL(route.request().url());
         const mock = EXTERNAL_MOCKS.find(({ match }) => match(url));
@@ -88,7 +88,7 @@ const test = base.test.extend({
   // True turns the console-error check off, see above.
   ignoreConsoleErrors: [false, { option: true }],
   consoleErrors: [
-    async ({ context, ignoreConsoleErrors }, use) => {
+    async ({ skipAll, context, ignoreConsoleErrors }, use) => {
       const errors = [];
       const record = (text, where) => {
         const full = where ? `${text}\n    at ${where}` : text;
