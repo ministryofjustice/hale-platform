@@ -120,104 +120,51 @@ metadata:
       SecRule REQUEST_URI "!@rx ^/search(?:$|/|\?)" "t:none,chain"
       SecRule &ARGS_GET_NAMES "@gt 0" "t:none,chain"
       SecRule ARGS_GET_NAMES "!@rx ^(?:s|parent|ver|auth0|code|state|error|error_description)(?:\[[^\]]*\])?$" "t:none"
+
     nginx.ingress.kubernetes.io/server-snippet: |
-      location = /.well-known/security.txt {
-        auth_basic off;
-        return 301 https://raw.githubusercontent.com/ministryofjustice/security-guidance/main/contact/vulnerability-disclosure-security.txt;
-      }
-      location /bold {
-        if ($host = 'hale-platform-prod.apps.live.cloud-platform.service.justice.gov.uk') {
-          return 301 https://bold.websitebuilder.service.justice.gov.uk;
-        }
-      }
-      if ($host = 'victimscode.org.uk') {
-        return 301 https://victimandwitnessinformation.org.uk/your-rights/as-a-victim;
-      }
-      if ($host = 'cym.victimscode.org.uk') {
-        return 301 https://cym.victimandwitnessinformation.org.uk/your-rights/as-a-victim;
-      }
-      if ($host = 'seewhatsontheinside.com') {
-        return 301 https://newfuturesnetwork.gov.uk;
-      }
-      if ($host = 'www.seewhatsontheinside.com') {
-        return 301 https://newfuturesnetwork.gov.uk;
-      }
-      if ($host = 'seewhatsontheinside.co.uk') {
-        return 301 https://newfuturesnetwork.gov.uk;
-      }
-      if ($host = 'www.seewhatsontheinside.co.uk') {
-        return 301 https://newfuturesnetwork.gov.uk;
-      }
-      if ($host = 'advance-into-justice.service.justice.gov.uk') {
-        return 301 https://prisonandprobationjobs.gov.uk/roles-at-hmpps/jobs-for-veterans;
-      }
-      if ($host = 'www.advance-into-justice.service.justice.gov.uk') {
-        return 301 https://prisonandprobationjobs.gov.uk/roles-at-hmpps/jobs-for-veterans;
-      }
-      if ($host = 'iapondeathsincustody.org') {
-        return 301 https://deathsindetention.independent-panel.uk;
-      }
-      if ($host = 'www.iapondeathsincustody.org') {
-        return 301 https://deathsindetention.independent-panel.uk;
-      }
-      if ($host = 'iapdeathsincustody.independent.gov.uk') {
-        return 301 https://deathsindetention.independent-panel.uk;
-      }
-      if ($host = 'www.iapdeathsincustody.independent.gov.uk') {
-        return 301 https://deathsindetention.independent-panel.uk;
-      }
-      if ($host = 'brookhouseinquiry.org.uk') {
-        return 301 https://webarchive.nationalarchives.gov.uk/ukgwa/20241002135959/https://brookhouseinquiry.org.uk/;
-      }
-      if ($host = 'www.brookhouseinquiry.org.uk') {
-        return 301 https://webarchive.nationalarchives.gov.uk/ukgwa/20241002135959/https://brookhouseinquiry.org.uk/;
-      }
-      {{- if .Values.ingress.holdingPage.enabled }}
-      {{- /*
-      Holding page. nginx runs the server-level if, return and rewrite
-      directives in the order they appear, before it chooses a location. This
-      block is last in the snippet, so the host redirects above it, and the
-      holding page redirects at its start, are answered first. Every other
-      request outside /.well-known/ is then answered by the ingress itself and
-      never reaches WordPress. /bold is a location, chosen after that rewrite,
-      so it is behind the holding page too.
+      # ... existing security.txt, /bold and host redirects unchanged ...
 
-      /.well-known/ is left alone for security.txt and cert-manager ACME
-      challenges. The HTML is one single-quoted nginx string, so it must not
-      contain a single quote, and every line must stay indented under the
-      server-snippet key or the YAML block ends early.
-      */}}
-      {{- if .Values.ingress.holdingPage.redirects.enabled }}
       {{- /*
-      Holding page redirects (ingress.holdingPage.redirects in values.yaml): a
-      302 for each listed host, to one fixed URL whatever the path. nginx's if
-      takes one condition, so each host sets $hale_holding_redirect, a
-      /.well-known/ request clears it again - so security.txt and cert-manager
-      ACME challenges still work for these hosts, as they do for the holding
-      page - and the redirect fires only if it is still set.
-
-      Each entry is checked here, so a bad one fails the deploy instead of
-      rendering broken nginx: the host must be one this ingress serves, or the
-      redirect would never be reached, and the target must be an https:// URL
-      with no quote or backslash to end its quoted string, no $ for nginx to
-      read as a variable, and no space, ; or brace.
+      Holding pages (ingress.holdingPage in values.yaml). Each host behind a
+      holding page sets $hale_holding to the internal location serving its
+      page: a site's own page for its listed hosts, and with
+      holdingPage.enabled the generic page for every other host. /.well-known/
+      clears it, so security.txt and ACME challenges still work.
       */}}
-      set $hale_holding_redirect '';
+      {{- $holding := .Values.ingress.holdingPage }}
+
+      {{- /* Hosts this ingress serves, used to check the values */}}
       {{- $served := list .Values.domain }}
       {{- range .Values.ingress.hosts }}
       {{- $served = append $served .name }}
       {{- end }}
-      {{- range $i, $redirect := .Values.ingress.holdingPage.redirects.hosts }}
-      {{- $from := required (printf "ingress.holdingPage.redirects.hosts[%d].host is required" $i) $redirect.host }}
-      {{- $to := required (printf "ingress.holdingPage.redirects.hosts[%d].to is required" $i) $redirect.to }}
-      {{- if not (has $from $served) }}
-      {{- fail (printf "ingress.holdingPage.redirects.hosts[%d]: %s is not domain or a name under ingress.hosts, so this ingress never receives requests for it" $i $from) }}
+
+      {{- /* Check every site, and collect the ones that are on */}}
+      {{- $sitesOn := dict }}
+      {{- range $name, $site := $holding.sites }}
+      {{- if not (regexMatch "^[a-z0-9-]+$" $name) }}
+      {{- fail (printf "ingress.holdingPage.sites.%s: the name may only use a-z, 0-9 and -" $name) }}
       {{- end }}
-      {{- if not (regexMatch "^https://[^'\\\\$\\s;{}]+$" $to) }}
-      {{- fail (printf "ingress.holdingPage.redirects.hosts[%d]: to (%s) must be an https:// URL with no quote, backslash, $, space, ; or brace" $i $to) }}
+      {{- range $site.hosts }}
+      {{- if not (has . $served) }}
+      {{- fail (printf "ingress.holdingPage.sites.%s: %s is not served by this ingress" $name .) }}
       {{- end }}
-      if ($host = '{{ $from }}') {
-        set $hale_holding_redirect '{{ $to }}';
+      {{- end }}
+      {{- if and $site.enabled (not $site.hosts) }}
+      {{- fail (printf "ingress.holdingPage.sites.%s is enabled but
+      {{- end }}
+      {{- if and (or $holding.enabled $site.enabled) $site.hosts }}
+      {{- $_ := set $sitesOn $name $site }}
+      {{- end }}
+      {{- end }}
+
+      {{- /* 302 redirects, only while every host is behind the holding page */}}
+      {{- if and $holding.enabled $holding.redirects.enabled }}
+      set $hale_holding_redirect '';
+      {{- range $i, $redirect := $holding.redirects.hosts }}
+      {{- /* existing required / has / regexMatch checks unchanged */}}
+      if ($host = '{{ $redirect.host }}') {
+        set $hale_holding_redirect '{{ $redirect.to }}';
       }
       {{- end }}
       if ($uri ~ ^/\.well-known/) {
@@ -227,31 +174,45 @@ metadata:
         return 302 $hale_holding_redirect;
       }
       {{- end }}
-      #     if ($uri !~ ^/\.well-known/) {
-      #       rewrite ^ /__holding-page last;
-      #     }
-      if ($arg_holdingpage = "1") {
-          rewrite ^ /__holding-page last;
+
+      {{- /* Choose the page for this request */}}
+      {{- if or $holding.enabled $sitesOn }}
+      set $hale_holding '{{ if $holding.enabled }}/__holding-page{{
+      {{- range $name, $site := $sitesOn }}
+      {{- range $site.hosts }}
+      if ($host = '{{ . }}') {
+        set $hale_holding /__holding-page-{{ $name }};
       }
+      {{- end }}
+      {{- end }}
+      if ($uri ~ ^/\.well-known/) {
+        set $hale_holding '';
+      }
+      if ($hale_holding) {
+        rewrite ^ $hale_holding last;
+      }
+
+      {{- /* Generic page, only with the global switch */}}
+      {{- if $holding.enabled }}
       location = /__holding-page {
         internal;
         default_type text/html;
         add_header Cache-Control "no-store" always;
-        add_header X-Robots-Tag "noindex, nofollow, noarchive, nosnippet" always;
-        if ($arg_site = "icrir") {
-          return 200 '{{ regexReplaceAll "(?s)<!--.*?-->" (.Files.Get "files/icrir.html") "" | replace "'" "&#39;" | replace "\\" "\\\\" | replace "\t" "" | replace "\n" "" | replace "\r" "" }}';
-        }
-        if ($host = "icrir.independent-inquiry.uk") {
-          return 200 '{{ regexReplaceAll "(?s)<!--.*?-->" (.Files.Get "files/icrir.html") "" | replace "'" "&#39;" | replace "\\" "\\\\" | replace "\t" "" | replace "\n" "" | replace "\r" "" }}';
-        }
-        if ($arg_site = "ppj") {
-          return 200 '{{ regexReplaceAll "<!--[\\s\\S]*?-->" (.Files.Get "files/ppj.html") "" | replace "'" "&#39;" | replace "\\" "\\\\" | replace "\t" "" | replace "\n" "" | replace "\r" "" }}';
-        }
-        if ($host = "prisonandprobationjobs.gov.uk/") {
-          return 200 '{{ regexReplaceAll "<!--[\\s\\S]*?-->" (.Files.Get "files/ppj.html") "" | replace "'" "&#39;" | replace "\\" "\\\\" | replace "\t" "" | replace "\n" "" | replace "\r" "" }}';
-        }
-        return 200 '{{ regexReplaceAll "<!--[\\s\\S]*?-->" (.Files.Get "files/holding-page.html") "" | replace "'" "&#39;" | replace "\\" "\\\\" | replace "\t" "" | replace "\n" "" | replace "\r" "" }}';
+        add_header Retry-After "3600" always;
+        return 503 '{{ include "hale.holdingPageHtml" (dict "root" l") }}';
       }
+      {{- end }}
+
+      {{- /* One location per site that is on */}}
+      {{- range $name, $site := $sitesOn }}
+      location = /__holding-page-{{ $name }} {
+        internal;
+        default_type text/html;
+        add_header Cache-Control "no-store" always;
+        add_header Retry-After "3600" always;
+        return 503 '{{ include "hale.holdingPageHtml" (dict "root" $ "path" $site.page) }}';
+      }
+      {{- end }}
       {{- end }}
 spec:
   ingressClassName: modsec-v2

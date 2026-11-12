@@ -242,7 +242,20 @@ ingress:
   # values.yaml). Each host must also be in the hosts list above.
   holdingPage:
     enabled: false
+    sites:
+      icrir:
+        enabled: false
+        hosts:
+          - icrir.independent-inquiry.uk
+          - www.icrir.independent-inquiry.uk
+      ppj:
+        enabled: false
+        hosts:
+          - prisonandprobationjobs.gov.uk
+          - www.prisonandprobationjobs.gov.uk
     redirects:
+      # If set to true, the following sites will be redirected instead 
+      # of showing a holding page
       enabled: false
       hosts:
         - host: prisonandprobationjobs.gov.uk

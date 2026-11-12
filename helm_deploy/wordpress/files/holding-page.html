@@ -16,6 +16,9 @@
 		}
 	</style>
 	<!--
+		THIS PAGE SHOULD NOT USE SINGLE QUOTES OR DOLLAR SIGNS IN CODE
+		They will be converted to their HTML code equivalents
+
 		Site-specific configuration used to customise the holding page.
 
 		Each object represents a website that may display the holding page.
@@ -26,9 +29,11 @@
 			"Thank you for visiting ..." - use "the" if needed
 
 		- url
-			A string used to identify the site from the current URL.
-			If the current page URL contains this value, the site configuration
-			will be selected.
+			The site's hostname, without the protocol.
+			For example: ccrc.gov.uk
+
+			The current hostname is matched against this value and its
+			www-prefixed equivalent.
 
 		- extraContent
 			Optional HTML content inserted into the page. This can be plain text
@@ -40,19 +45,23 @@
 			Use an escape character (\) if quotes within quotes is needed.
 
 		Example:
-			If the current URL contains "ccrc.gov.uk/", the holding page will
-			display "CCRC" as the site name and show a link to the CCRC careers site.
+			If the current hostname is ccrc.gov.uk or www.ccrc.gov.uk,
+			the holding page will display "CCRC" as the site name and
+			show a link to the CCRC careers site.
 	-->
 	<script>
-		const url = window.location.href;
+		const hostname = window.location.hostname;
 		const sites = [
 			{
 				title: "CCRC",
-				url: "ccrc.gov.uk/",
+				url: "ccrc.gov.uk",
 				extraContent: "For careers, please visit <a href=\"https://careers.ccrc.gov.uk/\">The CCRC vacancies site</a>.",
 			},
-		];
-		const site = sites.find(site => url.includes(site.url));
+		];	
+		const site = sites.find(site =>
+			hostname === site.url ||
+			hostname === "www." + site.url
+		);
 	</script>
 	</head>
 	<body>
@@ -60,18 +69,18 @@
 			
 		</header>
 		<main>
-			<h1 id="title">Thank you for visiting <span id="site-name">our website</span></h1>
+			<h1>Thank you for visiting <span id="site-name">our website</span></h1>
 			<p>We&rsquo;re carrying out essential maintenance and improvements. The website is temporarily unavailable while this work is completed.</p>
 			<p>We apologise for any inconvenience and appreciate your patience.</p>
 			<p id="extra"></p>
 		</main>
+		<script>
+			if (site) {
+				const siteName = document.getElementById("site-name");
+				const extra = document.getElementById("extra");
+				if (site.title) siteName.textContent = site.title;
+				if (site.extraContent) extra.innerHTML = site.extraContent;
+			}
+		</script>
 	</body>
-	<script>
-		if (site) {
-			const siteName = document.getElementById("site-name");
-			const extra = document.getElementById("extra");
-			if (site.title) siteName.innerHTML = site.title;
-			if (site.extraContent) extra.innerHTML = site.extraContent;
-		}
-	</script>
 </html>

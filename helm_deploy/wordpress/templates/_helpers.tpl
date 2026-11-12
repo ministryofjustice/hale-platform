@@ -79,3 +79,21 @@ nothing on success - include it from a template that is always evaluated.
 {{- end }}
 {{- end }}
 
+
+{{/*
+Holding page building pipeline
+
+The holding pages get sanitized to:
+- remove all comments
+- replace single quotes with the HTML code
+- replace dollars with the HTML named code
+- replace tabs, new lines &c.
+
+*/}}
+{{- define "hale.holdingPageHtml" -}}
+{{- $html := .root.Files.Get (printf "files/%s" .path) -}}
+{{- if not $html }}
+{{- fail (printf "holding page files/%s does not exist or is empty" .path) }}
+{{- end }}
+{{- regexReplaceAll "(?s)<!--.*?-->" $html "" | replace "'" "&#39;" | replace "$" "&dollar;" | replace "\t" "" | replace "\n" "" | replace "\r" "" -}}
+{{- end }}
