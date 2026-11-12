@@ -7,8 +7,8 @@
  *   wp --url=<network> eval-file /seed/auth0-sites.php create <path>...
  *   wp --url=<site url> eval-file /seed/auth0-sites.php finish <path>
  *
- * create makes e2esiteadmin and the sites, with their options, theme, roles
- * and page. finish runs on each site with its theme loaded: theme-setup.php,
+ * create makes e2esiteadmin, e2esuspended (marked as spam) and the sites,
+ * with their options, theme, roles and page. finish runs on each site with its theme loaded: theme-setup.php,
  * the rewrite rules, then the Auth0 plugin, last so that it saves its default
  * settings with the site's https home URL already in place.
  *
@@ -50,6 +50,17 @@ if ($step === 'create') {
         wp_update_user(['ID' => $site_admin_id, 'display_name' => 'E2E site admin', 'role' => 'subscriber']),
         'Could not update e2esiteadmin',
     );
+
+    // A user marked as spam by a network admin, i.e. suspended. Not added to
+    // any site.
+    $suspended_id = e2e_auth0_check(
+        wpmu_create_user('e2esuspended', $password, 'e2esuspended@example.test'),
+        'Could not create e2esuspended',
+    );
+    e2e_auth0_check(wp_update_user(['ID' => $suspended_id, 'spam' => 1]), 'Could not mark e2esuspended as spam');
+    if (!is_user_spammy(get_user_by('id', $suspended_id))) {
+        WP_CLI::error('e2esuspended is not marked as spam');
+    }
 
     foreach ($args as $path) {
         WP_CLI::log("Seeding Auth0 site '{$path}'");
@@ -109,7 +120,6 @@ if ($step === 'create') {
     if ($path === 'auth0-private') {
         $force_login = 'wp-force-login/' . array_key_first(get_plugins('/wp-force-login'));
         e2e_auth0_check(activate_plugin($force_login), "Could not activate {$force_login}");
-    }
-} else {
+    } else {
     WP_CLI::error('Usage: auth0-sites.php create <path>... | finish <path>');
 }
