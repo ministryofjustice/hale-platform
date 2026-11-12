@@ -48,11 +48,39 @@ RUN --mount=type=cache,target=/root/.npm \
     done
 
 # ---------------------------------------------------------------------------
-# Runtime: the local image with the dev plugin clones and the built themes
-# over its own.
+# Plugin build stage: the dev plugin clones only. A plugin from composer.lock
+# already ships its build/ (its own release workflow builds it), but a dev
+# clone holds source files alone: build.sh copies what git sees, and the
+# plugins' .gitignore leaves build/ out. So each dev plugin with a package.json
+# is built here, as its release workflow would. Empty without E2E_DEV=1.
+# ---------------------------------------------------------------------------
+FROM node:22-bookworm AS plugins
+
+COPY --from=dev /plugins /plugins
+
+RUN --mount=type=cache,target=/root/.npm \
+    set -e; \
+    for plugin in /plugins/*/; do \
+        [ -f "$plugin/package.json" ] || continue; \
+        cd "$plugin"; \
+        echo "Building plugin $(basename "$plugin")"; \
+        # A clone's lockfile can be out of step with its package.json, which \
+        # npm ci refuses; this stage is for a dev run, so install anyway. \
+        if [ -f package-lock.json ] && npm ci --no-audit --no-fund; then :; \
+        else \
+            echo "npm ci failed or there is no lockfile: running npm install"; \
+            npm install --no-audit --no-fund; \
+        fi; \
+        npm run build --if-present; \
+        rm -rf node_modules; \
+    done
+
+# ---------------------------------------------------------------------------
+# Runtime: the local image with the built dev plugin clones and the built
+# themes over its own.
 # ---------------------------------------------------------------------------
 FROM ${BASE_IMAGE}
 
-COPY --from=dev --chown=65532:65532 /plugins /usr/src/wordpress/wp-content/plugins
+COPY --from=plugins --chown=65532:65532 /plugins /usr/src/wordpress/wp-content/plugins
 COPY --from=dev --chown=65532:65532 /mu-plugins /usr/src/wordpress/wp-content/mu-plugins
 COPY --from=themes --chown=65532:65532 /themes /usr/src/wordpress/wp-content/themes
