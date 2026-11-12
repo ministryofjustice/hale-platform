@@ -37,6 +37,7 @@ wp config set AUTH0_ENV_DOMAIN "\$_SERVER['AUTH0_ENV_DOMAIN']" --raw
 # unset: no bypass.
 wp config set AUTH0_ENV_FALLBACK_PARAM "\$_SERVER['AUTH0_ENV_FALLBACK_PARAM'] ?? ''" --raw
 wp config set AUTH0_ENV_FALLBACK_SECRET "\$_SERVER['AUTH0_ENV_FALLBACK_SECRET'] ?? ''" --raw
+wp config set AUTH0_ENV_MIGRATION_TOKEN "\$_SERVER['AUTH0_ENV_MIGRATION_TOKEN'] ?? ''" --raw
 wp config set CLOUDFRONT_DISTRIBUTION_ID "\$_SERVER['CLOUDFRONT_DISTRIBUTION_ID']" --raw
 
 # Release identity of this image, used to build release-scoped CDN asset URLs
