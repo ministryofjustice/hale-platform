@@ -120,6 +120,7 @@ if ($step === 'create') {
     if ($path === 'auth0-private') {
         $force_login = 'wp-force-login/' . array_key_first(get_plugins('/wp-force-login'));
         e2e_auth0_check(activate_plugin($force_login), "Could not activate {$force_login}");
-    } else {
+    }
+} else {
     WP_CLI::error('Usage: auth0-sites.php create <path>... | finish <path>');
 }
