@@ -203,21 +203,22 @@ test("pagination pages through every result once", async ({ page, site }) => {
   const expected = expectedResults(site);
   await page.goto(theme.searchPath(TERM));
 
+  // Counted before each read: shownResults() does not wait for the page.
+  await expect(theme.results(page)).toHaveCount(PER_PAGE);
   await expect(theme.previous(page)).toHaveCount(0);
   const first = await shownResults(page, theme, expected);
-  expect(first).toHaveLength(PER_PAGE);
 
   await theme.next(page).click();
   await expect(page).toHaveURL(/\/page\/2\b/);
   await expect(theme.form(page).locator('input[name="s"]')).toHaveValue(TERM);
-  const second = await shownResults(page, theme, expected);
-
   // Two pages hold everything, so the second is the last.
-  expect(second).toHaveLength(expected.length - PER_PAGE);
+  await expect(theme.results(page)).toHaveCount(expected.length - PER_PAGE);
+  const second = await shownResults(page, theme, expected);
   expect([...first, ...second].sort()).toEqual(expected.map(({ title }) => title).sort());
   await expect(theme.next(page)).toHaveCount(0);
 
   await theme.previous(page).click();
   await expect(page).not.toHaveURL(/\/page\/2\b/);
+  await expect(theme.results(page)).toHaveCount(PER_PAGE);
   expect((await shownResults(page, theme, expected)).sort()).toEqual([...first].sort());
 });

@@ -13,6 +13,7 @@ const { seededItems } = require("../../support/content");
 const TERM = "kittiwake";
 const GUIDANCE = "Kittiwake guidance";
 const DOCUMENT = "Kittiwake survey report";
+const PER_PAGE = 10;
 
 const resultLinks = (page) => page.locator(".search-result-card__title a");
 const resultCount = (page) => page.locator(".search-bar-block__results-text");
@@ -25,7 +26,9 @@ function pageCount(site) {
   return seededItems(site).filter(({ file }) => /(search-result|kittiwake-guidance)\.html$/.test(file)).length;
 }
 
-test("results are ordered by relevance, or by date with Most recent", async ({ page }) => {
+test("results are ordered by relevance, or by date with Most recent", async ({ page, site }) => {
+  // The pages and the document: more than a page of results.
+  const firstPage = Math.min(pageCount(site) + 1, PER_PAGE);
   await page.goto(`search/${TERM}`);
 
   const sort = sortLinks(page);
@@ -37,6 +40,10 @@ test("results are ordered by relevance, or by date with Most recent", async ({ p
 
   await expect(page).toHaveURL(/[?&]orderby=date\b/);
   await expect(sort.getByRole("link", { name: "Most recent" })).toHaveAttribute("aria-current", "page");
+  // Counted first: allTextContents() does not wait, and an empty list would
+  // pass the checks below.
+  await expect(resultLinks(page)).toHaveCount(firstPage);
+  await expect(page.locator(".search-result-card__date")).toHaveCount(firstPage);
   const dates = (await page.locator(".search-result-card__date").allTextContents()).map((date) =>
     Date.parse(date.trim()),
   );
