@@ -24,6 +24,10 @@ const {
   signInAtAuth0,
 } = require("../../support/auth0");
 
+// Opening the settings screens directly is the test: WordPress refuses each
+// with a 403, so the browser's console error for it is expected.
+test.use({ ignoreConsoleErrors: true });
+
 test("a site administrator cannot read or change the tenant settings", async ({ page }, testInfo) => {
   await page.goto(LOGIN_PATH);
   await signInAtAuth0(page, identities.siteAdmin);

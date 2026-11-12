@@ -13,6 +13,11 @@ const {
 
 const { main } = auth0Sites;
 
+// Each of these is a login WordPress refuses, which the plugin answers with a
+// 500 error page. That response is the behaviour under test, so the browser's
+// console error for it is expected.
+test.use({ ignoreConsoleErrors: true });
+
 test("an error from Auth0 is shown, and nobody is signed in", async ({ page }) => {
   // As when an Auth0 Action or rule denies the login.
   await setAuth0Session(page.context(), {
