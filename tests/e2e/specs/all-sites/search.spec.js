@@ -20,7 +20,8 @@ const KNOWN_ISSUES = {
     results:
       "ppo/search.php lists results from its own WP_Query for Documents and Pages, but Relevanssi " +
       "(relevanssi_prevent_default_request) empties every front-end search query except the main one, " +
-      "so the page never lists a result. The Pages query also leaves out paged, so page 2 would repeat page 1.",
+      "so the page never lists a result. The Pages query also leaves out paged, so page 2 would repeat page 1. " +
+      "Until it is fixed, the no-results tests pass on ppo whatever the search, as every search shows no results.",
   },
   justice: {
     nextWithNoResults:
@@ -185,7 +186,6 @@ test("results link to the matching pages and show the term", async ({ page, site
 });
 
 test("a search with no matches says so", async ({ page, site }) => {
-  expectKnownIssue(site, "nextWithNoResults");
   const theme = themeFor(site);
   const response = await page.goto(theme.searchPath(NO_MATCH));
 
@@ -193,6 +193,16 @@ test("a search with no matches says so", async ({ page, site }) => {
   for (const text of theme.noResultsText) {
     await expect(theme.noResults(page)).toContainText(text);
   }
+  await expect(theme.results(page)).toHaveCount(0);
+});
+
+// Its own test, so a known issue here leaves the rest of the no-results page
+// checked.
+test("a search with no matches has no next page", async ({ page, site }) => {
+  expectKnownIssue(site, "nextWithNoResults");
+  const theme = themeFor(site);
+  await page.goto(theme.searchPath(NO_MATCH));
+
   await expect(theme.results(page)).toHaveCount(0);
   await expect(theme.next(page)).toHaveCount(0);
 });

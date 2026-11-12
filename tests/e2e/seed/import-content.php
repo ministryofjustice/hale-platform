@@ -225,12 +225,18 @@ foreach ($manifest['documents'] ?? [] as $name => $document) {
 }
 
 // Page addresses are known before any page exists: IDs are fixed, and a
-// page's path is its parents' slugs and its own.
+// page's path is its parents' slugs and its own. An ACF post type's posts sit
+// below its key, ACF's default rewrite slug.
 $items = array_column($manifest['items'], null, 'slug');
 foreach ($items as $slug => $item) {
     $path = $slug;
+    $top = $item;
     for ($parent = $item['parent'] ?? null; $parent; $parent = $items[$parent]['parent'] ?? null) {
         $path = "{$parent}/{$path}";
+        $top = $items[$parent];
+    }
+    if (!in_array($top['type'], ['page', 'post'], true)) {
+        $path = "{$top['type']}/{$path}";
     }
     $tokens["{{page:{$slug}.id}}"] = $item['id'];
     $tokens["{{page:{$slug}.url}}"] = $slug === ($manifest['frontPage'] ?? null)

@@ -16,7 +16,7 @@ const PER_PAGE = 10;
 
 const documents = (site, category) =>
   seededItems(site)
-    .filter(({ type, terms }) => type === "inquiry_document" && (!category || terms.document_category.includes(category)))
+    .filter(({ type, terms }) => type === "inquiry_document" && (!category || terms?.document_category?.includes(category)))
     .sort((a, b) => b.date.localeCompare(a.date));
 
 const form = (page) => page.locator(".listing-search-form form");

@@ -239,7 +239,8 @@ neither, and tests of those blocks skip it.
 Every site also has twelve pages, `search-result-1` to `search-result-12`,
 made from one `content.json` item with `repeat`. They mention the kittiwake,
 which no other seeded page does, so a search for it has two pages of results
-on every theme (`specs/all-sites/search.spec.js`). Relevanssi answers the
+on every theme but ppo, whose search page lists nothing while Relevanssi is
+active (a known issue in `specs/all-sites/search.spec.js`). Relevanssi answers the
 searches, and the seed builds its index once each site's content is in. The
 justice site adds a page and a PDF that mention it, and has Relevanssi index
 documents, for its sort links and filters (`specs/justice/search-filters.spec.js`).

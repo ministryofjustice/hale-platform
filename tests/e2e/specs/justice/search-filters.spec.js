@@ -21,7 +21,8 @@ const sortLinks = (page) => page.locator(".search-bar-block__filters");
 // The panel is in the page twice, for desktop and for mobile.
 const filtersPanel = (page) => page.locator(".one-sidebar__sidebar--desktop form.sidebar-block__search-filter");
 
-// The kittiwake pages, from the fixtures, and the document.
+// The kittiwake pages, from the fixtures. The one kittiwake document is the
+// + 1 where a count includes it.
 function pageCount(site) {
   return seededItems(site).filter(({ file }) => /(search-result|kittiwake-guidance)\.html$/.test(file)).length;
 }
