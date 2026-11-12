@@ -58,7 +58,7 @@ jobs:
 
       - name: Build theme assets
         run: |
-          for theme in hale hale-dash hale-showcase ppo govwind justice; do
+          for theme in hale hale-dash hale-showcase ppo justice; do
             (
               cd ./wordpress/wp-content/themes/$theme
               if [ -f package-lock.json ]; then
