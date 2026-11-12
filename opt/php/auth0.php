@@ -471,7 +471,8 @@ function wb_auth0_migration_answer(bool $login): array
         return $refuse(401, 'Invalid token');
     }
 
-    $username = isset($_POST['username']) && is_string($_POST['username']) ? $_POST['username'] : '';
+    // The password stays slashed, as in wp_signon(): WordPress hashes passwords slashed.
+    $username = isset($_POST['username']) && is_string($_POST['username']) ? wp_unslash($_POST['username']) : '';
     $password = isset($_POST['password']) && is_string($_POST['password']) ? $_POST['password'] : '';
 
     if ($username === '') {
