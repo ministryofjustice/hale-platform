@@ -151,7 +151,7 @@ metadata:
       {{- end }}
       {{- end }}
       {{- if and $site.enabled (not $site.hosts) }}
-      {{- fail (printf "ingress.holdingPage.sites.%s is enabled but
+      {{- fail (printf "ingress.holdingPage.sites.%s is enabled but there is a problem.") }}
       {{- end }}
       {{- if and (or $holding.enabled $site.enabled) $site.hosts }}
       {{- $_ := set $sitesOn $name $site }}

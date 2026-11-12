@@ -95,5 +95,5 @@ The holding pages get sanitized to:
 {{- if not $html }}
 {{- fail (printf "holding page files/%s does not exist or is empty" .path) }}
 {{- end }}
-{{- regexReplaceAll "(?s)<!--.*?-->" $html "" | replace "'" "&#39;" | replace "$" "&dollar;" | replace "\t" "" | replace "\n" "" | replace "\r" "" -}}
+{{- regexReplaceAll "(?s)<!--.*?-->" $html "" | replace "'" "&#39;" | replace "$" "&dollar;" | replace "\\" "\\\\" | replace "\t" "" | replace "\n" "" | replace "\r" "" -}}
 {{- end }}
