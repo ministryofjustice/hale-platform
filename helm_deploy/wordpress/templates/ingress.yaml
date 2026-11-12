@@ -151,7 +151,7 @@ metadata:
       {{- end }}
       {{- end }}
       {{- if and $site.enabled (not $site.hosts) }}
-      {{- fail (printf "ingress.holdingPage.sites.%s is enabled but there is a problem.") }}
+      {{- fail (printf "ingress.holdingPage.sites.%s is enabled but there is a problem with the host."  $name) }}
       {{- end }}
       {{- if and (or $holding.enabled $site.enabled) $site.hosts }}
       {{- $_ := set $sitesOn $name $site }}
@@ -177,7 +177,7 @@ metadata:
 
       {{- /* Choose the page for this request */}}
       {{- if or $holding.enabled $sitesOn }}
-      set $hale_holding '{{ if $holding.enabled }}/__holding-page{{
+      set $hale_holding '{{ if $holding.enabled }}/__holding-page{{ end }}';
       {{- range $name, $site := $sitesOn }}
       {{- range $site.hosts }}
       if ($host = '{{ . }}') {
@@ -199,7 +199,7 @@ metadata:
         default_type text/html;
         add_header Cache-Control "no-store" always;
         add_header Retry-After "3600" always;
-        return 503 '{{ include "hale.holdingPageHtml" (dict "root" l") }}';
+        return 503 '{{ include "hale.holdingPageHtml" (dict "root" $ "path" $holding.page) }}';
       }
       {{- end }}
 
