@@ -1,74 +1,106 @@
-const {test, expect} = require("../../support/test");
+const { test, expect } = require("../../support/test");
+const { getSitePageUrls } = require("../../support/page-urls");
 
-test("Check homepage does not scroll sideways on mobile", async ({ page, site}) => {
-    await page.goto("./");
+test("Check pages do not scroll sideways on mobile", async ({ page, site }) => {
+  //get all seeded page urls for the current site
+  const urls = getSitePageUrls(site);
 
-   const canScrollH = await page.evaluate(() => {
+  console.log("URLS:", urls);
 
-        horizontalScroll = (ele) => {
-            if(!(ele)){
-                return false;
-            }
+  //run the test on each page
+  for (const url of urls) {
+    await test.step(`Check horizontal scrolling: ${url}`, async () => {
+      await page.goto(url);
 
-            const overflowX = getComputedStyle(ele).overflowX;
+      const canScrollH = await page.evaluate(() => {
+        const horizontalScroll = (ele) => {
+          if (!ele) {
+            return false;
+          }
 
-            //Hale uses overflowX: clip -> prevenets scrolling if overflow
+          const overflowX = getComputedStyle(ele).overflowX;
 
-            if(overflowX === 'clip' || overflowX === 'hidden'){
-                return false;
-            }
+          // Hidden and clip prevent user scrolling
+          if (overflowX === "clip" || overflowX === "hidden") {
+            return false;
+          }
 
-            const originalPos = ele.scrollLeft;
+          const originalPos = ele.scrollLeft;
 
-            //scroll horizontally
+          // Attempt horizontal scrolling
+          ele.scrollLeft = ele.scrollWidth;
 
-            ele.scrollLeft = ele.scrollWidth;
+          const newPos = ele.scrollLeft;
 
-            const newPos = ele.scrollLeft;
+          // Restore original position
+          ele.scrollLeft = originalPos;
 
-            //reset scrolling
-            ele.scrollLeft = originalPos;
+          return newPos !== originalPos;
+        };
 
-            return newPos !== originalPos;
-
-        }
-
-        // check both html and body
-
+        // Check both the document scrolling element and body
         const htmlCanScroll = horizontalScroll(document.scrollingElement);
         const bodyCanScroll = horizontalScroll(document.body);
 
         return htmlCanScroll || bodyCanScroll;
+      });
+
+      expect
+        .soft(canScrollH, `${site.key}: ${url} allows horizontal scrolling`)
+        .toBe(false);
     });
-
-        expect(canScrollH, `${site.key} homepage allows horozontal scrolling`).toBe(false);
-   
-
+  }
 });
 
-
 //Extra test to check for overflow
-test("homepage content does not overflow on mobile", async ({page, site}) => {
+test("Page content does not overflow on mobile", async ({ page, site }) => {
+  const urls = getSitePageUrls(site);
 
-        await page.goto("./");
+  for (const url of urls) {
+    await test.step(`Check content for overflow: ${url}`, async (step) => {
+      await page.goto(url);
 
-        const widths = await page.evaluate(() => {
-            const htmlEl = document.documentElement;
-            const bodyEl = document.body;
+      const widths = await page.evaluate(() => {
+        const htmlEl = document.documentElement;
+        const bodyEl = document.body;
 
-            return {
-                viewportWidth: htmlEl.clientWidth,
-                contentWidth: Math.max(
-                    htmlEl.scrollWidth,
-                    bodyEl.scrollWidth
-                )
-            };
+        return {
+          viewportWidth: htmlEl.clientWidth,
+          contentWidth: Math.max(
+            htmlEl.scrollWidth,
+            bodyEl.scrollWidth
+          )
+        };
+      });
+   
+      //record screenshot when overflow is detected
+      if (widths.contentWidth > widths.viewportWidth) {
+        const screenshot = await page.screenshot({ fullPage: true });
+
+        await step.attach(`Overflow - ${new URL(url).pathname}`, {
+            body: screenshot,
+            contentType: "image/png"
         });
+        }
 
-        // Ensure the width measurement is valid
-        expect(Number.isFinite(widths.contentWidth)).toBe(true);
+      // Ensure the width measurement is valid
+      expect.soft(Number.isFinite(widths.contentWidth)).toBe(true);
 
-        expect(widths.contentWidth, `${site.key} homepage content exceeds the mobile viewport`).toBeLessThanOrEqual(widths.viewportWidth);
-   });
-     
-    
+    //   if(widths.overflowingEles.length > 0){
+    //     console.log(`${site.key}: ${url}`, widths.overflowingEles);
+    //   }
+//     if (widths.contentWidth > widths.viewportWidth) {
+//     console.log(`${site.key}: ${url}`, {
+//         viewportWidth: widths.viewportWidth,
+//         contentWidth: widths.contentWidth,
+//         overflowingEles: widths.overflowingEles
+//     });
+// }
+
+      expect.soft(
+        widths.contentWidth,
+        `${site.key}: ${url} content width ${widths.contentWidth}px exceeds viewport width ${widths.viewportWidth}px`
+        ).toBeLessThanOrEqual(widths.viewportWidth);
+    });
+  }
+});
