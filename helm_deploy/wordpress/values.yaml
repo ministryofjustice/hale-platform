@@ -282,16 +282,37 @@ ingress:
   # Only prod has any: see values-prod.yaml.
   hosts: []
 
-  # Serve a static holding page from the ingress for every host instead of
-  # WordPress. The host redirects in ingress.yaml still apply, and so do the
-  # holding page redirects below when they are on. Only /.well-known/ paths are
-  # otherwise unaffected.
+  # Serve a static holding page from the ingress instead of WordPress. The host
+  # redirects in ingress.yaml still apply, and so do the holding page redirects
+  # below when they are on. /.well-known/ paths are never held.
   holdingPage:
+    # true: every host is held. Hosts listed under a site get that site's page;
+    # every other host gets the default page.
     enabled: false
-    # Hosts sent elsewhere while the holding page is up, and only then: they
-    # apply when both holdingPage.enabled and redirects.enabled are true. Each
-    # is a 302 to one fixed URL, whatever the path. A host must be one this
-    # environment serves: domain, or a name under ingress.hosts.
+    # The default page, a file under files/.
+    page: holding-page.html
+
+    # Sites that can be held on their own. enabled: true holds only that
+    # site's hosts while every other host is served as normal. page is a file
+    # under files/, and the default page is used when it is left out. hosts
+    # are set per environment in values-<env>.yaml; a host may appear under
+    # one site only.
+    sites:
+      icrir:
+        enabled: false
+        page: icrir.html
+        hosts: []
+      ppj:
+        enabled: false
+        page: ppj.html
+        hosts: []
+      # example:
+      #   enabled: false
+      #   hosts: []
+
+    # 302s for these hosts, only while holdingPage.enabled is true. Each is to
+    # one fixed URL, whatever the path. A host must be one this environment
+    # serves: domain, or a name under ingress.hosts.
     redirects:
       enabled: false
       hosts: []

@@ -237,12 +237,24 @@ ingress:
     - name: www.websitebuilder.service.justice.gov.uk
       certName: websitebuilder-www-cert
 
-  # Redirects that apply only while the holding page is up, when both
-  # holdingPage.enabled and holdingPage.redirects.enabled are true (see
-  # values.yaml). Each host must also be in the hosts list above.
+  # Holding pages (see values.yaml). Every host under sites and redirects must
+  # also be in the hosts list above.
   holdingPage:
     enabled: false
+    sites:
+      icrir:
+        enabled: false
+        hosts:
+          - icrir.independent-inquiry.uk
+          - www.icrir.independent-inquiry.uk
+      ppj:
+        enabled: false
+        hosts:
+          - prisonandprobationjobs.gov.uk
+          - www.prisonandprobationjobs.gov.uk
     redirects:
+      # true: while holdingPage.enabled is true, these hosts get a 302 instead
+      # of a holding page
       enabled: false
       hosts:
         - host: prisonandprobationjobs.gov.uk

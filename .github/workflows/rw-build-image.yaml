@@ -431,6 +431,11 @@ jobs:
       # served from the Redis page cache by nginx alone, with php-fpm completely
       # dead, and would pass. A query string bypasses the cache and forces the
       # request through PHP.
+      #
+      # A host behind a holding page (ingress.holdingPage in values.yaml) gets a
+      # 503 from the ingress with an x-wb-holding header, and never reaches
+      # WordPress. That passes with a warning, since the release cannot be
+      # tested through it.
       - name: Smoke test the deployed site
         run: |
           set -euo pipefail
@@ -445,8 +450,13 @@ jobs:
           echo "requesting $url"
           # Any curl failure - no connection, or a 200 whose body outran the
           # timeout - counts as 000.
-          code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 "$url") || code=000
+          result=$(curl -sS -o /dev/null -w '%{http_code} %header{x-wb-holding}' --max-time 30 "$url") || result=000
+          read -r code holding <<< "$result"
           echo "HTTP $code"
+          if [ "$code" = "503" ] && [ -n "$holding" ]; then
+            echo "::warning::$host is behind a holding page, so the new release could not be smoke tested"
+            exit 0
+          fi
           if [ "$code" != "200" ]; then
             echo "::error::$host returned $code after deploy - the new release may not be serving. Check the wordpress pod logs; if the release is the cause, roll back with helm rollback wordpress"
             exit 1

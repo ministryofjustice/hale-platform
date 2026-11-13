@@ -45,3 +45,9 @@ autoscaling:
 ingress:
   defaultHost:
     certName: websitebuilder-dev-cert
+  holdingPage:
+    sites:
+      icrir:
+        enabled: true
+        hosts:
+          - dev.websitebuilder.service.justice.gov.uk
