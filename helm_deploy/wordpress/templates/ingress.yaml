@@ -190,9 +190,9 @@ metadata:
       challenges. Each page is rendered onto one line inside a single-quoted
       nginx string by wordpress.holdingPageHtml.
 
-      Every holding page is a 503 with an x-wb-holding header, which the deploy
-      smoke test in rw-build-image.yaml looks for to tell a held site from a
-      broken one.
+      Every holding page is a 503, and every holding redirect a 302, with an
+      x-wb-holding header, which the deploy smoke test in rw-build-image.yaml
+      looks for to tell a held site from a broken one.
       */}}
       {{- $holding := .Values.ingress.holdingPage }}
       {{- $served := list .Values.domain }}
@@ -249,6 +249,8 @@ metadata:
       host, to one fixed URL whatever the path. nginx's if takes one
       condition, so each host sets $hale_holding_redirect, a /.well-known/
       request clears it again, and the redirect fires only if it is still set.
+      The 302 comes from an internal location so that, like a holding page, it
+      can carry the x-wb-holding header.
 
       The host must be one this ingress serves, or the redirect would never be
       reached, and the target must be an https:// URL with no quote or
@@ -276,6 +278,12 @@ metadata:
         set $hale_holding_redirect '';
       }
       if ($hale_holding_redirect) {
+        rewrite ^ /__holding-redirect last;
+      }
+      location = /__holding-redirect {
+        internal;
+        add_header Cache-Control "no-store" always;
+        add_header x-wb-holding "1" always;
         return 302 $hale_holding_redirect;
       }
       {{- end }}
