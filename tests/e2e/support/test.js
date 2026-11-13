@@ -16,6 +16,8 @@
 // Messages are collected for the test's own context only; a context made with
 // browser.newContext() is not watched.
 //
+// It also fails if any stylesheet or script a page loads does not return 200.
+//
 // A BrowserStack run has the platforms in browserstack.yml as its projects,
 // which set neither, so there the site comes from the spec's folder:
 // specs/<site key>/ for that site's specs, the main site for the rest
@@ -106,6 +108,27 @@ const test = base.test.extend({
       await use(errors);
       if (ignoreConsoleErrors) return;
       expect(errors, `Browser console errors:\n${errors.join("\n")}`).toEqual([]);
+    },
+    { auto: true },
+  ],
+  // Every stylesheet and script a page loads must come back 200, on any page
+  // the test opens. A request cancelled because the page navigated away is not
+  // a failure, so net::ERR_ABORTED is skipped.
+  assetStatus: [
+    async ({ skipAll, context }, use) => {
+      const failures = new Set();
+      const isAsset = (request) => ["stylesheet", "script"].includes(request.resourceType());
+      context.on("response", (response) => {
+        if (isAsset(response.request()) && response.status() !== 200) {
+          failures.add(`${response.status()} ${response.url()}`);
+        }
+      });
+      context.on("requestfailed", (request) => {
+        const error = request.failure()?.errorText ?? "failed";
+        if (isAsset(request) && error !== "net::ERR_ABORTED") failures.add(`${error} ${request.url()}`);
+      });
+      await use();
+      expect([...failures], "Stylesheets or scripts that did not return 200").toEqual([]);
     },
     { auto: true },
   ],
