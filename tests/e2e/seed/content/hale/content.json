@@ -135,13 +135,6 @@
       "file": "table-scroll.html"
     },
     {
-      "id": 112,
-      "type": "page",
-      "slug": "mobile-overflow",
-      "title": "Mobile Overflow Test",
-      "file": "mobile-overflow.html"
-    },
-    {
       "id": 201,
       "type": "post",
       "slug": "first-news-story",

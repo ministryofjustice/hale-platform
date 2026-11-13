@@ -5,8 +5,6 @@ test("Check pages do not scroll sideways on mobile", async ({ page, site }) => {
   //get all seeded page urls for the current site
   const urls = getSitePageUrls(site);
 
-  console.log("URLS:", urls);
-
   //run the test on each page
   for (const url of urls) {
     await test.step(`Check horizontal scrolling: ${url}`, async () => {
@@ -60,16 +58,7 @@ test("check for elements overflowing and crossing the mobile viewport", async ({
 
   for (const url of urls) {
 
-    // Exclude the deliberately overflowing test page
-    //comment out if you want to check the deliberately failing test
-    if (
-      site.key === "hale" &&
-      new URL(url).pathname === "/mobile-overflow/"
-    ) {
-      continue;
-    }
-
-    //test nested pages    
+    //test nested pages for each theme site   
     await test.step(`Check viewport boundaries: ${url}`, async () => {
       await page.goto(url);
 
@@ -129,7 +118,7 @@ test("check for elements overflowing and crossing the mobile viewport", async ({
             };
           });
       });
-      //elements array should be 0 if no overflowing elements are found to cross the viewport boundary
+      //elements array should be 0 if no overflowing elements cross the viewport boundaries
       expect.soft(
         overflowingEles,
         `${site.key}: ${url} has elements crossing the mobile viewport`

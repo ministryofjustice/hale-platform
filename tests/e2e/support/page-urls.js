@@ -13,18 +13,16 @@
 const path = require("node:path");
 
 function getSitePageUrls(site) {
-
   // Load the seeded content for the selected site
   const content = require(
-    path.join(__dirname, "../seed/content", site.key, "content.json")
+    path.join(__dirname, "../seed/content", site.key, "content.json"),
   );
 
   // filter for pages only
-  const pages = content.items.filter(item => item.type === "page");
+  const pages = content.items.filter((item) => item.type === "page");
 
-  // Create a pages relative URL path 
+  // Create a pages relative URL path
   function getPagePath(page) {
-
     //front page ---> root URL
     if (page.slug === content.frontPage) {
       return "";
@@ -36,7 +34,6 @@ function getSitePageUrls(site) {
 
     // Trace the page's parent relationships and end loop when no parent is found
     while (parentSlug) {
-
       // Prevent circular parent relationships
       if (visited.has(parentSlug)) {
         throw new Error(`Circular parent relationship: ${parentSlug}`);
@@ -45,13 +42,13 @@ function getSitePageUrls(site) {
       visited.add(parentSlug);
 
       // Find the parent page using its slug
-      const parent = pages.find(page => page.slug === parentSlug);
+      const parent = pages.find((page) => page.slug === parentSlug);
 
       if (!parent) {
         throw new Error(`Parent page not found: ${parentSlug}`);
       }
 
-      // Stop if we've reached the front page
+      // Stop if the front page is reached
       if (parent.slug === content.frontPage) {
         break;
       }
@@ -67,14 +64,12 @@ function getSitePageUrls(site) {
   }
 
   // Ensure the site's base URL ends with a slash
-  const baseURL = site.url.endsWith("/")
-    ? site.url
-    : `${site.url}/`;
+  const baseURL = site.url.endsWith("/") ? site.url : `${site.url}/`;
 
   // create and return the URLs for all seeded pages
-  return pages.map(page => {
+  return pages.map((page) => {
     const pagePath = getPagePath(page);
-     return new URL(pagePath ? `${pagePath}/` : "", baseURL).toString();
+    return new URL(pagePath ? `${pagePath}/` : "", baseURL).toString();
   });
 }
 
