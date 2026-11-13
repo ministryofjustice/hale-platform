@@ -79,21 +79,30 @@ nothing on success - include it from a template that is always evaluated.
 {{- end }}
 {{- end }}
 
-
 {{/*
-Holding page building pipeline
-
-The holding pages get sanitized to:
-- remove all comments
-- replace single quotes with the HTML code
-- replace dollars with the HTML named code
-- replace tabs, new lines &c.
-
+A holding page from files/, rendered for ingress.yaml to put inside one
+single-quoted nginx string:
+- HTML comments are removed.
+- Each run of whitespace containing a line break becomes one space, so the
+  page sits on one line under the server-snippet key and words either side of
+  a line break stay apart. Tabs become spaces.
+- A backslash is doubled, as nginx reads one as an escape.
+- A single quote, which would end the string, becomes &#39;, and a $, which
+  nginx would read as a variable, becomes &dollar;. Neither entity works inside
+  <script> or <style>, so the pages must not use either character there.
+nginx rejects a quoted string over 4096 bytes, so a page that renders to 4000
+or more fails the deploy.
 */}}
-{{- define "hale.holdingPageHtml" -}}
+{{- define "wordpress.holdingPageHtml" -}}
 {{- $html := .root.Files.Get (printf "files/%s" .path) -}}
 {{- if not $html }}
 {{- fail (printf "holding page files/%s does not exist or is empty" .path) }}
 {{- end }}
-{{- regexReplaceAll "(?s)<!--.*?-->" $html "" | replace "'" "&#39;" | replace "$" "&dollar;" | replace "\\" "\\\\" | replace "\t" "" | replace "\n" "" | replace "\r" "" -}}
+{{- $html = regexReplaceAll "(?s)<!--.*?-->" $html "" }}
+{{- $html = regexReplaceAll "\\s*\\n\\s*" $html " " | trim }}
+{{- $html = $html | replace "\t" " " | replace "\\" "\\\\" | replace "'" "&#39;" | replace "$" "&dollar;" }}
+{{- if ge (len $html) 4000 }}
+{{- fail (printf "holding page files/%s renders to %d bytes; nginx rejects a quoted string over 4096, so keep it under 4000" .path (len $html)) }}
+{{- end }}
+{{- $html -}}
 {{- end }}
