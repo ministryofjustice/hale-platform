@@ -21,6 +21,7 @@ wp config set AUTH0_ENV_DOMAIN "\$_SERVER['AUTH0_ENV_DOMAIN']" --raw
 # unset: no bypass.
 wp config set AUTH0_ENV_FALLBACK_PARAM "\$_SERVER['AUTH0_ENV_FALLBACK_PARAM'] ?? ''" --raw
 wp config set AUTH0_ENV_FALLBACK_SECRET "\$_SERVER['AUTH0_ENV_FALLBACK_SECRET'] ?? ''" --raw
+wp config set AUTH0_ENV_MIGRATION_TOKEN "\$_SERVER['AUTH0_ENV_MIGRATION_TOKEN'] ?? ''" --raw
 wp config set S3_UPLOADS_BUCKET "\$_SERVER['S3_UPLOADS_BUCKET']" --raw
 wp config set S3_UPLOADS_REGION "\$_SERVER['S3_UPLOADS_REGION']" --raw
 wp config set S3_UPLOADS_BUCKET_URL "\$_SERVER['S3_UPLOADS_BUCKET_URL']" --raw

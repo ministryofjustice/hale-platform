@@ -178,6 +178,7 @@ secrets:
   auth0envdomain: ""
   auth0envfallbackparam: ""
   auth0envfallbacksecret: ""
+  auth0envmigrationtoken: ""
   acftoken: ""
   redisauth: ""
   redishost: ""

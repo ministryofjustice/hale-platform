@@ -22,6 +22,11 @@
  * - a redirect loop on wp-force-login sites for someone Auth0 signs in but who
  *   has no account here;
  * - the settings screens, which show the client secret in the page.
+ *
+ * Also reimplements the 4.x plugin's user migration endpoints, which the Auth0
+ * database connection still calls.
+ *
+ * Covered by tests/e2e/specs/auth0/.
  */
 
 /**
@@ -35,6 +40,9 @@
  * Composer's: CI builds with --optimize-autoloader, which lists each class's
  * file in a class map, and Composer includes a listed file without checking
  * it exists, so a PHP warning for every class would come before this.
+ *
+ * @param string $class Fully qualified class name.
+ * @return void
  */
 spl_autoload_register(function (string $class): void {
     $prefix = 'Auth0\\WordPress\\';
@@ -60,6 +68,11 @@ spl_autoload_register(function (string $class): void {
 const WB_AUTH0_PLUGIN_4X = 'auth0/WP_Auth0.php';
 const WB_AUTH0_PLUGIN = 'auth0/wpAuth0.php';
 
+/**
+ * Whether the plugin's new main file is installed and the 4.x one isn't.
+ *
+ * @return bool
+ */
 function wb_auth0_renamed(): bool
 {
     static $renamed = null;
@@ -68,7 +81,12 @@ function wb_auth0_renamed(): bool
     return $renamed;
 }
 
-// A site's plugins: a list of files.
+/**
+ * A site's active plugins.
+ *
+ * @param string[]|mixed $plugins Plugin files.
+ * @return string[]|mixed
+ */
 add_filter('option_active_plugins', function ($plugins) {
     if (!is_array($plugins) || !wb_auth0_renamed() || !in_array(WB_AUTH0_PLUGIN_4X, $plugins, true)) {
         return $plugins;
@@ -80,7 +98,12 @@ add_filter('option_active_plugins', function ($plugins) {
     )));
 });
 
-// Network-activated plugins: file => activation time.
+/**
+ * Network-activated plugins.
+ *
+ * @param array<string, int>|mixed $plugins Plugin file => activation time.
+ * @return array<string, int>|mixed
+ */
 add_filter('site_option_active_sitewide_plugins', function ($plugins) {
     if (!is_array($plugins) || !wb_auth0_renamed() || !isset($plugins[WB_AUTH0_PLUGIN_4X])) {
         return $plugins;
@@ -115,6 +138,9 @@ add_filter('site_option_active_sitewide_plugins', function ($plugins) {
  * so nothing needs ending. Removed as soon as the plugin has loaded, before
  * anything can check the cookie. Before the check for credentials below: the
  * handlers would fail without them.
+ *
+ * @param string $file Full path to the plugin's main file.
+ * @return void
  */
 foreach (['network_plugin_loaded', 'plugin_loaded'] as $wb_auth0_hook) {
     add_action($wb_auth0_hook, function (string $file) {
@@ -228,6 +254,8 @@ unset($wb_auth0_options, $wb_auth0_option, $wb_auth0_value);
 
 /**
  * Whether the Auth0 plugin is loaded and handling logins on this site.
+ *
+ * @return bool
  */
 function wb_auth0_active(): bool
 {
@@ -239,6 +267,8 @@ function wb_auth0_active(): bool
  * wp-login.php?action=logout, so a link or image on another site could log
  * people out. check_admin_referer() asks the person to confirm instead, as
  * WordPress does without the plugin. Runs before the plugin's own handler.
+ *
+ * @return void
  */
 add_action('login_form_logout', function () {
     if (wb_auth0_active()) {
@@ -249,6 +279,8 @@ add_action('login_form_logout', function () {
 /**
  * Notes when the login page is handling the Auth0 callback, for the redirect
  * filter below. Runs before the plugin's own handler.
+ *
+ * @return void
  */
 add_action('login_form_login', function () {
     $GLOBALS['wb_auth0_callback'] = wb_auth0_active() && isset($_GET['code'], $_GET['state']);
@@ -265,6 +297,14 @@ add_action('login_form_login', function () {
  *
  * wp_clear_auth_cookie() also runs this filter, with no user and no expiry,
  * and is left alone.
+ *
+ * @param bool   $send       Whether to send the cookies.
+ * @param int    $expire     When the cookie expires in the browser, 0 for a session cookie.
+ * @param int    $expiration When WordPress stops accepting the cookie.
+ * @param int    $user_id    The user being logged in.
+ * @param string $scheme     The authentication scheme.
+ * @param string $token      The user's session token.
+ * @return bool
  */
 add_filter('send_auth_cookies', function ($send, $expire, $expiration, $user_id, $scheme, $token) {
     static $reissuing = false;
@@ -287,12 +327,19 @@ add_filter('send_auth_cookies', function ($send, $expire, $expiration, $user_id,
  * the secret: <login page>?<AUTH0_ENV_FALLBACK_PARAM>=<AUTH0_ENV_FALLBACK_SECRET>.
  * Both come from the environment, so neither is in the code. Without either
  * there is no bypass.
+ *
+ * @return string The parameter name, or an empty string if it isn't set.
  */
 function wb_auth0_login_bypass_param(): string
 {
     return defined('AUTH0_ENV_FALLBACK_PARAM') ? (string) AUTH0_ENV_FALLBACK_PARAM : '';
 }
 
+/**
+ * Whether this request has the login bypass secret.
+ *
+ * @return bool
+ */
 function wb_auth0_login_bypass(): bool
 {
     $param = wb_auth0_login_bypass_param();
@@ -307,6 +354,8 @@ function wb_auth0_login_bypass(): bool
  * request, so WordPress shows its login form, and checks the password when the
  * form is sent. The form carries the secret in a hidden field, so the request
  * that sends the password is let through too.
+ *
+ * @return void
  */
 add_action('login_form_login', function () {
     if (wb_auth0_active() && wb_auth0_login_bypass()) {
@@ -318,6 +367,11 @@ add_action('login_form_login', function () {
     }
 }, 9);
 
+/**
+ * Add the bypass secret to the login form as a hidden field.
+ *
+ * @return void
+ */
 add_action('login_form', function () {
     if (wb_auth0_active() && wb_auth0_login_bypass()) {
         $param = wb_auth0_login_bypass_param();
@@ -332,10 +386,17 @@ add_action('login_form', function () {
  * a WordPress password would sign in without Auth0 or the secret. Refused
  * whether or not the password is right, so the answer does not reveal it.
  * After WordPress's own checks (priority 20), which would replace an earlier
- * error.
+ * error. User migration checks (below) are let through, because they don't
+ * log anyone in.
+ *
+ * @param WP_User|WP_Error|null $user     The result so far.
+ * @param string|null           $username The username or email address.
+ * @param string|null           $password The password.
+ * @return WP_User|WP_Error|null
  */
 add_filter('authenticate', function ($user, $username, $password) {
-    if (((string) $username === '' && (string) $password === '') || !wb_auth0_active() || wb_auth0_login_bypass()) {
+    if (((string) $username === '' && (string) $password === '') || !wb_auth0_active() || wb_auth0_login_bypass()
+        || !empty($GLOBALS['wb_auth0_migration_check'])) {
         return $user;
     }
 
@@ -343,11 +404,137 @@ add_filter('authenticate', function ($user, $username, $password) {
 }, 100, 3);
 
 /**
+ * Auth0 user migration
+ *
+ * For users created via WP Dashboard not yet imported by Auth0
+ *
+ * Until Auth0 has imported a user, its database connection asks WordPress to
+ * check their password. 4.x provided these endpoints; 5.x and later don't.
+ *
+ *   /index.php?a0_action=migration-ws-login     check an email and password
+ *   /index.php?a0_action=migration-ws-get-user  look up an email
+ *
+ * Only answered for a POST to the main site with AUTH0_ENV_MIGRATION_TOKEN
+ * set, and refused unless it comes from an Auth0 EU IP address. Responses
+ * match 4.x, as the scripts parse them. Unlike 4.x, users marked as spam are
+ * never returned.
+ */
+const WB_AUTH0_MIGRATION_ACTIONS = ['migration-ws-login', 'migration-ws-get-user'];
+
+/**
+ * Auth0's EU outbound IP addresses.
+ *
+ * Source: https://cdn.auth0.com/ip-ranges.json (regions.EU, updated 2025-09-08)
+ */
+const WB_AUTH0_MIGRATION_EU_IPS = [
+    '35.157.221.52', '52.28.184.187', '52.57.230.214', '52.208.95.174', '52.210.122.50', '54.76.184.103',
+    '18.198.229.148', '3.67.233.131', '34.246.118.27', '35.157.198.116', '52.17.111.199', '52.19.3.147',
+    '18.197.9.11', '3.125.185.137', '3.74.90.247', '52.210.121.45', '52.30.153.34', '54.75.208.179',
+    '3.65.249.224', '3.68.125.137', '3.72.27.152', '54.228.204.106', '54.228.86.224', '54.73.137.216',
+];
+
+/**
+ * Get the migration token. Empty turns the endpoints off.
+ *
+ * @return string
+ */
+function wb_auth0_migration_token(): string
+{
+    return defined('AUTH0_ENV_MIGRATION_TOKEN') ? trim((string) AUTH0_ENV_MIGRATION_TOKEN) : '';
+}
+
+/**
+ * Build the response for a migration script.
+ *
+ * @param bool $login True for migration-ws-login, false for migration-ws-get-user.
+ * @return array ['data' => user fields] or ['status' => int, 'error' => string].
+ */
+function wb_auth0_migration_answer(bool $login): array
+{
+    $refuse = fn (int $status, string $error) => ['status' => $status, 'error' => $error];
+
+    if (!in_array((string) ($_SERVER['REMOTE_ADDR'] ?? ''), WB_AUTH0_MIGRATION_EU_IPS, true)) {
+        return $refuse(401, 'Unauthorized');
+    }
+
+    // The token can be in the POST body or an Authorization header, as in 4.x.
+    $given = isset($_POST['access_token']) && is_string($_POST['access_token'])
+        ? wp_unslash($_POST['access_token'])
+        : (string) ($_SERVER['HTTP_AUTHORIZATION'] ?? '');
+    $given = trim(str_replace('Bearer ', '', $given));
+
+    if ($given === '') {
+        return $refuse(401, 'Unauthorized: missing authorization header');
+    }
+
+    if (!hash_equals(wb_auth0_migration_token(), $given)) {
+        return $refuse(401, 'Invalid token');
+    }
+
+    // The password stays slashed, as in wp_signon(): WordPress hashes passwords slashed.
+    $username = isset($_POST['username']) && is_string($_POST['username']) ? wp_unslash($_POST['username']) : '';
+    $password = isset($_POST['password']) && is_string($_POST['password']) ? $_POST['password'] : '';
+
+    if ($username === '') {
+        return $refuse(400, 'Username is required');
+    }
+
+    if ($login && $password === '') {
+        return $refuse(400, 'Password is required');
+    }
+
+    if ($login) {
+        // The flag lets this past the password login block above.
+        $GLOBALS['wb_auth0_migration_check'] = true;
+        $user = wp_authenticate($username, $password);
+        $GLOBALS['wb_auth0_migration_check'] = false;
+    } else {
+        $user = get_user_by('email', $username);
+        if ($user instanceof WP_User && is_multisite() && is_user_spammy($user)) {
+            $user = false;
+        }
+    }
+
+    if (!$user instanceof WP_User) {
+        return $refuse(401, $login ? 'Invalid credentials' : 'User not found');
+    }
+
+    return [
+        'data' => [
+            'ID' => $user->ID,
+            'user_login' => $user->user_login,
+            'user_email' => $user->user_email,
+            'display_name' => $user->display_name,
+        ],
+    ];
+}
+
+/**
+ * Answer migration requests before WordPress routes them.
+ *
+ * @return void
+ */
+add_action('parse_request', function () {
+    $action = isset($_GET['a0_action']) && is_string($_GET['a0_action']) ? $_GET['a0_action'] : '';
+    if (!in_array($action, WB_AUTH0_MIGRATION_ACTIONS, true) || wb_auth0_migration_token() === '' || !is_main_site()
+        || ($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST'
+        || parse_url((string) ($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH) !== parse_url(site_url('index.php'), PHP_URL_PATH)) {
+        return;
+    }
+
+    nocache_headers();
+    wp_send_json(wb_auth0_migration_answer($action === 'migration-ws-login'));
+}, 0);
+
+/**
  * Someone Auth0 signed in, but who has no WordPress account here. The plugin
  * sends them to the site with no message. On a wp-force-login site that sends
  * them straight back to the login page, then to Auth0, which signs them in
  * again: a loop until the browser stops it. Show an error instead, and clear
  * the plugin's Auth0 session so the next login starts again.
+ *
+ * @param string $location The URL being redirected to.
+ * @return string
  */
 add_filter('wp_redirect', function ($location) {
     if (empty($GLOBALS['wb_auth0_callback']) || is_user_logged_in()) {
@@ -371,12 +558,22 @@ add_filter('wp_redirect', function ($location) {
 const WB_AUTH0_SETTINGS_SCREENS = ['auth0', 'auth0_sync', 'auth0_advanced', 'auth0_tools'];
 const WB_AUTH0_SETTINGS_GROUPS = ['auth0_configuration', 'auth0_sync', 'auth0_advanced', 'auth0_tools'];
 
+/**
+ * Remove the settings screens from the menu for everyone but network admins.
+ *
+ * @return void
+ */
 add_action('admin_menu', function () {
     if (!is_super_admin()) {
         remove_menu_page('auth0');
     }
 }, 99);
 
+/**
+ * Refuse the settings screens to everyone but network admins.
+ *
+ * @return void
+ */
 add_action('admin_init', function () {
     $screen = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
     if (in_array($screen, WB_AUTH0_SETTINGS_SCREENS, true) && !is_super_admin()) {

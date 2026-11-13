@@ -91,6 +91,8 @@ on:
         required: false
       auth0-env-fallback-secret:
         required: false
+      auth0-env-migration-token:
+        required: false
       redis-auth:
         required: true
       redis-host:
@@ -246,6 +248,7 @@ jobs:
         env:
           AUTH0_ENV_FALLBACK_PARAM: ${{ secrets.auth0-env-fallback-param }}
           AUTH0_ENV_FALLBACK_SECRET: ${{ secrets.auth0-env-fallback-secret }}
+          AUTH0_ENV_MIGRATION_TOKEN: ${{ secrets.auth0-env-migration-token }}
         run: |
           helm upgrade wordpress helm_deploy/wordpress \
           --install \
@@ -276,6 +279,7 @@ jobs:
           --set secrets.auth0envdomain=${{ secrets.auth0-env-domain }} \
           --set-literal "secrets.auth0envfallbackparam=${AUTH0_ENV_FALLBACK_PARAM}" \
           --set-literal "secrets.auth0envfallbacksecret=${AUTH0_ENV_FALLBACK_SECRET}" \
+          --set-literal "secrets.auth0envmigrationtoken=${AUTH0_ENV_MIGRATION_TOKEN}" \
           --set secrets.wbconfig=${{ secrets.wb-config }} \
           --set secrets.acftoken=${{ secrets.acf-token }} \
           --set secrets.redisauth=${{ secrets.redis-auth }} \
