@@ -19,6 +19,10 @@ const CLIENT_SECRET = "e2e-auth0-client-secret-test-only";
 const FALLBACK_PARAM = "e2e_login_bypass";
 const FALLBACK_SECRET = "e2e-login-bypass-secret-test-only";
 
+// The token the database connection's migration scripts send. Matches
+// AUTH0_ENV_MIGRATION_TOKEN in docker-compose.test.yml.
+const MIGRATION_TOKEN = "e2e-migration-token-test-only";
+
 // The mock's session cookie (SESSION_COOKIE in stack/auth0-mock.js).
 const SESSION_COOKIE = "auth0_mock_session";
 
@@ -57,6 +61,8 @@ const identities = {
   unverified: { sub: "auth0|e2econtributor-unverified", email: "e2econtributor@example.test", email_verified: false },
   // Signs in at Auth0, but has no WordPress account anywhere.
   stranger: { sub: "auth0|e2estranger", email: "e2estranger@example.test" },
+  // A WordPress user marked as spam, i.e. suspended (seed/auth0-sites.php).
+  suspended: { sub: "auth0|e2esuspended", email: "e2esuspended@example.test" },
 };
 
 const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -188,6 +194,7 @@ module.exports = {
   CLIENT_SECRET,
   FALLBACK_PARAM,
   FALLBACK_SECRET,
+  MIGRATION_TOKEN,
   AUTHORIZE_URL,
   auth0Sites,
   identities,

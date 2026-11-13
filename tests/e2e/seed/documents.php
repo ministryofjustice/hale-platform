@@ -18,9 +18,10 @@ const E2E_DOCUMENT_MTIME = 1767603600; // 2026-01-05 09:00:00 UTC
 function e2e_pdf_file(string $title, array $lines): string
 {
     // Helvetica with WinAnsiEncoding takes Windows-1252 bytes; \, ( and ) are
-    // special inside a PDF string.
+    // special inside a PDF string. mbstring, not iconv: the wptools image is
+    // Alpine, and musl's iconv has no Windows-1252.
     $text = fn (string $s) => '(' . strtr(
-        iconv('UTF-8', 'Windows-1252//TRANSLIT', $s),
+        mb_convert_encoding($s, 'Windows-1252', 'UTF-8'),
         ['\\' => '\\\\', '(' => '\\(', ')' => '\\)']
     ) . ')';
 

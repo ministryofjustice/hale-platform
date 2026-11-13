@@ -85,11 +85,11 @@
       "type": "package",
       "package": {
         "name": "ministryofjustice/govwind",
-        "version": "1.2.0",
+        "version": "1.2.2",
         "type": "wordpress-theme",
         "dist": {
           "type": "zip",
-          "url": "https://github.com/ministryofjustice/govwind/releases/download/1.2.0/govwind-1.2.0.zip"
+          "url": "https://github.com/ministryofjustice/govwind/releases/download/1.2.2/govwind-1.2.2.zip"
         }
       }
     },
@@ -97,10 +97,10 @@
       "type": "package",
       "package": {
         "name": "ministryofjustice/website-builder-blocks",
-        "version": "2.3.9",
+        "version": "2.3.12",
         "type": "wordpress-plugin",
         "dist": {
-          "url": "https://github.com/ministryofjustice/website-builder-blocks/releases/download/2.3.9/website-builder-blocks-2.3.9.zip",
+          "url": "https://github.com/ministryofjustice/website-builder-blocks/releases/download/2.3.12/website-builder-blocks-2.3.12.zip",
           "type": "zip"
         },
         "require": {
@@ -126,17 +126,17 @@
     "auth0/wordpress": "6.0.0-beta.1",
     "composer/installers": "^v2.0",
     "ministryofjustice/cookie-compliance": "1.3.7",
-    "ministryofjustice/govwind": "1.2.0",
+    "ministryofjustice/govwind": "1.2.2",
     "ministryofjustice/justice": "11.1.6",
-    "ministryofjustice/hale": "4.36.1",
-    "ministryofjustice/hale-components": "1.22.4",
+    "ministryofjustice/hale": "4.36.3",
+    "ministryofjustice/hale-components": "1.22.5",
     "ministryofjustice/hale-dash": "2.5.1",
     "ministryofjustice/hale-showcase": "1.1.11",
     "ministryofjustice/ppo": "dev-main",
     "ministryofjustice/website-builder-block-restrictions": "1.0.0",
-    "ministryofjustice/website-builder-blocks": "2.3.9",
+    "ministryofjustice/website-builder-blocks": "2.3.12",
     "ministryofjustice/wp-gov-uk-notify": "1.0.4",
-    "ministryofjustice/wp-moj-blocks": "4.3.0",
+    "ministryofjustice/wp-moj-blocks": "4.3.1",
     "ministryofjustice/wp-s3-uploads": "2.0.1",
     "oscarotero/env": "^1.0",
     "php": ">=8.2",
