@@ -46,17 +46,17 @@ ingress:
   defaultHost:
     certName: websitebuilder-dev-cert
   holdingPage:
-    enabled: true
+    enabled: false 
     sites:
       icrir:
-        enabled: true
+        enabled: false
         hosts:
           - dev.websitebuilder.service.justice.gov.uk
 
     redirects:
       # true: while holdingPage.enabled is true, these hosts get a 302 instead
       # of a holding page
-      enabled: true
+      enabled: false 
       hosts:
         - host: dev.websitebuilder.service.justice.gov.uk
           to: https://jobs.justice.gov.uk/careers/SearchJobs
