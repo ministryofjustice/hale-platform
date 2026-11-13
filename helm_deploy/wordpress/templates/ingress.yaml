@@ -120,51 +120,152 @@ metadata:
       SecRule REQUEST_URI "!@rx ^/search(?:$|/|\?)" "t:none,chain"
       SecRule &ARGS_GET_NAMES "@gt 0" "t:none,chain"
       SecRule ARGS_GET_NAMES "!@rx ^(?:s|parent|ver|auth0|code|state|error|error_description)(?:\[[^\]]*\])?$" "t:none"
-
     nginx.ingress.kubernetes.io/server-snippet: |
-      # ... existing security.txt, /bold and host redirects unchanged ...
-
+      location = /.well-known/security.txt {
+        auth_basic off;
+        return 301 https://raw.githubusercontent.com/ministryofjustice/security-guidance/main/contact/vulnerability-disclosure-security.txt;
+      }
+      location /bold {
+        if ($host = 'hale-platform-prod.apps.live.cloud-platform.service.justice.gov.uk') {
+          return 301 https://bold.websitebuilder.service.justice.gov.uk;
+        }
+      }
+      if ($host = 'victimscode.org.uk') {
+        return 301 https://victimandwitnessinformation.org.uk/your-rights/as-a-victim;
+      }
+      if ($host = 'cym.victimscode.org.uk') {
+        return 301 https://cym.victimandwitnessinformation.org.uk/your-rights/as-a-victim;
+      }
+      if ($host = 'seewhatsontheinside.com') {
+        return 301 https://newfuturesnetwork.gov.uk;
+      }
+      if ($host = 'www.seewhatsontheinside.com') {
+        return 301 https://newfuturesnetwork.gov.uk;
+      }
+      if ($host = 'seewhatsontheinside.co.uk') {
+        return 301 https://newfuturesnetwork.gov.uk;
+      }
+      if ($host = 'www.seewhatsontheinside.co.uk') {
+        return 301 https://newfuturesnetwork.gov.uk;
+      }
+      if ($host = 'advance-into-justice.service.justice.gov.uk') {
+        return 301 https://prisonandprobationjobs.gov.uk/roles-at-hmpps/jobs-for-veterans;
+      }
+      if ($host = 'www.advance-into-justice.service.justice.gov.uk') {
+        return 301 https://prisonandprobationjobs.gov.uk/roles-at-hmpps/jobs-for-veterans;
+      }
+      if ($host = 'iapondeathsincustody.org') {
+        return 301 https://deathsindetention.independent-panel.uk;
+      }
+      if ($host = 'www.iapondeathsincustody.org') {
+        return 301 https://deathsindetention.independent-panel.uk;
+      }
+      if ($host = 'iapdeathsincustody.independent.gov.uk') {
+        return 301 https://deathsindetention.independent-panel.uk;
+      }
+      if ($host = 'www.iapdeathsincustody.independent.gov.uk') {
+        return 301 https://deathsindetention.independent-panel.uk;
+      }
+      if ($host = 'brookhouseinquiry.org.uk') {
+        return 301 https://webarchive.nationalarchives.gov.uk/ukgwa/20241002135959/https://brookhouseinquiry.org.uk/;
+      }
+      if ($host = 'www.brookhouseinquiry.org.uk') {
+        return 301 https://webarchive.nationalarchives.gov.uk/ukgwa/20241002135959/https://brookhouseinquiry.org.uk/;
+      }
       {{- /*
-      Holding pages (ingress.holdingPage in values.yaml). Each host behind a
-      holding page sets $hale_holding to the internal location serving its
-      page: a site's own page for its listed hosts, and with
-      holdingPage.enabled the generic page for every other host. /.well-known/
-      clears it, so security.txt and ACME challenges still work.
+      Holding pages (ingress.holdingPage in values.yaml). nginx runs the
+      server-level if, return and rewrite directives in the order they appear,
+      before it chooses a location. This block is last in the snippet, so the
+      host redirects above it, and the holding page redirects at its start, are
+      answered first. A host behind a holding page then has $hale_holding set
+      to the internal location serving its page, and never reaches WordPress.
+      /bold is a location, chosen after that rewrite, so it is behind the
+      holding page too.
+
+      With holdingPage.enabled every host is behind a holding page: a site's
+      own page for the hosts listed under it, the default page for every other
+      host. Without it, only the hosts of a site with enabled: true are.
+
+      /.well-known/ is left alone for security.txt and cert-manager ACME
+      challenges. Each page is rendered onto one line inside a single-quoted
+      nginx string by hale.holdingPageHtml.
       */}}
       {{- $holding := .Values.ingress.holdingPage }}
-
-      {{- /* Hosts this ingress serves, used to check the values */}}
       {{- $served := list .Values.domain }}
       {{- range .Values.ingress.hosts }}
       {{- $served = append $served .name }}
       {{- end }}
 
-      {{- /* Check every site, and collect the ones that are on */}}
+      {{- /*
+      Every page, site and redirect is checked on every deploy, whether or not
+      it is on, so a bad one fails the deploy now rather than when it is
+      switched on. A site with no page of its own uses the default page, which
+      is served from /__holding-page. $locations maps each internal location
+      in use to the file it serves.
+      */}}
+      {{- $_ := include "hale.holdingPageHtml" (dict "root" $ "path" (required "ingress.holdingPage.page is required" $holding.page)) }}
       {{- $sitesOn := dict }}
+      {{- $siteOf := dict }}
+      {{- $locations := dict }}
+      {{- if $holding.enabled }}
+      {{- $_ := set $locations "/__holding-page" $holding.page }}
+      {{- end }}
       {{- range $name, $site := $holding.sites }}
+      {{- if $site.page }}
+      {{- $_ := include "hale.holdingPageHtml" (dict "root" $ "path" $site.page) }}
+      {{- end }}
       {{- if not (regexMatch "^[a-z0-9-]+$" $name) }}
       {{- fail (printf "ingress.holdingPage.sites.%s: the name may only use a-z, 0-9 and -" $name) }}
       {{- end }}
       {{- range $site.hosts }}
       {{- if not (has . $served) }}
-      {{- fail (printf "ingress.holdingPage.sites.%s: %s is not served by this ingress" $name .) }}
+      {{- fail (printf "ingress.holdingPage.sites.%s: %s is not domain or a name under ingress.hosts, so this ingress never receives requests for it" $name .) }}
       {{- end }}
+      {{- if hasKey $siteOf . }}
+      {{- fail (printf "ingress.holdingPage.sites.%s: %s is already listed under sites.%s" $name . (get $siteOf .)) }}
+      {{- end }}
+      {{- $_ := set $siteOf . $name }}
       {{- end }}
       {{- if and $site.enabled (not $site.hosts) }}
-      {{- fail (printf "ingress.holdingPage.sites.%s is enabled but there is a problem with the host."  $name) }}
+      {{- fail (printf "ingress.holdingPage.sites.%s is enabled but lists no hosts; add them in values-<env>.yaml" $name) }}
       {{- end }}
       {{- if and (or $holding.enabled $site.enabled) $site.hosts }}
-      {{- $_ := set $sitesOn $name $site }}
+      {{- $location := "/__holding-page" }}
+      {{- if $site.page }}
+      {{- $location = printf "/__holding-page-%s" $name }}
+      {{- end }}
+      {{- $_ := set $sitesOn $name $location }}
+      {{- $_ := set $locations $location ($site.page | default $holding.page) }}
       {{- end }}
       {{- end }}
 
-      {{- /* 302 redirects, only while every host is behind the holding page */}}
+      {{- /*
+      Holding page redirects (ingress.holdingPage.redirects in values.yaml),
+      only while every host is behind the holding page: a 302 for each listed
+      host, to one fixed URL whatever the path. nginx's if takes one
+      condition, so each host sets $hale_holding_redirect, a /.well-known/
+      request clears it again, and the redirect fires only if it is still set.
+
+      The host must be one this ingress serves, or the redirect would never be
+      reached, and the target must be an https:// URL with no quote or
+      backslash to end its quoted string, no $ for nginx to read as a
+      variable, and no space, ; or brace.
+      */}}
+      {{- range $i, $redirect := $holding.redirects.hosts }}
+      {{- $from := required (printf "ingress.holdingPage.redirects.hosts[%d].host is required" $i) $redirect.host }}
+      {{- $to := required (printf "ingress.holdingPage.redirects.hosts[%d].to is required" $i) $redirect.to }}
+      {{- if not (has $from $served) }}
+      {{- fail (printf "ingress.holdingPage.redirects.hosts[%d]: %s is not domain or a name under ingress.hosts, so this ingress never receives requests for it" $i $from) }}
+      {{- end }}
+      {{- if not (regexMatch "^https://[^'\\\\$\\s;{}]+$" $to) }}
+      {{- fail (printf "ingress.holdingPage.redirects.hosts[%d]: to (%s) must be an https:// URL with no quote, backslash, $, space, ; or brace" $i $to) }}
+      {{- end }}
+      {{- end }}
       {{- if and $holding.enabled $holding.redirects.enabled }}
       set $hale_holding_redirect '';
-      {{- range $i, $redirect := $holding.redirects.hosts }}
-      {{- /* existing required / has / regexMatch checks unchanged */}}
-      if ($host = '{{ $redirect.host }}') {
-        set $hale_holding_redirect '{{ $redirect.to }}';
+      {{- range $holding.redirects.hosts }}
+      if ($host = '{{ .host }}') {
+        set $hale_holding_redirect '{{ .to }}';
       }
       {{- end }}
       if ($uri ~ ^/\.well-known/) {
@@ -175,13 +276,12 @@ metadata:
       }
       {{- end }}
 
-      {{- /* Choose the page for this request */}}
-      {{- if or $holding.enabled $sitesOn }}
+      {{- if $locations }}
       set $hale_holding '{{ if $holding.enabled }}/__holding-page{{ end }}';
-      {{- range $name, $site := $sitesOn }}
-      {{- range $site.hosts }}
+      {{- range $name, $location := $sitesOn }}
+      {{- range (get $holding.sites $name).hosts }}
       if ($host = '{{ . }}') {
-        set $hale_holding /__holding-page-{{ $name }};
+        set $hale_holding {{ $location }};
       }
       {{- end }}
       {{- end }}
@@ -191,26 +291,13 @@ metadata:
       if ($hale_holding) {
         rewrite ^ $hale_holding last;
       }
-
-      {{- /* Generic page, only with the global switch */}}
-      {{- if $holding.enabled }}
-      location = /__holding-page {
+      {{- range $location, $page := $locations }}
+      location = {{ $location }} {
         internal;
         default_type text/html;
         add_header Cache-Control "no-store" always;
         add_header Retry-After "3600" always;
-        return 503 '{{ include "hale.holdingPageHtml" (dict "root" $ "path" $holding.page) }}';
-      }
-      {{- end }}
-
-      {{- /* One location per site that is on */}}
-      {{- range $name, $site := $sitesOn }}
-      location = /__holding-page-{{ $name }} {
-        internal;
-        default_type text/html;
-        add_header Cache-Control "no-store" always;
-        add_header Retry-After "3600" always;
-        return 503 '{{ include "hale.holdingPageHtml" (dict "root" $ "path" $site.page) }}';
+        return 503 '{{ include "hale.holdingPageHtml" (dict "root" $ "path" $page) }}';
       }
       {{- end }}
       {{- end }}
