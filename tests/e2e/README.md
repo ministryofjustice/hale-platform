@@ -236,6 +236,22 @@ hale, ppo and govwind have news posts. The justice theme allows only its own
 block list and does not allow posts (saving one ends the request), so it has
 neither, and tests of those blocks skip it.
 
+Every site also has twelve pages, `search-result-1` to `search-result-12`,
+made from one `content.json` item with `repeat`. They mention the kittiwake,
+which no other seeded page does, so a search for it has two pages of results
+on every theme but ppo, whose search page lists nothing while Relevanssi is
+active (a known issue in `specs/all-sites/search.spec.js`). Relevanssi answers the
+searches, and the seed builds its index once each site's content is in. The
+justice site adds a page and a PDF that mention it, and has Relevanssi index
+documents, for its sort links and filters (`specs/justice/search-filters.spec.js`).
+
+The hale site has a flexible post type, Inquiry documents, with two
+taxonomies, Document Category and Document Type, made as ACF's screens make
+them (`acfPostTypes` and `acfTaxonomies` in `content.json`), and thirteen
+documents. `inquiry-documents` is a page on the Listing template that lists
+them with a keyword search and a dropdown for each taxonomy, as an inquiry
+site's documents page does (`specs/hale/listing-search.spec.js`).
+
 The hale site follows websitebuilder.service.justice.gov.uk: its colours, its
 homepage, and a menu of three sections (`about-website-builder`,
 `designing-your-site`, `user-guides`), each with one page below it. The pages

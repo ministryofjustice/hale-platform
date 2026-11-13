@@ -2,6 +2,28 @@
   "frontPage": "home",
   "postsPage": "news",
   "menu": ["about-website-builder", "designing-your-site", "user-guides"],
+  "options": {
+    "relevanssi_index_post_types": ["post", "page", "inquiry_document"]
+  },
+  "acfPostTypes": [
+    {
+      "key": "post_type_e2e_inquiry_document", "title": "Inquiry documents", "post_type": "inquiry_document",
+      "labels": { "name": "Inquiry documents", "singular_name": "Inquiry document" },
+      "taxonomies": ["document_category", "document_type"]
+    }
+  ],
+  "acfTaxonomies": [
+    {
+      "key": "taxonomy_e2e_document_category", "title": "Document categories", "taxonomy": "document_category",
+      "object_type": ["inquiry_document"],
+      "labels": { "name": "Document categories", "singular_name": "Document Category" }
+    },
+    {
+      "key": "taxonomy_e2e_document_type", "title": "Document types", "taxonomy": "document_type",
+      "object_type": ["inquiry_document"],
+      "labels": { "name": "Document types", "singular_name": "Document Type" }
+    }
+  ],
   "themeMods": {
     "header-link-current-border": "#ffffff",
     "header-link-focus-underline": "#ffffff",
@@ -46,6 +68,27 @@
     { "id": 102, "type": "page", "slug": "about", "title": "About this site", "file": "../shared/about.html" },
     { "id": 104, "type": "page", "slug": "blocks", "title": "Custom blocks", "file": "../shared/blocks.html" },
     { "id": 105, "type": "page", "slug": "news", "title": "News", "file": "../shared/news.html" },
-    { "id": 201, "type": "post", "slug": "first-news-story", "title": "First news story", "file": "../shared/news-story.html", "featuredImage": true }
+    { "id": 201, "type": "post", "slug": "first-news-story", "title": "First news story", "file": "../shared/news-story.html", "featuredImage": true },
+    { "id": 301, "type": "page", "slug": "search-result", "title": "Search result", "file": "../shared/search-result.html", "date": "2025-03-01 09:00:00", "repeat": 12 },
+    {
+      "id": 111, "type": "page", "slug": "inquiry-documents", "title": "Inquiry documents", "file": "inquiry-documents.html", "template": "page-listing.php",
+      "meta": {
+        "listing_post_type": "inquiry_document",
+        "listing_filters": ["document_category", "document_type"],
+        "list_item_fields": ["published-date", "document_category"]
+      }
+    },
+    {
+      "id": 401, "type": "inquiry_document", "slug": "hearing-transcript", "title": "Hearing transcript", "file": "inquiry-document.html",
+      "date": "2025-04-01 09:00:00", "repeat": 8, "terms": { "document_category": ["Transcripts"] }
+    },
+    {
+      "id": 411, "type": "inquiry_document", "slug": "ruling", "title": "Ruling", "file": "inquiry-document.html",
+      "date": "2025-05-01 09:00:00", "repeat": 4, "terms": { "document_category": ["Rulings"] }
+    },
+    {
+      "id": 421, "type": "inquiry_document", "slug": "puffin-survey-report", "title": "Puffin survey report", "file": "puffin-survey-report.html",
+      "date": "2025-06-01 09:00:00", "terms": { "document_category": ["Reports"], "document_type": ["Welsh language version"] }
+    }
   ]
 }

@@ -7,6 +7,7 @@
     { "id": 102, "type": "page", "slug": "about", "title": "About this site", "file": "../shared/about.html" },
     { "id": 104, "type": "page", "slug": "blocks", "title": "Custom blocks", "file": "../shared/blocks.html" },
     { "id": 105, "type": "page", "slug": "news", "title": "News", "file": "../shared/news.html" },
-    { "id": 201, "type": "post", "slug": "first-news-story", "title": "First news story", "file": "../shared/news-story.html", "featuredImage": true }
+    { "id": 201, "type": "post", "slug": "first-news-story", "title": "First news story", "file": "../shared/news-story.html", "featuredImage": true },
+    { "id": 301, "type": "page", "slug": "search-result", "title": "Search result", "file": "../shared/search-result.html", "date": "2025-03-01 09:00:00", "repeat": 12 }
   ]
 }

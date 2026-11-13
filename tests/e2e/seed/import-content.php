@@ -15,7 +15,11 @@
  *   items          pages and posts: id, type, slug, title, file, and
  *                  optionally featuredImage (true to attach a generated
  *                  placeholder image), parent (slug of an earlier page),
- *                  template (page template), meta (post meta to set) and date
+ *                  template (page template), meta (post meta to set), date,
+ *                  terms (term names to give it, by taxonomy, made if they do
+ *                  not exist) and repeat (make that many: the ID, the slug's
+ *                  -<n> suffix, the title's <n> suffix and the date, a day
+ *                  apart, count up from the first)
  *   images         placeholder images, by name: width, height and optionally
  *                  alt. Without alt the image is decorative (alt="")
  *   documents      WP Document Revisions documents with generated files, by
@@ -23,6 +27,13 @@
  *                  slug and lines of text
  *   logo           name of the image to use as the site logo
  *   themeMods      theme mods to set, such as the Hale Customizer colours
+ *   options        site options to set, such as the post types Relevanssi
+ *                  indexes, before any content is made
+ *   acfPostTypes   post types and taxonomies made as in ACF's own screens,
+ *   acfTaxonomies  as Hale's flexible post types are: each in the form ACF
+ *                  exports, with at least key, title, post_type or taxonomy
+ *                  (and object_type) and labels. Made before the content, so
+ *                  items can be of these types and have their terms
  *   styleVariation title of the theme style variation to apply, as choosing
  *                  it in the Site Editor would (block themes)
  *   navigations    navigation menus for block themes, by name: the .html file
@@ -56,6 +67,27 @@ if (!$site || !is_file("{$dir}/content.json")) {
     WP_CLI::error("No site '{$key}' in sites.json, or no {$dir}/content.json");
 }
 $manifest = json_decode(file_get_contents("{$dir}/content.json"), true, 512, JSON_THROW_ON_ERROR);
+
+// An item with `repeat` stands for that many, from here on.
+$expanded = [];
+foreach ($manifest['items'] as $item) {
+    $count = $item['repeat'] ?? 0;
+    unset($item['repeat']);
+    if (!$count) {
+        $expanded[] = $item;
+        continue;
+    }
+    $date = strtotime($item['date'] ?? '2026-01-05 09:00:00');
+    for ($n = 1; $n <= $count; $n++) {
+        $expanded[] = array_merge($item, [
+            'id' => $item['id'] + $n - 1,
+            'slug' => "{$item['slug']}-{$n}",
+            'title' => "{$item['title']} {$n}",
+            'date' => date('Y-m-d H:i:s', $date + ($n - 1) * DAY_IN_SECONDS),
+        ]);
+    }
+}
+$manifest['items'] = $expanded;
 
 // Block markup is stored as written. kses would otherwise filter it as if the
 // anonymous CLI user had typed it.
@@ -129,6 +161,36 @@ foreach ($manifest['themeMods'] ?? [] as $name => $value) {
     set_theme_mod($name, $value);
 }
 
+foreach ($manifest['options'] ?? [] as $name => $value) {
+    update_option($name, $value);
+}
+
+// ACF registers the post types and taxonomies it has saved on init, which
+// has run for this request, so register these ones now as well.
+if (!empty($manifest['acfPostTypes']) || !empty($manifest['acfTaxonomies'])) {
+    if (!function_exists('acf_import_post_type')) {
+        WP_CLI::error('acfPostTypes and acfTaxonomies need ACF Pro active');
+    }
+    foreach ($manifest['acfPostTypes'] ?? [] as $post_type) {
+        acf_import_post_type($post_type);
+    }
+    foreach ($manifest['acfTaxonomies'] ?? [] as $taxonomy) {
+        acf_import_taxonomy($taxonomy);
+    }
+    acf_get_internal_post_type_instance('acf-post-type')->register_post_types();
+    acf_get_internal_post_type_instance('acf-taxonomy')->register_taxonomies();
+    foreach ($manifest['acfPostTypes'] ?? [] as $post_type) {
+        if (!post_type_exists($post_type['post_type'])) {
+            WP_CLI::error("ACF post type '{$post_type['post_type']}' was not registered");
+        }
+    }
+    foreach ($manifest['acfTaxonomies'] ?? [] as $taxonomy) {
+        if (!taxonomy_exists($taxonomy['taxonomy'])) {
+            WP_CLI::error("ACF taxonomy '{$taxonomy['taxonomy']}' was not registered");
+        }
+    }
+}
+
 // Images first, so their automatic IDs come before the fixed page and post IDs.
 $tokens = [];
 $image_ids = [];
@@ -163,12 +225,18 @@ foreach ($manifest['documents'] ?? [] as $name => $document) {
 }
 
 // Page addresses are known before any page exists: IDs are fixed, and a
-// page's path is its parents' slugs and its own.
+// page's path is its parents' slugs and its own. An ACF post type's posts sit
+// below its key, ACF's default rewrite slug.
 $items = array_column($manifest['items'], null, 'slug');
 foreach ($items as $slug => $item) {
     $path = $slug;
+    $top = $item;
     for ($parent = $item['parent'] ?? null; $parent; $parent = $items[$parent]['parent'] ?? null) {
         $path = "{$parent}/{$path}";
+        $top = $items[$parent];
+    }
+    if (!in_array($top['type'], ['page', 'post'], true)) {
+        $path = "{$top['type']}/{$path}";
     }
     $tokens["{{page:{$slug}.id}}"] = $item['id'];
     $tokens["{{page:{$slug}.url}}"] = $slug === ($manifest['frontPage'] ?? null)
@@ -202,6 +270,13 @@ foreach ($manifest['items'] as $item) {
     }
     if (isset($featured[$item['slug']])) {
         set_post_thumbnail($id, $featured[$item['slug']]);
+    }
+    // Not tax_input, for the reason given at the template parts below.
+    foreach ($item['terms'] ?? [] as $taxonomy => $names) {
+        $set = wp_set_object_terms($id, $names, $taxonomy);
+        if (is_wp_error($set)) {
+            WP_CLI::error("{$item['slug']}: {$taxonomy} terms: " . $set->get_error_message());
+        }
     }
     $ids[$item['slug']] = $id;
 }

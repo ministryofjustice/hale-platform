@@ -1,9 +1,13 @@
 {
   "frontPage": "home",
+  "options": {
+    "relevanssi_index_post_types": ["post", "page", "document"]
+  },
   "documents": {
     "pd-making-document": { "type": "pdf", "title": "PD Making Document" },
     "cpr-email-address-list": { "type": "docx", "title": "CPR e-mail address list" },
-    "court-forms-destination-table": { "type": "xlsx", "title": "Court forms destination table" }
+    "court-forms-destination-table": { "type": "xlsx", "title": "Court forms destination table" },
+    "kittiwake-survey-report": { "type": "pdf", "title": "Kittiwake survey report" }
   },
   "items": [
     {
@@ -16,6 +20,11 @@
       "id": 113, "type": "page", "slug": "civil", "title": "Civil Procedure Rules", "file": "civil.html", "parent": "procedure-rules",
       "meta": { "_short_title": "Civil", "_panel_archived": "1", "__panel_archived": "field_696a70dd50c97" }
     },
-    { "id": 102, "type": "page", "slug": "about", "title": "About this site", "file": "../shared/about.html" }
+    { "id": 102, "type": "page", "slug": "about", "title": "About this site", "file": "../shared/about.html" },
+    { "id": 301, "type": "page", "slug": "search-result", "title": "Search result", "file": "../shared/search-result.html", "date": "2025-03-01 09:00:00", "repeat": 12 },
+    {
+      "id": 320, "type": "page", "slug": "kittiwake-guidance", "title": "Kittiwake guidance", "file": "kittiwake-guidance.html", "parent": "about",
+      "date": "2024-06-03 09:00:00", "terms": { "section": ["Courts"] }
+    }
   ]
 }

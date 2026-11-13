@@ -28,6 +28,7 @@
     { "id": 104, "type": "page", "slug": "blocks", "title": "Custom blocks", "file": "../shared/blocks.html" },
     { "id": 201, "type": "post", "slug": "first-news-story", "title": "First news story", "file": "../shared/news-story.html", "featuredImage": true, "date": "2026-01-05 09:00:00" },
     { "id": 202, "type": "post", "slug": "second-news-story", "title": "Second news story", "file": "../shared/news-story.html", "date": "2026-01-12 09:00:00" },
-    { "id": 203, "type": "post", "slug": "third-news-story", "title": "Third news story", "file": "../shared/news-story.html", "date": "2026-01-19 09:00:00" }
+    { "id": 203, "type": "post", "slug": "third-news-story", "title": "Third news story", "file": "../shared/news-story.html", "date": "2026-01-19 09:00:00" },
+    { "id": 301, "type": "page", "slug": "search-result", "title": "Search result", "file": "../shared/search-result.html", "date": "2025-03-01 09:00:00", "repeat": 12 }
   ]
 }
