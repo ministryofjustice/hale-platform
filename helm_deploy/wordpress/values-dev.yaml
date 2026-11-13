@@ -48,6 +48,6 @@ ingress:
   holdingPage:
     sites:
       icrir:
-        enabled: true
+        enabled: false
         hosts:
           - dev.websitebuilder.service.justice.gov.uk
