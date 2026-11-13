@@ -52,55 +52,88 @@ test("Check pages do not scroll sideways on mobile", async ({ page, site }) => {
   }
 });
 
-//Extra test to check for overflow
-test("Page content does not overflow on mobile", async ({ page, site }) => {
+
+
+test("check for elements overflowing and crossing the mobile viewport", async ({ page, site }) => {
   const urls = getSitePageUrls(site);
 
+
   for (const url of urls) {
-    await test.step(`Check content for overflow: ${url}`, async (step) => {
+
+    // Exclude the deliberately overflowing test page
+    //comment out if you want to check the deliberately failing test
+    if (
+      site.key === "hale" &&
+      new URL(url).pathname === "/mobile-overflow/"
+    ) {
+      continue;
+    }
+
+    //test nested pages    
+    await test.step(`Check viewport boundaries: ${url}`, async () => {
       await page.goto(url);
 
-      const widths = await page.evaluate(() => {
-        const htmlEl = document.documentElement;
-        const bodyEl = document.body;
+      const overflowingEles = await page.evaluate(() => {
+        const viewportWidth = document.documentElement.clientWidth;
 
-        return {
-          viewportWidth: htmlEl.clientWidth,
-          contentWidth: Math.max(
-            htmlEl.scrollWidth,
-            bodyEl.scrollWidth
-          )
-        };
-      });
-   
-      //record screenshot when overflow is detected
-      if (widths.contentWidth > widths.viewportWidth) {
-        const screenshot = await page.screenshot({ fullPage: true });
+        // Check whether the element is inside a scrollable container
+        //if container is scrollable this hould pass the test
+        function hasScrollableParent(ele) {
+          let parent = ele.parentElement;
 
-        await step.attach(`Overflow - ${new URL(url).pathname}`, {
-            body: screenshot,
-            contentType: "image/png"
-        });
+          while (
+            parent &&
+            parent !== document.body &&
+            parent !== document.documentElement
+          ) {
+            const overflowX = getComputedStyle(parent).overflowX;
+
+            if (
+              ["auto", "scroll"].includes(overflowX) &&
+              parent.scrollWidth > parent.clientWidth
+            ) {
+              return true;
+            }
+
+            parent = parent.parentElement;
+          }
+
+          return false;
         }
 
-      // Ensure the width measurement is valid
-      expect.soft(Number.isFinite(widths.contentWidth)).toBe(true);
+        // Find elements crossing the viewport boundaries
+        //Any element crossing the boundry with a scrollable parent
+        //should pass the test (table check)
+        return [...document.body.querySelectorAll("*")]
+          .filter(ele => {
+            const rect = ele.getBoundingClientRect();
 
-    //   if(widths.overflowingEles.length > 0){
-    //     console.log(`${site.key}: ${url}`, widths.overflowingEles);
-    //   }
-//     if (widths.contentWidth > widths.viewportWidth) {
-//     console.log(`${site.key}: ${url}`, {
-//         viewportWidth: widths.viewportWidth,
-//         contentWidth: widths.contentWidth,
-//         overflowingEles: widths.overflowingEles
-//     });
-// }
+            const crossesViewport =
+                (rect.left < 0 && rect.right > 0) ||
+                (rect.left < viewportWidth && rect.right > viewportWidth);
 
+            return rect.width > 0 &&
+              rect.height > 0 &&
+              crossesViewport &&
+              !hasScrollableParent(ele);
+          })
+          .map(ele => {
+            const rect = ele.getBoundingClientRect();
+
+            return {
+              tag: ele.tagName,
+              id: ele.id,
+              className: String(ele.className),
+              left: Math.round(rect.left),
+              right: Math.round(rect.right)
+            };
+          });
+      });
+      //elements array should be 0 if no overflowing elements are found to cross the viewport boundary
       expect.soft(
-        widths.contentWidth,
-        `${site.key}: ${url} content width ${widths.contentWidth}px exceeds viewport width ${widths.viewportWidth}px`
-        ).toBeLessThanOrEqual(widths.viewportWidth);
+        overflowingEles,
+        `${site.key}: ${url} has elements crossing the mobile viewport`
+        ).toHaveLength(0);
     });
   }
 });
