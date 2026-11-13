@@ -188,7 +188,7 @@ metadata:
 
       /.well-known/ is left alone for security.txt and cert-manager ACME
       challenges. Each page is rendered onto one line inside a single-quoted
-      nginx string by hale.holdingPageHtml.
+      nginx string by wordpress.holdingPageHtml.
       */}}
       {{- $holding := .Values.ingress.holdingPage }}
       {{- $served := list .Values.domain }}
@@ -203,7 +203,7 @@ metadata:
       is served from /__holding-page. $locations maps each internal location
       in use to the file it serves.
       */}}
-      {{- $_ := include "hale.holdingPageHtml" (dict "root" $ "path" (required "ingress.holdingPage.page is required" $holding.page)) }}
+      {{- $_ := include "wordpress.holdingPageHtml" (dict "root" $ "path" (required "ingress.holdingPage.page is required" $holding.page)) }}
       {{- $sitesOn := dict }}
       {{- $siteOf := dict }}
       {{- $locations := dict }}
@@ -212,7 +212,7 @@ metadata:
       {{- end }}
       {{- range $name, $site := $holding.sites }}
       {{- if $site.page }}
-      {{- $_ := include "hale.holdingPageHtml" (dict "root" $ "path" $site.page) }}
+      {{- $_ := include "wordpress.holdingPageHtml" (dict "root" $ "path" $site.page) }}
       {{- end }}
       {{- if not (regexMatch "^[a-z0-9-]+$" $name) }}
       {{- fail (printf "ingress.holdingPage.sites.%s: the name may only use a-z, 0-9 and -" $name) }}
@@ -297,7 +297,7 @@ metadata:
         default_type text/html;
         add_header Cache-Control "no-store" always;
         add_header Retry-After "3600" always;
-        return 503 '{{ include "hale.holdingPageHtml" (dict "root" $ "path" $page) }}';
+        return 503 '{{ include "wordpress.holdingPageHtml" (dict "root" $ "path" $page) }}';
       }
       {{- end }}
       {{- end }}

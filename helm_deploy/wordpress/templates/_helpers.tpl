@@ -93,7 +93,7 @@ single-quoted nginx string:
 nginx rejects a quoted string over 4096 bytes, so a page that renders to 4000
 or more fails the deploy.
 */}}
-{{- define "hale.holdingPageHtml" -}}
+{{- define "wordpress.holdingPageHtml" -}}
 {{- $html := .root.Files.Get (printf "files/%s" .path) -}}
 {{- if not $html }}
 {{- fail (printf "holding page files/%s does not exist or is empty" .path) }}
