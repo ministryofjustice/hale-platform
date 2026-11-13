@@ -34,6 +34,7 @@ x-wp-env: &wp-env
   <<: *auth0-tenant
   AUTH0_ENV_FALLBACK_PARAM: e2e_login_bypass
   AUTH0_ENV_FALLBACK_SECRET: e2e-login-bypass-secret-test-only
+  AUTH0_ENV_MIGRATION_TOKEN: e2e-migration-token-test-only
   WORDPRESS_DB_HOST: mariadb:3306
   WORDPRESS_DB_USER: wordpress
   WORDPRESS_DB_PASSWORD: wordpress
