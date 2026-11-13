@@ -8,6 +8,11 @@ on:
       - "dev"
       - "demo"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+  queue: max
+
 # ============================================================
 # Deployment jobs
 # ============================================================
@@ -20,7 +25,6 @@ jobs:
       environment: Development
     secrets:
       ecr-role: ${{ secrets.DEV_ECR_ROLE_TO_ASSUME }}
-      asset-role: ${{ secrets.ASSET_ROLE_TO_ASSUME }}
       ecr-region: ${{ secrets.DEV_ECR_REGION }}
       ecr-repo: ${{ secrets.DEV_ECR_REPO }}
       sentry-dsn: ${{ vars.PHP_DSN }}
@@ -72,7 +76,6 @@ jobs:
       environment: Demonstration
     secrets:
       ecr-role: ${{ secrets.DEMO_ECR_ROLE_TO_ASSUME }}
-      asset-role: ${{ secrets.ASSET_ROLE_TO_ASSUME }}
       ecr-region: ${{ secrets.DEMO_ECR_REGION }}
       ecr-repo: ${{ secrets.DEMO_ECR_REPO }}
       sentry-dsn: ${{ vars.PHP_DSN }}
@@ -124,7 +127,6 @@ jobs:
       environment: Staging
     secrets:
       ecr-role: ${{ secrets.STAGING_ECR_ROLE_TO_ASSUME }}
-      asset-role: ${{ secrets.ASSET_ROLE_TO_ASSUME }}
       ecr-region: ${{ secrets.STAGING_ECR_REGION }}
       ecr-repo: ${{ secrets.STAGING_ECR_REPO }}
       sentry-dsn: ${{ vars.PHP_DSN }}
@@ -169,7 +171,7 @@ jobs:
       auth0-env-migration-token: ${{ secrets.AUTH0_ENV_MIGRATION_TOKEN }}
 
   checkFriday:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     outputs:
       needs_approval: ${{ steps.day-check.outputs.friday }}
     steps:
@@ -194,7 +196,6 @@ jobs:
       environment: Production
     secrets:
       ecr-role: ${{ secrets.PROD_ECR_ROLE_TO_ASSUME }}
-      asset-role: ${{ secrets.ASSET_ROLE_TO_ASSUME }}
       ecr-region: ${{ secrets.PROD_ECR_REGION }}
       ecr-repo: ${{ secrets.PROD_ECR_REPO }}
       sentry-dsn: ${{ vars.PHP_DSN }}

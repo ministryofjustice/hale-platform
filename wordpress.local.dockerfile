@@ -24,7 +24,7 @@
 
 # Image versions. Keep them the same as wordpress.dockerfile -
 # bin/check-versions.sh (make check-versions) fails if they differ.
-ARG WORDPRESS_VERSION=7.1.3
+ARG WORDPRESS_VERSION=7.1.4
 ARG PHP_VERSION=8.4
 
 # WordPress core patch. Same purpose and same two values as
@@ -125,12 +125,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # wordpress.dockerfile explains each step.
 RUN mkdir -p /tmp/debs/partial /tmp/sysdeps \
     && apt-get update \
-    && apt-get install -y --no-install-recommends --download-only \
+    && ncurses=$(apt-cache policy libncursesw6 | awk '/Candidate:/ {print $2}') \
+    && tinfo=$(dpkg-query -W -f '${Version}' libtinfo6) \
+    && [ "${ncurses%%+d*}" = "${tinfo%%+d*}" ] \
+       || { echo "libncursesw6 ${ncurses} and installed libtinfo6 ${tinfo} are different ncurses releases"; exit 1; } \
+    && apt-get install -y --no-install-recommends --download-only --allow-downgrades \
         -o Dir::Cache::archives=/tmp/debs \
         -o APT::Keep-Downloaded-Packages=true \
         ghostscript \
         fonts-urw-base35 \
         hunspell \
+        "libtinfo6=${ncurses}" \
+    && rm -f /tmp/debs/libtinfo6_*.deb \
     && for deb in /tmp/debs/*.deb; do dpkg-deb -x "$deb" /tmp/sysdeps; done \
     && mkdir -p /tmp/libcdeb /tmp/sysdeps/usr/lib/locale \
     && ( cd /tmp/libcdeb && apt-get download libc-bin ) \
@@ -410,6 +416,11 @@ FROM dhi.io/wordpress:${WORDPRESS_VERSION}-php${PHP_VERSION}-fpm
 # empty.
 COPY --from=phpbuilder /tmp/php/ /
 
+# Fails the build if php or php-fpm in this image is older than
+# PHP_MIN_VERSION. The same check as wordpress.dockerfile, which explains it.
+ARG PHP_MIN_VERSION
+RUN ["php", "-r", "$min = (string) getenv('PHP_MIN_VERSION'); if ($min === '') { fwrite(STDERR, 'PHP_MIN_VERSION is not set' . PHP_EOL); exit(1); } $fpm = ''; $p = proc_open(['php-fpm', '-v'], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes); if (is_resource($p)) { $fpm = explode(' ', (string) fgets($pipes[1]))[1] ?? ''; proc_close($p); } foreach (['php' => PHP_VERSION, 'php-fpm' => $fpm] as $bin => $v) { if ($v === '') { fwrite(STDERR, $bin . ' -v did not report a PHP version' . PHP_EOL); exit(1); } if (version_compare($v, $min, '<')) { fwrite(STDERR, $bin . ' runs PHP ' . $v . ', older than PHP_MIN_VERSION ' . $min . PHP_EOL); exit(1); } } echo 'php and php-fpm run PHP ' . PHP_VERSION . ', at least PHP_MIN_VERSION ' . $min . PHP_EOL;"]
+
 # PHPRedis, from the extbuilder stage. The .ini loads redis.so by its full
 # path, so these paths do not depend on the PHP version or on PHP's own
 # extension folder. PHP_INI_DIR is set by the base image and follows
@@ -439,10 +450,11 @@ ENV LANG=C.UTF-8
 COPY --from=builder --chown=65532:65532 /tmp/core/ /usr/src/wordpress/
 
 # Platform PHP files: the must-use plugin loader and Composer autoloader,
-# the Auth0 plugin's configuration, PHP error logging, and the script that
-# runs cron for every site.
+# the Relevanssi search operator limits, the Auth0 plugin's configuration,
+# PHP error logging, and the script that runs cron for every site.
 COPY opt/php/load.php /usr/src/wordpress/wp-content/mu-plugins/load.php
 COPY opt/php/application.php /usr/src/wordpress/wp-content/mu-plugins/application.php
+COPY opt/php/search-term-limit.php /usr/src/wordpress/wp-content/mu-plugins/search-term-limit.php
 COPY opt/php/auth0.php /usr/src/wordpress/wp-content/mu-plugins/auth0.php
 COPY opt/php/error-handling.php /usr/src/wordpress/error-handling.php
 COPY opt/php/wp-cron-multisite.php /usr/src/wordpress/wp-cron-multisite.php

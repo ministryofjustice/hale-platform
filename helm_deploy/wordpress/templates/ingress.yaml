@@ -155,10 +155,16 @@ metadata:
         return 301 https://prisonandprobationjobs.gov.uk/roles-at-hmpps/jobs-for-veterans;
       }
       if ($host = 'iapondeathsincustody.org') {
-        return 301 https://iapdeathsincustody.independent.gov.uk;
+        return 301 https://deathsindetention.independent-panel.uk;
       }
       if ($host = 'www.iapondeathsincustody.org') {
-        return 301 https://iapdeathsincustody.independent.gov.uk;
+        return 301 https://deathsindetention.independent-panel.uk;
+      }
+      if ($host = 'iapdeathsincustody.independent.gov.uk') {
+        return 301 https://deathsindetention.independent-panel.uk;
+      }
+      if ($host = 'www.iapdeathsincustody.independent.gov.uk') {
+        return 301 https://deathsindetention.independent-panel.uk;
       }
       if ($host = 'brookhouseinquiry.org.uk') {
         return 301 https://webarchive.nationalarchives.gov.uk/ukgwa/20241002135959/https://brookhouseinquiry.org.uk/;
@@ -175,6 +181,7 @@ metadata:
       request outside /.well-known/ is then answered by the ingress itself and
       never reaches WordPress. /bold is a location, chosen after that rewrite,
       so it is behind the holding page too.
+
       /.well-known/ is left alone for security.txt and cert-manager ACME
       challenges. The HTML is one single-quoted nginx string, so it must not
       contain a single quote, and every line must stay indented under the
@@ -188,6 +195,7 @@ metadata:
       /.well-known/ request clears it again - so security.txt and cert-manager
       ACME challenges still work for these hosts, as they do for the holding
       page - and the redirect fires only if it is still set.
+
       Each entry is checked here, so a bad one fails the deploy instead of
       rendering broken nginx: the host must be one this ingress serves, or the
       redirect would never be reached, and the target must be an https:// URL
@@ -219,29 +227,27 @@ metadata:
         return 302 $hale_holding_redirect;
       }
       {{- end }}
-      #     if ($uri !~ ^/\.well-known/) {
-      #       rewrite ^ /__holding-page last;
-      #     }
-      if ($arg_holdingpage = "1") {
-          rewrite ^ /__holding-page last;
+      if ($uri !~ ^/\.well-known/) {
+        rewrite ^ /__holding-page last;
       }
       location = /__holding-page {
         internal;
         default_type text/html;
         add_header Cache-Control "no-store" always;
-        if ($arg_site = "icrir") {
-          return 503 '{{ regexReplaceAll "(?s)<!--.*?-->" (.Files.Get "files/icrir.html") "" | replace "'" "&#39;" | replace "\\" "\\\\" | replace "\t" "" | replace "\n" "" | replace "\r" "" }}';
-        }
-        if ($host = "icrir.independent-inquiry.uk") {
-          return 503 '{{ regexReplaceAll "(?s)<!--.*?-->" (.Files.Get "files/icrir.html") "" | replace "'" "&#39;" | replace "\\" "\\\\" | replace "\t" "" | replace "\n" "" | replace "\r" "" }}';
-        }
-        if ($arg_site = "ppj") {
-          return 503 '{{ regexReplaceAll "<!--[\\s\\S]*?-->" (.Files.Get "files/ppj.html") "" | replace "'" "&#39;" | replace "\\" "\\\\" | replace "\t" "" | replace "\n" "" | replace "\r" "" }}';
-        }
-        if ($host = "prisonandprobationjobs.gov.uk/") {
-          return 503 '{{ regexReplaceAll "<!--[\\s\\S]*?-->" (.Files.Get "files/ppj.html") "" | replace "'" "&#39;" | replace "\\" "\\\\" | replace "\t" "" | replace "\n" "" | replace "\r" "" }}';
-        }
-        return 503 '{{ regexReplaceAll "<!--[\\s\\S]*?-->" (.Files.Get "files/holding-page.html") "" | replace "'" "&#39;" | replace "\\" "\\\\" | replace "\t" "" | replace "\n" "" | replace "\r" "" }}';
+        return 200 '<!DOCTYPE html>
+        <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Error, service unavailable</title>
+          </head>
+          <body>
+            <h1>Thank you for visiting our website</h1>
+            <p>We&#39;re carrying out essential maintenance and improvements. The website is temporarily unavailable while this work is completed.</p>
+            <p>We apologise for any inconvenience and appreciate your patience.</p>
+          </body>
+        </html>
+        ';
       }
       {{- end }}
 spec:

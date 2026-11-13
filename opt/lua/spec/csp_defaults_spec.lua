@@ -29,6 +29,7 @@ describe("csp defaults", function()
         assert.same({ "'self'", "'unsafe-inline'" }, p:get("style-src"))
         assert.same({ "'self'", "data:", "https:" }, p:get("img-src"))
         assert.same({ "'self'", "data:" }, p:get("font-src"))
+        assert.same({ "'self'", "blob:" }, p:get("frame-src"))
         assert.same({ "'self'" }, p:get("frame-ancestors"))
         assert.same({ "'none'" }, p:get("object-src"))
     end)
@@ -60,6 +61,7 @@ describe("csp defaults", function()
             "style-src 'self' 'unsafe-inline' " .. DEV_CDN .. "; " ..
             "img-src 'self' data: https: " .. DEV_CDN .. "; " ..
             "font-src 'self' data: " .. DEV_CDN .. "; " ..
+            "frame-src 'self' blob:; " ..
             "frame-ancestors 'self'; " ..
             "object-src 'none'",
             defaults.policy({ path = "/", host = DEV }))

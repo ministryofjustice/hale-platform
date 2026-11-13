@@ -110,6 +110,10 @@ services:
     build:
       context: .
       dockerfile: wordpress.local.dockerfile
+      # Pull the base images on every build. Their tags move to new releases -
+      # the DHI tag names only the PHP minor version - so a cached copy can
+      # hold an older PHP. CI builds with --pull for the same reason.
+      pull: true
     volumes:
       - wpcore:/var/www/html
       - ./wordpress/wp-content:/var/www/html/wp-content
@@ -142,6 +146,8 @@ services:
     build:
       context: .
       dockerfile: wptools.dockerfile
+      # See the wordpress service: alpine:3.24 is a moving tag too.
+      pull: true
     volumes:
       - wpcore:/var/www/html
       - ./wordpress/wp-content:/var/www/html/wp-content

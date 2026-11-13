@@ -93,20 +93,12 @@ on:
         required: true
       redis-host:
         required: true
-      # Role that may write compiled theme assets to the asset bucket.
-      # Optional: when unset the publish steps are skipped entirely and
-      # assets continue to be served from each pod.
-      asset-role:
-        required: false
 
 jobs:
   buildImage:
     name: Build Image and push to ECR
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: ${{ inputs.environment }}
-    env:
-      # Job-level so the publish steps below can gate on it with `if:`.
-      ASSET_ROLE: ${{ secrets.asset-role }}
     permissions:
       id-token: write
       contents: read
@@ -115,7 +107,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Config Credentials
-        uses: aws-actions/configure-aws-credentials@cbe3b392738ccf3f987d68400dafcf4b0624a56c # v6.2.4
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           role-to-assume: ${{ secrets.ecr-role }}
           aws-region: ${{ secrets.ecr-region }}
@@ -127,7 +119,7 @@ jobs:
           mask-password: "true"
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 
       - name: Cache Docker layers for Nginx
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -164,9 +156,9 @@ jobs:
             ${{ runner.os }}-composer-
 
       - name: Set PHP min version
-        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2.37.2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2.40.0
         with:
-          php-version: 8.5
+          php-version: 8.4
 
       - name: Run Composer and generate vendor packages
         run: |
@@ -341,7 +333,7 @@ jobs:
   deployImage:
     name: Deploy to Environment
     needs: [buildImage]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     environment: ${{ inputs.environment }}
     steps:
       - name: Checkout
@@ -357,11 +349,6 @@ jobs:
           kubectl config set-context ${KUBE_CLUSTER} --cluster=${KUBE_CLUSTER} --user=deploy-user --namespace=${{ secrets.kube-namespace }}
           kubectl config use-context ${KUBE_CLUSTER}
 
-      # configmap.release below MUST be the same ${{ github.sha }} that the
-      # "Publish theme assets to CDN" step used as the S3 prefix. It reaches
-      # PHP as the APP_RELEASE constant (via configmap.yaml -> config.sh) and
-      # hale-components builds CDN asset URLs from it. If the two ever drift,
-      # every theme stylesheet and script 404s.
       - name: Apply Helm chart
         env:
           AUTH0_ENV_FALLBACK_PARAM: ${{ secrets.auth0-env-fallback-param }}

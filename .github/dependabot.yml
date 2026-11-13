@@ -1,5 +1,16 @@
 version: 2
 
+# The Playwright base image in tests/e2e/docker carries the browsers for one
+# @playwright/test version, so the two must move together. One group across
+# both ecosystems puts them in the same pull request.
+multi-ecosystem-groups:
+  e2e-playwright:
+    schedule:
+      interval: "weekly"
+    labels:
+      - "chore"
+      - "e2e"
+
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -32,3 +43,21 @@ updates:
       docker-packages:
         patterns:
           - "*"
+
+  # Playwright, axe-core and browserstack-node-sdk for the end-to-end tests
+  # (tests/e2e/), and the Playwright base image, in the e2e-playwright group.
+  - package-ecosystem: "npm"
+    directory: "/tests/e2e"
+    patterns: ["*"]
+    multi-ecosystem-group: "e2e-playwright"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+
+  - package-ecosystem: "docker"
+    directory: "/tests/e2e/docker"
+    patterns: ["*"]
+    multi-ecosystem-group: "e2e-playwright"
+    commit-message:
+      prefix: "chore"
+      include: "scope"

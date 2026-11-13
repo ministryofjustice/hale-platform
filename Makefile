@@ -2,11 +2,11 @@
 ### Local build config
 ####################################################
 
-.PHONY: check-versions run run-with-firewall run-with-pagecache down down-firewall down-pagecache build shell none clone-repos symlink symlink-auto wait-wordpress logs restart clean help test-firewall wp-core-cve-check redis-cli redis-cli-local redis-cheatsheet uptime-run uptime-down
+.PHONY: check-versions run run-with-firewall run-with-pagecache down down-firewall down-pagecache build shell none clone-repos symlink symlink-auto wait-wordpress theme-setup logs restart clean help test-firewall wp-core-cve-check redis-cli redis-cli-local redis-cheatsheet uptime-run uptime-down
 # Default target - list targets with their ## descriptions
 help: ## Show this help
 	@echo "Available commands:"
-	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | \
+	@grep -hE '^[a-zA-Z0-9_-]+:.*## ' $(MAKEFILE_LIST) | \
 		awk 'BEGIN {FS = ":.*## "}; {printf "  make %-22s - %s\n", $$1, $$2}'
 
 # Run site using Docker
@@ -178,6 +178,23 @@ symlink-auto:
 		$(MAKE) --no-print-directory symlink; \
 	fi
 
+# Apply the Hale theme defaults that a Customizer save would, on every site of
+# the running local stack: show the logo and site name in the header, and write
+# uploads/custom-colours.css from the site's saved colours. Sites that have
+# never had their Customizer saved here (a new site, or one whose uploads were
+# not copied over) otherwise 404 on that file and have no header title.
+# Non-Hale sites are skipped. Same script the end-to-end test seed runs.
+# Sites are addressed by their network domain and path, not `site list`'s url
+# field: that is the site's home URL, which for a mapped domain is not one
+# --url can find. A site that fails is reported and the rest still run.
+#   make theme-setup
+theme-setup: wait-wordpress ## Write Hale colour CSS and header defaults on every local site
+	@failed=""; \
+	for url in $$(docker exec wordpress wp site list --fields=domain,path --format=csv | tail -n +2 | tr -d , ); do \
+		docker exec -i wordpress wp --url="$$url" eval-file - < tests/e2e/seed/theme-setup.php || failed="$$failed $$url"; \
+	done; \
+	if [ -n "$$failed" ]; then echo "Failed on:$$failed"; exit 1; fi
+
 # Assert the WordPress/PHP versions declared across the dockerfiles and the CI
 # workflow still agree. Also run on every pull request.
 check-versions: ## Check version references agree across images and CI
@@ -217,3 +234,6 @@ clean: ## Remove dangling Docker images
 	@echo "Removing dangling Docker images..."
 	@docker image prune -f
 	@echo "✓ Cleanup complete"
+
+# Test commands (Playwright end-to-end tests) live in tests/Makefile.
+include tests/Makefile

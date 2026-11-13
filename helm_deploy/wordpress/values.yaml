@@ -210,9 +210,6 @@ configmap:
   envtype: ""
   s3useprofile: "true"
   sentrydns: ""
-  # Commit SHA of the running release, set per deploy by the workflow. Empty
-  # here so a local/manual `helm upgrade` leaves the CDN asset rewrite inert.
-  release: ""
   firewall:
     enabled: "true"
   # Full-page cache (OpenResty + Redis). On by default; override per
@@ -290,7 +287,7 @@ ingress:
   # holding page redirects below when they are on. Only /.well-known/ paths are
   # otherwise unaffected.
   holdingPage:
-    enabled: true
+    enabled: false
     # Hosts sent elsewhere while the holding page is up, and only then: they
     # apply when both holdingPage.enabled and redirects.enabled are true. Each
     # is a 302 to one fixed URL, whatever the path. A host must be one this
