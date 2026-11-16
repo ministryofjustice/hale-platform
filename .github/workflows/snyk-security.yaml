@@ -1,7 +1,8 @@
 name: Snyk Security
 
 on:
-  workflow_call:
+  pull_request:
+    branches: [main]
   schedule:
     - cron: '12 8 * * 2'
 

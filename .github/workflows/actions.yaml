@@ -11,7 +11,3 @@ jobs:
   branch-protection:
     if: github.base_ref == 'main'
     uses: ./.github/workflows/branch_protection.yaml
-
-  snyk:
-    if: github.base_ref == 'main'
-    uses: ./.github/workflows/snyk-security.yaml
