@@ -6,8 +6,8 @@ on:
 
 jobs:
   tests:
-    uses: ./.github/workflows/tests.yml
+    uses: ./.github/workflows/tests.yaml
 
   branch-protection:
     if: github.base_ref == 'main'
-    uses: ./.github/workflows/branch_protection.yml
+    uses: ./.github/workflows/branch_protection.yaml
