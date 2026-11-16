@@ -133,6 +133,9 @@ metadata:
       if ($host = 'victimscode.org.uk') {
         return 301 https://victimandwitnessinformation.org.uk/your-rights/as-a-victim;
       }
+      if ($host = 'www.victimscode.org.uk') {
+        return 301 https://victimandwitnessinformation.org.uk/your-rights/as-a-victim;
+      }
       if ($host = 'cym.victimscode.org.uk') {
         return 301 https://cym.victimandwitnessinformation.org.uk/your-rights/as-a-victim;
       }
