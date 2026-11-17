@@ -13,7 +13,7 @@ test("check 404 error page displays correctly", async ({ page, site }) => {
 
   badPageUrl.pathname = `${sitePath}/path-not-found/`;
 
-  //Direct to nonexistant page
+  //Direct to nonexistent page
   const res = await page.goto(badPageUrl.href);
 
   //check a 404 status code is returned
