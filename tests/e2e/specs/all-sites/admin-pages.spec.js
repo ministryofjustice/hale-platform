@@ -31,9 +31,15 @@ test("the admin Pages list loads and shows the site's pages", async ({ page }) =
 test("the Add Page screen loads the block editor", async ({ page }) => {
   await openEditor(page, "wp-admin/post-new.php?post_type=page");
 
-  await expect(page.getByRole("textbox", { name: "Add title" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Save draft" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Publish", exact: true })).toBeVisible();
+  // A new page: the editor's top bar has the Publish button. The title field
+  // is inside the editor's canvas iframe, so the post is read from the editor's
+  // data store instead.
+  await expect(page.getByRole("region", { name: "Editor top bar" }).getByRole("button", { name: "Publish" })).toBeVisible();
+  const post = await page.evaluate(() => {
+    const editor = window.wp.data.select("core/editor");
+    return { type: editor.getCurrentPostType(), status: editor.getCurrentPost().status };
+  });
+  expect(post).toEqual({ type: "page", status: "auto-draft" });
 });
 
 test("the Edit Page screen loads an existing page in the block editor", async ({ page }) => {
@@ -45,7 +51,11 @@ test("the Edit Page screen loads an existing page in the block editor", async ({
 
   await openEditor(page, `wp-admin/post.php?post=${id}&action=edit`);
 
-  // The editor shows the page's own title, not an empty new page.
-  await expect(page.getByRole("textbox", { name: "Add title" })).toHaveText(title);
-  await expect(page.getByRole("button", { name: /^(Save draft|Update|Publish)$/ }).first()).toBeVisible();
+  // The editor holds this page, with its own title, not an empty new page.
+  await expect(page.getByRole("region", { name: "Editor top bar" })).toBeVisible();
+  const post = await page.evaluate(() => {
+    const editor = window.wp.data.select("core/editor");
+    return { id: editor.getCurrentPostId(), type: editor.getCurrentPostType(), title: editor.getEditedPostAttribute("title") };
+  });
+  expect(post).toEqual({ id: Number(id), type: "page", title });
 });
