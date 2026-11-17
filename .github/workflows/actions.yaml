@@ -13,6 +13,6 @@ jobs:
   Tests:
     uses: ./.github/workflows/tests.yaml
 
-  Branch checks:
+  Branch-checks:
     if: github.base_ref == 'main'
     uses: ./.github/workflows/branch_protection.yaml
