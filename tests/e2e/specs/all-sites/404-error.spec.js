@@ -27,7 +27,7 @@ test("check 404 error page displays correctly", async ({ page, site }) => {
   if (site.key === "ppo") {
     //target alert div
     const ppoTextCheckEle = page.locator("div.alert.alert-warning");
-    //check expected test for ppo is displayed
+    //check expected text for ppo is displayed
     await expect(ppoTextCheckEle).toBeVisible();
     await expect(ppoTextCheckEle).toContainText("Sorry, but the page");
   } else {
