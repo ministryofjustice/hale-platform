@@ -23,7 +23,7 @@ test("check 404 error page displays correctly", async ({ page, site }) => {
   await expect(page.locator("header")).toBeVisible();
   await expect(page.locator("footer")).toBeVisible();
 
-  //ppo 404 template does not contain a h1 therfore need to target a different element
+  //ppo 404 template does not contain an h1; therefore, target a different element
   if (site.key === "ppo") {
     //target alert div
     const ppoTextCheckEle = page.locator("div.alert.alert-warning");
