@@ -2,21 +2,21 @@ const { test, expect } = require("../../support/test");
 const { getSitePageUrls } = require("../../support/page-urls");
 
 
-test("check for elements overflowing and crossing the mobile viewport", async ({ page, site }) => {
+test("Elements do not overflow across the mobile viewport", async ({ page, site }) => {
   const urls = getSitePageUrls(site);
 
 
   for (const url of urls) {
 
-    //test nested pages for each theme site   
-    await test.step(`Check viewport boundaries: ${url}`, async () => {
+    //Test nested pages for each theme site   
+    await test.step(`No elements cross the viewport boundary: ${url}`, async () => {
       await page.goto(url);
 
       const overflowingEles = await page.evaluate(() => {
         const viewportWidth = document.documentElement.clientWidth;
 
-        // Check whether the element is inside a scrollable container
-        //if container is scrollable this hould pass the test
+        // Is the element inside a scrollable container
+        //If container is scrollable this should pass the test
         function hasScrollableParent(ele) {
           let parent = ele.parentElement;
 
@@ -41,7 +41,7 @@ test("check for elements overflowing and crossing the mobile viewport", async ({
         }
 
         // Find elements crossing the viewport boundaries
-        //Any element crossing the boundry with a scrollable parent
+        //Any element crossing the boundary with a scrollable parent
         //should pass the test (table check)
         return [...document.body.querySelectorAll("*")]
           .filter(ele => {
@@ -68,7 +68,7 @@ test("check for elements overflowing and crossing the mobile viewport", async ({
             };
           });
       });
-      //elements array should be 0 if no overflowing elements cross the viewport boundaries
+      //Elements array should be 0 if no overflowing elements cross the viewport boundaries
       expect.soft(
         overflowingEles,
         `${site.key}: ${url} has elements crossing the mobile viewport`

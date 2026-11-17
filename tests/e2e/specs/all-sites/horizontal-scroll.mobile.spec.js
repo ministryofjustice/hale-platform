@@ -1,13 +1,13 @@
 const { test, expect } = require("../../support/test");
 const { getSitePageUrls } = require("../../support/page-urls");
 
-test("Check pages do not scroll sideways on mobile", async ({ page, site }) => {
-  //get all seeded page urls for the current site
+test("Pages do not scroll sideways on mobile", async ({ page, site }) => {
+  //Get all seeded page urls for the current site
   const urls = getSitePageUrls(site);
 
-  //run the test on each page
+  //Run the test on each page
   for (const url of urls) {
-    await test.step(`Check horizontal scrolling: ${url}`, async () => {
+    await test.step(`No horizontal scrolling: ${url}`, async () => {
       await page.goto(url);
 
       const canScrollH = await page.evaluate(() => {
