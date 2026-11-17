@@ -23,12 +23,16 @@ test("Page links return a 200 status response", async ({page, site}) => {
     const allLinks = await links.all();
 
     
-    //get all path from hrefs 
+    //get all paths from hrefs 
     const allLinksHref = await Promise.all(
         allLinks.map((link) => link.getAttribute("href"))
     );
 
-    
     console.log(`${site.key}, links: ${allLinks.length} allLinks: ${allLinksHref.length}: \n ${allLinksHref.join("\n")}`)
+   
+    //Remove in-page links, placeholder links (example.test) and empty links (do weneed to exclude mailto tel etc too?)
+     const filteredLinks = allLinksHref.filter((link) => link && !link.startsWith("#") && link && !link.includes("example.test"));
+    console.log("Filtered Links:", filteredLinks);
 
+    
 })
