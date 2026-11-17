@@ -1,6 +1,6 @@
 const { test, expect } = require("../../support/test");
 
-//Need to skip the shared fixture's console error check sinc eit logsbe an error
+//Need to skip the shared fixture's console error check since it logs an error
 //for the expected 404 response in this spec.  Without ignoring colsole errors
 //the test would fail
 test.use({ ignoreConsoleErrors: true });
