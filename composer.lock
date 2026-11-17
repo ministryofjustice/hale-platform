@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6d7abdded0d0a24f860dc30a1d11fe73",
+    "content-hash": "d31c7c8b11cfba47c9d04b02dc1de8fb",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -1265,10 +1265,10 @@
         },
         {
             "name": "ministryofjustice/govwind",
-            "version": "1.2.2",
+            "version": "1.2.3",
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/ministryofjustice/govwind/releases/download/1.2.2/govwind-1.2.2.zip"
+                "url": "https://github.com/ministryofjustice/govwind/releases/download/1.2.3/govwind-1.2.3.zip"
             },
             "type": "wordpress-theme"
         },
