@@ -6,7 +6,7 @@ const { test, expect } = require("../../support/test");
 test.use({ ignoreConsoleErrors: true });
 
 test("check 404 error page displays correctly", async ({ page, site }) => {
-  //create a nonexisiting url for the current page
+  //create a nonexistent URL for the current site
   const badPageUrl = new URL(site.url);
 
   const sitePath = badPageUrl.pathname.replace(/\/$/, "");
