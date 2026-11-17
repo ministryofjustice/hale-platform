@@ -5,14 +5,14 @@ on:
     branches: [ main, dev ]
 
 jobs:
-  tests:
-    uses: ./.github/workflows/tests.yaml
-
-  branch-protection:
-    if: github.base_ref == 'main'
-    uses: ./.github/workflows/branch_protection.yaml
-
-  snyk:
+  Snyk:
     if: github.base_ref == 'main'
     uses: ./.github/workflows/snyk-security.yaml
     secrets: inherit
+
+  Tests:
+    uses: ./.github/workflows/tests.yaml
+
+  Branch checks:
+    if: github.base_ref == 'main'
+    uses: ./.github/workflows/branch_protection.yaml
