@@ -56,8 +56,8 @@ ARG PHP_VERSION=8.4
 #
 # bin/wp-core-cve-check.sh checks PATCH_WORDPRESS_VERSION for CVEs when it is
 # set, as the version the site runs.
-ARG PATCH_WORDPRESS_VERSION=
-ARG PATCH_WORDPRESS_SHA256=
+ARG PATCH_WORDPRESS_VERSION=7.1.5
+ARG PATCH_WORDPRESS_SHA256=cd44160a3fcce179fe170331132fcfc05e84e2f9284e2aad38df2aea6edaeab1
 
 # PHP patch. When PATCH_PHP_VERSION is set, the image runs that PHP release
 # instead of the one in the DHI image: the phpbuilder stage compiles it from
