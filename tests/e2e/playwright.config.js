@@ -77,6 +77,16 @@ module.exports = defineConfig({
       dependencies: ["setup"],
       use: { ...devices["Desktop Chrome"], baseURL: NETWORK_URL },
     },
+    // The page cache, across every site. One test at a time: the clear buttons
+    // empty the cache other cache tests have just filled. Tests in the other
+    // projects never look at the cache, so they run alongside.
+    {
+      name: "pagecache",
+      testMatch: /specs\/pagecache\/.*\.spec\.js/,
+      dependencies: ["setup"],
+      workers: 1,
+      use: { ...devices["Desktop Chrome"], baseURL: NETWORK_URL },
+    },
     // Login through the mock Auth0 tenant, on the sites seed.sh activates the
     // Auth0 plugin on. These start logged out, but log in as the seeded users,
     // and WordPress keeps a user's sessions in one user meta value it rewrites

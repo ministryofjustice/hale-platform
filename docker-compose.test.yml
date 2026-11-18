@@ -27,9 +27,10 @@ x-auth0-tenant: &auth0-tenant
   AUTH0_ENV_CLIENT_SECRET: e2e-auth0-client-secret-test-only
 
 # WordPress environment, shared by the wordpress container and the seed job.
-# Mirrors docker-compose.yml's x-wp-env, with test-only credentials and the
-# firewall and page cache off: tests hit WordPress through the same nginx
-# config, without a cache that could serve one test another test's page.
+# Mirrors docker-compose.yml's x-wp-env, with test-only credentials, the
+# firewall off and the page cache on, as deployed: tests hit WordPress through
+# the same nginx config and the same Redis page cache. WordPress needs the flag
+# too, as it is what purges the cache on publish and runs the clear buttons.
 x-wp-env: &wp-env
   <<: *auth0-tenant
   AUTH0_ENV_FALLBACK_PARAM: e2e_login_bypass
@@ -60,7 +61,7 @@ x-wp-env: &wp-env
   ACF_PRO_LICENSE: ""
   NGINX_INTERNAL_URL: "https://nginx"
   FIREWALL_ENABLED: "false"
-  PAGECACHE_ENABLED: "false"
+  PAGECACHE_ENABLED: "true"
   REDIS_SSL: "false"
 
 services:
@@ -80,6 +81,21 @@ services:
       timeout: 5s
       retries: 60
 
+  # The page cache's Redis (opt/lua/pagecache, hale-components' purge code).
+  # Nothing kept on disk: a new stack starts with an empty cache. Not on the
+  # e2e network, so the tests see the cache only through nginx's X-Page-Cache
+  # header, as a visitor would.
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    tmpfs:
+      - /data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
   # Same job as wpcore-init in docker-compose.yml: the hardened image runs as
   # 65532 and cannot write to a freshly created, root-owned volume.
   wpcore-init:
@@ -94,6 +110,8 @@ services:
     pull_policy: never
     depends_on:
       mariadb:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       wpcore-init:
         condition: service_completed_successfully
@@ -120,6 +138,8 @@ services:
     depends_on:
       wordpress:
         condition: service_healthy
+      redis:
+        condition: service_healthy
       # Started with the stack, so `up --wait nginx` also waits for it.
       auth0-mock:
         condition: service_healthy
@@ -136,7 +156,7 @@ services:
       - e2e
     environment:
       FIREWALL_ENABLED: "false"
-      PAGECACHE_ENABLED: "false"
+      PAGECACHE_ENABLED: "true"
       REDIS_SSL: "false"
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8090/healthz"]
