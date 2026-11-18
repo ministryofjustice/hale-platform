@@ -1,7 +1,6 @@
 name: Branch Protection
 on:
-  pull_request:
-    branches: [ main ]
+  workflow_call:
 
 jobs:
   check-source-branch:

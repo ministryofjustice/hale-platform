@@ -34,9 +34,29 @@ metadata:
         phase:1,\
         allow,\
         nolog,\
+        setvar:tx.wb_config=1,\
         tag:github_team=hale-platform,\
         tag:environment=hale-platform-{{ .Values.configmap.envtype }}-auth,\
         ctl:ruleEngine=DetectionOnly"
+
+      {{- /*
+      Block multipart requests unless rule 1001 matched the WB_CONFIG cookie.
+      &TX counts the variable, so this works when the cookie is missing.
+      Must be declared later than rule 1001.
+      */}}
+      SecRule &TX:wb_config "@eq 0" \
+        "id:1002,\
+        phase:1,\
+        deny,\
+        status:403,\
+        log,\
+        t:none,\
+        msg:multipart-not-allowed,\
+        tag:github_team=hale-platform,\
+        tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }},\
+        chain"
+      SecRule REQUEST_HEADERS:Content-Type "@contains multipart" "t:none,t:lowercase"
+
       {{- /* Exclude posthog cookie */}}
       SecRuleUpdateTargetById 942290 "!REQUEST_COOKIES:/^ph_phc_.*_posthog$/"
 
@@ -131,6 +151,9 @@ metadata:
         }
       }
       if ($host = 'victimscode.org.uk') {
+        return 301 https://victimandwitnessinformation.org.uk/your-rights/as-a-victim;
+      }
+      if ($host = 'www.victimscode.org.uk') {
         return 301 https://victimandwitnessinformation.org.uk/your-rights/as-a-victim;
       }
       if ($host = 'cym.victimscode.org.uk') {

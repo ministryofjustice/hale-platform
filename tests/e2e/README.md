@@ -355,6 +355,9 @@ and Auth0 (and not without WordPress's nonce), the errors for someone Auth0
 signs in but WordPress must not, the WordPress session the login leaves,
 signing in on a site the plugin was network-activated onto, switching user,
 and that a site administrator cannot read or change the tenant settings.
+`user-migration.spec.js` calls the user migration endpoints on the network's
+main site, the same way the database connection's scripts do for users
+Auth0 hasn't imported yet.
 
 `specs/auth0/request-shapes.spec.js` runs after them, as its own project
 (`auth0-requests`), and compares every kind of request the plugin sent the
