@@ -99,7 +99,7 @@
     "auth0/wordpress": "6.0.0-beta.1",
     "composer/installers": "^v2.0",
     "ministryofjustice/cookie-compliance": "dev-main",
-    "ministryofjustice/govwind": "dev-ipa-colours-again",
+    "ministryofjustice/govwind": "dev-ai-colours",
     "ministryofjustice/hale": "dev-main",
     "ministryofjustice/hale-components": "dev-main",
     "ministryofjustice/hale-dash": "dev-main",
