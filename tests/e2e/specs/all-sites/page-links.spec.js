@@ -20,13 +20,13 @@ resource: https://www.checklyhq.com/docs/learn/playwright/how-to-detect-broken-l
 */
 
 test("Page links return a 200 status response", async ({page, site}) => {
-    const urls = getSitePageUrls(site);
+    const pageUrls = getSitePageUrls(site);
 
     //check all valid links on each seeded site page
-    for(const url of urls){
+    for(const pageUrl of pageUrls){
 
-        await test.step(`Link returns a status code of 200 on page ${site}`, async ()=>{
-            await page.goto(url);
+        await test.step(`Link returns a status code of 200 on page ${pageUrl}`, async ()=>{
+            await page.goto(pageUrl);
 
              //Target 'a' links
             const links = page.locator("a");
@@ -84,18 +84,13 @@ test("Page links return a 200 status response", async ({page, site}) => {
                 }
             }
 
-            console.log(`/********site:${site.key}********************************/`)
+            console.log(`/********  site:${site.key} page: ${pageUrl}********************************/`)
             
             console.log("valid links:", validHrefs.length);
             for(const url of validHrefs){
                 console.log(url)
             }
             console.log("valid links:", validHrefs.length);
-
-
-
         })
-
     }
-
 })
