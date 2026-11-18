@@ -1,4 +1,4 @@
-name: Actions
+name: PR Actions
 
 on:
   pull_request:
