@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "345b2ce2c49c28140c2c1ed1334ee306",
+    "content-hash": "fcc669e33cdfac29f429869077c6c825",
     "packages": [
         {
             "name": "alphagov/notifications-php-client",
@@ -318,16 +318,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.404.1",
+            "version": "3.405.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "3f0279897d3f0f15971498793ca40ffa43ca385c"
+                "reference": "7e8a4a8ed7b812a9ae9fc6e921fe3ee5ed7ce8b0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/3f0279897d3f0f15971498793ca40ffa43ca385c",
-                "reference": "3f0279897d3f0f15971498793ca40ffa43ca385c",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/7e8a4a8ed7b812a9ae9fc6e921fe3ee5ed7ce8b0",
+                "reference": "7e8a4a8ed7b812a9ae9fc6e921fe3ee5ed7ce8b0",
                 "shasum": ""
             },
             "require": {
@@ -409,10 +409,10 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.404.1"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.405.0"
             },
-            "time": "2026-11-17T19:12:26+00:00",
-            "published-time": "2026-11-17T19:19:58+00:00"
+            "time": "2026-11-18T19:30:10+00:00",
+            "published-time": "2026-11-18T19:37:49+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -1324,25 +1324,25 @@
         },
         {
             "name": "ministryofjustice/hale-dash",
-            "version": "2.5.1",
+            "version": "2.5.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ministryofjustice/hale-dash.git",
-                "reference": "dd3b095e61457e659c3c73275bcce6b3273cfc03"
+                "reference": "dd0844291140390c9741f2f83c8af198004a99d6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ministryofjustice/hale-dash/zipball/dd3b095e61457e659c3c73275bcce6b3273cfc03",
-                "reference": "dd3b095e61457e659c3c73275bcce6b3273cfc03",
+                "url": "https://api.github.com/repos/ministryofjustice/hale-dash/zipball/dd0844291140390c9741f2f83c8af198004a99d6",
+                "reference": "dd0844291140390c9741f2f83c8af198004a99d6",
                 "shasum": ""
             },
             "type": "wordpress-theme",
             "description": "Hale Dash theme",
             "support": {
-                "source": "https://github.com/ministryofjustice/hale-dash/tree/2.5.1",
+                "source": "https://github.com/ministryofjustice/hale-dash/tree/2.5.2",
                 "issues": "https://github.com/ministryofjustice/hale-dash/issues"
             },
-            "time": "2026-11-04T14:52:43+00:00"
+            "time": "2026-11-19T14:03:27+00:00"
         },
         {
             "name": "ministryofjustice/hale-showcase",
@@ -1441,10 +1441,10 @@
         },
         {
             "name": "ministryofjustice/website-builder-blocks",
-            "version": "2.3.13",
+            "version": "2.3.14",
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/ministryofjustice/website-builder-blocks/releases/download/2.3.13/website-builder-blocks-2.3.13.zip"
+                "url": "https://github.com/ministryofjustice/website-builder-blocks/releases/download/2.3.14/website-builder-blocks-2.3.14.zip"
             },
             "require": {
                 "composer/installers": "^2.0"
