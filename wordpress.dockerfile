@@ -37,7 +37,7 @@
 # wptools.dockerfile (its Alpine php8X packages) and the CI workflow's
 # setup-php step. bin/check-versions.sh (make check-versions, also run in CI on
 # pull requests) fails if any of them disagree.
-ARG WORDPRESS_VERSION=7.1.4
+ARG WORDPRESS_VERSION=7.1.5
 ARG PHP_VERSION=8.4
 
 # WordPress core patch. When PATCH_WORDPRESS_VERSION is set, the image runs that
@@ -56,8 +56,8 @@ ARG PHP_VERSION=8.4
 #
 # bin/wp-core-cve-check.sh checks PATCH_WORDPRESS_VERSION for CVEs when it is
 # set, as the version the site runs.
-ARG PATCH_WORDPRESS_VERSION=7.1.5
-ARG PATCH_WORDPRESS_SHA256=cd44160a3fcce179fe170331132fcfc05e84e2f9284e2aad38df2aea6edaeab1
+ARG PATCH_WORDPRESS_VERSION=
+ARG PATCH_WORDPRESS_SHA256=
 
 # PHP patch. When PATCH_PHP_VERSION is set, the image runs that PHP release
 # instead of the one in the DHI image: the phpbuilder stage compiles it from
