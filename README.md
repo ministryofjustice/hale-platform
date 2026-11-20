@@ -31,5 +31,5 @@ kubectl exec <pod> -c wptools -- wp db export /scratch/dump.sql
 docker compose exec wptools wp db query "SELECT 1"
 ```
 
-Save exports under `/scratch`, not the webroot (`/var/www/html`), where nginx could serve them. Both are deleted when the pod is replaced, so copy an export off straight away with `kubectl cp`.
+Save exports under `/scratch`, not the webroot (`/var/www/html`), where nginx could serve them. Both are deleted when the pod is replaced, so copy an export off straight away with `kubectl cp`
 
