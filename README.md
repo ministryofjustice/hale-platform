@@ -20,7 +20,7 @@ To run this WordPress instance locally, follow our guidance on [local developmen
 
 ## Database commands
 
-The WordPress image has no MySQL or MariaDB client, so `wp db` commands (query, export, import and the rest) fail in the `wordpress` container. Run them in the `wptools` container instead. Every other wp-cli command works in either.
+The WordPress image has no MySQL or MariaDB client, so `wp db` commands (query, export, import and the rest) fail in the `wordpress` container. Run them in the `wptools` container instead. Every other wp-cli command works in either
 
 ```
 # Kubernetes
