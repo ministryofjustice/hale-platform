@@ -68,9 +68,6 @@ module.exports = defineConfig({
       use: { ...devices["Pixel 5"], baseURL: site.url, site },
     })),
 
-
-
-
     {
       name: "network",
       testMatch: /specs\/network\/.*\.spec\.js/,
