@@ -12,14 +12,8 @@ for (const [role, login] of Object.entries(users)) {
     await page.locator("#user_pass").fill(PASSWORD);
     await page.locator("#wp-submit").click();
 
-    await expect(page.locator("#wpadminbar")).toBeAttached({
-      timeout: 32000,
-    });
-
     // opt/php/load.php sends every login to the home page.
-    await expect(page.locator("#wpadminbar")).toBeVisible({
-        timeout: 32000,
-    });
+    await expect(page.locator("#wpadminbar")).toBeVisible();
     await page.context().storageState({ path: authFile(role) });
   });
 }
