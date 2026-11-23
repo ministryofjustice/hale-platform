@@ -67,10 +67,6 @@
     },
     {
       "type": "vcs",
-      "url": "https://github.com/ministryofjustice/website-builder-blocks.git"
-    },
-    {
-      "type": "vcs",
       "url": "https://github.com/ministryofjustice/wp-gov-uk-notify.git"
     },
     {
@@ -92,6 +88,18 @@
           "url": "https://relevanssi.com/update/get_version.php?version=2.29.0"
         }
       }
+    },
+    {
+      "type": "package",
+      "package": {
+        "name": "ministryofjustice/website-builder-blocks",
+        "version": "dev-preview-extra-icons-1ff6c09",
+        "type": "wordpress-plugin",
+        "dist": {
+          "type": "zip",
+          "url": "https://github.com/ministryofjustice/website-builder-blocks/releases/download/preview-extra-icons-1ff6c09/website-builder-blocks-preview-extra-icons-1ff6c09.zip"
+        }
+      }
     }
   ],
   "require": {
@@ -105,7 +113,7 @@
     "ministryofjustice/hale-dash": "dev-main",
     "ministryofjustice/hale-showcase": "1.1.10",
     "ministryofjustice/ppo": "dev-main",
-    "ministryofjustice/website-builder-blocks": "dev-extra-icons",
+    "ministryofjustice/website-builder-blocks": "dev-preview-extra-icons-1ff6c09",
     "ministryofjustice/wp-gov-uk-notify": "1.0.4",
     "ministryofjustice/wp-moj-blocks": "dev-main",
     "ministryofjustice/wp-s3-uploads": "2.0.0",
