@@ -57,6 +57,7 @@ jobs:
       auth0-env-domain: ${{ secrets.AUTH0_ENV_DOMAIN }}
       auth0-env-fallback-param: ${{ secrets.AUTH0_ENV_FALLBACK_PARAM }}
       auth0-env-fallback-secret: ${{ secrets.AUTH0_ENV_FALLBACK_SECRET }}
+      auth0-env-migration-token: ${{ secrets.AUTH0_ENV_MIGRATION_TOKEN }}
       s3-uploads-bucket: ${{ secrets.S3_UPLOADS_BUCKET }}
       s3-uploads-region: ${{ secrets.S3_UPLOADS_REGION }}
       s3-uploads-bucket-url: ${{ secrets.S3_UPLOADS_BUCKET_URL }}
@@ -115,6 +116,7 @@ jobs:
       auth0-env-domain: ${{ secrets.AUTH0_ENV_DOMAIN }}
       auth0-env-fallback-param: ${{ secrets.AUTH0_ENV_FALLBACK_PARAM }}
       auth0-env-fallback-secret: ${{ secrets.AUTH0_ENV_FALLBACK_SECRET }}
+      auth0-env-migration-token: ${{ secrets.AUTH0_ENV_MIGRATION_TOKEN }}
       wb-config: ${{ secrets.WB_CONFIG}}
 
   deployStaging:
@@ -166,6 +168,7 @@ jobs:
       auth0-env-domain: ${{ secrets.AUTH0_ENV_DOMAIN }}
       auth0-env-fallback-param: ${{ secrets.AUTH0_ENV_FALLBACK_PARAM }}
       auth0-env-fallback-secret: ${{ secrets.AUTH0_ENV_FALLBACK_SECRET }}
+      auth0-env-migration-token: ${{ secrets.AUTH0_ENV_MIGRATION_TOKEN }}
 
   checkFriday:
     runs-on: ubuntu-26.04
@@ -234,3 +237,4 @@ jobs:
       auth0-env-domain: ${{ secrets.AUTH0_ENV_DOMAIN }}
       auth0-env-fallback-param: ${{ secrets.AUTH0_ENV_FALLBACK_PARAM }}
       auth0-env-fallback-secret: ${{ secrets.AUTH0_ENV_FALLBACK_SECRET }}
+      auth0-env-migration-token: ${{ secrets.AUTH0_ENV_MIGRATION_TOKEN }}

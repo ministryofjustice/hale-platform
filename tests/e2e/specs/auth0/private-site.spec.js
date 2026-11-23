@@ -16,14 +16,20 @@ test("signing in returns people to the page they asked for", async ({ page }) =>
   await expect(page.locator("#wpadminbar")).toBeVisible();
 });
 
-test("someone with no WordPress account gets an error page, not a redirect loop", async ({ page }) => {
-  await page.goto(membersArea);
-  await signInAtAuth0(page, identities.stranger);
+// This login is refused with a 500 error page, which is the behaviour under
+// test, so the browser's console error for it is expected.
+test.describe("a login WordPress refuses", () => {
+  test.use({ ignoreConsoleErrors: true });
 
-  // A page from the site that says the login failed. A loop between the
-  // site, the login page and Auth0 ends in the browser's own
-  // ERR_TOO_MANY_REDIRECTS page instead.
-  await expect(page.getByText(/There was a problem/)).toBeVisible();
-  expect(new URL(page.url()).origin).toBe(new URL(auth0Sites.private.url).origin);
-  await expect(page.locator("#wpadminbar")).toHaveCount(0);
+  test("someone with no WordPress account gets an error page, not a redirect loop", async ({ page }) => {
+    await page.goto(membersArea);
+    await signInAtAuth0(page, identities.stranger);
+
+    // A page from the site that says the login failed. A loop between the
+    // site, the login page and Auth0 ends in the browser's own
+    // ERR_TOO_MANY_REDIRECTS page instead.
+    await expect(page.getByText(/There was a problem/)).toBeVisible();
+    expect(new URL(page.url()).origin).toBe(new URL(auth0Sites.private.url).origin);
+    await expect(page.locator("#wpadminbar")).toHaveCount(0);
+  });
 });

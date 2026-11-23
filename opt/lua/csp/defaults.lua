@@ -20,6 +20,7 @@ local BASE = policy.new({
     { "style-src",       "'self'", "'unsafe-inline'" },
     { "img-src",         "'self'", "data:", "https:" },
     { "font-src",        "'self'", "data:" },
+    { "frame-src",       "'self'", "blob:" },
     { "frame-ancestors", "'self'" },
     { "object-src",      "'none'" },
 })
