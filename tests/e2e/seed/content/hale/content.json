@@ -38,7 +38,11 @@
     "mojblocks-staggered-box-bar": "#ffffff"
   },
   "images": {
-    "example-site": { "width": 825, "height": 534, "alt": "Example of a website homepage built using Website Builder" },
+    "example-site": {
+      "width": 825,
+      "height": 534,
+      "alt": "Example of a website homepage built using Website Builder"
+    },
     "people-icon": { "width": 96, "height": 96 },
     "quote-mark": { "width": 510, "height": 360 },
     "paper-plane": { "width": 1024, "height": 406 },
@@ -54,24 +58,128 @@
     "content-icon": { "width": 430, "height": 430 },
     "start-icon": { "width": 430, "height": 430 },
     "page-icon": { "width": 430, "height": 430 },
-    "login-screen": { "width": 491, "height": 442, "alt": "WordPress log-in screen" },
-    "dashboard-menu": { "width": 320, "height": 898, "alt": "WordPress dashboard menu" }
+    "login-screen": {
+      "width": 491,
+      "height": 442,
+      "alt": "WordPress log-in screen"
+    },
+    "dashboard-menu": {
+      "width": 320,
+      "height": 898,
+      "alt": "WordPress dashboard menu"
+    }
   },
   "items": [
-    { "id": 101, "type": "page", "slug": "home", "title": "Website Builder home", "file": "home.html", "template": "page-full-width.php" },
-    { "id": 106, "type": "page", "slug": "about-website-builder", "title": "About Website Builder", "file": "about-website-builder.html", "template": "page-full-width.php", "meta": { "hale_metabox_page_title_section": "no" } },
-    { "id": 107, "type": "page", "slug": "features", "title": "Features", "file": "features.html", "parent": "about-website-builder" },
-    { "id": 103, "type": "page", "slug": "designing-your-site", "title": "How to make a good website", "file": "designing-your-site.html", "template": "page-full-width.php" },
-    { "id": 108, "type": "page", "slug": "creating-content", "title": "Creating content", "file": "creating-content.html", "parent": "designing-your-site" },
-    { "id": 109, "type": "page", "slug": "user-guides", "title": "User guides", "file": "user-guides.html", "template": "page-full-width.php" },
-    { "id": 110, "type": "page", "slug": "get-started", "title": "Get started", "file": "get-started.html", "parent": "user-guides", "template": "page-full-width.php" },
-    { "id": 102, "type": "page", "slug": "about", "title": "About this site", "file": "../shared/about.html" },
-    { "id": 104, "type": "page", "slug": "blocks", "title": "Custom blocks", "file": "../shared/blocks.html" },
-    { "id": 105, "type": "page", "slug": "news", "title": "News", "file": "../shared/news.html" },
-    { "id": 201, "type": "post", "slug": "first-news-story", "title": "First news story", "file": "../shared/news-story.html", "featuredImage": true },
-    { "id": 301, "type": "page", "slug": "search-result", "title": "Search result", "file": "../shared/search-result.html", "date": "2025-03-01 09:00:00", "repeat": 12 },
     {
-      "id": 111, "type": "page", "slug": "inquiry-documents", "title": "Inquiry documents", "file": "inquiry-documents.html", "template": "page-listing.php",
+      "id": 101,
+      "type": "page",
+      "slug": "home",
+      "title": "Website Builder home",
+      "file": "home.html",
+      "template": "page-full-width.php"
+    },
+    {
+      "id": 106,
+      "type": "page",
+      "slug": "about-website-builder",
+      "title": "About Website Builder",
+      "file": "about-website-builder.html",
+      "template": "page-full-width.php",
+      "meta": { "hale_metabox_page_title_section": "no" }
+    },
+    {
+      "id": 107,
+      "type": "page",
+      "slug": "features",
+      "title": "Features",
+      "file": "features.html",
+      "parent": "about-website-builder"
+    },
+    {
+      "id": 103,
+      "type": "page",
+      "slug": "designing-your-site",
+      "title": "How to make a good website",
+      "file": "designing-your-site.html",
+      "template": "page-full-width.php"
+    },
+    {
+      "id": 108,
+      "type": "page",
+      "slug": "creating-content",
+      "title": "Creating content",
+      "file": "creating-content.html",
+      "parent": "designing-your-site"
+    },
+    {
+      "id": 109,
+      "type": "page",
+      "slug": "user-guides",
+      "title": "User guides",
+      "file": "user-guides.html",
+      "template": "page-full-width.php"
+    },
+    {
+      "id": 110,
+      "type": "page",
+      "slug": "get-started",
+      "title": "Get started",
+      "file": "get-started.html",
+      "parent": "user-guides",
+      "template": "page-full-width.php"
+    },
+    {
+      "id": 102,
+      "type": "page",
+      "slug": "about",
+      "title": "About this site",
+      "file": "../shared/about.html"
+    },
+    {
+      "id": 104,
+      "type": "page",
+      "slug": "blocks",
+      "title": "Custom blocks",
+      "file": "../shared/blocks.html"
+    },
+    {
+      "id": 105,
+      "type": "page",
+      "slug": "news",
+      "title": "News",
+      "file": "../shared/news.html"
+    },
+    {
+      "id": 112,
+      "type": "page",
+      "slug": "table-scroll",
+      "title": "Table Scrolling Test",
+      "file": "table-scroll.html"
+    },
+    {
+      "id": 201,
+      "type": "post",
+      "slug": "first-news-story",
+      "title": "First news story",
+      "file": "../shared/news-story.html",
+      "featuredImage": true
+    },
+    {
+      "id": 301,
+      "type": "page",
+      "slug": "search-result",
+      "title": "Search result",
+      "file": "../shared/search-result.html",
+      "date": "2025-03-01 09:00:00",
+      "repeat": 12
+    },
+    {
+      "id": 111,
+      "type": "page",
+      "slug": "inquiry-documents",
+      "title": "Inquiry documents",
+      "file": "inquiry-documents.html",
+      "template": "page-listing.php",
       "meta": {
         "listing_post_type": "inquiry_document",
         "listing_filters": ["document_category", "document_type"],
@@ -79,16 +187,36 @@
       }
     },
     {
-      "id": 401, "type": "inquiry_document", "slug": "hearing-transcript", "title": "Hearing transcript", "file": "inquiry-document.html",
-      "date": "2025-04-01 09:00:00", "repeat": 8, "terms": { "document_category": ["Transcripts"] }
+      "id": 401,
+      "type": "inquiry_document",
+      "slug": "hearing-transcript",
+      "title": "Hearing transcript",
+      "file": "inquiry-document.html",
+      "date": "2025-04-01 09:00:00",
+      "repeat": 8,
+      "terms": { "document_category": ["Transcripts"] }
     },
     {
-      "id": 411, "type": "inquiry_document", "slug": "ruling", "title": "Ruling", "file": "inquiry-document.html",
-      "date": "2025-05-01 09:00:00", "repeat": 4, "terms": { "document_category": ["Rulings"] }
+      "id": 411,
+      "type": "inquiry_document",
+      "slug": "ruling",
+      "title": "Ruling",
+      "file": "inquiry-document.html",
+      "date": "2025-05-01 09:00:00",
+      "repeat": 4,
+      "terms": { "document_category": ["Rulings"] }
     },
     {
-      "id": 421, "type": "inquiry_document", "slug": "puffin-survey-report", "title": "Puffin survey report", "file": "puffin-survey-report.html",
-      "date": "2025-06-01 09:00:00", "terms": { "document_category": ["Reports"], "document_type": ["Welsh language version"] }
+      "id": 421,
+      "type": "inquiry_document",
+      "slug": "puffin-survey-report",
+      "title": "Puffin survey report",
+      "file": "puffin-survey-report.html",
+      "date": "2025-06-01 09:00:00",
+      "terms": {
+        "document_category": ["Reports"],
+        "document_type": ["Welsh language version"]
+      }
     }
   ]
 }

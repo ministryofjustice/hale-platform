@@ -162,6 +162,11 @@ printf '%s\n' "$sites" | while IFS="|" read -r key path theme title blog_id; do
     wp --url="$url" option update revisionary_activation_done 1
     wp --url="$url" option update revisionary_activation 0
 
+    # Simple 301 Redirects sends the first admin page an administrator opens
+    # to its Quick Setup wizard, which also embeds a YouTube video. Mark the
+    # wizard as finished, so the admin pages show what they should.
+    wp --url="$url" option update simple301redirects_quick_setup_step complete
+
     for role in editor author contributor; do
         wp --url="$url" user set-role "e2e$role" "$role"
     done
