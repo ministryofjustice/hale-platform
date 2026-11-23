@@ -161,6 +161,10 @@ printf '%s\n' "$sites" | while IFS="|" read -r key path theme title blog_id; do
     # test that opens the editor lands in the editor.
     wp --url="$url" option update revisionary_activation_done 1
     wp --url="$url" option update revisionary_activation 0
+    # Simple 301 Redirects sends the first site admin request after activation
+    # to its setup wizard, and exits before WordPress handles the request:
+    # an admin-post.php form submitted then is lost. Mark the wizard done.
+    wp --url="$url" option update simple301redirects_quick_setup_step complete
 
     for role in editor author contributor; do
         wp --url="$url" user set-role "e2e$role" "$role"
@@ -219,5 +223,11 @@ for path in $auth0_sites; do
     wp --url="$NETWORK/$path/" plugin is-active auth0 ||
         { echo "The Auth0 plugin is not running on /$path/" >&2; exit 1; }
 done
+
+# The page cache is enabled on the stack, as deployed, but its runtime mode is
+# inactive, so specs see pages rendered by WordPress. The pagecache-on project
+# in playwright.config.js turns it on for specs/pagecache/, once every other
+# project has finished, and pagecache-off turns it back off.
+wp_network hale-pagecache mode inactive
 
 echo "Seed complete"

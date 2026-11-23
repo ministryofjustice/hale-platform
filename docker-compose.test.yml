@@ -28,9 +28,11 @@ x-auth0-tenant: &auth0-tenant
 
 # WordPress environment, shared by the wordpress container and the seed job.
 # Mirrors docker-compose.yml's x-wp-env, with test-only credentials, the
-# firewall off and the page cache on, as deployed: tests hit WordPress through
-# the same nginx config and the same Redis page cache. WordPress needs the flag
-# too, as it is what purges the cache on publish and runs the clear buttons.
+# firewall off and the page cache enabled, as deployed: tests hit WordPress
+# through the same nginx config and the same Redis page cache. WordPress needs
+# the flag too, as it is what purges the cache on publish and runs the clear
+# buttons. The seed sets the cache's runtime mode to inactive; it is active
+# only while specs/pagecache/ runs (tests/e2e/README.md, Page cache tests).
 x-wp-env: &wp-env
   <<: *auth0-tenant
   AUTH0_ENV_FALLBACK_PARAM: e2e_login_bypass

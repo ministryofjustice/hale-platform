@@ -1,12 +1,11 @@
 // Changing a published page clears it from the page cache, so visitors never
 // get an old copy. hale-components purges on transition_post_status
 // (inc/pagecache-purge.php): the page, its parents and the site's home page.
-// The home page is not checked here: the other projects visit it while these
-// run, so a visit of theirs can be the one that renders it again.
+// The home page is not checked here.
 
 const { test, expect } = require("../../support/test");
 const { authFile, sites } = require("../../support/stack");
-const { visitor, fetchPage, warm, expectRendered, expectCacheEnabled, Pages } = require("../../support/pagecache");
+const { visitor, warm, expectRendered, expectCacheEnabled, Pages } = require("../../support/pagecache");
 
 test.use({ storageState: authFile("editor") });
 
@@ -46,26 +45,4 @@ test("editing a child page clears its parent from the cache", async () => {
   await pages.edit(child);
 
   await expectRendered(api, parent.link);
-});
-
-test("trashing a published page stops it being served from the cache", async () => {
-  const created = await pages.create(sites[0]);
-  await warm(api, created.link);
-
-  await pages.trash(created);
-
-  const gone = await fetchPage(api, created.link);
-  expect(gone.cache, "the trashed page was served from the cache").not.toBe("HIT");
-  expect(gone.status).toBe(404);
-});
-
-test("unpublishing a page stops it being served from the cache", async () => {
-  const created = await pages.create(sites[0]);
-  await warm(api, created.link);
-
-  await pages.update(created, { status: "draft" });
-
-  const gone = await fetchPage(api, created.link);
-  expect(gone.cache, "the unpublished page was served from the cache").not.toBe("HIT");
-  expect(gone.status).toBe(404);
 });

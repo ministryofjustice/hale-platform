@@ -1,7 +1,7 @@
 // @ts-check
 const path = require("node:path");
 const { defineConfig, devices } = require("@playwright/test");
-const { NETWORK_URL, sites } = require("./support/stack");
+const { NETWORK_URL, sites, authFile } = require("./support/stack");
 const { auth0Sites } = require("./support/auth0");
 
 // The browserstack service sets E2E_OUTPUT_DIR, so a BrowserStack run after
@@ -17,6 +17,74 @@ const BLOB = ["blob", {
   outputDir: `${OUTPUT_DIR}/blob`,
   fileName: `${path.basename(path.resolve(OUTPUT_DIR))}.zip`,
 }];
+
+// Every project but setup and the page cache's. They run with the page cache
+// inactive, so they see pages rendered by WordPress, never a cached copy.
+const suiteProjects = [
+    // One project per site: the specs in all-sites/ plus the site's own folder.
+    ...sites.map((site) => ({
+      name: site.key,
+      testMatch: [/specs\/all-sites\/.*\.spec\.js/, new RegExp(`specs/${site.key}/.*\\.spec\\.js`)],
+      testIgnore:  /\.mobile\.spec\.js/,
+      dependencies: ["setup"],
+      use: { ...devices["Desktop Chrome"], baseURL: site.url, site },
+    })),
+    //Mobile chrome tests for each site
+     ...sites.map((site) => ({
+      name: `${site.key}-mobile-chrome`,
+      testMatch: [/specs\/all-sites\/.*\.mobile\.spec\.js/, new RegExp(`specs/${site.key}/.*\.mobile\\.spec\\.js$`)],
+      dependencies: ["setup"],
+      use: { ...devices["Pixel 5"], baseURL: site.url, site },
+    })),
+
+
+
+
+    {
+      name: "network",
+      testMatch: /specs\/network\/.*\.spec\.js/,
+      dependencies: ["setup"],
+      use: { ...devices["Desktop Chrome"], baseURL: NETWORK_URL },
+    },
+    // Login through the mock Auth0 tenant, on the sites seed.sh activates the
+    // Auth0 plugin on. These start logged out, but log in as the seeded users,
+    // and WordPress keeps a user's sessions in one user meta value it rewrites
+    // without a lock: two logins as one user at the same moment can each drop
+    // the other's session. So one test at a time, after setup's logins.
+    {
+      name: "auth0",
+      testMatch: /specs\/auth0\/.*\.spec\.js/,
+      testIgnore: /specs\/auth0\/request-shapes\.spec\.js/,
+      dependencies: ["setup"],
+      workers: 1,
+      use: { ...devices["Desktop Chrome"], baseURL: auth0Sites.main.url },
+    },
+    // What the plugin sent the tenant during the auth0 project's tests.
+    {
+      name: "auth0-requests",
+      testMatch: /specs\/auth0\/request-shapes\.spec\.js/,
+      dependencies: ["auth0"],
+    },
+];
+
+// The page cache projects wait for every other project, as Playwright runs a
+// project's dependencies in full even when the command line picks only some
+// tests. So when the command line picks only the page cache's specs, by file
+// (make test-e2e-run FILE=specs/pagecache/) or by project
+// (make test-e2e ARGS=--project=pagecache), they wait for setup alone.
+// Anything else, such as a title filter or UI mode, runs the other projects
+// first.
+const argv = process.argv.slice(2);
+const cliSpecs = argv.filter((arg) => /(^|\/)specs\//.test(arg));
+const cliProjects = argv.flatMap((arg, i) => {
+  if (arg.startsWith("--project=")) return [arg.slice("--project=".length)];
+  if (arg === "--project" && argv[i + 1]) return [argv[i + 1]];
+  return [];
+});
+const pagecacheOnly =
+  cliSpecs.length + cliProjects.length > 0 &&
+  cliSpecs.every((arg) => /(^|\/)specs\/pagecache(\/|$)/.test(arg)) &&
+  cliProjects.every((name) => name.startsWith("pagecache"));
 
 // End-to-end tests against the disposable test multisite in
 // docker-compose.test.yml. Runs inside the playwright container, after
@@ -52,59 +120,30 @@ module.exports = defineConfig({
       testMatch: /auth\.setup\.js/,
       use: { baseURL: NETWORK_URL },
     },
-    // One project per site: the specs in all-sites/ plus the site's own folder.
-    ...sites.map((site) => ({
-      name: site.key,
-      testMatch: [/specs\/all-sites\/.*\.spec\.js/, new RegExp(`specs/${site.key}/.*\\.spec\\.js`)],
-      testIgnore:  /\.mobile\.spec\.js/,
-      dependencies: ["setup"],
-      use: { ...devices["Desktop Chrome"], baseURL: site.url, site },
-    })),
-    //Mobile chrome tests for each site
-     ...sites.map((site) => ({
-      name: `${site.key}-mobile-chrome`,
-      testMatch: [/specs\/all-sites\/.*\.mobile\.spec\.js/, new RegExp(`specs/${site.key}/.*\.mobile\\.spec\\.js$`)],
-      dependencies: ["setup"],
-      use: { ...devices["Pixel 5"], baseURL: site.url, site },
-    })),
-
-
-
-
+    ...suiteProjects,
+    // The page cache, across every site, after every other project: the seed
+    // leaves the cache inactive, pagecache-on makes it active for these specs,
+    // and pagecache-off, its teardown, makes it inactive again, whether they
+    // pass or fail. One test at a time: the clear buttons empty the cache other
+    // cache tests have just filled.
     {
-      name: "network",
-      testMatch: /specs\/network\/.*\.spec\.js/,
-      dependencies: ["setup"],
-      use: { ...devices["Desktop Chrome"], baseURL: NETWORK_URL },
+      name: "pagecache-on",
+      testMatch: /pagecache-on\.setup\.js/,
+      dependencies: pagecacheOnly ? ["setup"] : ["setup", ...suiteProjects.map((project) => project.name)],
+      teardown: "pagecache-off",
+      use: { baseURL: NETWORK_URL, storageState: authFile("admin") },
     },
-    // The page cache, across every site. One test at a time: the clear buttons
-    // empty the cache other cache tests have just filled. Tests in the other
-    // projects never look at the cache, so they run alongside.
     {
       name: "pagecache",
       testMatch: /specs\/pagecache\/.*\.spec\.js/,
-      dependencies: ["setup"],
+      dependencies: ["pagecache-on"],
       workers: 1,
       use: { ...devices["Desktop Chrome"], baseURL: NETWORK_URL },
     },
-    // Login through the mock Auth0 tenant, on the sites seed.sh activates the
-    // Auth0 plugin on. These start logged out, but log in as the seeded users,
-    // and WordPress keeps a user's sessions in one user meta value it rewrites
-    // without a lock: two logins as one user at the same moment can each drop
-    // the other's session. So one test at a time, after setup's logins.
     {
-      name: "auth0",
-      testMatch: /specs\/auth0\/.*\.spec\.js/,
-      testIgnore: /specs\/auth0\/request-shapes\.spec\.js/,
-      dependencies: ["setup"],
-      workers: 1,
-      use: { ...devices["Desktop Chrome"], baseURL: auth0Sites.main.url },
-    },
-    // What the plugin sent the tenant during the auth0 project's tests.
-    {
-      name: "auth0-requests",
-      testMatch: /specs\/auth0\/request-shapes\.spec\.js/,
-      dependencies: ["auth0"],
+      name: "pagecache-off",
+      testMatch: /pagecache-off\.setup\.js/,
+      use: { baseURL: NETWORK_URL, storageState: authFile("admin") },
     },
   ],
 });

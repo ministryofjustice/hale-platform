@@ -7,21 +7,28 @@
 // neither looked up nor stored). The Redis write after a MISS happens once
 // the response has been sent, so a HIT can take a moment to appear.
 //
-// Every page here is new and has a unique slug. A seeded page can be purged at
-// any moment by another project's test: publishing anything on a site purges
-// its home page.
+// Every page here is new and has a unique slug, so no test sees a page
+// another test cached or purged: publishing anything on a site purges its home
+// page. The other projects have finished before these run, with the cache
+// inactive (pagecache-on.setup.js), so nothing else visits these pages.
 
 const { request } = require("@playwright/test");
 const { expect } = require("./test");
+const { NETWORK_URL } = require("./stack");
+
+const DASHBOARD = "wp-admin/network/settings.php?page=hale-components-network-dashboard";
 
 // A cleared cache is seen by each nginx worker within a second
 // (STATE_TTL in opt/lua/pagecache/init.lua), and the write after a MISS takes
 // milliseconds, so this is plenty for both.
 const SETTLE_MS = 10_000;
 
-// A client with no cookies: a visitor who is not signed in.
+// A client with no cookies: a visitor who is not signed in. The empty
+// storageState matters: Playwright gives request.newContext() the project's
+// and the spec's `use` options, so without it a spec's
+// test.use({ storageState }) would sign the visitor in too.
 async function visitor() {
-  return request.newContext({ ignoreHTTPSErrors: true });
+  return request.newContext({ ignoreHTTPSErrors: true, storageState: { cookies: [], origins: [] } });
 }
 
 // Fetch a URL and say what the cache did with it. Redirects are not followed,
@@ -35,19 +42,54 @@ async function fetchPage(api, url) {
   };
 }
 
-// Stop at once on a stack whose nginx runs without the page cache, as one
-// started before docker-compose.test.yml turned it on would, instead of
-// every test timing out waiting for a HIT. nginx answers the REST API with
-// BYPASS whenever the cache is enabled, and with no header when it is not.
+// Stop at once when nginx is not caching pages, instead of every test timing
+// out waiting for a HIT. nginx answers a visitor's request for a page with an
+// X-Page-Cache header only while the cache is enabled and its mode is active.
+// The REST API tells the two apart: it gets BYPASS whenever the cache is
+// enabled, whatever the mode.
 async function expectCacheEnabled(url) {
   const api = await visitor();
-  const { cache } = await fetchPage(api, `${url}wp-json/`);
+  const rest = await fetchPage(api, `${url}wp-json/`);
+  const home = await fetchPage(api, url);
   await api.dispose();
   expect(
-    cache,
+    rest.cache,
     "nginx sent no X-Page-Cache header, so PAGECACHE_ENABLED is not true on this stack. " +
       "A stack started before the page cache was turned on keeps running without it: make test-e2e-up",
   ).toBe("BYPASS");
+  expect(
+    home.cache,
+    "The page cache's mode is inactive. The pagecache-on project makes it active: run these specs " +
+      "with their dependencies, not with --no-deps",
+  ).toBeDefined();
+}
+
+// Each nginx worker keeps its own copy of the mode for up to STATE_TTL (1s,
+// opt/lua/pagecache/init.lua), so one worker can act on a new mode while
+// another still acts on the old one. Past this long after the change, none
+// can.
+const MODE_SETTLE_MS = 1_500;
+
+// Set the cache's runtime mode, active or inactive, from the network
+// dashboard, as a network administrator signed in on `page`, then wait until
+// every nginx worker acts on it. A visitor's request for a page gets an
+// X-Page-Cache header while the mode is active, and none while it is
+// inactive. A change of mode raises the cache version, so the cache starts
+// empty; setting the mode it already has leaves the cache as it is.
+async function setMode(page, mode) {
+  await page.goto(DASHBOARD);
+  // The firewall's mode form, on the same dashboard, has an "Update mode"
+  // button too.
+  const form = page.locator("form").filter({ has: page.locator('select[name="pagecache_mode"]') });
+  await form.locator('select[name="pagecache_mode"]').selectOption(mode);
+  await form.getByRole("button", { name: "Update mode" }).click();
+  await expect(page.getByText(`Page cache mode updated to ${mode}.`)).toBeVisible();
+  await page.waitForTimeout(MODE_SETTLE_MS);
+
+  const api = await visitor();
+  const { cache } = await fetchPage(api, NETWORK_URL);
+  await api.dispose();
+  expect(cache !== undefined, `nginx sees the page cache as ${mode}`).toBe(mode === "active");
 }
 
 // Visit a URL until the cache serves it.
@@ -148,4 +190,4 @@ class Pages {
   }
 }
 
-module.exports = { visitor, fetchPage, warm, expectRendered, expectCacheEnabled, Pages };
+module.exports = { visitor, fetchPage, setMode, warm, expectRendered, expectCacheEnabled, Pages };
