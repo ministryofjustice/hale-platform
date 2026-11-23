@@ -72,18 +72,28 @@ const suiteProjects = [
 // tests. So when the command line picks only the page cache's specs, by file
 // (make test-e2e-run FILE=specs/pagecache/) or by project
 // (make test-e2e ARGS=--project=pagecache), they wait for setup alone.
-// Anything else, such as a title filter or UI mode, runs the other projects
-// first.
-const argv = process.argv.slice(2);
-const cliSpecs = argv.filter((arg) => /(^|\/)specs\//.test(arg));
-const cliProjects = argv.flatMap((arg, i) => {
-  if (arg.startsWith("--project=")) return [arg.slice("--project=".length)];
-  if (arg === "--project" && argv[i + 1]) return [argv[i + 1]];
-  return [];
-});
+// Anything else, such as another file filter alongside, a title filter or UI
+// mode, runs the other projects first.
+//
+// Every argument that is not an option counts as a file filter, as Playwright
+// matches each one against every spec's path (homepage.spec.js picks
+// specs/all-sites/homepage.spec.js). An option's value given as a separate
+// argument (-g foo, -j 4) counts as one too, which only makes this run the
+// other projects first when it need not.
+const cliFilters = [];
+const cliProjects = [];
+const args = process.argv.slice(2);
+for (let i = 0; i < args.length; i++) {
+  const arg = args[i];
+  if (arg.startsWith("--project=")) cliProjects.push(arg.slice("--project=".length));
+  else if (arg === "--project") cliProjects.push(args[++i] ?? "");
+  else if (!arg.startsWith("-")) cliFilters.push(arg);
+}
+// The command itself: `playwright test`.
+if (cliFilters[0] === "test") cliFilters.shift();
 const pagecacheOnly =
-  cliSpecs.length + cliProjects.length > 0 &&
-  cliSpecs.every((arg) => /(^|\/)specs\/pagecache(\/|$)/.test(arg)) &&
+  cliFilters.length + cliProjects.length > 0 &&
+  cliFilters.every((arg) => /(^|\/)specs\/pagecache(\/|$)/.test(arg)) &&
   cliProjects.every((name) => name.startsWith("pagecache"));
 
 // End-to-end tests against the disposable test multisite in
