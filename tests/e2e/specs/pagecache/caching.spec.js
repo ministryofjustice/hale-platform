@@ -65,6 +65,25 @@ test.describe("signed in", () => {
     expect(response.headers()["x-page-cache"]).toBe("BYPASS");
     await expect(page.locator("#wpadminbar")).toBeVisible();
   });
+
+  // The other way round: a page a signed-in user renders first must not be
+  // stored, or visitors would get their copy, admin bar and all.
+  test("a page a signed-in user renders is not cached for visitors", async ({ page }) => {
+    const created = await pages.create(sites[0]);
+
+    const response = await page.goto(created.link);
+    expect(response.headers()["x-page-cache"]).toBe("BYPASS");
+    await expect(page.locator("#wpadminbar")).toBeVisible();
+
+    const first = await fetchPage(api, created.link);
+    expect(first.status).toBe(200);
+    expect(first.cache).toBe("MISS");
+    expect(first.body).not.toContain("wpadminbar");
+
+    await warm(api, created.link);
+    const hit = await fetchPage(api, created.link);
+    expect(hit.body).not.toContain("wpadminbar");
+  });
 });
 
 test("a page with a query string is not served from the cache", async () => {
