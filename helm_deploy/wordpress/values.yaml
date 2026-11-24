@@ -77,7 +77,10 @@ wp:
 ## It sits idle with no listening service, so requests are kept minimal.
 ##
 ## Sized identically in every environment - it does no work until someone execs
-## into it, so there is nothing for an environment to scale.
+## into it, so there is nothing for an environment to scale, and requests are low.
+## Commands like import, export or search-replace can use a full CPU core, so
+## limits are set appropriately. HPA may scale up when wptools uses CPU, but
+## that is a harmless and accepted side-effect.
 ##
 ## Named wptools, one word, everywhere: this key, the container, the compose
 ## service, the dockerfile and the ECR tag component. Do not hyphenate this one
@@ -90,7 +93,7 @@ wptools:
 
   resources:
     limits:
-      cpu: "500m"
+      cpu: "1000m"
       memory: "256Mi"
     requests:
       cpu: "10m"
