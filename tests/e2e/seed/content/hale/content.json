@@ -135,6 +135,13 @@
       "file": "table-scroll.html"
     },
     {
+      "id": 112,
+      "type": "page",
+      "slug": "coming-soon",
+      "title": "Coming soon",
+      "file": "../shared/coming-soon.html"
+    },
+    {
       "id": 201,
       "type": "post",
       "slug": "first-news-story",
