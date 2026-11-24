@@ -50,6 +50,14 @@ row(
   "Child page: images, separators, cards",
 );
 row(`${NETWORK_URL}table-scroll/`, "Hale table horizontal scrolling test");
+row(
+  `${NETWORK_URL}inquiry-documents/`,
+  "Listing page: keyword search and filters (specs/hale/listing-search.spec.js)",
+);
+row(
+  `${NETWORK_URL}?s=kittiwake`,
+  "Search results, two pages (specs/all-sites/search.spec.js)",
+);
 
 const govwind = sites.find((s) => s.key === "govwind");
 if (govwind) {
