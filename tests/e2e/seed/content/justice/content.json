@@ -16,6 +16,7 @@
       "id": 113, "type": "page", "slug": "civil", "title": "Civil Procedure Rules", "file": "civil.html", "parent": "procedure-rules",
       "meta": { "_short_title": "Civil", "_panel_archived": "1", "__panel_archived": "field_696a70dd50c97" }
     },
+    { "id": 114, "type": "page", "slug": "coming-soon", "title": "Coming soon", "file": "../shared/coming-soon.html" },
     { "id": 102, "type": "page", "slug": "about", "title": "About this site", "file": "../shared/about.html" }
   ]
 }

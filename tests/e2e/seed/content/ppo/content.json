@@ -7,6 +7,7 @@
     { "id": 102, "type": "page", "slug": "about", "title": "About this site", "file": "../shared/about.html" },
     { "id": 104, "type": "page", "slug": "blocks", "title": "Custom blocks", "file": "../shared/blocks.html" },
     { "id": 105, "type": "page", "slug": "news", "title": "News", "file": "../shared/news.html" },
+    { "id": 106, "type": "page", "slug": "coming-soon", "title": "Coming soon", "file": "../shared/coming-soon.html" },
     { "id": 201, "type": "post", "slug": "first-news-story", "title": "First news story", "file": "../shared/news-story.html", "featuredImage": true }
   ]
 }
