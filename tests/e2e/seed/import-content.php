@@ -269,6 +269,18 @@ foreach ($manifest['items'] as $item) {
     if ($id !== $item['id']) {
         WP_CLI::error("{$item['slug']} was given ID {$id}, not {$item['id']}. IDs must be unused.");
     }
+    // hale-components' RoleHooks publishes a new post of any other status
+    // when the user is not an administrator (the CLI user is not) and the
+    // post's ID matches page_on_front. A new post's ID is 0 until it is saved,
+    // and page_on_front is 0 until the front page is set below, so every new
+    // post matches. An update carries the post's own ID, so set it again.
+    $status = $item['status'] ?? 'publish';
+    if (get_post_status($id) !== $status) {
+        wp_update_post(['ID' => $id, 'post_status' => $status]);
+    }
+    if (get_post_status($id) !== $status) {
+        WP_CLI::error("{$item['slug']} has status " . get_post_status($id) . ", not {$status}");
+    }
     if (isset($featured[$item['slug']])) {
         set_post_thumbnail($id, $featured[$item['slug']]);
     }
