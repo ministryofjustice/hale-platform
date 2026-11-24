@@ -22,7 +22,7 @@ code, never state.
 | Address | `https://hale.docker` (443) | `https://localhost:8443` (loopback only) |
 | Database | `database` volume | in memory (`tmpfs`), gone on teardown |
 | Code | bind-mounted `./wordpress`, `./dev` | baked into `hale-test/*` images |
-| Firewall, page cache, Redis | on/off by flag | off, no Redis |
+| Firewall, page cache, Redis | on/off by flag | firewall off, page cache enabled but inactive outside `specs/pagecache/`, Redis in memory |
 
 ## Requirements
 
@@ -132,7 +132,9 @@ which run in the `playwright` service of `docker-compose.test.yml`.
 6. **Log in once.** The `setup` project (`auth.setup.js`) logs in as each
    role and saves the session to `tests/e2e/.auth/`.
 7. **Tests.** One Playwright project per site, each with its own `baseURL`,
-   plus a `network` project for the network admin.
+   plus a `network` project for the network admin. Then the page cache
+   projects: `pagecache-on` makes the cache active, `pagecache` runs
+   `specs/pagecache/`, and `pagecache-off` makes it inactive again.
 8. **Teardown.** `stack.sh` runs `docker compose down -v --remove-orphans`:
    containers, networks and volumes go.
 
@@ -301,6 +303,7 @@ tests/
     specs/all-sites/       run once for every site
     specs/<site>/          run for that site only
     specs/network/         network admin, run against the main site
+    specs/pagecache/       the page cache, across every site, one test at a time
     specs/auth0/           login through the mock Auth0 tenant
     seed/                  seed script, sites and content fixtures
     stack/                 image build, stack.sh, which runs the stack, and the mock Auth0 tenant
@@ -332,6 +335,49 @@ tests/
 - Start logged in with `test.use({ storageState: authFile("editor") })`.
 - Tests share one stack, so a test that creates content gives it a unique
   title rather than assuming it is the only one.
+
+## Page cache tests
+
+The stack runs the page cache as deployed: `PAGECACHE_ENABLED=true` on nginx
+and WordPress, and a `redis` service with nothing kept on disk, so a new stack
+starts with an empty cache. The seed sets the cache's runtime mode to
+inactive, so every other spec sees pages rendered by WordPress, never a cached
+copy. The `pagecache-on` project waits for every other project, makes the mode
+active from the network dashboard, and the `pagecache` project runs these
+specs. `pagecache-off`, its teardown, makes the mode inactive again whether
+they passed or failed. As with any Playwright dependency, a failure in
+another project skips the page cache specs.
+
+`specs/pagecache/` checks the cache from outside, as a visitor would: nginx
+says what it did in the `X-Page-Cache` header, `MISS` (rendered by WordPress
+and stored), `HIT` (served from Redis) or `BYPASS` (not cacheable). The
+playwright container cannot reach Redis.
+
+| Spec | What it checks |
+| --- | --- |
+| `caching.spec.js` | A published page on each site is rendered once, then served from the cache with the same HTML, and works in a browser. Signed-in users, query strings, 404s and the REST API bypass it. |
+| `purge.spec.js` | Editing a page clears it and its parent pages. |
+| `clear-site.spec.js` | Settings, Cache clears one site's pages and leaves the other sites' cached, on the main site and on a subsite. Cancelling the confirmation clears nothing, and an editor cannot open the page. |
+| `clear-network.spec.js` | The network dashboard's "Clear page cache on all sites" clears every site's pages and raises the cache version by one. |
+
+Each test creates its own pages with a unique slug, through the REST API, and
+deletes them afterwards (`support/pagecache.js`). Seeded pages are no use
+here: publishing anything on a site purges its home page. The `pagecache`
+project runs one test at a time, as the clear buttons empty pages other cache
+tests have just cached. The specs are left out of BrowserStack runs for the
+same reason, and BrowserStack runs the rest with the cache inactive.
+
+When the command line picks only the cache specs, by file or by project,
+`pagecache-on` waits for `setup` alone (`playwright.config.js`), so either of
+these runs just the cache specs. A title filter (`-g`) or UI mode runs the
+other projects first.
+
+    make test-e2e-run FILE=specs/pagecache/
+    make test-e2e ARGS=--project=pagecache
+
+The `setup` project makes the mode inactive at the start of every run, so a
+run stopped before `pagecache-off` does not leave a reused stack caching pages
+for the next one.
 
 ## Auth0 login tests
 

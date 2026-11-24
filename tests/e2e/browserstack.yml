@@ -2,7 +2,9 @@
 # browserstack-node-sdk in the browserstack service of docker-compose.test.yml.
 # Credentials come from BROWSERSTACK_USERNAME and BROWSERSTACK_ACCESS_KEY.
 # Mobile specs are the *.mobile.spec.js files; every other spec runs on desktop,
-# except specs/auth0/: a BrowserStack browser cannot reach the mock Auth0 tenant.
+# except specs/auth0/: a BrowserStack browser cannot reach the mock Auth0 tenant;
+# and specs/pagecache/, which test nginx and Redis rather than the browser and
+# must run one at a time.
 framework: playwright
 
 platforms:
@@ -12,7 +14,7 @@ platforms:
     browserVersion: latest
     playwrightConfigOptions:
       name: desktop
-      testIgnore: "**/{*.mobile.spec.js,specs/auth0/**}"
+      testIgnore: "**/{*.mobile.spec.js,specs/auth0/**,specs/pagecache/**}"
 
   - browserName: chrome
     osVersion: 15.0
