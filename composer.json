@@ -43,10 +43,6 @@
     },
     {
       "type": "vcs",
-      "url": "https://github.com/ministryofjustice/govwind.git"
-    },
-    {
-      "type": "vcs",
       "url": "https://github.com/ministryofjustice/hale-components.git"
     },
     {
@@ -67,6 +63,14 @@
     },
     {
       "type": "vcs",
+      "url": "https://github.com/ministryofjustice/justice.git"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/ministryofjustice/website-builder-block-restrictions.git"
+    },
+    {
+      "type": "vcs",
       "url": "https://github.com/ministryofjustice/wp-gov-uk-notify.git"
     },
     {
@@ -80,12 +84,12 @@
     {
       "type": "package",
       "package": {
-        "name": "relevanssi/relevanssi-premium",
-        "version": "2.29.0",
-        "type": "wordpress-plugin",
+        "name": "ministryofjustice/govwind",
+        "version": "1.3.1",
+        "type": "wordpress-theme",
         "dist": {
           "type": "zip",
-          "url": "https://relevanssi.com/update/get_version.php?version=2.29.0"
+          "url": "https://github.com/ministryofjustice/govwind/releases/download/1.3.1/govwind-1.3.1.zip"
         }
       }
     },
@@ -96,8 +100,23 @@
         "version": "dev-preview-extra-icons-1ff6c09",
         "type": "wordpress-plugin",
         "dist": {
+          "url": "https://github.com/ministryofjustice/website-builder-blocks/releases/download/preview-extra-icons-1ff6c09/website-builder-blocks-preview-extra-icons-1ff6c09.zip",
+          "type": "zip"
+        },
+        "require": {
+          "composer/installers": "^2.0"
+        }
+      }
+    },
+    {
+      "type": "package",
+      "package": {
+        "name": "relevanssi/relevanssi-premium",
+        "version": "2.29.0",
+        "type": "wordpress-plugin",
+        "dist": {
           "type": "zip",
-          "url": "https://github.com/ministryofjustice/website-builder-blocks/releases/download/preview-extra-icons-1ff6c09/website-builder-blocks-preview-extra-icons-1ff6c09.zip"
+          "url": "https://relevanssi.com/update/get_version.php?version=2.29.0"
         }
       }
     }
@@ -106,24 +125,28 @@
     "auth0/auth0-php": "9.4.0",
     "auth0/wordpress": "6.0.0-beta.1",
     "composer/installers": "^v2.0",
-    "ministryofjustice/cookie-compliance": "dev-main",
-    "ministryofjustice/govwind": "dev-main",
-    "ministryofjustice/hale": "dev-main",
-    "ministryofjustice/hale-components": "dev-main",
-    "ministryofjustice/hale-dash": "dev-main",
-    "ministryofjustice/hale-showcase": "1.1.10",
+    "ministryofjustice/cookie-compliance": "1.3.7",
+    "ministryofjustice/govwind": "1.3.1",
+    "ministryofjustice/justice": "11.1.6",
+    "ministryofjustice/hale": "4.36.3",
+    "ministryofjustice/hale-components": "1.22.5",
+    "ministryofjustice/hale-dash": "2.5.2",
+    "ministryofjustice/hale-showcase": "1.1.11",
     "ministryofjustice/ppo": "dev-main",
+    "ministryofjustice/website-builder-block-restrictions": "1.0.0",
     "ministryofjustice/website-builder-blocks": "dev-preview-extra-icons-1ff6c09",
     "ministryofjustice/wp-gov-uk-notify": "1.0.4",
-    "ministryofjustice/wp-moj-blocks": "dev-main",
-    "ministryofjustice/wp-s3-uploads": "2.0.0",
+    "ministryofjustice/wp-moj-blocks": "4.3.1",
+    "ministryofjustice/wp-s3-uploads": "2.0.1",
     "oscarotero/env": "^1.0",
     "php": ">=8.2",
     "relevanssi/relevanssi-premium": "2.29.0",
     "sentry/sdk": "^3.3",
     "vlucas/phpdotenv": "^3.0",
+    "tigitz/php-spellchecker": "^0.8.0",
     "wpackagist-plugin/breadcrumb-block": "1.1.0",
     "wpackagist-plugin/classic-editor": "^1.0",
+    "wpackagist-plugin/display-a-meta-field-as-block": "^1.6.1",
     "wpackagist-plugin/ewww-image-optimizer": "^8.0",
     "wpackagist-plugin/microsoft-clarity": "^0.10.8",
     "wpackagist-plugin/option-tree": "^2.0",
@@ -136,6 +159,10 @@
     "wpackagist-plugin/wp-force-login": "^5.0",
     "wpackagist-plugin/wp-sentry-integration": "^8.0",
     "wpackagist-plugin/wps-hide-login": "^1.0",
+    "wpackagist-plugin/cms-tree-page-view": "^1.6.8",
+    "wpackagist-plugin/revisionary": "^3.5.16",
+    "wpackagist-plugin/simple-definition-list-blocks": "6.0.1",
+    "wpackagist-plugin/wp-document-revisions": "^3.6.1",
     "wpengine/advanced-custom-fields-pro": "^6.0"
   },
   "require-dev": {

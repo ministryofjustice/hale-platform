@@ -61,20 +61,48 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
-{{- define "wp.replicaCount" -}}
-{{- if eq .Values.configmap.envtype "staging" -}}
-  {{ .Values.replicaCount.staging }}
-{{- else if eq .Values.configmap.envtype "dev" -}}
-  {{ .Values.replicaCount.dev }}
-{{- else if eq .Values.configmap.envtype "demo" -}}
-  {{ .Values.replicaCount.demo }}
-{{- else -}}
-  {{ .Values.replicaCount.prod }}
-{{- end -}}
-{{- end }}
-
 {{- define "replicaSettings" -}}
-  minReplicas: {{ index .Values.autoscaling.replicaCount .Values.configmap.envtype "min" | default 1 }}
-  maxReplicas: {{ index .Values.autoscaling.replicaCount .Values.configmap.envtype "max" | default 1 }}
+  minReplicas: {{ .Values.autoscaling.minReplicas | default 1 }}
+  maxReplicas: {{ .Values.autoscaling.maxReplicas | default 1 }}
 {{- end }}
 
+{{/*
+Fail the render unless an environment overlay supplied configmap.envtype.
+
+Without this a missing or misspelled --values flag would render namespaces like
+"hale-platform-" and deploy them, because empty strings are valid YAML. Renders
+nothing on success - include it from a template that is always evaluated.
+*/}}
+{{- define "wordpress.validateEnv" -}}
+{{- if not (has .Values.configmap.envtype (list "dev" "demo" "staging" "prod")) }}
+{{- fail (printf "configmap.envtype is %q - it must come from a values-<env>.yaml overlay (dev|demo|staging|prod). Did you forget --values helm_deploy/wordpress/values-<env>.yaml?" .Values.configmap.envtype) }}
+{{- end }}
+{{- end }}
+
+{{/*
+A holding page from files/, rendered for ingress.yaml to put inside one
+single-quoted nginx string:
+- HTML comments are removed.
+- Each run of whitespace containing a line break becomes one space, so the
+  page sits on one line under the server-snippet key and words either side of
+  a line break stay apart. Tabs become spaces.
+- A backslash is doubled, as nginx reads one as an escape.
+- A single quote, which would end the string, becomes &#39;, and a $, which
+  nginx would read as a variable, becomes &dollar;. Neither entity works inside
+  <script> or <style>, so the pages must not use either character there.
+nginx rejects a quoted string over 4096 bytes, so a page that renders to 4000
+or more fails the deploy.
+*/}}
+{{- define "wordpress.holdingPageHtml" -}}
+{{- $html := .root.Files.Get (printf "files/%s" .path) -}}
+{{- if not $html }}
+{{- fail (printf "holding page files/%s does not exist or is empty" .path) }}
+{{- end }}
+{{- $html = regexReplaceAll "(?s)<!--.*?-->" $html "" }}
+{{- $html = regexReplaceAll "\\s*\\n\\s*" $html " " | trim }}
+{{- $html = $html | replace "\t" " " | replace "\\" "\\\\" | replace "'" "&#39;" | replace "$" "&dollar;" }}
+{{- if ge (len $html) 4000 }}
+{{- fail (printf "holding page files/%s renders to %d bytes; nginx rejects a quoted string over 4096, so keep it under 4000" .path (len $html)) }}
+{{- end }}
+{{- $html -}}
+{{- end }}

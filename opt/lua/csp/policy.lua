@@ -1,0 +1,116 @@
+-- ============================================================================
+-- CONTENT SECURITY POLICY — BUILDER
+-- ============================================================================
+-- A policy is an ordered list of directives, each with a list of sources.
+-- Site modules (csp/justice.lua, csp/defaults.lua) declare a base policy
+-- once, then per request clone it, layer on whatever applies (the CDN, admin
+-- pages, ...) and render the header value.
+--
+--   local BASE = policy.new({
+--       { "style-src",  "'self'", "'unsafe-inline'" },
+--       { "img-src",    "'self'" },
+--   })
+--   local p = BASE:clone()
+--   p:add({ "style-src", "img-src" }, cdn_origin)   -- nil sources are skipped
+--   p:add("img-src", "data:")
+--   p:render()   --> "style-src 'self' 'unsafe-inline' CDN; img-src 'self' CDN data:"
+--
+-- add() ignores nil (so optional sources need no `if`) and duplicates (so
+-- overlays are safe to apply more than once). Adding to a directive the
+-- policy does not have yet appends it — but only if at least one source is
+-- non-nil: a directive with no sources renders as e.g. "font-src ", which
+-- CSP treats as 'none' and would block everything, so it is never created.
+-- ============================================================================
+
+local unpack = table.unpack or unpack  -- Lua 5.2+ / LuaJIT
+
+local M = {}
+
+local Policy = {}
+Policy.__index = Policy
+
+-- directives: ordered list of { name, source, source, ... }; every
+-- directive needs at least one source (see the note on empty directives).
+function M.new(directives)
+    local p = setmetatable({ order = {}, sources = {} }, Policy)
+    for _, entry in ipairs(directives) do
+        local name = entry[1]
+        assert(#entry >= 2, "csp policy: directive '" .. tostring(name) .. "' has no sources")
+        table.insert(p.order, name)
+        p.sources[name] = {}
+        for i = 2, #entry do
+            table.insert(p.sources[name], entry[i])
+        end
+    end
+    return p
+end
+
+function Policy:clone()
+    local copy = M.new({})
+    for _, name in ipairs(self.order) do
+        table.insert(copy.order, name)
+        copy.sources[name] = { unpack(self.sources[name]) }
+    end
+    return copy
+end
+
+local function contains(list, value)
+    for _, v in ipairs(list) do
+        if v == value then return true end
+    end
+    return false
+end
+
+-- Add one or more sources to one directive (a name) or several (a list of
+-- names). nil sources are skipped. Returns self so calls can be chained.
+function Policy:add(names, ...)
+    local sources = {}
+    for i = 1, select("#", ...) do
+        local source = select(i, ...)
+        if source ~= nil then table.insert(sources, source) end
+    end
+    if #sources == 0 then return self end  -- nothing to add: never create an empty directive
+
+    if type(names) == "string" then names = { names } end
+    for _, name in ipairs(names) do
+        if not self.sources[name] then
+            table.insert(self.order, name)
+            self.sources[name] = {}
+        end
+        for _, source in ipairs(sources) do
+            if not contains(self.sources[name], source) then
+                table.insert(self.sources[name], source)
+            end
+        end
+    end
+    return self
+end
+
+-- The sources of one directive (a copy), or nil if the policy lacks it.
+function Policy:get(name)
+    local list = self.sources[name]
+    if not list then return nil end
+    return { unpack(list) }
+end
+
+-- Header value: "name src src; name src".
+function Policy:render()
+    local clauses = {}
+    for _, name in ipairs(self.order) do
+        table.insert(clauses, name .. " " .. table.concat(self.sources[name], " "))
+    end
+    return table.concat(clauses, "; ")
+end
+
+-- Is this site-relative path inside WordPress admin?
+function M.is_admin(path)
+    return (path or ""):sub(1, #"/wp-admin/") == "/wp-admin/"
+end
+
+-- Does this Cookie header carry a WordPress login cookie? Case-insensitive
+-- substring match, as the legacy nginx map did (~*wordpress_logged_in).
+function M.is_logged_in(cookie)
+    return (cookie or ""):lower():find("wordpress_logged_in", 1, true) ~= nil
+end
+
+return M

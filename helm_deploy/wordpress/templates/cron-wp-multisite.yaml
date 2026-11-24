@@ -7,11 +7,12 @@ metadata:
 spec:
   schedule: "* * * * *"
   concurrencyPolicy: Forbid
-  startingDeadlineSeconds: 120
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
+      # Jobs usually complete in ~20s; fail any job still running after 120s.
+      activeDeadlineSeconds: 120
       ttlSecondsAfterFinished: 100
       template:
         spec:
@@ -21,7 +22,7 @@ spec:
             imagePullPolicy: IfNotPresent
             command: ["/bin/sh", "-c"]
             args:
-            - "curl https://{{ .Values.domain }}/wp-cron-multisite.php"
+            - "curl -H 'Host: {{ .Values.domain }}' http://wordpress:8080/wp-cron-multisite.php"
             securityContext:
               allowPrivilegeEscalation: false
               capabilities:

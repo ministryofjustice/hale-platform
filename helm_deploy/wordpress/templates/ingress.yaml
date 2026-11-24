@@ -34,11 +34,112 @@ metadata:
         phase:1,\
         allow,\
         nolog,\
+        setvar:tx.wb_config=1,\
         tag:github_team=hale-platform,\
         tag:environment=hale-platform-{{ .Values.configmap.envtype }}-auth,\
         ctl:ruleEngine=DetectionOnly"
+
+      {{- /*
+      Block multipart requests unless rule 1001 matched the WB_CONFIG cookie.
+      &TX counts the variable, so this works when the cookie is missing.
+      Must be declared later than rule 1001.
+      */}}
+      SecRule &TX:wb_config "@eq 0" \
+        "id:1002,\
+        phase:1,\
+        deny,\
+        status:403,\
+        log,\
+        t:none,\
+        msg:multipart-not-allowed,\
+        tag:github_team=hale-platform,\
+        tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }},\
+        chain"
+      SecRule REQUEST_HEADERS:Content-Type "@contains multipart" "t:none,t:lowercase"
+
       {{- /* Exclude posthog cookie */}}
       SecRuleUpdateTargetById 942290 "!REQUEST_COOKIES:/^ph_phc_.*_posthog$/"
+
+      {{- /* --- www.justice.gov.uk only rules --- */}}
+
+      {{- /* Block POST requests on www.justice.gov.uk */}}
+      SecRule REQUEST_HEADERS:Host "@rx (?i)^www\.justice\.gov\.uk(?::\d+)?$" \
+        "id:300140,\
+        phase:1,\
+        log,\
+        deny,\
+        t:none,\
+        tag:github_team=hale-platform,\
+        tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }},\
+        chain"
+      SecRule REQUEST_METHOD "@streq POST" "t:none"
+
+      {{- /*
+      Allow only specific parameters on search requests,
+      this applies to all users, regardless of logged in state.
+      */}}
+      SecRule REQUEST_HEADERS:Host "@rx (?i)^www\.justice\.gov\.uk(?::\d+)?$" \
+        "id:100100,\
+        phase:1,\
+        deny,\
+        log,\
+        t:none,\
+        tag:github_team=hale-platform,\
+        tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }},\
+        chain"
+      SecRule REQUEST_URI "@rx ^/search(?:$|/|\?)" "chain"
+      SecRule ARGS_GET_NAMES "!@rx ^(?:s|section|organisation|audience|type|parent|post_types|redirected|orderby)(?:\[[^\]]*\])?$" ""
+
+      {{- /*
+      Target spam search URIs, these are URIs that:
+      - the request starts with /search/
+      - the path contains repeated pagination segments, e.g. /page/3/page/2/page/5/...
+        A legitimate paginated search only ever has a single /page/N segment.
+      - match the decoded path (REQUEST_FILENAME excludes the query string) so that
+        URL-encoded slashes (%2Fpage%2F3...) are also caught.
+      Return a 403 status code for these requests to explicitly block spammy searches.
+      This rejects spam search traffic at the WAF level instead of shadow-banning it.
+      */}}
+      SecRule REQUEST_HEADERS:Host "@rx (?i)^www\.justice\.gov\.uk(?::\d+)?$" \
+        "id:10300,\
+        phase:1,\
+        deny,\
+        nolog,\
+        status:403,\
+        t:none,\
+        tag:github_team=hale-platform,\
+        tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }},\
+        chain"
+      SecRule REQUEST_FILENAME "@rx ^/search/.*/page/\d+/page/\d+" "t:none,t:urlDecodeUni"
+
+      {{- /*
+      301 redirect requests (NOT under /search) that include ANY query string
+      to the same path without the query.
+      - Declare the 301 redirect
+      - Only apply to www.justice.gov.uk
+      - Exclude /search* from this behavior
+      - Only do this when there IS a query string (i.e., at least one GET param)
+      - Require that at least one param name is NOT in the allowlist
+        (requests with only s, parent, ver, auth0, code, state, error and
+        error_description params pass through. code, state, error and
+        error_description are Auth0 returning to the login page; auth0 was the
+        callback parameter of the 4.x Auth0 plugin)
+      */}}
+      SecRule REQUEST_URI "@rx ^/([^?]*)" \
+        "id:300130,\
+        phase:1,\
+        log,\
+        redirect:/%{TX.1},\
+        status:301,\
+        capture,\
+        t:none,\
+        tag:github_team=hale-platform,\
+        tag:environment=hale-platform-wb-{{ .Values.configmap.envtype }},\
+        chain"
+      SecRule REQUEST_HEADERS:Host "@rx (?i)^www\.justice\.gov\.uk(?::\d+)?$" "t:none,chain"
+      SecRule REQUEST_URI "!@rx ^/search(?:$|/|\?)" "t:none,chain"
+      SecRule &ARGS_GET_NAMES "@gt 0" "t:none,chain"
+      SecRule ARGS_GET_NAMES "!@rx ^(?:s|parent|ver|auth0|code|state|error|error_description)(?:\[[^\]]*\])?$" "t:none"
     nginx.ingress.kubernetes.io/server-snippet: |
       location = /.well-known/security.txt {
         auth_basic off;
@@ -50,6 +151,9 @@ metadata:
         }
       }
       if ($host = 'victimscode.org.uk') {
+        return 301 https://victimandwitnessinformation.org.uk/your-rights/as-a-victim;
+      }
+      if ($host = 'www.victimscode.org.uk') {
         return 301 https://victimandwitnessinformation.org.uk/your-rights/as-a-victim;
       }
       if ($host = 'cym.victimscode.org.uk') {
@@ -74,10 +178,16 @@ metadata:
         return 301 https://prisonandprobationjobs.gov.uk/roles-at-hmpps/jobs-for-veterans;
       }
       if ($host = 'iapondeathsincustody.org') {
-        return 301 https://iapdeathsincustody.independent.gov.uk;
+        return 301 https://deathsindetention.independent-panel.uk;
       }
       if ($host = 'www.iapondeathsincustody.org') {
-        return 301 https://iapdeathsincustody.independent.gov.uk;
+        return 301 https://deathsindetention.independent-panel.uk;
+      }
+      if ($host = 'iapdeathsincustody.independent.gov.uk') {
+        return 301 https://deathsindetention.independent-panel.uk;
+      }
+      if ($host = 'www.iapdeathsincustody.independent.gov.uk') {
+        return 301 https://deathsindetention.independent-panel.uk;
       }
       if ($host = 'brookhouseinquiry.org.uk') {
         return 301 https://webarchive.nationalarchives.gov.uk/ukgwa/20241002135959/https://brookhouseinquiry.org.uk/;
@@ -85,20 +195,160 @@ metadata:
       if ($host = 'www.brookhouseinquiry.org.uk') {
         return 301 https://webarchive.nationalarchives.gov.uk/ukgwa/20241002135959/https://brookhouseinquiry.org.uk/;
       }
+      {{- /*
+      Holding pages (ingress.holdingPage in values.yaml). nginx runs the
+      server-level if, return and rewrite directives in the order they appear,
+      before it chooses a location. This block is last in the snippet, so the
+      host redirects above it, and the holding page redirects at its start, are
+      answered first. A host behind a holding page then has $hale_holding set
+      to the internal location serving its page, and never reaches WordPress.
+      /bold is a location, chosen after that rewrite, so it is behind the
+      holding page too.
+
+      With holdingPage.enabled every host is behind a holding page: a site's
+      own page for the hosts listed under it, the default page for every other
+      host. Without it, only the hosts of a site with enabled: true are.
+
+      /.well-known/ is left alone for security.txt and cert-manager ACME
+      challenges. Each page is rendered onto one line inside a single-quoted
+      nginx string by wordpress.holdingPageHtml.
+
+      Every holding page is a 503, and every holding redirect a 302, with an
+      x-wb-holding header, which the deploy smoke test in rw-build-image.yaml
+      looks for to tell a held site from a broken one.
+      */}}
+      {{- $holding := .Values.ingress.holdingPage }}
+      {{- $served := list .Values.domain }}
+      {{- range .Values.ingress.hosts }}
+      {{- $served = append $served .name }}
+      {{- end }}
+
+      {{- /*
+      Every page, site and redirect is checked on every deploy, whether or not
+      it is on, so a bad one fails the deploy now rather than when it is
+      switched on. A site with no page of its own uses the default page, which
+      is served from /__holding-page. $locations maps each internal location
+      in use to the file it serves.
+      */}}
+      {{- $_ := include "wordpress.holdingPageHtml" (dict "root" $ "path" (required "ingress.holdingPage.page is required" $holding.page)) }}
+      {{- $sitesOn := dict }}
+      {{- $siteOf := dict }}
+      {{- $locations := dict }}
+      {{- if $holding.enabled }}
+      {{- $_ := set $locations "/__holding-page" $holding.page }}
+      {{- end }}
+      {{- range $name, $site := $holding.sites }}
+      {{- if $site.page }}
+      {{- $_ := include "wordpress.holdingPageHtml" (dict "root" $ "path" $site.page) }}
+      {{- end }}
+      {{- if not (regexMatch "^[a-z0-9-]+$" $name) }}
+      {{- fail (printf "ingress.holdingPage.sites.%s: the name may only use a-z, 0-9 and -" $name) }}
+      {{- end }}
+      {{- range $site.hosts }}
+      {{- if not (has . $served) }}
+      {{- fail (printf "ingress.holdingPage.sites.%s: %s is not domain or a name under ingress.hosts, so this ingress never receives requests for it" $name .) }}
+      {{- end }}
+      {{- if hasKey $siteOf . }}
+      {{- fail (printf "ingress.holdingPage.sites.%s: %s is already listed under sites.%s" $name . (get $siteOf .)) }}
+      {{- end }}
+      {{- $_ := set $siteOf . $name }}
+      {{- end }}
+      {{- if and $site.enabled (not $site.hosts) }}
+      {{- fail (printf "ingress.holdingPage.sites.%s is enabled but lists no hosts; add them in values-<env>.yaml" $name) }}
+      {{- end }}
+      {{- if and (or $holding.enabled $site.enabled) $site.hosts }}
+      {{- $location := "/__holding-page" }}
+      {{- if $site.page }}
+      {{- $location = printf "/__holding-page-%s" $name }}
+      {{- end }}
+      {{- $_ := set $sitesOn $name $location }}
+      {{- $_ := set $locations $location ($site.page | default $holding.page) }}
+      {{- end }}
+      {{- end }}
+
+      {{- /*
+      Holding page redirects (ingress.holdingPage.redirects in values.yaml),
+      only while every host is behind the holding page: a 302 for each listed
+      host, to one fixed URL whatever the path. nginx's if takes one
+      condition, so each host sets $hale_holding_redirect, a /.well-known/
+      request clears it again, and the redirect fires only if it is still set.
+      The 302 comes from an internal location so that, like a holding page, it
+      can carry the x-wb-holding header.
+
+      The host must be one this ingress serves, or the redirect would never be
+      reached, and the target must be an https:// URL with no quote or
+      backslash to end its quoted string, no $ for nginx to read as a
+      variable, and no space, ; or brace.
+      */}}
+      {{- range $i, $redirect := $holding.redirects.hosts }}
+      {{- $from := required (printf "ingress.holdingPage.redirects.hosts[%d].host is required" $i) $redirect.host }}
+      {{- $to := required (printf "ingress.holdingPage.redirects.hosts[%d].to is required" $i) $redirect.to }}
+      {{- if not (has $from $served) }}
+      {{- fail (printf "ingress.holdingPage.redirects.hosts[%d]: %s is not domain or a name under ingress.hosts, so this ingress never receives requests for it" $i $from) }}
+      {{- end }}
+      {{- if not (regexMatch "^https://[^'\\\\$\\s;{}]+$" $to) }}
+      {{- fail (printf "ingress.holdingPage.redirects.hosts[%d]: to (%s) must be an https:// URL with no quote, backslash, $, space, ; or brace" $i $to) }}
+      {{- end }}
+      {{- end }}
+      {{- if and $holding.enabled $holding.redirects.enabled }}
+      set $hale_holding_redirect '';
+      {{- range $holding.redirects.hosts }}
+      if ($host = '{{ .host }}') {
+        set $hale_holding_redirect '{{ .to }}';
+      }
+      {{- end }}
+      if ($uri ~ ^/\.well-known/) {
+        set $hale_holding_redirect '';
+      }
+      if ($hale_holding_redirect) {
+        rewrite ^ /__holding-redirect last;
+      }
+      location = /__holding-redirect {
+        internal;
+        add_header Cache-Control "no-store" always;
+        add_header x-wb-holding "1" always;
+        return 302 $hale_holding_redirect;
+      }
+      {{- end }}
+
+      {{- if $locations }}
+      set $hale_holding '{{ if $holding.enabled }}/__holding-page{{ end }}';
+      {{- range $name, $location := $sitesOn }}
+      {{- range (get $holding.sites $name).hosts }}
+      if ($host = '{{ . }}') {
+        set $hale_holding {{ $location }};
+      }
+      {{- end }}
+      {{- end }}
+      if ($uri ~ ^/\.well-known/) {
+        set $hale_holding '';
+      }
+      if ($hale_holding) {
+        rewrite ^ $hale_holding last;
+      }
+      {{- range $location, $page := $locations }}
+      location = {{ $location }} {
+        internal;
+        default_type text/html;
+        add_header Cache-Control "no-store" always;
+        add_header Retry-After "3600" always;
+        add_header x-wb-holding "1" always;
+        return 503 '{{ include "wordpress.holdingPageHtml" (dict "root" $ "path" $page) }}';
+      }
+      {{- end }}
+      {{- end }}
 spec:
   ingressClassName: modsec-v2
   tls:
-{{- if not (eq .Values.configmap.envtype "prod") }}
+{{- if .Values.ingress.defaultHost.certName }}
   - hosts:
     - {{ .Values.domain }}
-    secretName: websitebuilder-{{ .Values.configmap.envtype }}-cert
+    secretName: {{ .Values.ingress.defaultHost.certName }}
 {{- end }}
-{{- if eq .Values.configmap.envtype "prod" }}
-  {{- range .Values.ingress.hosts }}
+{{- range .Values.ingress.hosts }}
   - hosts:
     - {{ .name }}
     secretName: {{ .certName }}
-  {{- end }}
 {{- end }}
   rules:
     - host: {{ .Values.domain }}
@@ -111,8 +361,7 @@ spec:
                 name: wordpress
                 port:
                   number: 8080
-  {{- if eq .Values.configmap.envtype "prod" }}
-    {{- range .Values.ingress.hosts }}
+  {{- range .Values.ingress.hosts }}
     - host: {{ .name }}
       http:
         paths:
@@ -123,6 +372,5 @@ spec:
                 name: wordpress
                 port:
                   number: 8080
-    {{- end }}
   {{- end }}
 {{- end }}

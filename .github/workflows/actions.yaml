@@ -1,0 +1,18 @@
+name: PR Actions
+
+on:
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  Snyk:
+    if: github.base_ref == 'main'
+    uses: ./.github/workflows/snyk-security.yaml
+    secrets: inherit
+
+  Tests:
+    uses: ./.github/workflows/tests.yaml
+
+  Branch-checks:
+    if: github.base_ref == 'main'
+    uses: ./.github/workflows/branch_protection.yaml

@@ -48,9 +48,31 @@ dev/mu-plugins/*
 dev/plugins/*
 dev/themes/*
 
+
+############################
+# Test fixtures
+############################
+opt/lua/fixtures/*
+!opt/lua/fixtures/example.csv
+
 # Track empty directories
 !dev/mu-plugins/.gitkeep
 !dev/plugins/.gitkeep
 !dev/themes/.gitkeep
 
+# AI
+# Ignore claude files until we have a team agreed set of rules/settings
 .claude
+
+##############################
+# Browserstack  Tests
+#############################
+log/
+
+##############################
+# Playwright end-to-end stack
+#############################
+# Saved login sessions, the generated self-signed certificate, and run output
+tests/e2e/.auth/
+tests/e2e/.stack/
+tests/e2e/output/

@@ -1,72 +1,722 @@
 ####################################################
 # WordPress multisite image
-# Installs WordPress multisite, PHP and PHP-FPM to serve
-# files to NGINX
+#
+# Runs WordPress multisite under PHP-FPM. nginx (nginx.dockerfile) serves the
+# site and passes PHP requests to this container on port 9000.
+#
+# Built on a Docker Hardened Image (DHI). It is based on Debian 13, runs as
+# UID 65532 by default, and its runtime variant has no package manager and no
+# root user. So the final stage only uses COPY: anything that has to be
+# downloaded, compiled or created is done in an earlier stage and copied in.
+#
+# Stages, in order:
+#   extbuilder    compiles the PHPRedis extension in the official php image
+#   dictionaries  takes the hunspell dictionaries from Alpine
+#   builder       the DHI -dev image (adds a shell and apt). Stages
+#                 ghostscript, hunspell, the UTF-8 locale, wp-cli, the
+#                 WordPress core patch, the translations, the uploads folder
+#                 and the Query Monitor drop-in
+#   phpbuilder    the same DHI -dev image. Compiles PATCH_PHP_VERSION from
+#                 source when it is set
+#   (runtime)     the image that is deployed. Copies in everything above,
+#                 plus the platform's plugins, themes, config and scripts
+#
+# DHI keeps the official WordPress image's start-up: when the webroot is
+# empty, docker-entrypoint.sh copies /usr/src/wordpress into it, and it
+# generates wp-config.php from wp-config-docker.php. hale-entrypoint.sh
+# (below) adds this platform's setup to that.
 # ##################################################
 
-# Build multisite
-# Latest images at https://hub.docker.com/_/wordpress
-FROM --platform=linux/amd64 wordpress:7.1.5-php8.4-fpm-alpine
+# Image versions. This is the only place in this file they are set.
+#
+# PHP_VERSION picks three images: the DHI builder and runtime images, and the
+# official php image PHPRedis is compiled in. WORDPRESS_VERSION picks the two
+# DHI images.
+#
+# The same versions are also declared in wordpress.local.dockerfile,
+# wptools.dockerfile (its Alpine php8X packages) and the CI workflow's
+# setup-php step. bin/check-versions.sh (make check-versions, also run in CI on
+# pull requests) fails if any of them disagree.
+ARG WORDPRESS_VERSION=7.1.5
+ARG PHP_VERSION=8.4
 
-# Install additional Alpine packages
-RUN apk update && \
-    apk add less \
-    vim \
-    mariadb-client \
-    htop
+# WordPress core patch. When PATCH_WORDPRESS_VERSION is set, the image runs that
+# WordPress release instead of the one in the DHI image: the builder stage
+# downloads it, the runtime stage copies its files over the DHI image's core,
+# and the translations are downloaded for it. This is for a WordPress release
+# DHI has not published an image for yet. Once DHI publishes it, set
+# WORDPRESS_VERSION to it and empty both ARGs below. The build fails if
+# PATCH_WORDPRESS_VERSION is not newer than WORDPRESS_VERSION, because the patch
+# would then downgrade core.
+#
+# wordpress.org publishes a SHA-1 for each release
+# (https://wordpress.org/wordpress-<version>.zip.sha1), not a SHA-256. To pin a
+# release, download the .zip, check it against that SHA-1, then put its
+# sha256sum here. Change the two ARGs together.
+#
+# bin/wp-core-cve-check.sh checks PATCH_WORDPRESS_VERSION for CVEs when it is
+# set, as the version the site runs.
+ARG PATCH_WORDPRESS_VERSION=
+ARG PATCH_WORDPRESS_SHA256=
 
-# Install wp-cli
-RUN curl -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
-    chmod +x /usr/local/bin/wp
+# PHP patch. When PATCH_PHP_VERSION is set, the image runs that PHP release
+# instead of the one in the DHI image: the phpbuilder stage compiles it from
+# the php.net source with the DHI build's configure options, and the runtime
+# stage copies the binaries and extensions over the DHI image's. This is for a
+# PHP security release DHI has not published an image for yet. Once DHI
+# publishes it, empty both ARGs below. The build fails if PATCH_PHP_VERSION is
+# not in the PHP_VERSION series, or is not newer than the DHI image's PHP.
+#
+# php.net publishes a SHA-256 for each release
+# (https://www.php.net/releases/index.php?json&version=<minor>). Change the two
+# ARGs together.
+ARG PATCH_PHP_VERSION=
+ARG PATCH_PHP_SHA256=
 
-# Set permissions for wp-cli
-RUN addgroup -g 1001 wp \
-    && adduser -G wp -g wp -s /bin/sh -D wp \
-    && chown wp:wp /var/www/html
+# The oldest PHP release this image may run: the first 8.4 release with the
+# fixes for the PHP out-of-memory and stale global state advisories
+# (GHSA-w8hw-w9fx-j79w, GHSA-6wmf-4rv5-p3rp). The runtime stage fails the build
+# if its php or php-fpm is older, whether that PHP came from the DHI image or
+# from PATCH_PHP_VERSION. The DHI tag above names only the PHP minor version,
+# so without this check a cached or older image would build without error.
+# wordpress.local.dockerfile and wptools.dockerfile set the same value.
+ARG PHP_MIN_VERSION=8.4.27
 
-# Add PHP multsite supporting files
+# ---------------------------------------------------------------------------
+# Extension stage: build the PHPRedis extension (redis.so).
+#
+# This stage downloads a pinned PHPRedis release from pecl, checks its SHA-256
+# and compiles it. It produces two files: redis.so, and a one-line .ini that
+# tells PHP to load it. The runtime stage copies those two files and nothing
+# else. hale-components needs the extension for its firewall controller and
+# page cache purge, which both talk to Redis.
+#
+# Why the official php image and not a DHI one: compiling a PHP extension needs
+# phpize and php-config, and no Docker Hardened Image variant includes them.
+# The DHI "-dev" variants add a shell and a package manager, not PHP's build
+# tools. The official php image has both tools plus pecl, and is published for
+# every PHP release.
+#
+# This stage runs as root with a shell and a package manager. None of that
+# reaches the final image, which only takes the two files above.
+#
+# Why a redis.so built here works in the DHI image: an extension loads in any
+# PHP build that matches the one it was compiled with on three things - the PHP
+# API number, thread safety and debug mode. Every build of the same PHP minor
+# version (8.4.x, say) matches on all three, and PHP_VERSION sets the minor for
+# both images. If they ever disagreed, php-fpm would log a warning and run
+# without Redis, so the "Verify the images agree" CI step warns when the
+# extension does not load.
+#
+# Why the version is pinned and checksummed: this is compiled C running inside
+# every PHP-FPM process, and a plain "pecl install redis" would take whatever
+# release is newest that day. pecl does not publish checksums, so
+# PHPREDIS_SHA256 is the hash of the file downloaded when the version was
+# pinned. Change PHPREDIS_VERSION and PHPREDIS_SHA256 together -
+# https://pecl.php.net/package/redis
+# ---------------------------------------------------------------------------
+FROM --platform=linux/amd64 php:${PHP_VERSION}-cli AS extbuilder
+
+ARG PHPREDIS_VERSION=6.3.0
+ARG PHPREDIS_SHA256=0d5141f634bd1db6c1ddcda053d25ecf2c4fc1c395430d534fd3f8d51dd7f0b5
+# Retries up to 3 times on any error, including a dropped connection or a
+# temporary 5xx from pecl. -f makes curl fail on an HTTP error instead of
+# saving the error page, so without retries one bad response fails the build.
+RUN curl -fsSL --retry 3 --retry-delay 2 --retry-all-errors -o /tmp/redis.tgz \
+        "https://pecl.php.net/get/redis-${PHPREDIS_VERSION}.tgz" \
+    && echo "${PHPREDIS_SHA256}  /tmp/redis.tgz" | sha256sum -c - \
+    && pecl install /tmp/redis.tgz \
+    && cp "$(php-config --extension-dir)/redis.so" /tmp/redis.so \
+    && echo "extension=/usr/local/lib/php-extensions/redis.so" > /tmp/docker-php-ext-redis.ini \
+    && rm -rf /tmp/redis.tgz
+
+# ---------------------------------------------------------------------------
+# Dictionaries stage: the hunspell dictionaries.
+#
+# Taken from Alpine, not Debian, because the justice theme uses the
+# en_GB-large dictionary and Debian's hunspell-en-gb package only has en_GB.
+# PhpSpellcheck passes the name straight to `hunspell -d`, so a missing
+# dictionary makes hunspell fail rather than fall back to a smaller one.
+# Alpine's package has both.
+#
+# Mixing distributions is safe for these files: .aff and .dic files are plain
+# text that hunspell reads at runtime, and they do not link against any system
+# library. The hunspell program itself comes from Debian, in the builder stage.
+# Uses the same Alpine version as wptools.dockerfile.
+# ---------------------------------------------------------------------------
+FROM --platform=linux/amd64 alpine:3.24 AS dictionaries
+
+RUN apk add --no-cache hunspell-en-gb
+
+# ---------------------------------------------------------------------------
+# Builder stage: prepares the files the runtime stage copies in.
+#
+# The -dev variant of the same DHI WordPress image, which adds a shell and apt.
+# Nothing from this stage reaches the runtime image except what it leaves in
+# /tmp: sysdeps (ghostscript, hunspell, the locale), wp (wp-cli), core (the
+# WordPress core patch), languages, uploads and dropins.
+# ---------------------------------------------------------------------------
+FROM --platform=linux/amd64 dhi.io/wordpress:${WORDPRESS_VERSION}-php${PHP_VERSION}-fpm-dev AS builder
+
+# An ARG set before the first FROM has to be declared again to be used inside a
+# stage. The WordPress versions are needed here, for the core patch and the
+# translations.
+ARG WORDPRESS_VERSION
+ARG PATCH_WORDPRESS_VERSION
+ARG PATCH_WORDPRESS_SHA256
+USER root
+
+# Tools for the downloads below: curl and ca-certificates for HTTPS, and unzip
+# for the WordPress release and the translation packs.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# ---------------------------------------------------------------------------
+# System programs the application runs: ghostscript and hunspell.
+#
+# This step downloads the Debian packages for ghostscript, fonts-urw-base35 and
+# hunspell, plus any of their dependencies this stage does not already have,
+# and unpacks them into /tmp/sysdeps. It also takes the C.UTF-8 locale out of
+# libc-bin (see ENV LANG in the runtime stage). The runtime stage copies
+# /tmp/sysdeps onto its own filesystem.
+#
+# What needs them:
+#   - ghostscript (gs): ImageMagick cannot read PDFs itself, it runs gs. Without
+#     gs, making thumbnails for a PDF upload fails with
+#     "FailedToExecuteCommand `gs'", nothing catches it, and the upload
+#     returns a 500.
+#   - fonts-urw-base35: the fonts gs uses when a PDF does not embed its own.
+#     Without them, the text in those thumbnails cannot be drawn.
+#   - hunspell: the justice theme spellchecks page content from a cron hook,
+#     using PhpSpellcheck, which runs hunspell as a separate process. If
+#     hunspell is missing, PhpSpellcheck throws and the whole cron run stops.
+#
+# Why unpack instead of apt-get install: a normal install fails in this image,
+# because dpkg cannot configure the packages. The runtime needs none of that
+# configuration anyway - it has no package manager and runs no install
+# scripts - so only the packages' files are taken. Unpacking also leaves
+# /etc/ld.so.cache unchanged. The runtime has no cache entries for these
+# libraries, which is fine: glibc then searches its default library
+# directories, and that is where they are placed.
+#
+# Why ldconfig -n: unpacking a library package gives only the fully versioned
+# file (libgs.so.10.05), not the shorter name programs link against
+# (libgs.so.10). A normal install would create that link. `ldconfig -n`
+# creates it inside the staging directory without touching any cache.
+#
+# Why the COPY only adds files: this stage is the runtime image plus a shell
+# and a package manager, and apt only downloads packages that are not already
+# installed here. So nothing in /tmp/sysdeps replaces a file the runtime
+# already has.
+#
+# What this step cannot prove: this stage has packages the runtime does not
+# (its shell and package manager, plus curl, ca-certificates and unzip), so a
+# library one of those brought in counts as present here but may be missing at
+# runtime. The RUN fails if gs or hunspell has an unresolved library here, and
+# prints the libraries it expects the runtime to provide. The "Verify the
+# images agree" CI step then runs gs and hunspell in the real runtime image and
+# warns if either fails.
+# ---------------------------------------------------------------------------
+RUN mkdir -p /tmp/debs/partial /tmp/sysdeps \
+    && apt-get update \
+    && ncurses=$(apt-cache policy libncursesw6 | awk '/Candidate:/ {print $2}') \
+    && tinfo=$(dpkg-query -W -f '${Version}' libtinfo6) \
+    && [ "${ncurses%%+d*}" = "${tinfo%%+d*}" ] \
+       || { echo "libncursesw6 ${ncurses} and installed libtinfo6 ${tinfo} are different ncurses releases"; exit 1; } \
+    && apt-get install -y --no-install-recommends --download-only --allow-downgrades \
+        -o Dir::Cache::archives=/tmp/debs \
+        -o APT::Keep-Downloaded-Packages=true \
+        ghostscript \
+        fonts-urw-base35 \
+        hunspell \
+        "libtinfo6=${ncurses}" \
+    && rm -f /tmp/debs/libtinfo6_*.deb \
+    && for deb in /tmp/debs/*.deb; do dpkg-deb -x "$deb" /tmp/sysdeps; done \
+    && mkdir -p /tmp/libcdeb /tmp/sysdeps/usr/lib/locale \
+    && ( cd /tmp/libcdeb && apt-get download libc-bin ) \
+    && dpkg-deb -x /tmp/libcdeb/libc-bin_*.deb /tmp/libc \
+    && cp -a /tmp/libc/usr/lib/locale/C.utf8 /tmp/sysdeps/usr/lib/locale/ \
+    && test -f /tmp/sysdeps/usr/lib/locale/C.utf8/LC_CTYPE \
+    && rm -rf /tmp/libcdeb /tmp/libc /tmp/debs /var/lib/apt/lists/* \
+    && rm -rf /tmp/sysdeps/usr/share/doc /tmp/sysdeps/usr/share/man /tmp/sysdeps/usr/share/lintian \
+    && ldconfig -n /tmp/sysdeps/usr/lib/x86_64-linux-gnu \
+    && for bin in gs hunspell; do \
+        test -x "/tmp/sysdeps/usr/bin/$bin" || exit 1; \
+        if LD_LIBRARY_PATH=/tmp/sysdeps/usr/lib/x86_64-linux-gnu \
+            ldd "/tmp/sysdeps/usr/bin/$bin" | grep -q "not found"; then \
+            echo "unresolved libraries for $bin"; exit 1; \
+        fi; \
+    done \
+    && echo "libraries not staged, so expected in the runtime base:" \
+    && { for bin in gs hunspell; do \
+            LD_LIBRARY_PATH=/tmp/sysdeps/usr/lib/x86_64-linux-gnu \
+                ldd "/tmp/sysdeps/usr/bin/$bin"; \
+        done; } \
+        | awk '$3 ~ /^\// {print $3}' | grep -v '^/tmp/sysdeps' | sort -u | sed 's/^/  /'
+
+
+# wp-cli, downloaded here because the runtime image has no curl.
+#
+# Pinned and checked against its SHA-512. wp-cli runs with full database access
+# every time a container starts (config.sh), so a tampered download would too.
+# wp-cli publishes the checksum next to each release as
+# wp-cli-<version>.phar.sha512 - change WP_CLI_VERSION and WP_CLI_SHA512
+# together.
+ARG WP_CLI_VERSION=2.12.0
+ARG WP_CLI_SHA512=be928f6b8ca1e8dfb9d2f4b75a13aa4aee0896f8a9a0a1c45cd5d2c98605e6172e6d014dda2e27f88c98befc16c040cbb2bd1bfa121510ea5cdf5f6a30fe8832
+RUN curl -fsSL --retry 3 --retry-delay 2 --retry-all-errors -o /tmp/wp \
+    "https://github.com/wp-cli/wp-cli/releases/download/v${WP_CLI_VERSION}/wp-cli-${WP_CLI_VERSION}.phar" \
+    && echo "${WP_CLI_SHA512}  /tmp/wp" | sha512sum -c - \
+    && chmod +x /tmp/wp
+
+# WordPress core patch: PATCH_WORDPRESS_VERSION's core files, staged in
+# /tmp/core for the runtime stage to copy over /usr/src/wordpress (see the ARGs
+# at the top of this file). With PATCH_WORDPRESS_VERSION empty, /tmp/core stays
+# empty and that COPY changes nothing.
+#
+# Only wp-admin, wp-includes and the release's top-level files are staged. The
+# release's wp-content (default themes, Akismet, Hello Dolly) is left out, so
+# wp-content is the same with or without the patch.
+#
+# The RUN fails if:
+#   - PATCH_WORDPRESS_VERSION is not newer than WORDPRESS_VERSION, so the patch
+#     would downgrade core.
+#   - the download does not match PATCH_WORDPRESS_SHA256.
+#   - a file in the DHI image's wp-admin or wp-includes is not in the release.
+#     COPY adds and replaces files but cannot delete them, so a file the
+#     release removed would stay in the image and in every webroot. This stage
+#     is the -dev variant of the same DHI image, so its /usr/src/wordpress is
+#     the core the runtime stage starts with.
+#   - the release's version.php does not report PATCH_WORDPRESS_VERSION.
+RUN set -e; \
+    mkdir -p /tmp/core; \
+    if [ -n "${PATCH_WORDPRESS_VERSION}" ]; then \
+        newest=$(printf '%s\n%s\n' "${WORDPRESS_VERSION}" "${PATCH_WORDPRESS_VERSION}" | sort -V | tail -n1); \
+        if [ "${PATCH_WORDPRESS_VERSION}" = "${WORDPRESS_VERSION}" ] || [ "${newest}" != "${PATCH_WORDPRESS_VERSION}" ]; then \
+            echo "PATCH_WORDPRESS_VERSION (${PATCH_WORDPRESS_VERSION}) is not newer than WORDPRESS_VERSION (${WORDPRESS_VERSION}). Empty it."; \
+            exit 1; \
+        fi; \
+        echo "Patching WordPress core from ${WORDPRESS_VERSION} to ${PATCH_WORDPRESS_VERSION}"; \
+        curl -fsSL --retry 3 --retry-delay 2 --retry-all-errors -o /tmp/wordpress.zip \
+            "https://wordpress.org/wordpress-${PATCH_WORDPRESS_VERSION}.zip"; \
+        echo "${PATCH_WORDPRESS_SHA256}  /tmp/wordpress.zip" | sha256sum -c -; \
+        unzip -q /tmp/wordpress.zip -d /tmp/release; \
+        (cd /usr/src/wordpress && find wp-admin wp-includes -type f) > /tmp/base-files; \
+        missing=$(while read -r f; do [ -e "/tmp/release/wordpress/$f" ] || echo "  $f"; done < /tmp/base-files); \
+        if [ -n "${missing}" ]; then \
+            echo "Files in the ${WORDPRESS_VERSION} core that ${PATCH_WORDPRESS_VERSION} does not have:"; \
+            echo "${missing}"; \
+            exit 1; \
+        fi; \
+        grep -qF "\$wp_version = '${PATCH_WORDPRESS_VERSION}';" /tmp/release/wordpress/wp-includes/version.php \
+            || { echo "version.php in the download is not ${PATCH_WORDPRESS_VERSION}"; exit 1; }; \
+        rm -rf /tmp/release/wordpress/wp-content; \
+        cp -a /tmp/release/wordpress/. /tmp/core/; \
+        rm -rf /tmp/wordpress.zip /tmp/release /tmp/base-files; \
+    fi
+
+# Translations: British English (en_GB) and Welsh (cy).
+#
+# They have to be in the image. The webroot is an emptyDir, so a language pack
+# downloaded at runtime is gone when the next pod starts, and
+# DISALLOW_FILE_MODS (config.sh) stops WordPress downloading one anyway. Being
+# in the image also makes both languages show as installed in the Site
+# Language dropdown. Which language a site uses is still a per-site setting in
+# the database.
+#
+# The packs match the core version the image runs: PATCH_WORDPRESS_VERSION when
+# it is set, otherwise WORDPRESS_VERSION. If no pack is published for a
+# language at that version, the build fails here - better than shipping another
+# version's strings or leaving a language out.
+#
+# Not checksummed, unlike wp-cli and PHPRedis: a translation pack is rebuilt
+# every time a translator changes a string, so a pinned hash would break the
+# build at random.
+#
+# To add a language, add its code to WP_LOCALES (space-separated). .po files
+# are deleted because WordPress only reads the .mo and .json files. The
+# `|| exit 1` is needed: a failed command inside a for loop does not fail the
+# RUN by itself, so a language could silently go missing.
+ARG WP_LOCALES="en_GB cy"
+RUN mkdir -p /tmp/languages \
+    && core_version="${PATCH_WORDPRESS_VERSION:-${WORDPRESS_VERSION}}" \
+    && for locale in ${WP_LOCALES}; do \
+    echo "Fetching ${locale} translations for ${core_version}" \
+    && curl -fsSL --retry 3 --retry-delay 2 --retry-all-errors -o /tmp/lang.zip \
+    "https://downloads.wordpress.org/translation/core/${core_version}/${locale}.zip" \
+    && unzip -q -o /tmp/lang.zip -d /tmp/languages \
+    || exit 1; \
+    done \
+    && rm -f /tmp/lang.zip /tmp/languages/*.po
+
+# An empty uploads folder, created here because the runtime stage only uses
+# COPY.
+RUN mkdir -p /tmp/uploads
+
+# Query Monitor's database drop-in: wp-content/db.php, a symlink to the file
+# inside the plugin. Query Monitor creates this link itself when it is
+# activated, but DISALLOW_FILE_MODS (config.sh) blocks that, and the webroot is
+# rebuilt on every pod start, so the image ships the link instead.
+#
+# It must be a symlink, not a copy. The drop-in finds the plugin using
+# dirname(dirname(__FILE__)), and PHP resolves symlinks in __FILE__, so a copy
+# would look for the plugin in the wrong place, fail its is_readable() check
+# and do nothing. The link is relative, so it works both in
+# /usr/src/wordpress/wp-content and in /var/www/html/wp-content.
+#
+# It is created inside a folder, not as /tmp/db.php on its own. The link points
+# at a file that only exists in the runtime stage, and BuildKit follows the
+# source of a single-file COPY, which fails with "/tmp/db.php: not found".
+# Copying a folder keeps the symlinks inside it as they are.
+RUN mkdir -p /tmp/dropins \
+    && ln -s plugins/query-monitor/wp-content/db.php /tmp/dropins/db.php
+
+# ---------------------------------------------------------------------------
+# PHP stage: compiles PATCH_PHP_VERSION, for the runtime stage to copy over the
+# DHI image's PHP (see the ARGs at the top of this file). With
+# PATCH_PHP_VERSION empty, every RUN here stops straight away, /tmp/php stays
+# empty and the runtime stage's COPY changes nothing.
+#
+# Built in the -dev variant of the same DHI image, so PHP is compiled against
+# the libraries the runtime image has, and the build can be checked by
+# installing it over this stage's own PHP and running it.
+#
+# How the build matches the DHI one:
+#   - configure gets the options DHI used, read from the "Configure Command"
+#     line of `php -i`.
+#   - CFLAGS and LDFLAGS are the official php image's hardening flags, without
+#     -fpie and -pie. `php -i` does not show the flags DHI compiled with.
+#     Debian's gcc already builds executables position-independent, and the
+#     same flags are used for the extensions, which are shared libraries, not
+#     executables.
+#   - bundled extensions built separately with phpize (the way the official
+#     image adds gd, intl, zip and others) are not in that configure line. Any
+#     .so in the extension folder that the main build did not replace, and
+#     that has a folder under ext/ in the PHP source, is rebuilt from the same
+#     source with phpize.
+#
+# Only files that already exist in this image and that the build changed are
+# staged in /tmp/php: the PHP binaries and the extension .so files. PECL
+# extensions in the DHI image (imagick) are kept as they are. They load in any
+# build of the same PHP minor version, for the reason given at the extbuilder
+# stage.
+#
+# The RUNs fail if:
+#   - PATCH_PHP_VERSION is not in the PHP_VERSION series, or not newer than the
+#     DHI image's PHP.
+#   - the download does not match PATCH_PHP_SHA256.
+#   - installing the build tools changes the version of a package this image
+#     already has. PHP would then be compiled against a library newer than the
+#     one in the runtime image.
+#   - after the install, php or php-fpm does not report PATCH_PHP_VERSION, or
+#     lists different modules than before.
+#   - a bundled extension in the extension folder was not rebuilt.
+#   - a staged file links a library its DHI version did not, as the runtime
+#     image may not have it. The dynamic loader (ld-linux) is
+#     not counted: every program in the image already runs through it.
+#   - a staged file is a different ELF type from its DHI version (a
+#     position-independent executable built as a fixed-address one, say).
+# The last RUN also prints the difference in `php -i` before and after, for
+# review.
+# ---------------------------------------------------------------------------
+FROM --platform=linux/amd64 dhi.io/wordpress:${WORDPRESS_VERSION}-php${PHP_VERSION}-fpm-dev AS phpbuilder
+
+ARG PHP_VERSION
+ARG PATCH_PHP_VERSION
+ARG PATCH_PHP_SHA256
+USER root
+
+# Checks the versions, records the DHI PHP (paths, modules, `php -i`, and a
+# copy and checksum of each file the install can replace) in /tmp/before, and
+# installs the build tools.
+RUN set -e; \
+    export LC_ALL=C; \
+    mkdir -p /tmp/php; \
+    [ -n "${PATCH_PHP_VERSION}" ] || exit 0; \
+    current=$(php -r 'echo PHP_VERSION;'); \
+    case "${PATCH_PHP_VERSION}" in \
+        "${PHP_VERSION}".*) ;; \
+        *) echo "PATCH_PHP_VERSION (${PATCH_PHP_VERSION}) is not a PHP ${PHP_VERSION} release."; exit 1 ;; \
+    esac; \
+    newest=$(printf '%s\n%s\n' "${current}" "${PATCH_PHP_VERSION}" | sort -V | tail -n1); \
+    if [ "${PATCH_PHP_VERSION}" = "${current}" ] || [ "${newest}" != "${PATCH_PHP_VERSION}" ]; then \
+        echo "The DHI image has PHP ${current}, so PATCH_PHP_VERSION (${PATCH_PHP_VERSION}) is not needed. Empty it."; \
+        exit 1; \
+    fi; \
+    echo "Patching PHP from ${current} to ${PATCH_PHP_VERSION}"; \
+    bin=$(readlink -f "$(php -r 'echo PHP_BINARY;')"); \
+    bindir=$(dirname "${bin}"); \
+    fpm=$(command -v php-fpm || echo "$(dirname "${bindir}")/sbin/php-fpm"); \
+    fpm=$(readlink -f "${fpm}"); \
+    test -x "${fpm}"; \
+    sbindir=$(dirname "${fpm}"); \
+    extdir=$(php -r 'echo PHP_EXTENSION_DIR;'); \
+    mkdir -p /tmp/before/files; \
+    printf 'bindir=%s\nsbindir=%s\nfpm=%s\nextdir=%s\n' "${bindir}" "${sbindir}" "${fpm}" "${extdir}" > /tmp/before/env; \
+    cat /tmp/before/env; \
+    php -m > /tmp/before/php-m; \
+    "${fpm}" -m > /tmp/before/fpm-m; \
+    php -i > /tmp/before/php-i; \
+    find "${bindir}" "${sbindir}" "${extdir}" -maxdepth 1 -type f | sort -u > /tmp/before/list; \
+    while read -r f; do \
+        sha256sum "${f}" >> /tmp/before/sums; \
+        mkdir -p "/tmp/before/files$(dirname "${f}")"; \
+        cp -a "${f}" "/tmp/before/files${f}"; \
+    done < /tmp/before/list; \
+    dpkg-query -W -f '${Package}:${Architecture} ${Version}\n' | sort -k1,1 > /tmp/before/pkgs; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        autoconf \
+        ca-certificates \
+        curl \
+        diffutils \
+        g++ \
+        gcc \
+        gzip \
+        make \
+        pkg-config \
+        libargon2-dev \
+        libavif-dev \
+        libbz2-dev \
+        libcurl4-openssl-dev \
+        libedit-dev \
+        libfreetype-dev \
+        libgmp-dev \
+        libicu-dev \
+        libjpeg62-turbo-dev \
+        libonig-dev \
+        libpcre2-dev \
+        libpng-dev \
+        libreadline-dev \
+        libsodium-dev \
+        libsqlite3-dev \
+        libssl-dev \
+        libwebp-dev \
+        libxml2-dev \
+        libxslt1-dev \
+        libzip-dev \
+        zlib1g-dev; \
+    rm -rf /var/lib/apt/lists/*; \
+    dpkg-query -W -f '${Package}:${Architecture} ${Version}\n' | sort -k1,1 > /tmp/after-pkgs; \
+    changed=$(join /tmp/before/pkgs /tmp/after-pkgs | awk '$2 != $3'); \
+    if [ -n "${changed}" ]; then \
+        echo "Installing the build tools changed these packages (package, before, after):"; \
+        echo "${changed}"; \
+        exit 1; \
+    fi
+
+# Downloads and compiles PATCH_PHP_VERSION, installs it over this stage's PHP,
+# then rebuilds the bundled extensions the main build did not replace.
+#
+# Only the install targets for the binaries, extensions, headers and the
+# phpize tools are run. A plain `make install` also runs the PEAR installer,
+# which downloads from pear.php.net.
+RUN set -e; \
+    [ -n "${PATCH_PHP_VERSION}" ] || exit 0; \
+    . /tmp/before/env; \
+    suffix=$(basename "${fpm}" | sed "s/^php-fpm//"); \
+    unchanged() { grep -qxF "$(sha256sum "$1")" /tmp/before/sums; }; \
+    curl -fsSL --retry 3 --retry-delay 2 --retry-all-errors -o /tmp/php.tar.gz \
+        "https://www.php.net/distributions/php-${PATCH_PHP_VERSION}.tar.gz"; \
+    echo "${PATCH_PHP_SHA256}  /tmp/php.tar.gz" | sha256sum -c -; \
+    mkdir -p /tmp/php-src; \
+    tar -xzf /tmp/php.tar.gz -C /tmp/php-src --strip-components=1; \
+    configure=$(sed -n 's/^Configure Command => *//p' /tmp/before/php-i); \
+    [ -n "${configure}" ] || { echo "php -i has no Configure Command line"; exit 1; }; \
+    echo "DHI configure command: ${configure}"; \
+    eval "set -- ${configure}"; \
+    shift; \
+    export CFLAGS="-fstack-protector-strong -fpic -O2 -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"; \
+    export CPPFLAGS="${CFLAGS}" LDFLAGS="-Wl,-O1"; \
+    cd /tmp/php-src; \
+    ./configure "$@"; \
+    make -j"$(nproc)"; \
+    make install-sapi install-binaries install-modules install-build install-headers install-programs; \
+    echo "Extension folder: $(ls "${extdir}" | tr "\n" " ")"; \
+    for so in "${extdir}"/*.so; do \
+        name=$(basename "${so}" .so); \
+        [ -d "/tmp/php-src/ext/${name}" ] || continue; \
+        unchanged "${so}" || continue; \
+        case "${name}" in \
+            gd) opts="--with-avif --with-freetype --with-jpeg --with-webp" ;; \
+            *) opts="" ;; \
+        esac; \
+        echo "Rebuilding the ${name} extension with phpize ${opts}"; \
+        ( cd "/tmp/php-src/ext/${name}" \
+            && "${bindir}/phpize${suffix}" \
+            && ./configure --with-php-config="${bindir}/php-config${suffix}" ${opts} \
+            && make -j"$(nproc)" \
+            && make install ) || exit 1; \
+    done
+
+# Checks the installed PHP against the DHI one, and stages the changed files in
+# /tmp/php for the runtime stage.
+RUN set -e; \
+    export LC_ALL=C; \
+    [ -n "${PATCH_PHP_VERSION}" ] || exit 0; \
+    . /tmp/before/env; \
+    unchanged() { grep -qxF "$(sha256sum "$1")" /tmp/before/sums; }; \
+    needed() { readelf -d "$1" 2>/dev/null | sed -n 's/.*(NEEDED).*\[\(.*\)\]/\1/p' | sed '/^ld-linux-/d' | sort -u; }; \
+    elftype() { readelf -h "$1" 2>/dev/null | awk '$1 == "Type:" {print $2}'; }; \
+    php_version=$(php -r 'echo PHP_VERSION;'); \
+    [ "${php_version}" = "${PATCH_PHP_VERSION}" ] \
+        || { echo "php reports ${php_version}, not ${PATCH_PHP_VERSION}"; exit 1; }; \
+    "${fpm}" -v | grep -qF "PHP ${PATCH_PHP_VERSION} " \
+        || { echo "php-fpm does not report ${PATCH_PHP_VERSION}:"; "${fpm}" -v; exit 1; }; \
+    php -m > /tmp/after-php-m; \
+    "${fpm}" -m > /tmp/after-fpm-m; \
+    diff /tmp/before/php-m /tmp/after-php-m \
+        || { echo "php modules differ (< DHI, > patched)"; exit 1; }; \
+    diff /tmp/before/fpm-m /tmp/after-fpm-m \
+        || { echo "php-fpm modules differ (< DHI, > patched)"; exit 1; }; \
+    kept=""; \
+    for so in "${extdir}"/*.so; do \
+        name=$(basename "${so}" .so); \
+        if unchanged "${so}"; then \
+            if [ -d "/tmp/php-src/ext/${name}" ]; then \
+                echo "The bundled ${name} extension was not rebuilt"; \
+                exit 1; \
+            fi; \
+            kept="${kept} ${name}"; \
+        fi; \
+    done; \
+    echo "Extensions kept from the DHI image:${kept:- none}"; \
+    while read -r f; do \
+        unchanged "${f}" && continue; \
+        extra=$(needed "/tmp/before/files${f}" > /tmp/needed-old; needed "${f}" | comm -23 - /tmp/needed-old); \
+        if [ -n "${extra}" ]; then \
+            echo "${f} links libraries the DHI build did not:"; \
+            echo "${extra}"; \
+            exit 1; \
+        fi; \
+        if [ "$(elftype "${f}")" != "$(elftype "/tmp/before/files${f}")" ]; then \
+            echo "${f} is ELF type $(elftype "${f}"), the DHI build is $(elftype "/tmp/before/files${f}")"; \
+            exit 1; \
+        fi; \
+        echo "Staging ${f}"; \
+        mkdir -p "/tmp/php$(dirname "${f}")"; \
+        cp -a "${f}" "/tmp/php${f}"; \
+    done < /tmp/before/list; \
+    php -i > /tmp/after-php-i; \
+    echo "php -i differences (< DHI, > patched), for review:"; \
+    diff /tmp/before/php-i /tmp/after-php-i || true
+
+# ---------------------------------------------------------------------------
+# Runtime stage: the image that is deployed.
+#
+# Only COPY, ENV, ENTRYPOINT and USER, plus one RUN that checks the PHP version
+# and changes nothing. Everything that needed a package manager or root was
+# prepared in the stages above.
+# ---------------------------------------------------------------------------
+FROM --platform=linux/amd64 dhi.io/wordpress:${WORDPRESS_VERSION}-php${PHP_VERSION}-fpm
+
+# PHP patch from the phpbuilder stage: PATCH_PHP_VERSION's binaries and
+# extensions, over the DHI image's. Each file is at the path of the one it
+# replaces. The folder is empty when PATCH_PHP_VERSION is empty, and this COPY
+# then changes nothing.
+COPY --from=phpbuilder /tmp/php/ /
+
+# Fails the build if php or php-fpm in this image is older than
+# PHP_MIN_VERSION (see the ARG at the top of this file). It runs here, on the
+# image that is deployed, after the PHP patch is applied, so it checks the PHP
+# the containers will run, whichever image it came from. Exec form, so it needs
+# no shell, and it changes no files.
+ARG PHP_MIN_VERSION
+RUN ["php", "-r", "$min = (string) getenv('PHP_MIN_VERSION'); if ($min === '') { fwrite(STDERR, 'PHP_MIN_VERSION is not set' . PHP_EOL); exit(1); } $fpm = ''; $p = proc_open(['php-fpm', '-v'], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes); if (is_resource($p)) { $fpm = explode(' ', (string) fgets($pipes[1]))[1] ?? ''; proc_close($p); } foreach (['php' => PHP_VERSION, 'php-fpm' => $fpm] as $bin => $v) { if ($v === '') { fwrite(STDERR, $bin . ' -v did not report a PHP version' . PHP_EOL); exit(1); } if (version_compare($v, $min, '<')) { fwrite(STDERR, $bin . ' runs PHP ' . $v . ', older than PHP_MIN_VERSION ' . $min . PHP_EOL); exit(1); } } echo 'php and php-fpm run PHP ' . PHP_VERSION . ', at least PHP_MIN_VERSION ' . $min . PHP_EOL;"]
+
+# PHPRedis, from the extbuilder stage. The .ini loads redis.so by its full
+# path, so these paths do not depend on the PHP version or on PHP's own
+# extension folder. PHP_INI_DIR is set by the base image and follows
+# PHP_VERSION.
+COPY --from=extbuilder /tmp/redis.so /usr/local/lib/php-extensions/redis.so
+COPY --from=extbuilder /tmp/docker-php-ext-redis.ini ${PHP_INI_DIR}/conf.d/docker-php-ext-redis.ini
+
+# wp-cli, from the builder stage.
+COPY --from=builder --chmod=0755 /tmp/wp /usr/local/bin/wp
+
+# ghostscript with its fonts and libraries, hunspell, and the C.UTF-8 locale,
+# from the builder stage. Each file is at the path a normal install would put
+# it. The folder only holds packages this image does not already have, so this
+# COPY adds files and never replaces one.
+COPY --from=builder /tmp/sysdeps/ /
+
+# Hunspell dictionaries (en_GB and en_GB-large) from the dictionaries stage.
+COPY --from=dictionaries /usr/share/hunspell /usr/share/hunspell
+
+# Use the C.UTF-8 locale, so glibc reports UTF-8 as the text encoding. The DHI
+# image has no locale data of its own. Without the locale files the builder
+# stage copied in, only the plain C locale exists, and glibc reports ASCII
+# (ANSI_X3.4-1968).
+#
+# hunspell needs this. It converts its personal dictionary into that encoding,
+# so under ASCII every accented word fails to convert and prints an error.
+# PhpSpellcheck treats any error output as a failure and throws, which stops
+# the wp-cron.php run.
+ENV LANG=C.UTF-8
+
+# WordPress core patch from the builder stage: PATCH_WORDPRESS_VERSION's
+# wp-admin, wp-includes and top-level files, over the DHI image's core. The
+# folder is empty when PATCH_WORDPRESS_VERSION is empty, and this COPY then
+# changes nothing.
+COPY --from=builder --chown=65532:65532 /tmp/core/ /usr/src/wordpress/
+
+# Platform PHP files. load.php and application.php load the platform's
+# must-use plugins, the Composer autoloader and error-handling.php, which sets
+# PHP error logging per environment. wpdr-document-upload-dir.php makes
+# wp-document-revisions store documents through S3. search-term-limit.php caps
+# the Relevanssi "+word" and quoted-phrase operators. auth0.php configures the
+# Auth0 plugin from the AUTH0_ENV_* constants. wp-cron-multisite.php runs
+# cron for every site, and is called by the cron-wp-multisite CronJob.
 COPY opt/php/load.php /usr/src/wordpress/wp-content/mu-plugins/load.php
 COPY opt/php/application.php /usr/src/wordpress/wp-content/mu-plugins/application.php
+COPY opt/php/wpdr-document-upload-dir.php /usr/src/wordpress/wp-content/mu-plugins/wpdr-document-upload-dir.php
+COPY opt/php/search-term-limit.php /usr/src/wordpress/wp-content/mu-plugins/search-term-limit.php
 COPY opt/php/auth0.php /usr/src/wordpress/wp-content/mu-plugins/auth0.php
 COPY opt/php/error-handling.php /usr/src/wordpress/error-handling.php
-COPY opt/php/www.conf /usr/local/etc/php-fpm.d/www.conf
 COPY opt/php/wp-cron-multisite.php /usr/src/wordpress/wp-cron-multisite.php
+# Health check script for /healthz. Only reachable through nginx's internal
+# port 8090 listener - the public site blocks /healthz.php.
+COPY opt/php/healthz.php /usr/src/wordpress/healthz.php
 
-# Setup WordPress multisite and network
-COPY opt/scripts/hale-entrypoint.sh /usr/local/bin/
-COPY opt/scripts/config.sh /usr/local/bin/
+# PHP-FPM pool settings. PHP_INI_DIR comes from the base image and includes the
+# PHP version (/etc/php-<version>), so using the variable keeps this path right
+# when PHP_VERSION changes. The image's own zz-wordpress.conf loads after this
+# file but only sets user and group, so the settings here still apply.
+COPY opt/php/www.conf ${PHP_INI_DIR}/php-fpm.d/www.conf
 
-# Generated Composer and NPM compiled artifacts (plugins, themes, CSS, JS)
-# The WP offical Docker image expects files to be in /usr/src/wordpress
-# but then will copy them over on launch of site to the /html directory.
-COPY /wordpress/wp-content/plugins /usr/src/wordpress/wp-content/plugins
-COPY /wordpress/wp-content/mu-plugins /usr/src/wordpress/wp-content/mu-plugins
-COPY /wordpress/wp-content/themes /usr/src/wordpress/wp-content/themes
-COPY /vendor /usr/src/wordpress/wp-content/vendor
+# Start-up scripts. hale-entrypoint.sh (the ENTRYPOINT below) copies the
+# image's docker-entrypoint.sh, adds a call to config.sh just before php-fpm
+# starts, applies startup-patch.sh and runs the result. config.sh sets up
+# wp-config.php and the multisite network. startup-patch.sh stops a harmless
+# tar permissions error on the webroot from failing start-up.
+COPY --chmod=0755 opt/scripts/hale-entrypoint.sh /usr/local/bin/
+COPY --chmod=0755 opt/scripts/config.sh /usr/local/bin/
+COPY --chmod=0755 opt/scripts/startup-patch.sh /usr/local/bin/
 
-# Load default production php.ini file in
-# Custom php.ini additions for dev, staging & prod are done via k8s manifest
-RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+# Plugins, themes and Composer packages, built by composer install and the npm
+# build before this image is built. Like everything under /usr/src/wordpress,
+# they are copied into the webroot (/var/www/html) when a new pod starts.
+COPY --chown=65532:65532 /wordpress/wp-content/plugins /usr/src/wordpress/wp-content/plugins
+COPY --chown=65532:65532 /wordpress/wp-content/mu-plugins /usr/src/wordpress/wp-content/mu-plugins
+COPY --chown=65532:65532 /wordpress/wp-content/themes /usr/src/wordpress/wp-content/themes
+COPY --chown=65532:65532 /vendor /usr/src/wordpress/wp-content/vendor
 
-# Create new user to run the container as non-root
-RUN adduser --disabled-password hale -u 1002 \
-    && chown -R hale:hale /var/www/html \
-    && chown -R hale:hale /usr/src/wordpress \
-    && chown hale:hale /usr/local/bin/docker-entrypoint.sh
+# Empty uploads folder, from the builder stage.
+COPY --from=builder --chown=65532:65532 /tmp/uploads /usr/src/wordpress/wp-content/uploads
 
-# Make multisite scripts executable
-RUN chmod +x /usr/local/bin/hale-entrypoint.sh \
-    && chmod +x /usr/local/bin/config.sh
+# Query Monitor database drop-in symlink, from the builder stage.
+COPY --from=builder --chown=65532:65532 /tmp/dropins/ /usr/src/wordpress/wp-content/
 
-# Create the uploads folder
-RUN mkdir -p /usr/src/wordpress/wp-content/uploads
+# en_GB and cy translations, from the builder stage.
+COPY --from=builder --chown=65532:65532 /tmp/languages /usr/src/wordpress/wp-content/languages
 
-# Overwrite offical WP image ENTRYPOINT (docker-entrypoint.sh)
-# with custom entrypoint so we can launch WP multisite network
+# Start through hale-entrypoint.sh instead of the image's docker-entrypoint.sh.
+# See the start-up scripts above.
 ENTRYPOINT ["/usr/local/bin/hale-entrypoint.sh"]
 
-# Set container user 'root' to 'hale' that is set to 1002. Number is required
-# instead of using user name.
-USER 1002
-
-
+# 65532 is already the base image's default user. Set here anyway so a change
+# to the base image can never make this container run as root.
+USER 65532

@@ -1,0 +1,94 @@
+[
+  {
+    "from": "browser",
+    "method": "GET",
+    "path": "/authorize",
+    "contentType": null,
+    "authorization": null,
+    "client": null,
+    "query": {
+      "client_id": "<client_id>",
+      "nonce": "<random>",
+      "redirect_uri": "{site}/index.php?auth0=1",
+      "response_mode": "query",
+      "response_type": "code",
+      "scope": "openid email profile",
+      "state": "<random>"
+    },
+    "body": null
+  },
+  {
+    "from": "browser",
+    "method": "GET",
+    "path": "/avatar/{name}",
+    "contentType": null,
+    "authorization": null,
+    "client": null,
+    "query": {},
+    "body": null
+  },
+  {
+    "from": "browser",
+    "method": "GET",
+    "path": "/v2/logout",
+    "contentType": null,
+    "authorization": null,
+    "client": null,
+    "query": {
+      "client_id": "<client_id>",
+      "returnTo": "{site}"
+    },
+    "body": null
+  },
+  {
+    "from": "server",
+    "method": "GET",
+    "path": "/.well-known/jwks.json",
+    "contentType": null,
+    "authorization": null,
+    "client": "wp-auth0",
+    "query": {},
+    "body": null
+  },
+  {
+    "from": "server",
+    "method": "GET",
+    "path": "/api/v2/users/{id}",
+    "contentType": null,
+    "authorization": "Bearer",
+    "client": "wp-auth0",
+    "query": {},
+    "body": null
+  },
+  {
+    "from": "server",
+    "method": "POST",
+    "path": "/oauth/token",
+    "contentType": "application/json",
+    "authorization": null,
+    "client": "wp-auth0",
+    "query": {},
+    "body": {
+      "audience": "{tenant}/api/v2/",
+      "client_id": "<client_id>",
+      "client_secret": "<client_secret>",
+      "grant_type": "client_credentials"
+    }
+  },
+  {
+    "from": "server",
+    "method": "POST",
+    "path": "/oauth/token",
+    "contentType": "application/json",
+    "authorization": null,
+    "client": "wp-auth0",
+    "query": {},
+    "body": {
+      "client_id": "<client_id>",
+      "client_secret": "<client_secret>",
+      "code": "<random>",
+      "grant_type": "authorization_code",
+      "redirect_uri": "{site}/index.php?auth0=1"
+    }
+  }
+]

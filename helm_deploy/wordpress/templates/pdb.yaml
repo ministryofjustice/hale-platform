@@ -1,0 +1,23 @@
+{{- if .Values.podDisruptionBudget.enabled }}
+---
+# Protects against voluntary disruptions only - node drains, cluster upgrades,
+# descheduling. A rollout is governed by updateStrategy, not by this; an
+# involuntary disruption (node failure, OOM kill) ignores it entirely.
+#
+# minAvailable is a percentage so it tracks the HPA: at prod's floor of 6 pods
+# it holds 3, at 18 it holds 9. Kubernetes rounds a percentage up, so a
+# two-pod environment keeps one pod available and drains one at a time.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: wordpress
+  namespace: hale-platform-{{ .Values.configmap.envtype }}
+  labels:
+    app: wordpress
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      app: wordpress
+      tier: frontend-c
+{{- end }}

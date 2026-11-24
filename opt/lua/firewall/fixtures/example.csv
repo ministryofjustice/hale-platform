@@ -1,0 +1,50 @@
+http_host,request_uri,remote_addr,status,http_user_agent,request_method,time
+websitebuilder.service.justice.gov.uk,/app/uploads/2017/03/L032-15-Death-of-Mr-Jason-Willis-in-hospital-Onley-06-05-2015-SID-41-50.pdf,10.3.0.1,404,"Mozilla/5.0 (Linux; Android 5.0) AppleWebKit/537.36 (KHTML, like Gecko) Mobile Safari/537.36 (compatible; Bytespider; spider-feedback@bytedance.com)",GET,2026-05-04T11:12:19+00:00
+websitebuilder.service.justice.gov.uk,/hmiprisons/inspections?page=118&slocation=erlestoke,10.3.0.2,301,"Mozilla/5.0 (iPhone; CPU iPhone OS 17_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.3.1 Mobile/15E148 Safari/604.1",GET,2026-05-04T11:12:22+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.3,200,jetmon/1.0 (Jetpack Site Uptime Monitor by WordPress.com),HEAD,2026-05-04T11:12:25+00:00
+websitebuilder.service.justice.gov.uk,/wp-content/themes/hale/dist/js/accordion-auto-expand.js?id=ae9486ec782866bd4d25a80b123f3208,10.3.0.4,200,"Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.7.5 Mobile/15E148 Safari/604.1",GET,2026-05-04T11:12:25+00:00
+websitebuilder.service.justice.gov.uk,/wp-content/themes/hale/dist/js/govuk-frontend.js,10.3.0.4,200,"Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.7.5 Mobile/15E148 Safari/604.1",GET,2026-05-04T11:12:26+00:00
+websitebuilder.service.justice.gov.uk,/post_tag-sitemap.xml,10.3.0.5,200,meta-externalagent/1.1 (+https://developers.facebook.com/docs/sharing/webmasters/crawler),GET,2026-05-04T11:12:28+00:00
+websitebuilder.service.justice.gov.uk,/news/low-newton-2024-25-annual-report-published/,10.3.0.6,200,Mozilla/5.0 (compatible; SemrushBot/7~bl; +http://www.semrush.com/bot.html),GET,2026-05-04T11:12:29+00:00
+websitebuilder.service.justice.gov.uk,/surrogacy-reforms-to-improve-the-law-for-all,10.3.0.7,301,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 LinkCheck by Siteimprove.com",GET,2026-05-04T11:12:30+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.8,200,Pingdom.com_bot_version_1.4_(http://www.pingdom.com/),GET,2026-05-04T11:12:30+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00
+websitebuilder.service.justice.gov.uk,/,10.3.0.9,200,YisouSpider,GET,2026-05-04T11:12:31+00:00

@@ -1,0 +1,46 @@
+# Utility deployment for running redis-cli against the ElastiCache instance.
+# Deployed with 0 replicas so it costs nothing; "make redis-cli" scales it up,
+# opens a redis-cli shell inside the pod, then scales it back down.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-cli
+  namespace: hale-platform-{{ .Values.configmap.envtype }}
+  labels:
+    app: redis-cli
+spec:
+  selector:
+    matchLabels:
+      app: redis-cli
+  replicas: 0
+  template:
+    metadata:
+      labels:
+        app: redis-cli
+    spec:
+      # sleep runs as PID 1 and ignores SIGTERM; without this the pod hangs
+      # in Terminating for the default 30s grace period on scale-down.
+      terminationGracePeriodSeconds: 0
+      containers:
+        - name: redis-cli
+          image: redis:7-alpine
+          command: ["sleep", "2147483647"]
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
+          envFrom:
+            - secretRef:
+                name: hale-nginx-secrets-{{ .Release.Revision }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 999
+            seccompProfile:
+              type: RuntimeDefault

@@ -29,6 +29,7 @@ fi
 # Define repositories by type
 plugins=(
     "ministryofjustice/cookie-compliance"
+    "ministryofjustice/website-builder-block-restrictions"
     "ministryofjustice/website-builder-blocks"
     "ministryofjustice/wp-moj-blocks"
 )
@@ -39,6 +40,7 @@ themes=(
     "ministryofjustice/hale-dash"
     "ministryofjustice/hale-showcase"
     "ministryofjustice/ppo"
+    "ministryofjustice/justice"
 )
 
 mu_plugins=(
