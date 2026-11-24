@@ -29,7 +29,7 @@ test("Page links return a 200 status response", async ({page, site}) => {
             await page.goto(pageUrl);
 
              //Target 'a' links
-            const links = page.locator("a");
+            const links = page.locator("a[href]");
             //Get all a links on the page
             const allLinks = await links.all();
 
