@@ -22,6 +22,7 @@
     },
     { "id": 102, "type": "page", "slug": "about", "title": "About this site", "file": "../shared/about.html" },
     { "id": 301, "type": "page", "slug": "search-result", "title": "Search result", "file": "../shared/search-result.html", "date": "2025-03-01 09:00:00", "repeat": 12 },
+    { "id": 330, "type": "page", "slug": "draft-page", "title": "Draft page", "file": "../shared/draft-page.html", "status": "draft" },
     {
       "id": 320, "type": "page", "slug": "kittiwake-guidance", "title": "Kittiwake guidance", "file": "kittiwake-guidance.html", "parent": "about",
       "date": "2024-06-03 09:00:00", "terms": { "section": ["Courts"] }

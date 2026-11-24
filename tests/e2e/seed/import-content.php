@@ -16,6 +16,7 @@
  *                  optionally featuredImage (true to attach a generated
  *                  placeholder image), parent (slug of an earlier page),
  *                  template (page template), meta (post meta to set), date,
+ *                  status (post status, publish where none is given),
  *                  terms (term names to give it, by taxonomy, made if they do
  *                  not exist) and repeat (make that many: the ID, the slug's
  *                  -<n> suffix, the title's <n> suffix and the date, a day
@@ -256,7 +257,7 @@ foreach ($manifest['items'] as $item) {
         'post_parent' => isset($item['parent']) ? $ids[$item['parent']] : 0,
         'page_template' => $item['template'] ?? '',
         'meta_input' => $item['meta'] ?? [],
-        'post_status' => 'publish',
+        'post_status' => $item['status'] ?? 'publish',
         'post_author' => $author->ID,
         // Fixed, so dates in listings never change between runs.
         'post_date' => $item['date'] ?? '2026-01-05 09:00:00',

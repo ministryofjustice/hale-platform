@@ -8,8 +8,9 @@ const { seededItems } = require("../../support/content");
 //
 // The seed makes the post type, Inquiry documents, and its taxonomies,
 // Document Category and Document Type, as ACF's screens would, and gives it
-// eight transcripts, four rulings and one report, which alone mentions the
-// puffin and is a Welsh language version. See seed/content/hale/.
+// eight transcripts, four rulings and two reports. One report alone mentions
+// the puffin and is a Welsh language version; the other is for the site
+// search specs. See seed/content/hale/.
 const LISTING = "inquiry-documents/";
 const NO_MATCH = "zzqxjvw";
 const PER_PAGE = 10;
