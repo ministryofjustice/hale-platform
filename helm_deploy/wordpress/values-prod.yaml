@@ -102,6 +102,8 @@ ingress:
       certName: iapdc-cert
     - name: iapdeathsincustody.independent.gov.uk
       certName: iapdci-cert
+    - name: jcio.uk
+      certName: jcio-uk-cert
     - name: judicialappointments.gov.uk
       certName: judicialappointments-cert
     - name: justiceinspectorates.gov.uk
@@ -190,6 +192,8 @@ ingress:
       certName: imb-www-cert
     - name: www.independentpublicadvocate.org.uk
       certName: ipa-www-cert
+    - name: www.jcio.uk
+      certName: jcio-uk-www-cert
     - name: www.judicialappointments.gov.uk
       certName: judicialappointments-www-cert
     - name: www.justice.gov.uk
