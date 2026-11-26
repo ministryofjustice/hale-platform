@@ -1,12 +1,18 @@
 {
-  "frontPage": "home",
+  "frontPage": "home-page",
   "postsPage": "news",
   "menu": ["about", "blocks", "news"],
   "items": [
-    { "id": 101, "type": "page", "slug": "home", "title": "Home", "file": "home.html" },
+    { "id": 101, "type": "page", "slug": "home-page", "title": " Prison and Probation Ombudsman website document archive ", "file": "home-archive.html" },
     { "id": 102, "type": "page", "slug": "about", "title": "About this site", "file": "../shared/about.html" },
     { "id": 104, "type": "page", "slug": "blocks", "title": "Custom blocks", "file": "../shared/blocks.html" },
     { "id": 105, "type": "page", "slug": "news", "title": "News", "file": "../shared/news.html" },
+    { "id": 108, "type": "page", "slug": "archived-annual-reports", "title": "Archived Annual Reports", "file": "../shared/coming-soon.html" },
+    { "id": 109, "type": "page", "slug": "archived-learning-lessons-reports", "title": "Archived Learning Lessons Reports", "file": "../shared/coming-soon.html" },
+    { "id": 110, "type": "page", "slug": "archived-corporate-documents", "title": "Archived Corporate Documents", "file": "../shared/coming-soon.html" },
+    { "id": 111, "type": "page", "slug": "archived-fatal-incident-reports", "title": "Archived Fatal Incident Reports", "file": "../shared/coming-soon.html" },
+    { "id": 112, "type": "page", "slug": "archived-complaint-investigations", "title": "Archived Complaint Investigation Summaries", "file": "../shared/coming-soon.html" },
+    { "id": 113, "type": "page", "slug": "archived-current-fatal-investigations", "title": "Archived Current fatal incident investigations", "file": "../shared/coming-soon.html" },
     { "id": 201, "type": "post", "slug": "first-news-story", "title": "First news story", "file": "../shared/news-story.html", "featuredImage": true }
   ]
 }

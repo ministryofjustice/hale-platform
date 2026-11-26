@@ -20,6 +20,11 @@
       "id": 113, "type": "page", "slug": "civil", "title": "Civil Procedure Rules", "file": "civil.html", "parent": "procedure-rules",
       "meta": { "_short_title": "Civil", "_panel_archived": "1", "__panel_archived": "field_696a70dd50c97" }
     },
+    { "id": 114, "type": "page", "slug": "coming-soon", "title": "Coming soon", "file": "../shared/coming-soon.html" },
+    { "id": 115, "type": "page", "slug": "help", "title": "Help", "file": "../shared/coming-soon.html" },
+    { "id": 116, "type": "page", "slug": "accessibility", "title": "Accessibility", "file": "../shared/coming-soon.html", "parent": "help" },
+    { "id": 117, "type": "page", "slug": "cookies", "title": "Cookies", "file": "../shared/coming-soon.html" },
+    { "id": 118, "type": "page", "slug": "website-queries", "title": "Website queries", "file": "../shared/coming-soon.html" },
     { "id": 102, "type": "page", "slug": "about", "title": "About this site", "file": "../shared/about.html" },
     { "id": 301, "type": "page", "slug": "search-result", "title": "Search result", "file": "../shared/search-result.html", "date": "2025-03-01 09:00:00", "repeat": 12 },
     { "id": 330, "type": "page", "slug": "draft-page", "title": "Draft page", "file": "../shared/draft-page.html", "status": "draft" },
