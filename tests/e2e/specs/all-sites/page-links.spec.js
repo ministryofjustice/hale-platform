@@ -1,27 +1,5 @@
 const { test, expect } = require("../../support/test");
 const { getSitePageUrls } = require("../../support/page-urls");
-/*
-My plan: To be removed after test has been completed
-✅ step 1: get all href links on a page
-✅ step 2: Throw a slirent error if there is an empty or missing href
-✅ step 3: remove in-page, placeholder and empty links from the test
-✅ step 4: normalise links so they all use an absolute path
-✅ step 5: remove repeated links
-✅ step 6: check Playwright for response checking methods
-✅ step 7: build paths - may not be needed since using href
-✅ step 8: loop through links and test the status response
-✅ step 9: expand the check to all nested pages in a site - use the helper function developed for the hoirzontal test
- to return an array of all nested sites
-✅ step 10: test.step on nested sites,  and .test.soft so that a failure does not stop testing runs
-step 11: refactor
-
-note: how to deal with external links
-resource: https://www.checklyhq.com/docs/learn/playwright/how-to-detect-broken-links/
-*/
-//Need to skip the shared fixture's console error check since it logs an error
-//for the draft-pages used in the search results.  Without ignoring console errors
-//the test would fail
-test.use({ ignoreConsoleErrors: true });
 
 test("Page links return a 200 status response", async ({page, site}) => {
 
