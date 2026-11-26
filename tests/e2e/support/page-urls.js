@@ -18,8 +18,12 @@ function getSitePageUrls(site) {
     path.join(__dirname, "../seed/content", site.key, "content.json"),
   );
 
-  // filter for pages only
-  const pages = content.items.filter((item) => item.type === "page");
+  // filter for pages only. An item with `repeat` is seeded as that many pages,
+  // slugged <slug>-1, <slug>-2 and so on (seed/import-content.php); they differ
+  // only in title and date, so the first stands for them all.
+  const pages = content.items
+    .filter((item) => item.type === "page")
+    .map((item) => (item.repeat ? { ...item, slug: `${item.slug}-1` } : item));
 
   // Create a pages relative URL path
   function getPagePath(page) {
