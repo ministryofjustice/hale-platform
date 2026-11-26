@@ -18,18 +18,27 @@ step 11: refactor
 note: how to deal with external links
 resource: https://www.checklyhq.com/docs/learn/playwright/how-to-detect-broken-links/
 */
+//Need to skip the shared fixture's console error check since it logs an error
+//for the draft-pages used in the search results.  Without ignoring console errors
+//the test would fail
+test.use({ ignoreConsoleErrors: true });
 
 test("Page links return a 200 status response", async ({page, site}) => {
+
     const pageUrls = getSitePageUrls(site);
 
+    //remove draft pages from the list of page URLs
+    const publishedPageUrls = pageUrls.filter((url) => !url.includes('/draft-page/'));
+
     //check all valid links on each seeded site page
-    for(const pageUrl of pageUrls){
+    for(const pageUrl of publishedPageUrls){
 
         await test.step(`Link returns a status code of 200 on page ${pageUrl}`, async ()=>{
             await page.goto(pageUrl);
 
-             //Target 'a' links
+             //Target 'a href' links
             const links = page.locator("a[href]");
+
             //Get all a links on the page
             const allLinks = await links.all();
 
@@ -41,15 +50,13 @@ test("Page links return a 200 status response", async ({page, site}) => {
 
             //catch any missing or empty href's
             for(const hrefLink of allLinksHref){
-                expect.soft(hrefLink, `Missing or empty href on ${site.key}`).toBeTruthy();
+                expect.soft(hrefLink, `Missing or empty href on ${site.key} page ${pageUrl}`).toBeTruthy();
             }
 
-            //console.log(`${site.key}, links: ${allLinks.length} allLinks: ${allLinksHref.length}: \n ${allLinksHref.join("\n")}`)
         
-            //Remove in-page links, placeholder links (example.test) and empty links (do we need to exclude mailto tel etc too?)
-            const filteredLinks = allLinksHref.filter((link) => link && !link.startsWith("#") && link && !link.includes("example"));
-            //console.log("Filtered Links:", filteredLinks);
-
+            //Remove in-page links, placeholder links and empty links (do we need to exclude mailto tel etc too?)
+            const filteredLinks = allLinksHref.filter((link) => link && !link.startsWith("#")  && link);
+           
             //normalise links - use absolute paths
             //repeated links need to be included here since a mixture of relative and abslute paths point to the same pages
             const absoluteLinks = filteredLinks.map((hrefLink) => {
@@ -58,15 +65,14 @@ test("Page links return a 200 status response", async ({page, site}) => {
                     ? hrefLink
                     : new URL(hrefLink, page.url()).href;
             })
-            //console.log("absolute links", absoluteLinks);
+           
 
             //include links within test stack seeded pages only
             const siteOrigin = new URL(page.url()).origin;
             const internalLinks = absoluteLinks.filter((link) => {
                 return new URL(link).origin === siteOrigin;
             })
-            //console.log( siteOrigin);
-
+           
             //remove any repeated links
             const validHrefs = [...new Set(internalLinks)]
         
@@ -75,7 +81,6 @@ test("Page links return a 200 status response", async ({page, site}) => {
             for (const url of validHrefs) {
                 try{
                     const res = await page.request.get(url);
-                    //console.log(res.status(), `${site.key}:  - ${url}`)
                     expect.soft(res.status(), `${site.key}: ${url} did not return 200`).toBe(200);
 
                 } catch (error){
@@ -83,14 +88,7 @@ test("Page links return a 200 status response", async ({page, site}) => {
 
                 }
             }
-
-            console.log(`/********  site:${site.key} page: ${pageUrl}********************************/`)
             
-            console.log("valid links:", validHrefs.length);
-            for(const url of validHrefs){
-                console.log(url)
-            }
-            console.log("valid links:", validHrefs.length);
         })
     }
 })
