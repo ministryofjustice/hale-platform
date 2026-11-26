@@ -11,9 +11,9 @@ const { expect } = require("@playwright/test");
 const MB = 1024 * 1024;
 
 // The upload size limit: PHP's upload_max_filesize (opt/php/www.conf), which
-// seed/seed.sh matches with the network's fileupload_maxk. nginx and the
-// ingress accept a 32MB request, so a file at the limit gets to PHP.
-const UPLOAD_LIMIT = 30 * MB;
+// seed/seed.sh matches with the network's fileupload_max. nginx and the
+// ingress accept a 400MB request, so a file at the limit gets to PHP.
+const UPLOAD_LIMIT = 400 * MB;
 
 // Attachments each page has uploaded, for deleteUploads().
 const uploaded = new WeakMap();
