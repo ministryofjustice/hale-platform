@@ -16,7 +16,8 @@ const MB = 1024 * 1024;
 // The upload size limit: PHP's upload_max_filesize (opt/php/www.conf), which
 // seed/seed.sh matches with the network's fileupload_max. nginx and the
 // ingress accept a 400MB request, so a file at the limit gets to PHP.
-const UPLOAD_LIMIT = 400 * MB;
+// Justice theme limits Media Library uploads to 64MB.
+const UPLOAD_LIMIT = { default: 400 * MB, justice: 64 * MB };
 
 // Attachments each page has uploaded, for deleteUploads().
 const uploaded = new WeakMap();

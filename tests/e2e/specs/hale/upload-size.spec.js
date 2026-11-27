@@ -49,7 +49,7 @@ test.describe("upload sizes", () => {
   });
 
   test("a file of exactly the limit uploads", async ({ page }) => {
-    const file = await pngFileOfSize(page, UPLOAD_LIMIT, "e2e-at-limit.png");
+    const file = await pngFileOfSize(page, UPLOAD_LIMIT.default, "e2e-at-limit.png");
 
     try {
       await expectUploaded(page, file);
@@ -59,7 +59,7 @@ test.describe("upload sizes", () => {
   });
 
   test("a file one byte over the limit is refused", async ({ page }) => {
-    const file = await pngFileOfSize(page, UPLOAD_LIMIT + 1, "e2e-over-limit.png");
+    const file = await pngFileOfSize(page, UPLOAD_LIMIT.default + 1, "e2e-over-limit.png");
 
     try {
       const result = await uploadFile(page, file);
