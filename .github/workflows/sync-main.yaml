@@ -1,6 +1,7 @@
 name: Sync main into dev and demo
 
-# Run manually from the Actions tab to merge main into dev and demo.
+# Run manually from the Actions tab to merge main into dev, demo or both.
+# When both are picked they run in parallel and independently.
 #
 # Strategies:
 #   pr-on-conflict  Merge main in. If anything conflicts, leave the branch
@@ -9,24 +10,37 @@ name: Sync main into dev and demo
 #                   changed the same lines, take main's version. Composer
 #                   files are taken from main whole, so the lock stays valid.
 #                   Changes on the branch that don't clash with main are kept.
+#   dry-run         Change nothing. Write a report to the run summary: how
+#                   far the branch is behind/ahead of main, the commits it
+#                   would pull in, which files would conflict, and which
+#                   Composer packages are on different versions.
 
 on:
   workflow_dispatch:
     inputs:
+      branches:
+        description: Which branch(es) to sync
+        type: choice
+        default: both
+        options:
+          - both
+          - dev
+          - demo
       strategy:
-        description: How to handle conflicts
+        description: How to handle conflicts (dry-run changes nothing)
         type: choice
         default: pr-on-conflict
         options:
           - pr-on-conflict
           - main-wins
+          - dry-run
 
 permissions:
   contents: read
 
 jobs:
   sync:
-    name: Merge main into ${{ matrix.branch }}
+    name: ${{ inputs.strategy == 'dry-run' && 'Compare' || 'Merge' }} main into ${{ matrix.branch }}
     runs-on: ubuntu-26.04
     permissions:
       contents: write       # push the merge commit
@@ -35,7 +49,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        branch: [ dev, demo ]
+        branch: ${{ inputs.branches == 'both' && fromJSON('["dev","demo"]') || fromJSON(format('["{0}"]', inputs.branches)) }}
     concurrency:
       group: sync-main-${{ matrix.branch }}
       cancel-in-progress: false
@@ -49,8 +63,105 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Dry run report
+        if: inputs.strategy == 'dry-run'
+        run: |
+          B="origin/$TARGET"
+          M="origin/main"
+          BASE=$(git merge-base "$B" "$M")
+          behind=$(git rev-list --count "$B..$M")
+          ahead=$(git rev-list --count "$M..$B")
+
+          # Run the merge in memory only; nothing is checked out or pushed.
+          merge_out=$(git merge-tree --write-tree --name-only "$B" "$M" || true)
+          tree=$(echo "$merge_out" | sed -n 1p)
+          conflicts=$(echo "$merge_out" | sed '1d;/^$/,$d')
+
+          {
+            echo "## Dry run: main → \`$TARGET\`"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| main | \`$(git rev-parse --short "$M")\` |"
+            echo "| $TARGET | \`$(git rev-parse --short "$B")\` |"
+            echo "| Commits on main not in $TARGET | **$behind** |"
+            echo "| Commits on $TARGET not in main | **$ahead** |"
+            echo
+
+            if [ "$behind" -eq 0 ]; then
+              echo "✅ \`$TARGET\` already contains main. A merge would do nothing."
+              exit 0
+            fi
+
+            if [ -n "$conflicts" ]; then
+              echo "### ⚠️ Would conflict"
+              echo
+              echo "\`pr-on-conflict\` would open a PR. \`main-wins\` would replace \`$TARGET\`'s changes with main's in:"
+              echo
+              echo "$conflicts" | sed 's/^/- `/; s/$/`/'
+              if ! git diff --quiet "$BASE" "$B" -- composer.json composer.lock &&
+                 ! git diff --quiet "$BASE" "$M" -- composer.json composer.lock &&
+                 ! echo "$conflicts" | grep -qx 'composer\.\(json\|lock\)'; then
+                echo "- \`composer.json\`, \`composer.lock\` (both sides changed them; main-wins takes main's whole)"
+              fi
+            else
+              echo "### ✅ Merges cleanly"
+              echo
+              echo "Both strategies would merge, push and deploy \`$TARGET\` without overriding anything."
+            fi
+            echo
+
+            echo "### Composer packages that differ"
+            echo
+            # What composer.json would look like after a clean merge. If it
+            # conflicts, there's no single answer, so show "conflict".
+            if echo "$conflicts" | grep -qx 'composer.json'; then
+              after='null'
+            else
+              after=$(git show "$tree:composer.json")
+            fi
+            pkgs=$(jq -rn \
+              --argjson m "$(git show "$M:composer.json")" \
+              --argjson b "$(git show "$B:composer.json")" \
+              --argjson a "$after" '
+                def reqs: (.require // {}) + (.["require-dev"] // {});
+                ($m | reqs) as $mr | ($b | reqs) as $br
+                | (if $a == null then null else ($a | reqs) end) as $ar
+                | ($mr + $br | keys[])
+                | select($mr[.] != $br[.])
+                | "| `\(.)` | `\($mr[.] // "-")` | `\($br[.] // "-")` | "
+                  + (if $ar == null then "conflict" else "`\($ar[.] // "-")`" end) + " |"')
+            if [ -n "$pkgs" ]; then
+              echo "| Package | main | $TARGET now | $TARGET after merge |"
+              echo "|---|---|---|---|"
+              echo "$pkgs"
+              if [ "$after" = "null" ]; then
+                echo
+                echo "composer.json conflicts: \`main-wins\` would use main's versions, \`pr-on-conflict\` would leave them for the PR."
+              fi
+            else
+              echo "None, both branches require the same versions."
+            fi
+            echo
+
+            echo "### Commits main would bring in"
+            echo
+            echo '```'
+            git log --no-merges -n 50 --format='%h %s (%an)' "$B..$M"
+            [ "$(git rev-list --no-merges --count "$B..$M")" -gt 50 ] && echo "... and more"
+            echo '```'
+            echo
+
+            echo "### Files main would change"
+            echo
+            echo '```'
+            git diff --stat=100 "$B...$M" | tail -n 40
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Merge main
         id: merge
+        if: inputs.strategy != 'dry-run'
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
