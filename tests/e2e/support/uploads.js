@@ -5,15 +5,19 @@
 // editor would. That page checks nothing but the size in the browser, so the
 // file type is checked by WordPress on the server.
 
+const { open } = require("node:fs/promises");
+const { tmpdir } = require("node:os");
+const path = require("node:path");
 const zlib = require("node:zlib");
 const { expect } = require("@playwright/test");
 
 const MB = 1024 * 1024;
 
 // The upload size limit: PHP's upload_max_filesize (opt/php/www.conf), which
-// seed/seed.sh matches with the network's fileupload_maxk. nginx and the
-// ingress accept a 32MB request, so a file at the limit gets to PHP.
-const UPLOAD_LIMIT = 30 * MB;
+// seed/seed.sh matches with the network's fileupload_max. nginx and the
+// ingress accept a 400MB request, so a file at the limit gets to PHP.
+// Justice theme limits Media Library uploads to 64MB.
+const UPLOAD_LIMIT = { default: 400 * MB, justice: 64 * MB };
 
 // Attachments each page has uploaded, for deleteUploads().
 const uploaded = new WeakMap();
@@ -208,6 +212,50 @@ async function pngOfSize(page, size, name) {
   return { name, mimeType: "image/png", buffer };
 }
 
+
+// A real PNG of exactly `size` bytes, same arguments as pngOfSize,
+// but, file is created and that file path is the return value.
+// For file sizes that exceed Node's buffer limit.
+async function pngFileOfSize(page, size, name) {
+  const png = await drawImage(page, "image/png");
+
+  const iend = png.length - 12;
+  const padding = size - png.length - 12;
+
+  const filePath = path.join(tmpdir(), name);
+  const fd = await open(filePath, "w");
+
+  try {
+    await fd.write(png.subarray(0, iend));
+
+    const length = Buffer.alloc(4);
+    length.writeUInt32BE(padding);
+    await fd.write(length);
+
+    const type = Buffer.from("paDd");
+    await fd.write(type);
+
+    const chunk = Buffer.alloc(1024 * 1024, 0);
+    let remaining = padding;
+
+    while (remaining > 0) {
+      const bytes = Math.min(chunk.length, remaining);
+      await fd.write(chunk.subarray(0, bytes));
+      remaining -= bytes;
+    }
+
+    const crc = Buffer.alloc(4);
+    crc.writeUInt32BE(zlib.crc32(type));
+    await fd.write(crc);
+
+    await fd.write(png.subarray(iend));
+  } finally {
+    await fd.close();
+  }
+
+  return filePath;
+}
+
 module.exports = {
   MB,
   UPLOAD_LIMIT,
@@ -217,4 +265,5 @@ module.exports = {
   syntheticFile,
   fillerBytes,
   pngOfSize,
+  pngFileOfSize,
 };

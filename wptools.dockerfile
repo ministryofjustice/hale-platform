@@ -118,7 +118,7 @@ RUN php -r ' \
             fwrite(STDERR, "Alpine has PHP " . PHP_VERSION . ", older than " . $min . PHP_EOL); \
             exit(1); \
         } \
-        $want = ["memory_limit" => "-1", "post_max_size" => "32M", "upload_max_filesize" => "30M"]; \
+        $want = ["memory_limit" => "-1", "post_max_size" => "512M", "upload_max_filesize" => "400M"]; \
         foreach ($want as $key => $value) { \
             if (ini_get($key) !== $value) { \
                 fwrite(STDERR, $key . " is \"" . ini_get($key) . "\", not \"" . $value . "\"" . PHP_EOL); \

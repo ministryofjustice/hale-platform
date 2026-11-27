@@ -24,11 +24,13 @@ const THEME_TYPES = {
 // Types no site may accept: they run on the server or in the visitor's browser.
 const NEVER = ["php", "phtml", "phar", "html", "htm", "js", "exe", "sh"];
 
-test("Media Library allows the expected file types, up to 30MB", async ({ page, site }) => {
+test("Media Library allows the expected file types, up to 400MB", async ({ page, site }) => {
   const { extensions, maxBytes } = await uploadSettings(page);
   test.info().annotations.push({ type: "allowed types", description: extensions.join(", ") });
 
-  expect(maxBytes, "upload size limit").toBe(UPLOAD_LIMIT);
+  // Get site specific upload limit, or fallback default.
+  const uploadLimit = UPLOAD_LIMIT[site.key] ?? UPLOAD_LIMIT.default;
+  expect(maxBytes, "upload size limit").toBe(uploadLimit);
   expect(extensions.filter((ext) => NEVER.includes(ext)), "types no site may accept").toEqual([]);
 
   const { adds = [], removes = [] } = THEME_TYPES[site.theme] ?? {};
