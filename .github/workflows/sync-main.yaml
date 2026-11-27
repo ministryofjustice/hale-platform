@@ -1,0 +1,275 @@
+name: Sync main into dev and demo
+
+# Run manually from the Actions tab to merge main into dev, demo or both.
+# When both are picked they run in parallel and independently.
+#
+# Strategies:
+#   pr-on-conflict  Merge main in. If anything conflicts, leave the branch
+#                   alone and open a PR so someone can resolve it by hand.
+#   main-wins       Merge main in, and wherever main and the branch both
+#                   changed the same lines, take main's version. Composer
+#                   files are taken from main whole, so the lock stays valid.
+#                   Changes on the branch that don't clash with main are kept.
+#   dry-run         Change nothing. Write a report to the run summary: how
+#                   far the branch is behind/ahead of main, the commits it
+#                   would pull in, which files would conflict, and which
+#                   Composer packages are on different versions.
+
+on:
+  workflow_dispatch:
+    inputs:
+      branches:
+        description: Which branch(es) to sync
+        type: choice
+        default: both
+        options:
+          - both
+          - dev
+          - demo
+      strategy:
+        description: How to handle conflicts (dry-run changes nothing)
+        type: choice
+        default: pr-on-conflict
+        options:
+          - pr-on-conflict
+          - main-wins
+          - dry-run
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    name: ${{ inputs.strategy == 'dry-run' && 'Compare' || 'Merge' }} main into ${{ matrix.branch }}
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: write       # push the merge commit
+      pull-requests: write  # open a PR when the merge conflicts
+      actions: write        # dispatch the Deployment workflow
+    strategy:
+      fail-fast: false
+      matrix:
+        branch: ${{ inputs.branches == 'both' && fromJSON('["dev","demo"]') || fromJSON(format('["{0}"]', inputs.branches)) }}
+    concurrency:
+      group: sync-main-${{ matrix.branch }}
+      cancel-in-progress: false
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TARGET: ${{ matrix.branch }}
+      STRATEGY: ${{ inputs.strategy }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Dry run report
+        if: inputs.strategy == 'dry-run'
+        run: |
+          B="origin/$TARGET"
+          M="origin/main"
+          BASE=$(git merge-base "$B" "$M")
+          behind=$(git rev-list --count "$B..$M")
+          ahead=$(git rev-list --count "$M..$B")
+
+          # Run the merge in memory only; nothing is checked out or pushed.
+          merge_out=$(git merge-tree --write-tree --name-only "$B" "$M" || true)
+          tree=$(echo "$merge_out" | sed -n 1p)
+          conflicts=$(echo "$merge_out" | sed '1d;/^$/,$d')
+
+          {
+            echo "## Dry run: main → \`$TARGET\`"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| main | \`$(git rev-parse --short "$M")\` |"
+            echo "| $TARGET | \`$(git rev-parse --short "$B")\` |"
+            echo "| Commits on main not in $TARGET | **$behind** |"
+            echo "| Commits on $TARGET not in main | **$ahead** |"
+            echo
+
+            if [ "$behind" -eq 0 ]; then
+              echo "✅ \`$TARGET\` already contains main. A merge would do nothing."
+              exit 0
+            fi
+
+            if [ -n "$conflicts" ]; then
+              echo "### ⚠️ Would conflict"
+              echo
+              echo "\`pr-on-conflict\` would open a PR. \`main-wins\` would replace \`$TARGET\`'s changes with main's in:"
+              echo
+              echo "$conflicts" | sed 's/^/- `/; s/$/`/'
+              if ! git diff --quiet "$BASE" "$B" -- composer.json composer.lock &&
+                 ! git diff --quiet "$BASE" "$M" -- composer.json composer.lock &&
+                 ! echo "$conflicts" | grep -qx 'composer\.\(json\|lock\)'; then
+                echo "- \`composer.json\`, \`composer.lock\` (both sides changed them; main-wins takes main's whole)"
+              fi
+            else
+              echo "### ✅ Merges cleanly"
+              echo
+              echo "Both strategies would merge, push and deploy \`$TARGET\` without overriding anything."
+            fi
+            echo
+
+            echo "### Composer packages that differ"
+            echo
+            # What composer.json would look like after a clean merge. If it
+            # conflicts, there's no single answer, so show "conflict".
+            if echo "$conflicts" | grep -qx 'composer.json'; then
+              after='null'
+            else
+              after=$(git show "$tree:composer.json")
+            fi
+            pkgs=$(jq -rn \
+              --argjson m "$(git show "$M:composer.json")" \
+              --argjson b "$(git show "$B:composer.json")" \
+              --argjson a "$after" '
+                def reqs: (.require // {}) + (.["require-dev"] // {});
+                ($m | reqs) as $mr | ($b | reqs) as $br
+                | (if $a == null then null else ($a | reqs) end) as $ar
+                | ($mr + $br | keys[])
+                | select($mr[.] != $br[.])
+                | "| `\(.)` | `\($mr[.] // "-")` | `\($br[.] // "-")` | "
+                  + (if $ar == null then "conflict" else "`\($ar[.] // "-")`" end) + " |"')
+            if [ -n "$pkgs" ]; then
+              echo "| Package | main | $TARGET now | $TARGET after merge |"
+              echo "|---|---|---|---|"
+              echo "$pkgs"
+              if [ "$after" = "null" ]; then
+                echo
+                echo "composer.json conflicts: \`main-wins\` would use main's versions, \`pr-on-conflict\` would leave them for the PR."
+              fi
+            else
+              echo "None, both branches require the same versions."
+            fi
+            echo
+
+            echo "### Commits main would bring in"
+            echo
+            echo '```'
+            git log --no-merges -n 50 --format='%h %s (%an)' "$B..$M"
+            [ "$(git rev-list --no-merges --count "$B..$M")" -gt 50 ] && echo "... and more"
+            echo '```'
+            echo
+
+            echo "### Files main would change"
+            echo
+            echo '```'
+            git diff --stat=100 "$B...$M" | tail -n 40
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Merge main
+        id: merge
+        if: inputs.strategy != 'dry-run'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git checkout -B "$TARGET" "origin/$TARGET"
+          MAIN_SHA=$(git rev-parse --short origin/main)
+
+          if git merge-base --is-ancestor origin/main HEAD; then
+            echo "$TARGET already contains main, nothing to do."
+            echo "result=up-to-date" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          MSG="Merge main into $TARGET ($MAIN_SHA)"
+
+          if [ "$STRATEGY" = "main-wins" ]; then
+            BASE=$(git merge-base HEAD origin/main)
+            # Files where main's version will override the branch's.
+            overridden=$(git merge-tree --write-tree --name-only HEAD origin/main | sed '1d;/^$/,$d' || true)
+
+            git merge --no-ff --no-commit -X theirs origin/main || true
+
+            # Hunk-by-hunk merging can leave composer.lock out of step with
+            # composer.json, so take both from main whole when both sides
+            # changed them.
+            if ! git diff --quiet "$BASE" HEAD -- composer.json composer.lock &&
+               ! git diff --quiet "$BASE" origin/main -- composer.json composer.lock; then
+              git checkout origin/main -- composer.json composer.lock
+              overridden=$(printf '%s\ncomposer.json\ncomposer.lock' "$overridden")
+            fi
+
+            # Anything -X theirs can't settle (e.g. a file deleted on one
+            # side and edited on the other) also takes main's version.
+            for f in $(git diff --name-only --diff-filter=U); do
+              if git cat-file -e "origin/main:$f" 2>/dev/null; then
+                git checkout origin/main -- "$f"
+              else
+                git rm -q -- "$f"
+              fi
+            done
+
+            git commit --no-edit -m "$MSG"
+
+            overridden=$(echo "$overridden" | sed '/^$/d' | sort -u)
+            {
+              echo "### main-wins: $TARGET"
+              echo
+              if [ -n "$overridden" ]; then
+                echo "main's version replaced \`$TARGET\`'s changes in:"
+                echo
+                echo "$overridden" | sed 's/^/- `/; s/$/`/'
+              else
+                echo "No conflicts, nothing overridden."
+              fi
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            if ! git merge --no-ff --no-edit -m "$MSG" origin/main; then
+              conflicts=$(git diff --name-only --diff-filter=U)
+              git merge --abort
+              echo "result=conflict" >> "$GITHUB_OUTPUT"
+              { echo "files<<EOF"; echo "$conflicts"; echo "EOF"; } >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          fi
+
+          git push origin "HEAD:$TARGET"
+          echo "result=merged" >> "$GITHUB_OUTPUT"
+
+      # Pushes made with GITHUB_TOKEN don't trigger other workflows,
+      # so kick off the Deployment workflow for the branch explicitly.
+      # On a re-run, also deploy when the branch is already up to date:
+      # an earlier attempt may have pushed the merge but failed to deploy.
+      - name: Deploy ${{ matrix.branch }}
+        if: >-
+          steps.merge.outputs.result == 'merged' ||
+          (steps.merge.outputs.result == 'up-to-date' && github.run_attempt > 1)
+        run: gh workflow run cd.yaml --ref "$TARGET"
+
+      - name: Open PR for conflicts
+        if: steps.merge.outputs.result == 'conflict'
+        # Use a throwaway sync branch as the PR head, so resolving the
+        # conflicts in GitHub's editor commits there and never to main.
+        env:
+          FILES: ${{ steps.merge.outputs.files }}
+        run: |
+          SYNC="sync/main-into-$TARGET"
+          MAIN_SHA=$(git rev-parse --short origin/main)
+          LIST=$(echo "$FILES" | sed 's/^/- `/; s/$/`/')
+          existing=$(gh pr list --base "$TARGET" --head "$SYNC" --state open --json number --jq '.[0].number')
+
+          if [ -n "$existing" ]; then
+            # A PR is already open and someone may have pushed conflict
+            # fixes to its branch, so leave the branch alone and just
+            # comment on the PR.
+            git fetch -q origin "$SYNC"
+            if git merge-base --is-ancestor origin/main FETCH_HEAD; then
+              note='This PR already includes the latest `main`.'
+            else
+              note=$(printf 'This PR does not include the latest `main` yet. Merge `main` into `%s` to pick it up, or close this PR and re-run the workflow.' "$SYNC")
+            fi
+            gh pr comment "$existing" --body "$(printf 'Sync re-run: `main` @ %s still conflicts with `%s` in:\n\n%s\n\n%s' "$MAIN_SHA" "$TARGET" "$LIST" "$note")"
+            echo "::warning::main could not be merged into $TARGET automatically, existing PR #$existing updated."
+          else
+            # No open PR, so the branch is new or left over from a closed
+            # PR and it's safe to reset it to main.
+            git push --force origin "origin/main:refs/heads/$SYNC"
+            gh pr create --base "$TARGET" --head "$SYNC" \
+              --title "Sync main into $TARGET (conflicts)" \
+              --body "$(printf 'The automatic merge of `main` into `%s` hit conflicts in:\n\n%s\n\nResolve them here and merge to bring `%s` up to date, or re-run this workflow with the main-wins strategy.' "$TARGET" "$LIST" "$TARGET")"
+            echo "::warning::main could not be merged into $TARGET automatically, PR opened."
+          fi
